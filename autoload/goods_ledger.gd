@@ -1,0 +1,458 @@
+extends Node
+## Autoload: GoodsLedger — SYS-03 ST-GOOD (TechSpec 3.4 / WP-05).
+## _ready() only clears fields; load_and_validate() inits seq／stock (2.2-01).
+## WAREHOUSE／HOLD capacity only via CapacityProvider (1-A6); no SYS-08／SYS-13 providers here.
+
+signal goods_transferred(event: TransferEvent)
+signal conservation_violated(good_id: StringName)
+
+const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
+const PRM_CONSERVATION_CHECK_EVERY_TICK := "PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK"
+
+## ERR-SYS03-01..05 as negative ints for transfer()->int (H). Mapping not in TechSpec — see PR 缺口.
+const _ONE := 1
+const CODE_OK := 0
+const CODE_ERR_SYS03_01 := 0 - _ONE
+const CODE_ERR_SYS03_02 := CODE_ERR_SYS03_01 - _ONE
+const CODE_ERR_SYS03_03 := CODE_ERR_SYS03_02 - _ONE
+const CODE_ERR_SYS03_04 := CODE_ERR_SYS03_03 - _ONE
+const CODE_ERR_SYS03_05 := CODE_ERR_SYS03_04 - _ONE
+
+const ERR_SYS03_01 := "ERR-SYS03-01"
+const ERR_SYS03_02 := "ERR-SYS03-02"
+const ERR_SYS03_03 := "ERR-SYS03-03"
+const ERR_SYS03_04 := "ERR-SYS03-04"
+const ERR_SYS03_05 := "ERR-SYS03-05"
+
+const REASON_GENESIS := &"GENESIS"
+const REASON_PRODUCE := &"PRODUCE"
+const REASON_CONSUME := &"CONSUME"
+const REASON_TRADE := &"TRADE"
+const REASON_LOAD := &"LOAD"
+const REASON_UNLOAD := &"UNLOAD"
+const REASON_CONSTRUCT_USE := &"CONSTRUCT_USE"
+const REASON_CONFISCATE := &"CONFISCATE"
+const REASON_SEA_LOSS := &"SEA_LOSS"
+
+## Container Dictionary schema (TechSpec MARKET(port)／WAREHOUSE(owner,port)／HOLD(ship)／CONFISCATED／外部).
+## Exact key names not in D 欄 — see PR 缺口.
+const KEY_KIND := "kind"
+const KEY_PORT := "port"
+const KEY_OWNER := "owner"
+const KEY_SHIP := "ship"
+
+const KIND_MARKET := "MARKET"
+const KIND_WAREHOUSE := "WAREHOUSE"
+const KIND_HOLD := "HOLD"
+const KIND_CONFISCATED := "CONFISCATED"
+const KIND_EXTERNAL := "EXTERNAL"
+
+const FIELD_PARAMS := "Params"
+const FIELD_QTY := "qty"
+const FIELD_REASON := "reason"
+const REQUESTER_SYS03 := &"SYS-03"
+
+## Day placeholder when Clock Autoload absent (WP-02 not on WP-04 stack) — see PR 缺口.
+const DAY_PLACEHOLDER := 1
+
+var _stock: Dictionary = {} ## container_key:String -> Dictionary[good_id:String -> int qty]
+var _expected_net: Dictionary = {} ## good_id:String -> int (Σ GENESIS+PRODUCE − CONSUME − CONSTRUCT_USE − SEA_LOSS)
+var _next_seq: int = 1
+var _loaded: bool = false
+var _capacity_provider: CapacityProvider = null
+## 缺口：TransferEvent.day 應讀 Clock.day；本堆疊無 Clock。暫存 _day，預設 DAY_PLACEHOLDER。
+var _day: int = DAY_PLACEHOLDER
+
+
+func _ready() -> void:
+	_clear_state()
+
+
+func load_and_validate() -> Array:
+	# 2.2-01／2.2-02: field init + Params gate; no PortRegistry produce at boot.
+	var errors: Array = []
+	_clear_state()
+	if not Params.is_loaded():
+		errors.append(_err("PARAMS_NOT_LOADED", "res://autoload/goods_ledger.gd", FIELD_PARAMS, null, "Params must load_and_validate before GoodsLedger"))
+		_emit_errors(errors)
+		return errors
+	_next_seq = 1
+	_day = DAY_PLACEHOLDER
+	_loaded = true
+	return errors
+
+
+func is_loaded() -> bool:
+	return _loaded
+
+
+func set_capacity_provider(provider: CapacityProvider) -> void:
+	## 缺口：TechSpec 未寫登錄 API；暫用 set_capacity_provider（WP-05 測試／未來 SYS-08／13）。
+	_capacity_provider = provider
+
+
+func set_day(day: int) -> void:
+	## 缺口：應由 Clock.day 驅動；無 Clock 時測試／呼叫端可 set_day。
+	_day = day
+
+
+func next_seq() -> int:
+	# D101: 全域唯一發號，從 1 起，每次 +1
+	assert(_loaded, "GoodsLedger.next_seq before load_and_validate")
+	var seq: int = _next_seq
+	_next_seq = _next_seq + 1
+	return seq
+
+
+func transfer(from: Variant, to: Variant, good: StringName, qty: Variant, reason: StringName, requester: StringName) -> int:
+	# FRM-SYS03-02: qty 整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無
+	assert(_loaded, "GoodsLedger.transfer before load_and_validate")
+
+	# ERR-SYS03-04 — SEA_LOSS 停用（OQ-08 7c）
+	if reason == REASON_SEA_LOSS:
+		return _fail(ERR_SYS03_04, CODE_ERR_SYS03_04, FIELD_REASON, reason, "SEA_LOSS disabled")
+
+	# ERR-SYS03-01 — qty ≤ 0 或非整數
+	if not _is_positive_int(qty):
+		return _fail(ERR_SYS03_01, CODE_ERR_SYS03_01, FIELD_QTY, qty, "qty must be integer > 0")
+	var qty_i: int = int(qty)
+
+	var from_key: String = _container_key(from)
+	var to_key: String = _container_key(to)
+	var good_s: String = String(good)
+
+	if from_key.is_empty() or to_key.is_empty():
+		return _fail(ERR_SYS03_01, CODE_ERR_SYS03_01, KEY_KIND, from if from_key.is_empty() else to, "invalid container")
+
+	# Snapshot for all-or-nothing rollback
+	var from_before: int = _get_qty_by_key(from_key, good_s)
+	var to_before: int = _get_qty_by_key(to_key, good_s)
+
+	# ERR-SYS03-02 — from 餘額不足（EXTERNAL 不檢查餘額）
+	if not _is_external_key(from_key):
+		if from_before < qty_i:
+			return _fail(ERR_SYS03_02, CODE_ERR_SYS03_02, FIELD_QTY, qty_i, "insufficient balance")
+
+	# ERR-SYS03-03 — to 容量不足
+	if not _has_capacity_for(to, to_key, qty_i):
+		return _fail(ERR_SYS03_03, CODE_ERR_SYS03_03, FIELD_QTY, qty_i, "insufficient capacity")
+
+	# Apply (both sides); EXTERNAL 不記帳
+	if not _is_external_key(from_key):
+		_set_qty_by_key(from_key, good_s, from_before - qty_i)
+	if not _is_external_key(to_key):
+		_set_qty_by_key(to_key, good_s, to_before + qty_i)
+
+	# Update expected net for FRM-SYS03-01 (creation／destruction reasons only)
+	_apply_expected_delta(good_s, reason, from_key, to_key, qty_i)
+
+	var seq: int = next_seq()
+	var event := TransferEvent.new()
+	event.seq = seq
+	event.day = _day
+	event.timestamp = seq
+	event.from = from
+	event.to = to
+	event.good_id = good
+	event.qty = qty_i
+	event.reason = reason
+	event.requester = requester
+	goods_transferred.emit(event)
+	return seq
+
+
+func get_qty(container: Variant, good: StringName) -> int:
+	assert(_loaded, "GoodsLedger.get_qty before load_and_validate")
+	var key: String = _container_key(container)
+	if key.is_empty() or _is_external_key(key):
+		return 0
+	return _get_qty_by_key(key, String(good))
+
+
+func total(good: StringName) -> int:
+	# 3.4: 容器鍵 Dictionary 彙總先排序鍵再加總
+	assert(_loaded, "GoodsLedger.total before load_and_validate")
+	var good_s: String = String(good)
+	var keys: Array = _stock.keys()
+	keys.sort()
+	var sum: int = 0
+	for key_variant in keys:
+		var key: String = String(key_variant)
+		sum = sum + _get_qty_by_key(key, good_s)
+	return sum
+
+
+func in_transit(good: StringName) -> int:
+	## 推導：航行中船艙＝在途（r282）。缺口：無 SYS-13 航行旗標；Phase 0 加總全部 HOLD。
+	assert(_loaded, "GoodsLedger.in_transit before load_and_validate")
+	var good_s: String = String(good)
+	var keys: Array = _stock.keys()
+	keys.sort()
+	var sum: int = 0
+	for key_variant in keys:
+		var key: String = String(key_variant)
+		if key.begins_with("%s|" % KIND_HOLD):
+			sum = sum + _get_qty_by_key(key, good_s)
+	return sum
+
+
+func check_conservation() -> int:
+	# FRM-SYS03-01: Σ 容器(good) = expected_net(good)；違反 → conservation_violated + ERR-SYS03-05
+	assert(_loaded, "GoodsLedger.check_conservation before load_and_validate")
+	var goods: Dictionary = {}
+	for good_variant in _expected_net.keys():
+		goods[String(good_variant)] = true
+	var stock_keys: Array = _stock.keys()
+	stock_keys.sort()
+	for key_variant in stock_keys:
+		var bucket: Dictionary = _stock[key_variant]
+		var gkeys: Array = bucket.keys()
+		gkeys.sort()
+		for g_variant in gkeys:
+			goods[String(g_variant)] = true
+	var good_list: Array = goods.keys()
+	good_list.sort()
+	var violated := false
+	for g_variant in good_list:
+		var good_s: String = String(g_variant)
+		var actual: int = total(StringName(good_s))
+		var expected: int = int(_expected_net.get(good_s, 0))
+		if actual != expected:
+			violated = true
+			conservation_violated.emit(StringName(good_s))
+			push_error("GoodsLedger: %s good=%s actual=%s expected=%s" % [ERR_SYS03_05, good_s, actual, expected])
+	if violated:
+		return CODE_ERR_SYS03_05
+	return CODE_OK
+
+
+func maybe_check_conservation_on_tick() -> int:
+	# 2.3-04: 是否每日執行依 PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK；以 OS.is_debug_build() 選值
+	assert(_loaded, "GoodsLedger.maybe_check_conservation_on_tick before load")
+	# PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK
+	if Params.get_bool(PRM_CONSERVATION_CHECK_EVERY_TICK):
+		return check_conservation()
+	return CODE_OK
+
+
+func daily_produce_qty(season_output_q: int, day_index_k: int) -> int:
+	# FRM-SYS03-03: out(k) = FLOOR(Q·(k+1)/D) − FLOOR(Q·k/D)，k = 0..D−1
+	assert(_loaded, "GoodsLedger.daily_produce_qty before load")
+	# PRM-SYS00-DAYS_PER_SEASON
+	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
+	assert(days_d > 0, "DAYS_PER_SEASON must be > 0")
+	assert(day_index_k >= 0 and day_index_k < days_d, "k out of 0..D-1")
+	var q: int = season_output_q
+	var k: int = day_index_k
+	# floori on int operands (TechSpec 3.4 E)；不走 float 累加產量
+	var term_hi: int = floori(q * (k + 1) / days_d)
+	var term_lo: int = floori(q * k / days_d)
+	return term_hi - term_lo
+
+
+func run_daily_produce(day_index_k: int) -> Array:
+	## 2.3-02: PRODUCE 依 (port_id, good_id) 升序。缺口：H 未列本方法名；k 應為 Clock.day_in_season−1。
+	assert(_loaded, "GoodsLedger.run_daily_produce before load")
+	var results: Array = []
+	if not PortRegistry.is_loaded():
+		results.append(_err("PORT_REGISTRY_NOT_LOADED", "res://autoload/goods_ledger.gd", "PortRegistry", null, "PortRegistry required for PRODUCE"))
+		_emit_errors(results)
+		return results
+	var jobs: Array = []
+	for port_variant in PortRegistry.all_ids():
+		var port_id: String = String(port_variant)
+		var def: PortDef = PortRegistry.get_port(port_id)
+		var good_keys: Array = def.role_cells.keys()
+		good_keys.sort()
+		for good_variant in good_keys:
+			var good_id: String = String(good_variant)
+			var cell: RoleCell = def.role_cells[good_id]
+			if cell.role != PortRegistry.ROLE_PRODUCER:
+				continue
+			jobs.append({
+				"port": port_id,
+				"good": good_id,
+				"q": cell.base_output_per_season,
+			})
+	jobs.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if String(a["port"]) == String(b["port"]):
+			return String(a["good"]) < String(b["good"])
+		return String(a["port"]) < String(b["port"])
+	)
+	for job_variant in jobs:
+		var job: Dictionary = job_variant
+		var qty: int = daily_produce_qty(int(job["q"]), day_index_k)
+		if qty <= 0:
+			continue
+		var from_c: Dictionary = {KEY_KIND: KIND_EXTERNAL}
+		var to_c: Dictionary = {KEY_KIND: KIND_MARKET, KEY_PORT: String(job["port"])}
+		var seq_or_err: int = transfer(from_c, to_c, StringName(String(job["good"])), qty, REASON_PRODUCE, REQUESTER_SYS03)
+		results.append({"port": job["port"], "good": job["good"], "qty": qty, "result": seq_or_err})
+	return results
+
+
+func make_market(port_id: String) -> Dictionary:
+	return {KEY_KIND: KIND_MARKET, KEY_PORT: port_id}
+
+
+func make_warehouse(owner_id: String, port_id: String) -> Dictionary:
+	return {KEY_KIND: KIND_WAREHOUSE, KEY_OWNER: owner_id, KEY_PORT: port_id}
+
+
+func make_hold(ship_id: String) -> Dictionary:
+	return {KEY_KIND: KIND_HOLD, KEY_SHIP: ship_id}
+
+
+func make_confiscated() -> Dictionary:
+	return {KEY_KIND: KIND_CONFISCATED}
+
+
+func make_external() -> Dictionary:
+	return {KEY_KIND: KIND_EXTERNAL}
+
+
+func _has_capacity_for(container: Variant, container_key: String, qty_i: int) -> bool:
+	if _is_external_key(container_key):
+		return true
+	var kind: String = _kind_of_key(container_key)
+	# MARKET／CONFISCATED：不設上限（OQ-09 9b／預留池）
+	if kind == KIND_MARKET or kind == KIND_CONFISCATED:
+		return true
+	# WAREHOUSE／HOLD：只問 CapacityProvider；無提供者 → ERR-SYS03-03（TechSpec 3.4 D）
+	if kind == KIND_WAREHOUSE or kind == KIND_HOLD:
+		if _capacity_provider == null:
+			return false
+		var cap: int = _capacity_provider.capacity(container)
+		if cap <= CapacityProvider.CAPACITY_FAILURE:
+			return false
+		var used: int = _container_used(container_key)
+		var remaining: int = cap - used
+		return remaining >= qty_i
+	return false
+
+
+func _container_used(container_key: String) -> int:
+	if not _stock.has(container_key):
+		return 0
+	var bucket: Dictionary = _stock[container_key]
+	var keys: Array = bucket.keys()
+	keys.sort()
+	var sum: int = 0
+	for g_variant in keys:
+		sum = sum + int(bucket[g_variant])
+	return sum
+
+
+func _apply_expected_delta(good_s: String, reason: StringName, from_key: String, to_key: String, qty_i: int) -> void:
+	# FRM-SYS03-01 右側：GENESIS／PRODUCE 增加；CONSUME／CONSTRUCT_USE／SEA_LOSS 減少
+	var delta: int = 0
+	if reason == REASON_GENESIS or reason == REASON_PRODUCE:
+		if _is_external_key(from_key) and not _is_external_key(to_key):
+			delta = qty_i
+	elif reason == REASON_CONSUME or reason == REASON_CONSTRUCT_USE or reason == REASON_SEA_LOSS:
+		if not _is_external_key(from_key) and _is_external_key(to_key):
+			delta = 0 - qty_i
+	if delta != 0:
+		_expected_net[good_s] = int(_expected_net.get(good_s, 0)) + delta
+
+
+func _is_positive_int(qty: Variant) -> bool:
+	var t: int = typeof(qty)
+	if t == TYPE_INT:
+		return int(qty) > 0
+	if t == TYPE_FLOAT:
+		var f: float = float(qty)
+		if f != floorf(f):
+			return false
+		return int(f) > 0
+	return false
+
+
+func _container_key(container: Variant) -> String:
+	if typeof(container) != TYPE_DICTIONARY:
+		return ""
+	var d: Dictionary = container
+	if not d.has(KEY_KIND):
+		return ""
+	var kind: String = String(d[KEY_KIND])
+	match kind:
+		KIND_EXTERNAL:
+			return "%s|" % KIND_EXTERNAL
+		KIND_CONFISCATED:
+			return "%s|" % KIND_CONFISCATED
+		KIND_MARKET:
+			if not d.has(KEY_PORT):
+				return ""
+			return "%s|%s" % [KIND_MARKET, String(d[KEY_PORT])]
+		KIND_WAREHOUSE:
+			if not d.has(KEY_OWNER) or not d.has(KEY_PORT):
+				return ""
+			return "%s|%s|%s" % [KIND_WAREHOUSE, String(d[KEY_OWNER]), String(d[KEY_PORT])]
+		KIND_HOLD:
+			if not d.has(KEY_SHIP):
+				return ""
+			return "%s|%s" % [KIND_HOLD, String(d[KEY_SHIP])]
+		_:
+			return ""
+
+
+func _kind_of_key(key: String) -> String:
+	var parts: PackedStringArray = key.split("|")
+	if parts.is_empty():
+		return ""
+	return parts[0]
+
+
+func _is_external_key(key: String) -> bool:
+	return key == "%s|" % KIND_EXTERNAL
+
+
+func _get_qty_by_key(container_key: String, good_s: String) -> int:
+	if not _stock.has(container_key):
+		return 0
+	var bucket: Dictionary = _stock[container_key]
+	return int(bucket.get(good_s, 0))
+
+
+func _set_qty_by_key(container_key: String, good_s: String, qty_i: int) -> void:
+	if not _stock.has(container_key):
+		_stock[container_key] = {}
+	var bucket: Dictionary = _stock[container_key]
+	if qty_i == 0:
+		bucket.erase(good_s)
+		if bucket.is_empty():
+			_stock.erase(container_key)
+		else:
+			_stock[container_key] = bucket
+	else:
+		bucket[good_s] = qty_i
+		_stock[container_key] = bucket
+
+
+func _clear_state() -> void:
+	_stock = {}
+	_expected_net = {}
+	_next_seq = 1
+	_loaded = false
+	_capacity_provider = null
+	_day = DAY_PLACEHOLDER
+
+
+func _fail(code: String, code_int: int, field: String, value: Variant, message: String) -> int:
+	push_error("GoodsLedger: %s" % str(_err(code, "res://autoload/goods_ledger.gd", field, value, message)))
+	return code_int
+
+
+func _err(code: String, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
+	return {
+		"code": code,
+		"file": file_path,
+		"field": field,
+		"value": value,
+		"message": message,
+	}
+
+
+func _emit_errors(errors: Array) -> void:
+	for e in errors:
+		push_error("GoodsLedger: %s" % str(e))
