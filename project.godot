@@ -1,5 +1,5 @@
 ; Engine configuration file.
-; Godot 4.7.2-stable — WP-01 adds Params Autoload only (2.2-01 order).
+; Godot 4.7.2-stable — Autoload order 2.2-01: Params → Clock.
 
 config_version=5
 
@@ -11,6 +11,7 @@ config/features=PackedStringArray("4.7")
 [autoload]
 
 Params="*res://autoload/params.gd"
+Clock="*res://autoload/clock.gd"
 
 [editor_plugins]
 
