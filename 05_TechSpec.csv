@@ -1,0 +1,280 @@
+﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.3,,,,,
+狀態：Draft｜2026-11-17｜範圍：SYS-00 Clock 至 SYS-05 CashLedger（見第 1 節）｜規格權威：03_Systems（C 欄以公式即時引用原文）｜硬規則權威：AI_README 第 8 節｜本書未寫的事 = 不准做，先問｜★ 工作包與進度見第 7 節，一個 PR 只做一個 WP。,,,,,
+,,,,,
+0 給 Cursor 的守則（每條皆為退件標準）,,,,,
+編號,規則,內容,判定／實作要求,來源,狀態
+C-01,範圍,只實作第 1 節標為「可做」的項目。第 1 節「禁止碰」與本書未列出的任何功能（UI 場景、美術、存檔、Steam）一律不寫。,PR 出現第 2 節目錄以外的檔案即退回。,本書第 1、2 節,Locked
+C-02,規格權威,第 3 節 C 欄為 03_Systems 原文（公式引用，隨規格更新）。本書 D 欄只補充實作邊界，不得與 C 欄矛盾。,發現矛盾：停止該項，在 PR 描述寫「規格衝突：列號＋兩邊原文」，等 Owner 裁決。,03_Systems,Locked
+C-03,禁止 magic number,程式中不得出現裸數值。所有數值必須是具名常數、@export 變數或 Resource 設定檔，並在對應 Sheet 列出：名稱、型別、預設值、單位、合理範圍、來源／推導依據。未經 Owner 審核的數值一律標 [待審]，不得視為定案。,所有數值只能來自第 4 節參數（params.json／price_curve.tres）或規格定義的列舉。.gd 中允許的數字字面量僅限：0、1（初值、索引、遞增、空集合判斷）。其他任何數字（含 7、90、4、0.05、100）出現在 .gd 即違規；測試檔的期望值必須註明來源 TST ID。,AI_README T-R3,Locked
+C-04,禁止 priority hack,不得使用未核准的 z_index／process_priority 微調、call_deferred 或 await 當作時序補丁、硬寫延遲、特例 if 繞過系統規則、重複貼上邏輯。確有必要時：提案 → Owner 審核 → 登錄第 8.2 節後方可使用。,邏輯順序只能寫在第 2.3 節 SimLoop 的明確步驟清單。禁用：process_priority、z_index、call_deferred、await process_frame／Timer 延遲、依 signal 連線先後或 Autoload 載入先後決定執行順序、針對特定 ID 的 if。核准例外清單見 AI_README A193（目前無）。,AI_README T-R4、8.2,Locked
+C-05,追問義務,任何規格缺口（數值、邊界條件、失敗路徑、輸入裝置、存檔時機、多人同步權威端）不得猜測補齊，必須在回覆中以「待確認問題」逐條列出並取得答覆。僅當 Owner 明示「用合理預設」時，才可標 [假設] 推進。,規格未寫或標 [待審]／[假設] 而本書未授權的事：不得自填預設值；在 PR 描述列「缺口」並停止該項，其餘項目照常進行。,AI_README T-R5,Locked
+C-06,不得靜默修正,驗證失敗時收集全部錯誤一次列出（含錯誤碼、檔案、欄位、值），拒絕啟動。,禁止 clamp、補預設值、跳過壞資料、只報第一個錯誤。,03_Systems FRM-SYS01-01／LCR-22,Locked
+C-07,介面契約,跨模組溝通只能經由 Signal 或 Autoload 單例的公開 API。禁止硬寫跨場景 get_node 路徑；需取得外部節點時使用 @export NodePath、Group 或依賴注入。每個模組須列出「對外信號」與「對外函數」兩張清單。,跨模組只呼叫第 3 節列出的公開方法或連 signal；不得存取他模組 _ 開頭成員；不得用跨場景 get_node 路徑。,AI_README T-R8,Locked
+C-08,決定性,同一輸入必得同一輸出。,禁用 randi／randf／randomize／未指定種子的 RandomNumberGenerator、Time.*、OS.get_ticks_*。凡遍歷集合會影響結果，先按規格排序鍵（good_id、port_id、account_id 字串升序）排序；不得依賴 Dictionary 插入順序。,GP-01、GP-02,Locked
+C-09,數值型別,金額（厘）與貨物數量（擔）一律 int（GDScript int 為 64 位）。,float 只用於 SYS-04 面積、mid_price、avg_li、mid_after。float→int 只能用規格明示的 ceili／floori；禁用 int() 截斷、round、roundi。,OQ-07；FRM-SYS04-05,Locked
+C-10,溢位,金額加減乘在執行前檢查是否超出 int64。,超出即依 ERR-SYS05-08 拒絕；不得依賴環繞。,ERR-SYS05-08,Locked
+C-11,命名,Node 用 PascalCase；腳本檔 snake_case.gd；Signal 用 snake_case 且為已發生式（例 health_depleted）；常數 UPPER_SNAKE_CASE；@export 與一般變數 snake_case；私有成員前綴底線。,信號、方法、欄位名與 03_Systems 介面列逐字一致；不得改名、不得加別名。,AI_README T-R7,Locked
+C-12,註解與追溯,每個公式實作處註解 FRM ID；每個錯誤分支註解 ERR ID；每個參數讀取處註解 PRM ID。,缺註解即退回。,T-R10,Locked
+C-13,PR 粒度,一個 PR 只含一個模組及其測試，順序依第 2.2 節。,測試全綠才可合併；測試函數名含 TST ID，例：test_TST_SYS04_03。,T-R9,Locked
+C-14,不得改規格,Cursor 不得修改本工作簿。介面需變更時在 PR 描述提出，Owner 批准並回寫 03_Systems 後才改代碼。,任何數值、信號、函數簽名或介面變更，必須同步更新來源 Sheet 與本頁第 6 節更新日誌，並註明受影響模組。,AI_README T-R10,Locked
+,,,,,
+1 範圍：本期可做 vs 禁止碰,,,,,
+編號,項目,內容,邊界,依據,狀態
+1-A1,專案骨架,第 2 節目錄、project.godot Autoload 登錄。,不建任何遊戲場景（.tscn）。,B-01..B-06,可做
+1-A2,Params 參數載入器,讀 res://data/params/params.json，鍵＝第 4 節 PRM 完整 ID。,缺鍵、型別不符、超出第 4 節範圍 → 收集錯誤、拒絕啟動。,T-R3、C-03,可做
+1-A3,SYS-00 Clock,日計數、暫停、advance_one_day()。,速度檔位定義為「每現實秒推進的遊戲日數」，屬 PRM；其鍵與值尚未登記，因此 Phase 0 只做 advance_one_day()，不得寫 _process／計時器推進，PRM 登記後另開工作包。暫停時一切不變（GP-01）。（Owner 2026-11-17 確認）,GP-01、LCR-01、LCR-03,可做（部分）
+1-A4,SYS-01 GoodCatalog,全部（第 3.2 節）。,正式貨物 .tres 由 Owner 管線產生（Sheet 匯出 CSV → res://tools/csv_import.gd 轉檔，規則見 2.1-04），Cursor 不得編寫正式資料；只寫測試 fixture。,03_Systems §1,可做
+1-A5,SYS-02 PortRegistry,全部（第 3.3 節），含角色變更佇列於 cutoff 生效。,draft_limit_class 屬 SYS-10 航運：SYS-10 開工前只存不驗，不參與任何邏輯。（Owner 2026-11-17 確認）,03_Systems §2,可做
+1-A6,SYS-03 GoodsLedger,全部（第 3.4 節）。,WAREHOUSE／HOLD 容量只經 CapacityProvider 介面；正式提供者屬 SYS-08／10，不寫。,03_Systems §3,可做
+1-A7,SYS-04 MarketPricer,全部（第 3.5 節）。,price_curve.tres 照第 4 節 C 欄抄錄，不得調參。,03_Systems §4,可做
+1-A8,SYS-05 CashLedger,全部邏輯（第 3.6 節）。,TradeSlider 與帳本報表 UI 不做。params.json 缺 PRM-SYS05-START_CASH 或 PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT 任一鍵即 push_error 並拒絕啟動。兩者數值待 SYS-23 模擬器，Cursor 不得填值、不得給預設值；測試只用 res://tests/fixtures/ 的值。（Owner 2026-11-17 確認）,03_Systems §5,可做
+1-A9,SYS-06 消耗介面,只建 ConsumptionProvider 介面（第 3.7 節）。,正式實作不寫；假資料只放 res://tests/fixtures/。,SYS-04 weekly_consumption,可做（介面）
+1-A10,SimLoop,每日 tick 與商季 cutoff 的唯一排程者（第 2.3 節）。,—,03_Systems r298,可做
+1-X1,CT-OQ-37／38／39,工坊毛利、買入倍率、產能解耦（k／w／n）。,任何工坊、工資、配方代碼都不寫。,04B_CityRules r556–558,禁止碰
+1-X2,地價、地租、圈層開放,04B 第 4 節全部。,不寫槽位、地價、地租相關類別或欄位。,04B 第 4 節,禁止碰
+1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。,03_Systems 系統清單,禁止碰
+1-X4,曲線正式數值,W1..W5、M1..M5、HALF_SPREAD 的調整。,只抄錄現值，不得改。,03_Systems r421,禁止碰
+1-X5,OQ-12 系列未決項,—,遇到即停（C-05）。,03_Systems,禁止碰
+1-X6,04A_Buildings!G111 疑點,—,不得以任何形式引用該值。,04A_Buildings,禁止碰
+1-X7,SYS-00 Rng,"派生演算法已定：對 (seed, day, port, item, purpose) 做固定雜湊後以 SplitMix64 播種。（Owner 2026-11-17 確認）",Phase 0 的 SYS-01..05 不需要隨機數；不建 Rng 檔案。字串鍵如何編碼成雜湊輸入，於 Rng 開工前另補細則，Cursor 不得自定。,ST-RNG、GP-03,禁止碰（演算法已定，但不在 Phase 0）
+1-X8,存檔／Steam Cloud,格式已定：Godot Resource 二進位＋整數 schema_version；目標支援 Steam Cloud（B-07）。（Owner 2026-11-17 確認）,存檔不在 Phase 0：不寫 save／load。,B-07,禁止碰（格式已定，但不在 Phase 0）
+,,,,,
+2 目錄結構、載入順序與每日排程,,,,,
+編號,路徑／步驟,內容,實作要求,依據,狀態
+2.1-01,res://autoload/,params.gd、clock.gd、good_catalog.gd、port_registry.gd、goods_ledger.gd、market_pricer.gd、cash_ledger.gd、sim_loop.gd,一檔一個 Autoload；檔名 snake_case，Autoload 名 PascalCase（與 03_Systems 介面列一致）。,T-R7,可做
+2.1-02,res://core/types/,good_def.gd、port_def.gd、role_cell.gd、price_curve.gd、transfer_event.gd、account.gd、posting_entry.gd、posting.gd、charge_schedule.gd、season_ledger_report.gd,資料類別（Resource 或 RefCounted）；欄位逐字照第 3 節 C 欄。,03_Systems D 欄位列,可做
+2.1-03,res://core/interfaces/,consumption_provider.gd、capacity_provider.gd,只含方法簽名；基底方法本體一律 push_error 並回傳失敗值，不得回傳看似合理的假值。,1-A6、1-A9,可做
+2.1-04,res://data/,params/params.json、goods/*.tres、ports/*.tres、market/price_curve.tres；★ 另含 res://tools/csv_import.gd,ports/ 與 res://tools/ 路徑為本書定義（03_Systems 未寫路徑），屬本書允許目錄。正式 .tres 由 Owner 管線產生：03_Systems／03A／04_Content 匯出 CSV → Godot EditorScript 轉檔。Cursor 只建空目錄，並寫轉檔器框架 res://tools/csv_import.gd：① 一種資源一個 CSV；② 表頭必須逐字等於 03_Systems 資料結構的欄位名；③ 缺欄、多欄或型別不符即 push_error 並中止，不得猜測或補預設值；④ 只用 res://tests/fixtures/ 的 CSV 測試；⑤ 不得手寫正式資料 CSV 或 .tres。（Owner 2026-11-17 確認）,03_Systems r246、r417,可做
+2.1-05,res://tests/,unit/、fixtures/,測試框架用 GUT（Godot 4 版），測試放 res://tests/unit/；第 5 節 TST 逐條各寫一個測試，測試名含 TST ID；CI 以 headless 執行全部測試，任一失敗不得合併。fixture 只供測試，不得被 res://autoload/ 或 res://core/ 引用。（Owner 2026-11-17 確認）,C-13,可做
+2.2-01,Autoload 登錄順序,Params → Clock → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger → SimLoop,順序＝規格依賴方向。各 Autoload 的 _ready() 只做自身欄位初始化，不讀資料、不呼叫他模組；載入與驗證一律由 SimLoop.boot() 依本順序明確呼叫。,03_Systems 依賴欄,可做
+2.2-02,SimLoop.boot() -> Array,依 2.2-01 順序呼叫各模組 load_and_validate()，彙總全部錯誤後回傳。,任一錯誤 → 回傳完整清單且不啟動時鐘；不得在第一個錯誤就停止收集。,C-06,可做
+2.3-01,每日 tick 步驟 1,Clock 推進一日（day 由 1 起算；day_in_season = ((day−1) mod D) + 1，D = DAYS_PER_SEASON）。,"時鐘推進 → PRODUCE（依 port_id, good_id 排序）→ CONSUME（SYS-06）→ 守恆檢查",03_Systems r298,可做
+2.3-02,步驟 2,"GoodsLedger 執行當日 PRODUCE：依 (port_id, good_id) 升序，數量用 FRM-SYS03-03。",排序寫在 SimLoop／GoodsLedger 代碼內，不靠遍歷順序。,FRM-SYS03-03,可做
+2.3-03,步驟 3,"以注入的 ConsumptionProvider 執行 CONSUME，同樣依 (port_id, good_id) 升序。",未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。,SYS-06 介面,可做
+2.3-04,步驟 4,守恆檢查 FRM-SYS03-01（是否每日執行依 PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK）。,以 OS.is_debug_build() 選取參數的 debug／release 值；不得另寫旗標。,r318,可做
+2.3-05,步驟 5（僅 day_in_season = D 當日）,商季 cutoff：(a) PortRegistry 套用排隊中的角色變更 → (b) CashLedger.close_season() → (c) 守恆檢查（release 亦必檢）。,(a)(b) 無共用狀態，順序不影響結果；仍固定照寫。cutoff 不暫停、不跳視窗（LCR-03）。,r267、r579、r318,可做
+2.3-06,步驟 6,全部寫入完成後才發出信號（day_ticked、season_cutoff 等）。,信號接收者不得反過來改寫本 tick 狀態。,r590「提交後才發信號」,可做
+,,,,,
+3 各模組規格（C 欄為 03_Systems 原文即時引用）,,,,,
+段,項目,規格原文,Cursor 實作補充,來源,狀態
+3.1,SYS-00 Clock,res://autoload/clock.gd,公開：day:int（唯讀）、season_index:int（唯讀，= floori((day−1)/D)）、is_paused:bool、set_paused(bool)、advance_one_day()（僅 SimLoop 呼叫）。信號：day_ticked(day)、season_cutoff(season_index)。,GP-01、LCR-01、LCR-03；名稱 Owner 2026-11-17 確認,可做
+3.1,暫停,GP-01：暫停時一切不變,is_paused = true 時 advance_one_day() 不得被呼叫；呼叫即 push_error 並不推進。day_ticked／season_cutoff／advance_one_day 名稱已定，不得改名。速度檔位見 1-A3：PRM 未登記前不寫 _process 推進。,GP-01,可做
+3.2,SYS-01 GoodCatalog,res://autoload/good_catalog.gd,啟動一次載入 res://data/goods/*.tres，之後唯讀。all_ids() 回傳升序。,03_Systems r246,可做
+C 邊界,只定義欄位與驗證；不含價格公式、需求量、產量（產量在 SYS-02 角色格）,—,,03_Systems r233,可做
+D 欄位,good_id,GD-nnn，唯一,,03_Systems r234,可做
+D 欄位,name_zh,中文名,,03_Systems r235,可做
+D 欄位,tier,貨物層級,,03_Systems r236,可做
+D 欄位,is_staple,剛需（米、鹽、魚乾、木材）,,03_Systems r237,可做
+D 欄位,is_build_material,建材,,03_Systems r238,可做
+D 欄位,is_strategic,戰略／管制貨（硝磺、銅等）,[假設] 欄位照建；名單未定，代碼不得以 is_strategic 做任何分支。,03_Systems r239,可做
+D 欄位,base_price_li,基準價（厘／擔）,,03_Systems r240,可做
+D 欄位,season_mask,季節性產出遮罩（預留）,MVP 固定全年：欄位照建，驗證不得放寬或收緊。,03_Systems r241,可做
+E 公式,FRM-SYS01-01,"載入驗證：good_id 唯一；tier∈[1,TIER_MAX]；base_price_li>0；貨物數∈[GOOD_COUNT_MIN,GOOD_COUNT_MAX]；剛需四項恰各一筆",,03_Systems r242,可做
+E 公式,FRM-SYS01-02,controlled_scale_only = (tier > PRM-SYS01-FREE_PORT_TIER_MAX) OR is_strategic,,03_Systems r243,可做
+F 寫入順序,—,遊戲啟動時一次載入；執行期唯讀,,03_Systems r244,可做
+G 邊界失敗,ERR-SYS01-01 至 05,01 重複 ID／02 tier 越界／03 價格≤0／04 數量越界／05 剛需缺漏,錯誤碼五個全部實作，每個對應一個 fixture 測試。,03_Systems r245,可做
+H 可觀察性,Godot 介面,Autoload GoodCatalog：get_good(id)->GoodDef、all_ids()->PackedStringArray（已排序）、validate()->Array[Error]；signal catalog_loaded,,03_Systems r246,可做
+K 未決,is_strategic 名單,由 04_Content 提案送審,未決：不實作。,03_Systems r249,可做
+3.3,SYS-02 PortRegistry,res://autoload/port_registry.gd,"角色變更以 queue_role_change(port,good,new_role) 排隊；只在 2.3-05(a) 套用，套用前重驗 FRM-SYS02-01。",03_Systems r267,可做
+C 邊界,不定義消費量（SYS-06）、價格（SYS-04）、政權稅制（SYS-12）,—,,03_Systems r255,可做
+D 欄位 PortDef,port_id,PT-nn，唯一,,03_Systems r256,可做
+D 欄位 PortDef,name_zh,中文名,,03_Systems r257,可做
+D 欄位 PortDef,is_free_port,自由港／管制港,,03_Systems r258,可做
+D 欄位 PortDef,draft_limit_class,港口可容吃水等級,[待審]：欄位照存，不驗證、不參與任何邏輯，直到 SYS-10 開工。（Owner 2026-11-17 確認）,03_Systems r259,可做
+D 欄位 PortDef,regime_id,所屬政權（預留）,,03_Systems r260,可做
+D 欄位 RoleCell,role,PRODUCER／TRANSIT／TERMINAL（僅三值，無 NONE）,,03_Systems r261,可做
+D 欄位 RoleCell,downstream_terminals,中轉格的下游終端港清單,,03_Systems r262,可做
+D 欄位 RoleCell,base_output_per_season,產地每商季基準產量（擔）,,03_Systems r263,可做
+E 公式,FRM-SYS02-01,"載入驗證：(1) 每港 × 每貨恰一個角色；(2) TRANSIT 至少 1 個下游，且每個下游對該貨為 TERMINAL、不得為自身；(3) PRODUCER 產量 > 0，其餘 = 0；(4) 每貨至少 1 個 PRODUCER 與 1 個 TERMINAL；(5) 港口數∈[PORT_COUNT_MIN,MAX]；(6) 自由港比例∈[FREE_PORT_RATIO_MIN,MAX]",,03_Systems r264,可做
+E 公式,FRM-SYS02-02,Q-7 檢查：自由港上 controlled_scale_only 的貨若為 PRODUCER → 產出警告 WRN-SYS02-01,WRN-01 只警告不阻擋：寫入警告清單，不加入錯誤清單。,03_Systems r265,可做
+E 公式,FRM-SYS02-03,地圖外出口：門戶港對該貨設 TERMINAL（如馬尼拉大帆船、澳門→果阿）；不設虛擬去化,,03_Systems r266,可做
+F 寫入順序,EV-SYS02-ROLE_CHANGE,角色變更（如建造完工）先排入佇列，於商季 cutoff 生效,,03_Systems r267,可做
+G 邊界失敗,ERR-SYS02-01 至 06,對應 FRM-SYS02-01 (1)–(6),,03_Systems r268,可做
+H 可觀察性,Godot 介面,"Autoload PortRegistry：get_port(id)、get_role(port,good)->int、get_downstream(port,good)、producers_of(good)、terminals_of(good)；signal role_changed(port,good,old,new)",,03_Systems r269,可做
+K 未決,不應吸收某貨的港,以 TERMINAL＋極小消費處理，消費量於 SYS-06 定,未決：不實作。,03_Systems r273,可做
+3.4,SYS-03 GoodsLedger,res://autoload/goods_ledger.gd,transfer() 全有或全無；seq 全域單調遞增 int。容器鍵用 Dictionary 時，任何彙總先排序鍵再加總。,03_Systems r300,可做
+C 邊界,不計價、不計現金；價格由 SYS-04 推導,—,,03_Systems r279,可做
+D 容器,MARKET(port),港口市場庫存；不設上限（OQ-09 9b，大航海家3式）,,03_Systems r280,可做
+D 容器,"WAREHOUSE(owner, port)",行為者倉庫,容量只問 CapacityProvider.capacity(container)；無提供者 → ERR-SYS03-03，不得視為無限。,03_Systems r281,可做
+D 容器,HOLD(ship),船艙；航行中船艙＝在途（檢視，不另記帳）,同 r281。,03_Systems r282,可做
+D 容器,CONFISCATED,沒收池（預留）,,03_Systems r283,可做
+D 事件,EV-SYS03-TRANSFER,"{seq, day, timestamp, from, to, good_id, qty, reason, requester}","seq 一律取自 GoodsLedger.next_seq()（全域唯一發號，從 1 起，每次 +1）；timestamp 欄位填與 seq 相同的值，禁止使用系統時鐘（Time.get_ticks_* 等）。日內排序以 (day, seq)。（Owner 2026-11-17 確認）",03_Systems r284,可做
+D 原因碼,GENESIS,開局初始庫存（from = 外部）,,03_Systems r285,可做
+D 原因碼,PRODUCE,產地每日產出（from = 外部 → MARKET）,,03_Systems r286,可做
+D 原因碼,CONSUME,終端／工人消費（MARKET → 外部）,,03_Systems r287,可做
+D 原因碼,TRADE,市場 ↔ 船艙／倉庫買賣,,03_Systems r288,可做
+D 原因碼,LOAD／UNLOAD,倉庫 ↔ 船艙,,03_Systems r289,可做
+D 原因碼,CONSTRUCT_USE,建造消耗建材（→ 外部）,,03_Systems r290,可做
+D 原因碼,CONFISCATE,沒收（預留）,,03_Systems r291,可做
+D 原因碼,SEA_LOSS,海損（停用；使用即錯誤）,使用即回 ERR-SYS03-04。,03_Systems r292,可做
+E 公式,FRM-SYS03-01,守恆：Σ 全部容器(good) = Σ GENESIS + Σ PRODUCE − Σ CONSUME − Σ CONSTRUCT_USE − Σ SEA_LOSS（各 good 分別）,,03_Systems r294,可做
+E 公式,FRM-SYS03-02,轉移：qty 為整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無,,03_Systems r295,可做
+E 公式,FRM-SYS03-03,每日產出 out(k) = FLOOR(Q·(k+1)/D) − FLOOR(Q·k/D)，k = 0..D−1；Q = base_output_per_season，D = PRM-SYS00-DAYS_PER_SEASON,整數除法用 floori 於 int 運算，不經 float。,03_Systems r296,可做
+F 寫入順序,每日 tick,"時鐘推進 → PRODUCE（依 port_id, good_id 排序）→ CONSUME（SYS-06）→ 守恆檢查",,03_Systems r298,可做
+G 邊界失敗,ERR-SYS03-01 至 05,01 qty≤0 或非整數／02 餘額不足／03 容量不足／04 原因碼停用／05 守恆違反,,03_Systems r299,可做
+H 可觀察性,Godot 介面,"Autoload GoodsLedger：transfer(from,to,good,qty,reason,requester)->int、get_qty(container,good)、total(good)、in_transit(good)（推導）；signals goods_transferred、conservation_violated",,03_Systems r300,可做
+K 未決,散商總運力、反應遲滯,PRM 已登記為 [待審]，Phase 3.2 定值,未決：不實作。,03_Systems r303,可做
+3.5,SYS-04 MarketPricer,res://autoload/market_pricer.gd,純函數：不得持有可變狀態、不得發信號、不得寫入其他模組。,03_Systems r417,可做
+C 邊界,"只計算報價與指示燈；扣現金由 SYS-05、搬貨由 SYS-03 transfer；週消耗量由 SYS-06 提供（本批只定介面 weekly_consumption(port,good)）",—,,03_Systems r401,可做
+D 資料結構,PriceCurve,"斷點陣列 [{weeks, mult}]；第 1 點 weeks = 0（其 mult 即天花板）；最後一點之後倍率持平（即地板）",,03_Systems r402,可做
+D 欄位,anchor_price_li,錨定價：產地／終端格 = GoodDef.base_price_li；中轉格 = Q-16 推導價,,03_Systems r403,可做
+D 欄位,weekly_consumption,該港該貨每週消耗量（擔／週）= 日消耗 × PRM-SYS04-DAYS_PER_WEEK,"由 ConsumptionProvider.weekly_consumption(port,good) 取得；Phase 0 正式環境無提供者。",03_Systems r404,可做
+E 公式,FRM-SYS04-01 庫存週數,w = stock ÷ weekly_consumption（weekly_consumption = 0 時見 FRM-SYS04-09）,,03_Systems r405,可做
+E 公式,FRM-SYS04-02 線性插值倍率,找 i 使 W_i ≤ w < W_{i+1}：m = M_i + (M_{i+1} − M_i) × (w − W_i) ÷ (W_{i+1} − W_i)；w ≥ W_n → m = M_n,,03_Systems r406,可做
+E 公式,FRM-SYS04-03 中價,mid = anchor_price_li × m(w),,03_Systems r407,可做
+E 公式,FRM-SYS04-04 整批面積,買 q 擔：庫存 s → s − q；賣 q 擔：s → s + q。Area = anchor × weekly_consumption × [G(w_後) − G(w_前)] 取絕對值；G(x) = ∫₀ˣ m(w)dw，逐段梯形精確計算（線性段梯形無誤差），超過 W_n 部分 = (x − W_n) × M_n,面積以 float64 梯形公式一次算出，禁止逐擔迴圈。,03_Systems r408,可做
+E 公式,FRM-SYS04-05 買賣總額取整,買總額 = CEIL(Area × (1 + HALF_SPREAD))；賣總額 = FLOOR(Area × (1 − HALF_SPREAD)),ceili／floori；不得 round。,03_Systems r409,可做
+E 公式,FRM-SYS04-06 邊際顯示價,買價 = CEIL(mid × (1 + HALF_SPREAD))；賣價 = FLOOR(mid × (1 − HALF_SPREAD)),,03_Systems r410,可做
+E 公式,FRM-SYS04-07 曲線驗證,W_1 = 0；W 嚴格遞增；M 非遞增；全部 M > 0；斷點數 ≥ 2,,03_Systems r411,可做
+E 公式,FRM-SYS04-08 地板下限檢查,對每個錨定價：FLOOR(anchor × M_n × (1 − HALF_SPREAD)) ≥ 1 厘,,03_Systems r412,可做
+E 公式,FRM-SYS04-09 零消耗規則,weekly_consumption = 0 → m = M_n（地板）；整批 Area = anchor × M_n × q,,03_Systems r413,可做
+E 公式,FRM-SYS04-10 指示燈,r = mid ÷ anchor（玩家用 ST-KNOW 快照的 mid）；r ≥ IND_HI2 過高；IND_HI1 < r < IND_HI2 偏高；IND_LO1 ≤ r ≤ IND_HI1 均衡；IND_LO2 < r < IND_LO1 偏低；r ≤ IND_LO2 過低,,03_Systems r414,可做
+F 寫入順序,—,SYS-04 不寫入任何狀態。成交流程（GP-02 時間戳順序）：讀當下 ST-GOOD → FRM-SYS04-04／05 報價 → SYS-05 扣／入現金 → SYS-03 transfer；三步同一交易，任一失敗全部回滾,,03_Systems r415,可做
+G 邊界失敗,ERR-SYS04-01 至 08,01 首點 weeks ≠ 0／02 weeks 非嚴格遞增／03 mult 遞增／04 mult ≤ 0／05 地板價 < 1 厘／06 買量 > 庫存或 q ≤ 0／07 中轉格無錨定價／08 指示燈切點次序錯誤,,03_Systems r416,可做
+H 可觀察性,Godot 介面,"Autoload MarketPricer：mid_price(port_id, good_id) -> float；quote(port_id, good_id, side: int(BUY=0, SELL=1), qty: int) -> Dictionary{total_li:int, avg_li:float, mid_after:float, band_after:int}；indicator_band(ratio: float) -> int；validate() -> Array",,03_Systems r417,可做
+H 可觀察性,UI 預覽,拖動數量時即時呼叫 quote() 顯示總額、平均價與成交後指示燈；指示燈旁顯示情報日齡,UI 不做（1-A8）；只保證 quote() 可被即時呼叫。,03_Systems r418,可做
+K 未決,曲線與價差正式數值,附錄 A 皆 [待審]，參考大航海家3；待 SYS-23 模擬器校準,未決：不調參。,03_Systems r421,可做
+K 未決,價差是否按港／商籍／牙行差異化,MVP 單一 HALF_SPREAD；差異化押 P1,未決（P1）：不實作。,03_Systems r422,可做
+K 未決,是否按貨覆寫曲線（如剛需、季節性）,MVP 全貨共用；大航海家3 糧食 t1 +14 日、秋冬加成可作 P1 參考,未決（P1）：不實作。,03_Systems r423,可做
+3.6,SYS-05 CashLedger,res://autoload/cash_ledger.gd,帳戶 id 為 StringName。格式：ACT-／CITY-／REG- 前綴，系統帳戶固定 SOURCE／SINK；前綴與固定名寫成具名常數，組 id 一律經常數，不得在呼叫處手打字串；邏輯不得解析 id 字串來判斷帳戶種類。授權請求者清單寫為具名常數陣列並註明來源 ERR-SYS05-06。（Owner 2026-11-17 確認）,03_Systems r589,可做
+C 邊界,—,只管帳戶餘額、欠款、過帳、季末扣費與報表。不定價（SYS-04）、不搬貨（SYS-03）、不定費率（請求系統自帶費額）、不判破產後果（SYS-22）、MVP 無牙錢（11b-A）,,03_Systems r559,可做
+D 資料結構,Account,"{id: StringName, kind: enum{ACTOR, CITY, REGIME, SOURCE, SINK}, owner_id, balance: int64 厘, arrears: int64 厘 ≥ 0, arrears_seasons: int ≥ 0}",,03_Systems r560,可做
+D 資料結構,SOURCE／SINK,全域各一。SOURCE 為唯一可為負的帳戶（＝累計發行）；SINK 只增不減（＝累計去化）。開局資金亦由 SOURCE 發出,,03_Systems r561,可做
+D 資料結構,PostingEntry,"{account_id, amount: int64}；正＝入帳、負＝出帳",,03_Systems r562,可做
+D 資料結構,Posting,"{posting_id: int 遞增, day: int, seq: int（GP-02 時間戳）, requester: SYS-ID, reason: StringName, entries: Array[PostingEntry]}",Posting.seq 呼叫 GoodsLedger.next_seq() 取得，與貨物事件共用同一序列；posting_id 仍由 CashLedger 自行遞增（從 1 起，每次 +1），兩者不得混用。（Owner 2026-11-17 確認）,03_Systems r563,可做
+D 資料結構,ChargeSchedule,"{account_id, requester, reason, fee_per_season: int64 厘, start_day: int, end_day: int 或 null}",,03_Systems r564,可做
+D 資料結構,SeasonLedgerReport,"{season_index, 每帳戶: opening, Σ入帳, Σ出帳, charges, arrears_new, closing}",,03_Systems r565,可做
+E 公式,FRM-SYS05-01,過帳平衡：Σ entries.amount = 0，否則 ERR-SYS05-02,,03_Systems r566,可做
+E 公式,FRM-SYS05-02,非負：對非 SOURCE 帳戶 balance + amount ≥ 0；自願支出違反 → ERR-SYS05-01,,03_Systems r567,可做
+E 公式,FRM-SYS05-03,"成交過帳：買 = {buyer: −B, SINK: +B}；賣 = {SOURCE: −S, seller: +S}；B、S 為 SYS-04 整批總額（買 CEIL、賣 FLOOR）",,03_Systems r568,可做
+E 公式,FRM-SYS05-04,價差去化：期間 ΔSINK − Δ|SOURCE| = 市場淨回收現金；不另設手續費科目,,03_Systems r569,可做
+E 公式,FRM-SYS05-05,按日比例扣費 = CEIL(fee_per_season × days_held ÷ D)，D = PRM-SYS00-DAYS_PER_SEASON；days_held = 本季內持有日數（含起日、不含止日）；全季持有恰等於 fee,,03_Systems r570,可做
+E 公式,FRM-SYS05-06,"強制扣費：paid = MIN(balance, due)；arrears += due − paid；balance 最低到 0",,03_Systems r571,可做
+E 公式,FRM-SYS05-07,欠款優先抵償：帳戶有 arrears 時，任何入帳先轉 SINK 抵欠，餘額才入 balance,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems r572,可做
+E 公式,FRM-SYS05-08,連續欠款：季末 arrears > 0 → arrears_seasons + 1；= 0 → 歸 0；arrears_seasons ≥ PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT → 移交 SYS-22,,03_Systems r573,可做
+E 公式,FRM-SYS05-09,可負擔量 q_afford = 最大 q 使 buy_total(q) ≤ balance。buy_total 對 q 單調不減 → 逐段反解面積得連續解，FLOOR 後用整數 quote 校正（二分搜尋保底）,,03_Systems r574,可做
+E 公式,FRM-SYS05-10,"拉桿上限：買 = MIN(q_afford, hold_free, stock)；賣 = cargo_held（賣出不受現金限制）",,03_Systems r575,可做
+E 公式,FRM-SYS05-11,提交重驗：放手時以當刻 quote 重算 B′；B′ ≤ balance → 以 B′ 成交；否則整筆拒絕 ERR-SYS05-07、拉桿歸 0，不自動減量,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems r576,可做
+E 公式,FRM-SYS05-12,"最大餘數分攤：base_i = FLOOR(T·w_i ÷ W)；r = T − Σbase；依 MOD(T·w_i, W) 由大到小、同值索引小者先，前 r 名各 +1",Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems r577,可做
+F 寫入順序,成交（原子）,1 驗證請求者在 ST-CASH 請求清單且金額為正整數 → 2 以提交時刻呼叫 SYS-04 quote() → 3 FRM-SYS05-11 重驗 → 4 組分錄並驗 FRM-SYS05-01 → 5 寫 ST-CASH → 6 SYS-03 transfer 寫 ST-GOOD → 任一步失敗全部回滾 → 7 提交後才發信號,七步順序逐字照寫；任一步失敗回滾已寫入的 ST-CASH 與 ST-GOOD。,03_Systems r578,可做
+F 寫入順序,季末結算（不暫停）,1 依 account_id 升序逐帳戶 → 2 依 ChargeSchedule 登記序計 FRM-SYS05-05 → 3 FRM-SYS05-06 扣費入 SINK → 4 FRM-SYS05-08 更新計數、必要時移交 SYS-22 → 5 產生 SeasonLedgerReport → 6 清除上季 Posting 明細,六步順序逐字照寫。,03_Systems r579,可做
+G 邊界失敗,ERR-SYS05-01,INSUFFICIENT_CASH：自願支出（交易、建設、打點）餘額不足 → 拒絕，不部分成交,,03_Systems r580,可做
+G 邊界失敗,ERR-SYS05-02,UNBALANCED_POSTING：Σ ≠ 0 → 中止並回滾；記錄為程式錯誤,,03_Systems r581,可做
+G 邊界失敗,ERR-SYS05-03,NEGATIVE_BALANCE：非 SOURCE 帳戶將為負（任何路徑）→ 拒絕；強制費應走 FRM-SYS05-06 不會觸發,,03_Systems r582,可做
+G 邊界失敗,ERR-SYS05-04,UNKNOWN_ACCOUNT：帳戶不存在 → 拒絕,,03_Systems r583,可做
+G 邊界失敗,ERR-SYS05-05,INVALID_AMOUNT：金額非整數或 ≤ 0 → 拒絕,,03_Systems r584,可做
+G 邊界失敗,ERR-SYS05-06,UNAUTHORIZED_REQUESTER：請求者不在 SYS-04、08、09、10、12、13、16、21 → 拒絕,,03_Systems r585,可做
+G 邊界失敗,ERR-SYS05-07,STALE_QUOTE_UNAFFORDABLE：放手時新報價超出餘額 → 整筆拒絕，拉桿歸 0,,03_Systems r586,可做
+G 邊界失敗,ERR-SYS05-08,OVERFLOW：int64 溢位 → 拒絕並記錄,,03_Systems r587,可做
+G 邊界失敗,ERR-SYS05-09,INVALID_WEIGHTS：分攤權重有負值或總和 0 → 拒絕,,03_Systems r588,可做
+H 可觀察性,Autoload CashLedger,"post(entries, reason, requester) -> Error；balance(id) -> int；arrears(id) -> int；can_afford(id, amount) -> bool；max_affordable_qty(actor, port, good) -> int；charge_mandatory(id, due, reason, requester) -> int；prorate(fee, days_held) -> int；split_largest_remainder(total, weights) -> Array[int]；close_season() -> SeasonLedgerReport",,03_Systems r589,可做
+H 可觀察性,信號,"cash_changed(id, new_balance, delta, reason)；arrears_changed(id, arrears, seasons)；bankruptcy_referred(id)；season_ledger_closed(season_index, report)",,03_Systems r590,可做
+H 可觀察性,TradeSlider UI,HSlider，step = 1 擔；拖動開始與市場信號時重算 max_value（FRM-SYS05-10）；拖動中即時顯示整批總額與成交後指示燈；總額 > 餘額時預覽轉紅；drag_ended 才提交；收到 ERR-SYS05-01／07 → value = 0 並提示,UI 不做（1-A8）；max_affordable_qty() 必須實作。,03_Systems r591,可做
+H 可觀察性,帳本報表 UI,季末彈出非阻斷通知，可開 SeasonLedgerReport；欠款帳戶以紅字＋連續商季數顯示,UI 不做（1-A8）；只發 season_ledger_closed 信號。,03_Systems r592,可做
+K 未決,[待審],PRM-SYS05-START_CASH、PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT 正式值；固定費費率屬 SYS-13／產業,未決：不實作。,03_Systems r595,可做
+K 未決,原 [假設],已確認（Owner 2026-11-17）：帳戶 id 格式 ACT-／CITY-／REG-＋SOURCE／SINK；FRM-SYS05-07 欠款優先抵償、FRM-SYS05-11 新價仍付得起照成交、FRM-SYS05-12 分攤序,帳戶 id 格式見 D139；FRM-SYS05-07／11／12 見 D153／D157／D158。,03_Systems r596,可做
+K 未決,[待驗證],11e-C 拉桿是否確為大航海家3 原設計未能查證；以 Owner 定義為準。LCR-13 去化是否足夠待 SYS-23,未決：不實作。,03_Systems r597,可做
+3.7,SYS-06 ConsumptionProvider,res://core/interfaces/consumption_provider.gd,"方法：consume_qty(port_id, good_id, day) -> int；weekly_consumption(port_id, good_id) -> float。基底類不得回傳 0 或任何預設值（push_error 並回失敗值）。",1-A9,可做（介面）
+3.8,CapacityProvider,res://core/interfaces/capacity_provider.gd,方法：capacity(container) -> int。規則同 3.7。,r281、r282,可做（介面）
+,,,,,
+4 常數登錄表（數值一律引用 03_Systems；Cursor 照抄到資料檔，不得改）,,,,,
+PRM ID,名稱,預設值,範圍（下限 ~ 上限）,型別,寫入位置
+PRM-SYS00-DAYS_PER_SEASON,每商季日數,90,90 ~ 90,int,params.json
+PRM-SYS00-SEASONS_PER_YEAR,每年商季數,4,4 ~ 4,int,params.json
+PRM-SYS05-MIN_CASH_UNIT,最小現金單位（厘）,1,1 ~ 1,int,params.json
+PRM-SYS01-GOOD_COUNT_MIN,貨物種數下限,24,20 ~ 30,int,params.json
+PRM-SYS01-GOOD_COUNT_MAX,貨物種數上限,30,24 ~ 40,int,params.json
+PRM-SYS01-TIER_MAX,貨物層級上限,4,3 ~ 4,int,params.json
+PRM-SYS01-FREE_PORT_TIER_MAX,自由港可大量經營的最高層級,2,1 ~ 4,int,params.json
+PRM-SYS02-PORT_COUNT_MIN,港口數下限,14,14 ~ 14,int,params.json
+PRM-SYS02-PORT_COUNT_MAX,港口數上限,16,16 ~ 16,int,params.json
+PRM-SYS02-FREE_PORT_RATIO_MIN,自由港比例下限,0.4,0.3 ~ 0.5,定點數,params.json
+PRM-SYS02-FREE_PORT_RATIO_MAX,自由港比例上限,0.6,0.5 ~ 0.7,定點數,params.json
+PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK,每 tick 守恆檢查,debug=true；release=false,— ~ —,bool,params.json
+PRM-SYS04-DAYS_PER_WEEK,庫存週數的「週」日數,7,1 ~ 90,int,params.json
+PRM-SYS04-CURVE_W1,斷點 1 庫存週數（天花板點）,0,0 ~ 0,float,price_curve.tres
+PRM-SYS04-CURVE_W2,斷點 2 庫存週數（短缺邊）,1,0 ~ 52,float,price_curve.tres
+PRM-SYS04-CURVE_W3,斷點 3 庫存週數（均衡平台起點）,3,0 ~ 52,float,price_curve.tres
+PRM-SYS04-CURVE_W4,斷點 4 庫存週數（均衡平台終點）,6,0 ~ 52,float,price_curve.tres
+PRM-SYS04-CURVE_W5,斷點 5 庫存週數（地板起點）,10,0 ~ 104,float,price_curve.tres
+PRM-SYS04-CURVE_M1,斷點 1 倍率（天花板）,2,1 ~ 10,float,price_curve.tres
+PRM-SYS04-CURVE_M2,斷點 2 倍率,1.4,1 ~ 10,float,price_curve.tres
+PRM-SYS04-CURVE_M3,斷點 3 倍率（均衡）,1,1 ~ 1,float,price_curve.tres
+PRM-SYS04-CURVE_M4,斷點 4 倍率（均衡）,1,1 ~ 1,float,price_curve.tres
+PRM-SYS04-CURVE_M5,斷點 5 倍率（地板）,0.6,0.05 ~ 1,float,price_curve.tres
+PRM-SYS04-HALF_SPREAD,半價差,0.05,0.01 ~ 0.25,float,params.json
+PRM-SYS04-IND_HI2,指示燈切點：過高,1.5,1 ~ 10,float,params.json
+PRM-SYS04-IND_HI1,指示燈切點：偏高,1.05,1 ~ 10,float,params.json
+PRM-SYS04-IND_LO1,指示燈切點：偏低,0.95,0.05 ~ 1,float,params.json
+PRM-SYS04-IND_LO2,指示燈切點：過低,0.75,0.05 ~ 1,float,params.json
+PRM-SYS05-START_CASH,開局現金（由 SOURCE 發出）,[待審],0 ~ —,int,params.json（目前 [待審]：不得寫入任何值，缺鍵 → 拒絕啟動）
+PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT,連續欠款移交 SYS-22 的商季數,[待審],1 ~ —,int,params.json（目前 [待審]：不得寫入任何值，缺鍵 → 拒絕啟動）
+4-N1,說明,r603、r604 為 r309、r307 的引用，不重複登錄。params.json 的值須為 JSON 數字；int 型參數讀入後須驗證為整數，否則報錯。,,,
+,,,,,
+5 驗收案例（Given／When／Then 引用 03_Systems 原文）,,,,,
+TST ID,Given,When,Then,模組,狀態
+TST-SYS01-01,兩筆貨物 good_id 相同,載入 GoodCatalog,ERR-SYS01-01，拒絕啟動,SYS-01,必須通過
+TST-SYS01-02,某貨 tier = 0 或 > TIER_MAX,載入,ERR-SYS01-02,SYS-01,必須通過
+TST-SYS01-03,貨物數 < GOOD_COUNT_MIN,載入,ERR-SYS01-04,SYS-01,必須通過
+TST-SYS01-04,剛需四項缺魚乾,載入,ERR-SYS01-05,SYS-01,必須通過
+TST-SYS02-01,港口數 = 13,載入 PortRegistry,ERR-SYS02-05,SYS-02,必須通過
+TST-SYS02-02,自由港比例 = 0.25,載入,ERR-SYS02-06,SYS-02,必須通過
+TST-SYS02-03,某港 × 貨格無角色,載入,ERR-SYS02-01（無 NONE，9a-B）,SYS-02,必須通過
+TST-SYS02-04,中轉格下游指向自身或非終端港,載入,ERR-SYS02-02,SYS-02,必須通過
+TST-SYS02-05,建造完工觸發角色變更於商季第 30 日,第 31 至 90 日,角色不變；cutoff 後生效並發 role_changed,SYS-02,必須通過
+TST-SYS03-01,debug 模式、任一 tick,人為改動某容器數量而不經 transfer,conservation_violated 觸發,SYS-03,必須通過
+TST-SYS03-02,船艙餘 5 擔,transfer 卸 6 擔,ERR-SYS03-02，雙方數量不變,SYS-03,必須通過
+TST-SYS03-03,目的容器剩餘容量 3,transfer 4 擔,ERR-SYS03-03，全無,SYS-03,必須通過
+TST-SYS03-04,Q=1000、D=PRM-SYS00-DAYS_PER_SEASON,跑完一商季,Σ PRODUCE = 1000；單日差 ≤ 1（見 3.1）,SYS-03,必須通過
+TST-SYS03-05,任何呼叫,reason = SEA_LOSS,ERR-SYS03-04（OQ-08 7c）,SYS-03,必須通過
+TST-SYS03-06,產地無人買、持續 10 商季,每日 tick,MARKET 庫存持續增加、不被截斷、無溢位（9b）,SYS-03,必須通過
+TST-SYS04-01,CURVE_W1 = 0.5 或 W 非嚴格遞增或 M 遞增或 M ≤ 0,啟動 validate(),分別回 ERR-SYS04-01／02／03／04，遊戲不啟動，不自動修正,SYS-04,必須通過
+TST-SYS04-02,預設曲線、w = 2,mid_price,m = 1.2（1.4 與 1.0 之中點）；w = 3 至 6 時 m = 1.0,SYS-04,必須通過
+TST-SYS04-03,預設曲線,w = 0／w = 50,m = 2.0（天花板）／m = 0.6（地板持平）,SYS-04,必須通過
+TST-SYS04-04,anchor 1000、C 105、s 300、q 120、q1 50（示範 4.1）,整批買 vs 拆兩筆買,"拆單多付 ∈ {0, 1} 厘（示範 4.1 B466 = 0）",SYS-04,必須通過
+TST-SYS04-05,同上,買 q 後立即原港賣回 q,"損益 < 0（示範 4.1 B469 = −13,715 厘）",SYS-04,必須通過
+TST-SYS04-06,HALF_SPREAD 改為下限 0.01,同港來回,損益仍 < 0,SYS-04,必須通過
+TST-SYS04-07,daily_consumption = 0,報價買 10 擔,m = M_n；總額 = CEIL(anchor × M_n × 10 × (1 + h)),SYS-04,必須通過
+TST-SYS04-08,anchor = 1 厘,啟動 validate(),ERR-SYS04-05（地板賣價 < 1 厘）,SYS-04,必須通過
+TST-SYS04-09,預設切點；r = 1.5、1.05、0.95、0.75、1.2,indicator_band,過高、均衡、均衡、過低、偏高；切點次序錯誤 → ERR-SYS04-08,SYS-04,必須通過
+TST-SYS04-10,s = 100,買 q = 101 或 q = 0,ERR-SYS04-06，ST-GOOD 與現金不變,SYS-04,必須通過
+TST-SYS05-01,任意分錄 Σ ≠ 0,post,ERR-SYS05-02，餘額不變,SYS-05,必須通過
+TST-SYS05-02,餘額 100,自願支出 101,ERR-SYS05-01，餘額仍 100,SYS-05,必須通過
+TST-SYS05-03,"示範 5.1（c0 150,000）",買 120 擔後原港賣回,"Σ 全帳戶 = 0；淨回收 = 13,715（B618、B620 PASS）",SYS-05,必須通過
+TST-SYS05-04,"fee 9,000、30 日、D = 90",prorate,"3,000（B630）",SYS-05,必須通過
+TST-SYS05-05,"餘額 2,000、應付 3,000",charge_mandatory,"實付 2,000、欠款 1,000、餘額 0（B634 PASS）",SYS-05,必須通過
+TST-SYS05-06,"有欠款 1,000","入帳 1,500","先抵欠款 1,000，餘額 +500",SYS-05,必須通過
+TST-SYS05-07,欠款連續達 ARREARS_SEASONS_TO_BANKRUPT,close_season,bankruptcy_referred 一次；清償後計數歸 0,SYS-05,必須通過
+TST-SYS05-08,示範 5.1,max_affordable_qty,124；total(124) ≤ c0 < total(125)（B624 PASS）,SYS-05,必須通過
+TST-SYS05-09,hold_free < q_afford,拉桿開始,max = hold_free；賣出 max = 持貨量,SYS-05,必須通過
+TST-SYS05-10,拖動中市場價上漲使總額 > 餘額,drag_ended,ERR-SYS05-07，拉桿歸 0，ST-CASH 與 ST-GOOD 不變,SYS-05,必須通過
+TST-SYS05-11,"T 1,000、權重 1,1,1",split,"334,333,333（B637），總和 = T",SYS-05,必須通過
+TST-SYS05-12,請求者 SYS-07／金額 0 或 1.5,post,ERR-SYS05-06／ERR-SYS05-05,SYS-05,必須通過
+,,,,,
+6 禁止事項總表（出現即退件）,,,,,
+編號,禁止,說明,,依據,
+N-01,數字字面量（0、1 以外）,含測試以外的任何 .gd,,C-03,Locked
+N-02,process_priority／z_index／call_deferred／await 延遲／Timer 補時序,順序只能寫在 SimLoop,,C-04,Locked
+N-03,特例 if（針對特定 good_id／port_id／account_id）,規則必須對所有 ID 一致,,T-R4,Locked
+N-04,複製貼上邏輯,同一公式只能有一個實作函數,,T-R4,Locked
+N-05,靜默修正、clamp、補預設值,見 C-06,,C-06,Locked
+N-06,未排序遍歷影響結果,見 C-08,,C-08,Locked
+N-07,float 存金額或數量,見 C-09,,C-09,Locked
+N-08,跨模組讀私有成員或 get_node 路徑,見 C-07,,C-07,Locked
+N-09,在 res://data/ 放假資料,假資料只放 res://tests/fixtures/,,1-A9,Locked
+N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked
+,,,,,
+7 工作包與進度（Owner 追蹤用；Cursor 不得修改本表）,,,,,
+用法,Cursor 依 WP 編號順序開工，一個 PR 只做一個 WP；不得在依賴未「完成」前開工。,PR 描述必須回報：WP 編號、狀態、新增檔案清單、測試結果（通過數／總數）、遇到的規格缺口（未裁決不得自行補）。,Owner 審完 PR 後在 F 欄更新狀態（下拉選單）。,,
+進度,已完成 0 / 10｜進行中 0｜PR 待審 0｜退件 0,,,,
+WP 編號,內容（對應範圍）,依賴,交付物,驗收,狀態
+WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄,未開始
+WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,未開始
+WP-02,SYS-00 Clock（第 3.1 節）,WP-01,res://autoload/clock.gd、測試,第 3.1 節各列逐項有測試：暫停時呼叫 advance_one_day() 即 push_error 不推進；season_cutoff 於季末發出,未開始
+WP-03,SYS-01 GoodCatalog（第 3.2 節）,WP-01,good_catalog.gd、good_def.gd、測試,TST-SYS01-01..04 全部通過,未開始
+WP-04,SYS-02 PortRegistry（第 3.3 節）,WP-03,port_registry.gd、port_def.gd、role_cell.gd、測試,TST-SYS02-01..05 全部通過,未開始
+WP-05,SYS-03 GoodsLedger＋CapacityProvider 介面（第 3.4 節、2.1-03）,WP-04,goods_ledger.gd、transfer_event.gd、capacity_provider.gd、測試,TST-SYS03-01..06 全部通過；next_seq() 從 1 起每次 +1（D101）,未開始
+WP-06,SYS-04 MarketPricer（第 3.5 節）,WP-05,market_pricer.gd、price_curve.gd、測試,TST-SYS04-01..10 全部通過,未開始
+WP-07,SYS-05 CashLedger（第 3.6 節）,WP-05,cash_ledger.gd、account.gd、posting_entry.gd、posting.gd、charge_schedule.gd、season_ledger_report.gd、測試,TST-SYS05-01..12 全部通過；FRM-SYS05-07／11／12 各為單一函數（D153／D157／D158）,未開始
+WP-08,ConsumptionProvider 介面＋SimLoop 開機與每日排程（第 2.2、2.3 節）,WP-02、WP-06、WP-07,sim_loop.gd、consumption_provider.gd、測試,每日步驟順序與第 2.3 節逐字一致；介面基底方法一律 push_error（2.1-03）,未開始
+WP-09,csv_import 轉檔器框架（2.1-04）,WP-00,res://tools/csv_import.gd、fixtures CSV、測試,2.1-04 規則 ①–⑤ 各有測試：缺欄、多欄、型別不符皆中止,未開始
