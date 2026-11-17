@@ -6,7 +6,7 @@
 Workbook 名稱,遊戲開發建議書（Game Design & Implementation Proposal）,,,,
 擁有者,Rex Tsoi,,,,
 最後更新日期,2026-11-17,,,,
-版本,v6.40,,,,
+版本,v6.41,,,,
 ,,,,,
 1. AI 的責任（Responsibilities）,,,,,
 編號,責任項目,說明,,,
@@ -215,3 +215,4 @@ v6.37,2026/11/17,04B_CityRules 新增 4.16 產能解耦規格與對價試算（A
 v6.38,11/17/2026,新增 05_TechSpec v0.1（Phase 0 落實書，279 列，規格與常數全部以公式引用 03_Systems／AI_README）；CT-OQ-39 寫入 AI 建議,05_TechSpec、04B_CityRules、AI_README,,
 v6.39,46343,Owner 確認 05_TechSpec Q-01 至 Q-11 全部照 AI 建議；落實書升 v0.2，聯動更新第 1–3 節註記；03_Systems FRM-SYS05-07／11／12 與 r596 由 [假設] 改為已確認,05_TechSpec、03_Systems、AI_README,,
 v6.40,11/17/2026,05_TechSpec 升 v0.3：Q-01..Q-11 的裁決內容逐條融入第 1–3 節本文（不再以 Q 標籤引用）；第 7 節改為工作包與進度表 WP-00..WP-09（狀態下拉＋完成數公式）；03_Systems F596 改引用本文儲存格,05_TechSpec、03_Systems、AI_README,,
+2026-11-17,v6.41,05_TechSpec 升 v0.4，回應 Cursor 規格檢查：A1 CI 做法（GitHub Actions＋Godot 4.7.2 headless＋GUT）寫入 D48；A2 WP-00 不登錄 Autoload、不寫 stub（D23、E271）；B1 03_Systems D515／D516 引用勘誤（B467、B470）；B2 weekly_consumption 統一為 int（D177）；B3 draft_limit_class 與 HOLD 容量歸屬改為 SYS-13 船隊（D27／D28／D83）；B8 CSV 對帳規則（D7）；B-06 舊狀態清理。B4–B7 屬 Phase 0 不適用或已有規定，不改。,05_TechSpec、03_Systems、AI_README,,
