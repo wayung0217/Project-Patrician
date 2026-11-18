@@ -42,6 +42,11 @@ class TestPop extends PopulationProvider:
 		return int(_pop[key])
 
 
+class TestWorkforce extends WorkforceProvider:
+	func workers(_ws_id: StringName) -> int:
+		return 0
+
+
 class TestCons extends ConsumptionProvider:
 	func weekly_consumption(_port_id: StringName, _good_id: StringName) -> int:
 		return 100
@@ -61,9 +66,11 @@ func before_each() -> void:
 	BuildingEconomy._buildings_by_port = {}
 	BuildingEconomy._building_defs = {}
 	BuildingEconomy._population = null
+	BuildingEconomy._workforce = null
 	BuildingEconomy._pending_started = []
 	BuildingEconomy._pending_waiting = []
 	BuildingEconomy._pending_completed = []
+	BuildingEconomy._pending_shortfalls = []
 	SimLoop._booted = false
 	SimLoop._capacity_by_kind.clear()
 	SimLoop._capacity_reg_errors.clear()
@@ -595,6 +602,7 @@ func _setup_core(pop: TestPop) -> void:
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.genesis_grant(), OK)
 	BuildingEconomy.set_population_provider(pop)
+	BuildingEconomy.set_workforce_provider(TestWorkforce.new())
 	GoodsLedger.register_capacity_provider(
 		StringName(GoodsLedger.KIND_WAREHOUSE), BuildingEconomy.get_warehouse_capacity_provider()
 	)

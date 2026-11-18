@@ -1,11 +1,12 @@
 extends Node
-## Autoload: BuildingEconomy — SYS-08 data + build (TechSpec §11 WP-18, §12 WP-19).
+## Autoload: BuildingEconomy — SYS-08 data + build + produce/wage (TechSpec §11–12 WP-18..20).
 ## _ready() field init only; load_and_validate() builds ST-SLOT (11-03).
 
 signal land_bought(actor: StringName, slot_id: StringName, seq: int)
 signal construction_started(bld_id: StringName)
 signal construction_waiting(bld_id: StringName, missing: Dictionary)
 signal construction_completed(bld_id: StringName)
+signal production_shortfall(bld_id: StringName, reason: StringName)
 
 const SYS_ID := &"SYS-08"
 const SCRIPT_PATH := "res://autoload/building_economy.gd"
@@ -31,11 +32,14 @@ const ERR_SYS08_13 := &"ERR-SYS08-13"
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
 const CODE_PORT_REGISTRY_NOT_LOADED := &"PORT_REGISTRY_NOT_LOADED"
 const CODE_POPULATION_PROVIDER_MISSING := &"POPULATION_PROVIDER_MISSING"
+const CODE_WORKFORCE_PROVIDER_MISSING := &"WORKFORCE_PROVIDER_MISSING"
 
 const REASON_LAND_PURCHASE := &"LAND_PURCHASE"
 const REASON_CONSTRUCTION := &"CONSTRUCTION"
 const REASON_TRADE := &"TRADE"
 const REQUESTER_SYS08 := &"SYS-08"
+const SHORTFALL_INPUT := &"INPUT"
+const SHORTFALL_CAPACITY := &"CAPACITY"
 
 const PRM_BASE_LAND_LI := "PRM-SYS08-BASE_LAND_LI"
 const PRM_POP_UNIT := "PRM-SYS08-POP_UNIT"
@@ -49,6 +53,12 @@ const PRM_BUILD_MAT := "PRM-SYS08-BUILD_MAT"
 const PRM_BUILD_DAYS := "PRM-SYS08-BUILD_DAYS"
 const PRM_UPGRADE_PER_CAPITA := "PRM-SYS08-UPGRADE_PER_CAPITA"
 const PRM_KONTOR_UPGRADE := "PRM-SYS08-KONTOR_UPGRADE"
+const PRM_ACC_SCALE := "PRM-SYS08-ACC_SCALE"
+const PRM_OUTPUT_K := "PRM-SYS08-OUTPUT_PER_WORKER_K"
+const PRM_RECIPE_N := "PRM-SYS08-RECIPE_KEEP_N"
+const PRM_WAGE_SHARE_W := "PRM-SYS08-WAGE_SHARE_W"
+const PRM_WAGE_BASE_LI := "PRM-SYS08-WAGE_BASE_LI"
+const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
 
 const CLASS_RESIDENCE := &"RESIDENCE"
 const CLASS_WAREHOUSE := &"WAREHOUSE"
@@ -71,6 +81,7 @@ var _buildings_by_port: Dictionary = {} ## port_id:String → Array[Building]
 var _building_defs: Dictionary = {} ## type:String → BuildingDef
 var _bld_seq_by_port: Dictionary = {} ## port_id:String → int
 var _population: PopulationProvider = null
+var _workforce: WorkforceProvider = null
 var _warehouse_provider: _WarehouseCapacityAdapter = null
 var _loaded: bool = false
 var _last_error: Dictionary = {}
@@ -78,6 +89,7 @@ var _last_errors: Array = []
 var _pending_started: Array = []
 var _pending_waiting: Array = [] ## {id, missing}
 var _pending_completed: Array = []
+var _pending_shortfalls: Array = [] ## {id, reason}
 
 
 func _ready() -> void:
@@ -93,6 +105,17 @@ func set_population_provider(provider: PopulationProvider) -> void:
 
 func has_population_provider() -> bool:
 	return _population != null
+
+
+func set_workforce_provider(provider: WorkforceProvider) -> void:
+	if _loaded:
+		push_error("BuildingEconomy.set_workforce_provider called after load (D-12c); ignored")
+		return
+	_workforce = provider
+
+
+func has_workforce_provider() -> bool:
+	return _workforce != null
 
 
 func get_warehouse_capacity_provider() -> CapacityProvider:
@@ -162,6 +185,18 @@ func load_and_validate(
 		_emit_errors(errors)
 		return errors
 
+	if _workforce == null:
+		errors.append(
+			_err(
+				CODE_WORKFORCE_PROVIDER_MISSING,
+				"WorkforceProvider",
+				null,
+				"WorkforceProvider must be injected before load (D-12c)"
+			)
+		)
+		_emit_errors(errors)
+		return errors
+
 	# D-12b / D-15b: missing KONTOR_UPGRADE → ERR-SYS08-09 refuse boot (not order-time).
 	if not Params.has_prm(PRM_KONTOR_UPGRADE):
 		errors.append(
@@ -170,6 +205,19 @@ func load_and_validate(
 				PRM_KONTOR_UPGRADE,
 				null,
 				"PRM-SYS08-KONTOR_UPGRADE missing (D-12b／D-15b)"
+			)
+		)
+		_emit_errors(errors)
+		return errors
+
+	# D-12g / D-15b: ACC_SCALE registered in WP-20; missing → refuse boot.
+	if not Params.has_prm(PRM_ACC_SCALE):
+		errors.append(
+			_err(
+				ERR_SYS08_09,
+				PRM_ACC_SCALE,
+				null,
+				"PRM-SYS08-ACC_SCALE missing (D-12g)"
 			)
 		)
 		_emit_errors(errors)
@@ -495,9 +543,36 @@ func demolish(actor: StringName, bld_key: StringName) -> int:
 
 
 func daily_step(day: int) -> Array:
-	## D-12h / 8.6 F ①: WAITING refill + BUILDING countdown. Errors collected; signals queued.
+	## D-12h / 8.6 F: ① construction → ② workshop produce → ④ wage accrue.
+	## day kept for callers; production uses Clock-independent FRM-08..12 math.
 	assert(_loaded, "BuildingEconomy.daily_step before load")
+	var _day_unused: int = day
 	var errors: Array = []
+	_step_construction(errors)
+	_step_produce(errors)
+	_step_wage_accrual()
+	return errors
+
+
+func flush_signals() -> void:
+	## D-12h: emit queued daily construction / shortfall signals (SimLoop step 6).
+	for id_variant in _pending_started:
+		construction_started.emit(id_variant as StringName)
+	for item_variant in _pending_waiting:
+		var item: Dictionary = item_variant
+		construction_waiting.emit(item["id"] as StringName, item["missing"] as Dictionary)
+	for id_variant in _pending_completed:
+		construction_completed.emit(id_variant as StringName)
+	for item_variant2 in _pending_shortfalls:
+		var sf: Dictionary = item_variant2
+		production_shortfall.emit(sf["id"] as StringName, sf["reason"] as StringName)
+	_pending_started = []
+	_pending_waiting = []
+	_pending_completed = []
+	_pending_shortfalls = []
+
+
+func _step_construction(_errors: Array) -> void:
 	var ids: Array = _buildings.keys()
 	ids.sort()
 	for id_variant in ids:
@@ -532,21 +607,200 @@ func daily_step(day: int) -> Array:
 				bld.state = Building.State.ACTIVE
 				bld.missing_materials = {}
 				_pending_completed.append(bld.building_id)
-	return errors
 
 
-func flush_signals() -> void:
-	## D-12h: emit queued daily construction signals (SimLoop step 6).
-	for id_variant in _pending_started:
-		construction_started.emit(id_variant as StringName)
-	for item_variant in _pending_waiting:
-		var item: Dictionary = item_variant
-		construction_waiting.emit(item["id"] as StringName, item["missing"] as Dictionary)
-	for id_variant in _pending_completed:
-		construction_completed.emit(id_variant as StringName)
-	_pending_started = []
-	_pending_waiting = []
-	_pending_completed = []
+func _step_produce(errors: Array) -> void:
+	## 12-10 / FRM-08..11: ports ↑, then tier → output_good_id → bld_id ↑ (Q-08e).
+	var jobs: Array = []
+	for id_variant in _buildings.keys():
+		var bld: Building = _buildings[String(id_variant)] as Building
+		if not _is_workshop(bld):
+			continue
+		if bld.state != Building.State.ACTIVE:
+			continue
+		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
+		if def == null:
+			continue
+		jobs.append({"bld": bld, "def": def})
+	jobs.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var ba: Building = a["bld"]
+		var bb: Building = b["bld"]
+		var da: BuildingDef = a["def"]
+		var db: BuildingDef = b["def"]
+		if ba.port_id != bb.port_id:
+			return ba.port_id < bb.port_id
+		if da.tier != db.tier:
+			return da.tier < db.tier
+		if da.output_good_id != db.output_good_id:
+			return da.output_good_id < db.output_good_id
+		return String(ba.building_id) < String(bb.building_id)
+	)
+	for job_variant in jobs:
+		var job: Dictionary = job_variant
+		_produce_workshop(job["bld"] as Building, job["def"] as BuildingDef, errors)
+
+
+func _step_wage_accrual() -> void:
+	## 12-11 / FRM-12 daily: player ACTIVE workshops only; PAUSED skips; city skips.
+	var ids: Array = _buildings.keys()
+	ids.sort()
+	var k_out: float = Params.get_float(PRM_OUTPUT_K)
+	var wage_w: float = Params.get_float(PRM_WAGE_SHARE_W)
+	var wage_base: int = Params.get_int(PRM_WAGE_BASE_LI)
+	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
+	var k_pow: float = pow(k_out, wage_w)
+	for id_variant in ids:
+		var bld: Building = _buildings[String(id_variant)] as Building
+		if not _is_workshop(bld):
+			continue
+		if bld.state != Building.State.ACTIVE:
+			continue
+		if _is_city_owner(bld.owner):
+			continue
+		var workers: int = _workers_of(bld.building_id)
+		if workers <= 0:
+			continue
+		var mid: float = float(workers) * float(wage_base) * k_pow * float(acc_scale)
+		bld.acc_wage_li = bld.acc_wage_li + floori(AmountQuantize.quantize_amount(mid))
+
+
+func _produce_workshop(bld: Building, def: BuildingDef, errors: Array) -> void:
+	var workers: int = _workers_of(bld.building_id)
+	var k_out: float = Params.get_float(PRM_OUTPUT_K)
+	var recipe_n: float = Params.get_float(PRM_RECIPE_N)
+	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
+	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
+	var denom: int = days_pw * acc_scale
+
+	# FRM-08 potential
+	var w_week: float = float(workers) * float(def.base_output_per_worker) * k_out
+	bld.acc_out = bld.acc_out + floori(AmountQuantize.quantize_amount(w_week * float(acc_scale)))
+	var out_pot: int = 0
+	if denom > 0:
+		out_pot = int(bld.acc_out / denom)
+	bld.acc_out = bld.acc_out - out_pot * denom
+
+	var is_city: bool = _is_city_owner(bld.owner)
+	var src: Dictionary
+	var dst: Dictionary
+	if is_city:
+		src = GoodsLedger.make_market(bld.port_id)
+		dst = src
+	else:
+		src = GoodsLedger.make_warehouse(String(bld.owner), bld.port_id)
+		dst = src
+
+	# FRM-09 feasibility
+	var out_feas: int = out_pot
+	var inputs: Array = _recipe_inputs(def)
+	if not inputs.is_empty():
+		out_feas = 0x7fffffff
+		for inp_variant in inputs:
+			var inp: Dictionary = inp_variant
+			var avail: int = GoodsLedger.get_qty(src, StringName(String(inp["good"])))
+			var per: float = float(inp["qty"]) * recipe_n
+			if per <= 0.0:
+				continue
+			var feas_i: int = floori(AmountQuantize.quantize_amount(float(avail) / per))
+			if feas_i < out_feas:
+				out_feas = feas_i
+		if out_feas == 0x7fffffff:
+			out_feas = out_pot
+
+	# FRM-10 capacity
+	var out_cap: int = out_pot
+	if not is_city:
+		var cap: int = warehouse_capacity(bld.owner, StringName(bld.port_id))
+		var used: int = _warehouse_used(bld.owner, bld.port_id)
+		out_cap = cap - used
+		if out_cap < 0:
+			out_cap = 0
+
+	var out: int = out_pot
+	if out_feas < out:
+		out = out_feas
+	if out_cap < out:
+		out = out_cap
+	if out < 0:
+		out = 0
+
+	if out < out_pot:
+		var reason: StringName = SHORTFALL_INPUT
+		if out_cap < out_feas:
+			reason = SHORTFALL_CAPACITY
+		_pending_shortfalls.append({"id": bld.building_id, "reason": reason})
+
+	if out <= 0:
+		return
+
+	# FRM-11 consume then produce
+	for inp_variant2 in inputs:
+		var inp2: Dictionary = inp_variant2
+		var take: int = ceili(
+			AmountQuantize.quantize_amount(float(out) * float(inp2["qty"]) * recipe_n)
+		)
+		if take <= 0:
+			continue
+		var seq_c: int = GoodsLedger.transfer(
+			src,
+			GoodsLedger.make_external(),
+			StringName(String(inp2["good"])),
+			take,
+			GoodsLedger.REASON_CONSUME,
+			REQUESTER_SYS08
+		)
+		if seq_c <= 0:
+			errors.append(GoodsLedger.last_error())
+
+	var out_good: String = def.output_good_id
+	if out_good.is_empty():
+		return
+	var seq_p: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(),
+		dst,
+		StringName(out_good),
+		out,
+		GoodsLedger.REASON_PRODUCE,
+		REQUESTER_SYS08
+	)
+	if seq_p <= 0:
+		errors.append(GoodsLedger.last_error())
+
+
+func _is_workshop(bld: Building) -> bool:
+	return (
+		bld.build_class == CLASS_IND1
+		or bld.build_class == CLASS_IND2
+		or bld.build_class == CLASS_IND3
+	)
+
+
+func _is_city_owner(owner: StringName) -> bool:
+	return String(owner).begins_with("CITY-")
+
+
+func _workers_of(ws_id: StringName) -> int:
+	var n: int = _workforce.workers(ws_id)
+	if n < WorkforceProvider.WORKERS_FAILURE + 1:
+		return 0
+	return n
+
+
+func _recipe_inputs(def: BuildingDef) -> Array:
+	var out: Array = []
+	if not def.input1_good_id.is_empty() and def.input1_qty > 0:
+		out.append({"good": def.input1_good_id, "qty": def.input1_qty})
+	if not def.input2_good_id.is_empty() and def.input2_qty > 0:
+		out.append({"good": def.input2_good_id, "qty": def.input2_qty})
+	return out
+
+
+func _warehouse_used(owner: StringName, port_id: String) -> int:
+	var wh: Dictionary = GoodsLedger.make_warehouse(String(owner), port_id)
+	var sum := 0
+	for good_variant in GoodCatalog.all_ids():
+		sum = sum + GoodsLedger.get_qty(wh, StringName(String(good_variant)))
+	return sum
 
 
 func warehouse_capacity(actor: StringName, port: StringName) -> int:
@@ -1121,6 +1375,7 @@ func _clear_state() -> void:
 	_pending_started = []
 	_pending_waiting = []
 	_pending_completed = []
+	_pending_shortfalls = []
 	_loaded = false
 	_clear_last_error()
 
