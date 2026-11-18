@@ -5,7 +5,7 @@ extends Node
 ## WAREHOUSE / HOLD capacity are SYS-08 / SYS-13 — out of scope.
 ## Errors are D-04 ErrorInfo Dictionaries (shared with C-06); no ERR→int.
 ## D-02: queue_role_change(..., payload) rejects bad payload at enqueue.
-## D-08b: port_id ^PT-[0-9]{2}$／name_zh strip非空；D-08c: get_port 未知 id → null＋last_error().
+## D-08b: port_id ^PT-[0-9]{2}$／name_zh strip非空；D-08c: id 查詢未知 → fail＋last_error ERR-SYS02-09.
 
 signal role_changed(port: String, good: String, old_role: int, new_role: int)
 
@@ -17,14 +17,15 @@ const SYS_ID := &"SYS-02"
 ## D-08b: named format constant (fixed width so string sort stays correct).
 const PORT_ID_PATTERN := "^PT-[0-9]{2}$"
 
-## Role enum ints — declaration order PRODUCER／TRANSIT／TERMINAL (03_Systems r261); no NONE.
-## Numeric mapping not spelled in TechSpec H (unlike MarketPricer BUY=0); Godot enum order 0..n-1.
+## D-04／R3-02: int APIs use 0 only for failure → ROLE_INVALID=0; valid roles from 1.
+## Declaration order still PRODUCER／TRANSIT／TERMINAL (03_Systems r261); no NONE as a valid role.
 enum Role {
-	PRODUCER,
-	TRANSIT,
-	TERMINAL,
+	PRODUCER = 1,
+	TRANSIT = 2,
+	TERMINAL = 3,
 }
 
+const ROLE_INVALID := 0
 const ROLE_PRODUCER := Role.PRODUCER
 const ROLE_TRANSIT := Role.TRANSIT
 const ROLE_TERMINAL := Role.TERMINAL
@@ -55,6 +56,7 @@ const CODE_DUPLICATE_PORT_ID := &"DUPLICATE_PORT_ID"
 
 const FIELD_PORT_ID := "port_id"
 const FIELD_NAME_ZH := "name_zh"
+const FIELD_GOOD_ID := "good_id"
 const FIELD_ROLE := "role"
 const FIELD_DOWNSTREAM := "downstream_terminals"
 const FIELD_OUTPUT := "base_output_per_season"
@@ -155,7 +157,7 @@ func validate() -> Array:
 
 
 func get_port(id: String) -> PortDef:
-	# D-08c: unknown id → null + last_error ERR-SYS02-09; do not abort / do not return blank PortDef.
+	# D-08c: unknown id → null + last_error ERR-SYS02-09; success clears last_error.
 	assert(_loaded, "PortRegistry.get_port before successful load")
 	_clear_last_error()
 	if not _by_id.has(id):
@@ -165,29 +167,47 @@ func get_port(id: String) -> PortDef:
 
 
 func last_error() -> Dictionary:
-	# D-04／D-08c: single-call failures (get_port unknown id) expose ErrorInfo here.
+	# D-04／D-08c: single-call failures expose ErrorInfo here.
 	return _last_error.duplicate(true)
 
 
 func get_role(port: String, good: String) -> int:
+	# D-08c／R3-02: unknown port/good → ROLE_INVALID (0) + last_error ERR-SYS02-09; no assert on caller args.
 	assert(_loaded, "PortRegistry.get_role before successful load")
-	var cell: RoleCell = _require_cell(port, good)
+	_clear_last_error()
+	var cell: RoleCell = _lookup_cell(port, good)
+	if cell == null:
+		return ROLE_INVALID
 	return cell.role
 
 
 func get_downstream(port: String, good: String) -> PackedStringArray:
+	# D-08c／R3-02: unknown port/good → empty + last_error ERR-SYS02-09; success clears last_error.
 	assert(_loaded, "PortRegistry.get_downstream before successful load")
-	var cell: RoleCell = _require_cell(port, good)
+	_clear_last_error()
+	var cell: RoleCell = _lookup_cell(port, good)
+	if cell == null:
+		return PackedStringArray()
 	return cell.downstream_terminals.duplicate()
 
 
 func producers_of(good: String) -> PackedStringArray:
+	# D-08c／R3-02: unknown good → empty + last_error; known good always clears last_error (empty ≠ failure).
 	assert(_loaded, "PortRegistry.producers_of before successful load")
+	_clear_last_error()
+	if not _is_known_good(good):
+		_record_error(ERR_SYS02_09, FIELD_GOOD_ID, good, "unknown good_id")
+		return PackedStringArray()
 	return _ports_with_role(good, ROLE_PRODUCER)
 
 
 func terminals_of(good: String) -> PackedStringArray:
+	# D-08c／R3-02: unknown good → empty + last_error; known good always clears last_error (empty ≠ failure).
 	assert(_loaded, "PortRegistry.terminals_of before successful load")
+	_clear_last_error()
+	if not _is_known_good(good):
+		_record_error(ERR_SYS02_09, FIELD_GOOD_ID, good, "unknown good_id")
+		return PackedStringArray()
 	return _ports_with_role(good, ROLE_TERMINAL)
 
 
@@ -207,10 +227,20 @@ func get_warnings() -> Array:
 func queue_role_change(port_id: String, good_id: String, new_role: int, payload: Dictionary) -> Array:
 	## EV-SYS02-ROLE_CHANGE / D-02 — enqueue with role payload; applied only via apply_queued_role_changes (2.3-05(a)).
 	## Bad payload → reject immediately with ERR-SYS02-* ErrorInfo; do not enqueue (must not wait for cutoff).
+	## D-08c／R3-02: unknown port/good → reject enqueue ERR-SYS02-09 (no assert on caller-supplied ids).
 	assert(_loaded, "PortRegistry.queue_role_change before successful load")
-	assert(_by_id.has(port_id), "PortRegistry.queue_role_change unknown port: %s" % port_id)
+	_clear_last_error()
+	if not _by_id.has(port_id):
+		var unknown_port: Dictionary = _err(ERR_SYS02_09, PORTS_DIR, FIELD_PORT_ID, port_id, "unknown port_id")
+		_last_error = unknown_port
+		_emit_errors([unknown_port])
+		return [unknown_port]
 	var def: PortDef = _by_id[port_id]
-	assert(def.role_cells.has(good_id), "PortRegistry.queue_role_change unknown good cell: %s @ %s" % [good_id, port_id])
+	if not def.role_cells.has(good_id):
+		var unknown_good: Dictionary = _err(ERR_SYS02_09, PORTS_DIR, FIELD_GOOD_ID, good_id, "unknown good_id")
+		_last_error = unknown_good
+		_emit_errors([unknown_good])
+		return [unknown_good]
 
 	var errors: Array = _validate_role_change_payload(new_role, payload)
 	if not errors.is_empty():
@@ -640,11 +670,36 @@ func _ports_with_role(good: String, role: int) -> PackedStringArray:
 	return PackedStringArray(ports)
 
 
+func _lookup_cell(port: String, good: String) -> RoleCell:
+	# D-08c: public-path lookup; records ERR-SYS02-09 and returns null on unknown ids (no assert).
+	if not _by_id.has(port):
+		_record_error(ERR_SYS02_09, FIELD_PORT_ID, port, "unknown port_id")
+		return null
+	var def: PortDef = _by_id[port]
+	if not def.role_cells.has(good):
+		_record_error(ERR_SYS02_09, FIELD_GOOD_ID, good, "unknown good_id")
+		return null
+	return def.role_cells[good] as RoleCell
+
+
 func _require_cell(port: String, good: String) -> RoleCell:
+	# Internal invariant after enqueue／apply — caller-supplied public paths use _lookup_cell.
 	assert(_by_id.has(port), "PortRegistry unknown port: %s" % port)
 	var def: PortDef = _by_id[port]
 	assert(def.role_cells.has(good), "PortRegistry unknown good cell: %s @ %s" % [good, port])
 	return def.role_cells[good] as RoleCell
+
+
+func _is_known_good(good: String) -> bool:
+	# Unknown good_id for producers_of／terminals_of: not in loaded GoodCatalog.
+	if GoodCatalog.is_loaded() and GoodCatalog.all_ids().has(good):
+		return true
+	# Fallback: any loaded port has a RoleCell for this good.
+	for id_variant in all_ids():
+		var def: PortDef = _by_id[String(id_variant)]
+		if def.role_cells.has(good):
+			return true
+	return false
 
 
 func _is_valid_role(role: int) -> bool:
