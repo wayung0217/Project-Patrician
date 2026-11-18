@@ -2,10 +2,10 @@ extends GutTest
 ## WP-25 Rng derive hash (TechSpec 11-08 / FRM-SYS23-10 / TST-SYS23-08).
 
 
-## Unsigned vectors as hex so GDScript stores the matching signed bit-pattern.
-const FNV_EMPTY := 0xcbf29ce484222325
-const FNV_A := 0xaf63dc4c8601ec8c
-const SPLITMIX0_FIRST := 0xe220a8397b1dcdaf
+## Unsigned vectors as signed bit-patterns (Godot clamps hex literals > INT64_MAX).
+const FNV_EMPTY := -3750763034362895579
+const FNV_A := -5808556873153909620
+const SPLITMIX0_FIRST := -2152535657050944081
 
 
 func test_TST_SYS23_08_fnv_empty() -> void:
