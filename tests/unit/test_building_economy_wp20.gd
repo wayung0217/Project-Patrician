@@ -115,9 +115,9 @@ func test_TST_SYS08_06_seven_day_floor_week_output() -> void:
 
 func test_TST_SYS08_07_input_shortfall_and_signal() -> void:
 	## TST-SYS08-07／12-12: input caps out; CONSUME CEIL(out×qty×N); shortfall signal.
-	## Gap: content recipe 1.5 not int (10-06); fixture uses qty=1.
+	## D-18a: content recipe 1.5 restored as float input1_qty.
 	var wf := TestWorkforce.new()
-	var brew: StringName = _boot_active_workshop(wf, TYPE_IND2, "GD-002", 2, 10.0, "GD-001", 1)
+	var brew: StringName = _boot_active_workshop(wf, TYPE_IND2, "GD-002", 2, 10.0, "GD-001", 1.5)
 	wf.set_workers(brew, 10)
 	var wh: Dictionary = GoodsLedger.make_warehouse(String(ACTOR), PORT_PT01)
 	# Seed rice for ~2/3 of potential: pot ≈ floor(10*10*1.83/7) per day via acc.
@@ -137,7 +137,7 @@ func test_TST_SYS08_07_input_shortfall_and_signal() -> void:
 	var rice_left: int = GoodsLedger.get_qty(wh, &"GD-001")
 	assert_gt(out, 0)
 	var used: int = rice_before - rice_left
-	assert_eq(used, ceili(AmountQuantize.quantize_amount(float(out) * 1.0 * n)))
+	assert_eq(used, ceili(AmountQuantize.quantize_amount(float(out) * 1.5 * n)))
 	assert_eq(saw.size(), 1)
 	assert_eq(saw[0]["id"], brew)
 	assert_eq(saw[0]["reason"], BuildingEconomy.SHORTFALL_INPUT)
@@ -255,7 +255,7 @@ func test_WP20_12_12_4_missing_workforce_boot_error() -> void:
 func test_WP20_12_11_wage_accrues_when_starved() -> void:
 	## 12-11: ACTIVE + input shortfall still accrues wage; city workshops skip.
 	var wf := TestWorkforce.new()
-	var brew: StringName = _boot_active_workshop(wf, TYPE_IND2, "GD-002", 2, 10.0, "GD-001", 1)
+	var brew: StringName = _boot_active_workshop(wf, TYPE_IND2, "GD-002", 2, 10.0, "GD-001", 1.5)
 	wf.set_workers(brew, 4)
 	# No rice seeded → out 0 but wage accrues.
 	assert_eq(BuildingEconomy.daily_step(1).size(), 0)
@@ -281,7 +281,7 @@ func _boot_active_workshop(
 	tier: int,
 	base_out: float,
 	in_g: String,
-	in_qty: int
+	in_qty: float
 ) -> StringName:
 	_setup_world(wf)
 	_write_defs_custom(type_id, out_g, tier, base_out, in_g, in_qty)
@@ -375,12 +375,12 @@ func _write_defs_chain() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
 	_save_def(dir, TYPE_KONTOR, "KONTOR", "", 0, 1.0, "", 0)
 	_save_def(dir, TYPE_IND1, "IND1", "GD-001", 1, 5.0, "", 0)
-	_save_def(dir, TYPE_IND2, "IND2", "GD-002", 2, 5.0, "GD-001", 1)
+	_save_def(dir, TYPE_IND2, "IND2", "GD-002", 2, 5.0, "GD-001", 1.0)
 	_save_def(dir, TYPE_WH, "WAREHOUSE", "", 0, 1.0, "", 0)
 
 
 func _write_defs_custom(
-	type_id: String, out_g: String, tier: int, base_out: float, in_g: String, in_qty: int
+	type_id: String, out_g: String, tier: int, base_out: float, in_g: String, in_qty: float
 ) -> void:
 	var dir := ROOT + "buildings/"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
@@ -398,7 +398,7 @@ func _save_def(
 	tier: int,
 	base_out: float,
 	in_g: String,
-	in_qty: int
+	in_qty: float
 ) -> void:
 	var d := BuildingDef.new()
 	d.type = type_id

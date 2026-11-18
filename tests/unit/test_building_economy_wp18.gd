@@ -288,6 +288,7 @@ func test_WP18_11_07_7_err08_err02_err07() -> void:
 
 
 func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
+	## D-17d: SimLoop injects PopulationModel providers; missing sat input fails boot instead.
 	var fixtures := _prepare_sim_fixtures()
 	SimLoop._booted = false
 	SimLoop._capacity_by_kind.clear()
@@ -295,6 +296,9 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	SimLoop.set_consumption_provider(_SimCons.new())
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
+	BuildingEconomy._workforce = null
+	PopulationModel._loaded = false
+	PopulationModel._sat_input = null
 	SeaLanes._loaded = false
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
@@ -306,7 +310,10 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 		fixtures["sea_lanes"]
 	)
 	assert_gt(errors.size(), 0)
-	assert_true(_has_code(errors, BuildingEconomy.CODE_POPULATION_PROVIDER_MISSING))
+	assert_true(
+		_has_code(errors, PopulationModel.CODE_SAT_PROVIDER_MISSING)
+		or _has_code(errors, BuildingEconomy.CODE_POPULATION_PROVIDER_MISSING)
+	)
 	assert_false(SimLoop.is_booted())
 	assert_push_error_count(errors.size())
 

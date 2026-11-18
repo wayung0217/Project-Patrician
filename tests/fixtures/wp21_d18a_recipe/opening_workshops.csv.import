@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://ch67p2hrko0i7"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_d18a_recipe/opening_workshops.good.translation", "res://tests/fixtures/wp21_d18a_recipe/opening_workshops.count.translation"]
+
+source_file="res://tests/fixtures/wp21_d18a_recipe/opening_workshops.csv"
+dest_files=["res://tests/fixtures/wp21_d18a_recipe/opening_workshops.good.translation", "res://tests/fixtures/wp21_d18a_recipe/opening_workshops.count.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c7rhxn1mgqsrk"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_d18a_recipe/buildings.tier.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.max.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.base.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.output.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.input1.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.input1.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.input2.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.build.translation"]
+
+source_file="res://tests/fixtures/wp21_d18a_recipe/buildings.csv"
+dest_files=["res://tests/fixtures/wp21_d18a_recipe/buildings.tier.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.max.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.base.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.output.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.input1.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.input1.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.input2.translation", "res://tests/fixtures/wp21_d18a_recipe/buildings.build.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

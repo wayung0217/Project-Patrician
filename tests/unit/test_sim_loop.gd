@@ -45,6 +45,11 @@ class _TestWorkforceProvider extends WorkforceProvider:
 		return 0
 
 
+class _TestSatProvider extends SatisfactionInputProvider:
+	func satisfaction_input(_port_id: StringName, _clazz: StringName) -> float:
+		return 0.5
+
+
 class TestConsumptionProvider extends ConsumptionProvider:
 	## Fixture double — weekly + consume tables only (1-A9／res://tests/).
 	var _weekly: Dictionary = {} ## "port|good" -> int
@@ -86,6 +91,8 @@ func before_each() -> void:
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null
+	PopulationModel._loaded = false
+	PopulationModel._sat_input = null
 	SeaLanes._loaded = false
 
 
@@ -111,6 +118,7 @@ func test_autoload_order_2_2_01() -> void:
 		"MarketPricer",
 		"CashLedger",
 		"BuildingEconomy",
+		"PopulationModel",
 		"SimLoop",
 	]
 	for name_variant in expected:
@@ -384,6 +392,7 @@ func test_D08e_register_capacity_provider_before_boot_applies() -> void:
 	SimLoop.set_consumption_provider(cons)
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
+	PopulationModel.set_satisfaction_input_provider(_TestSatProvider.new())
 	var cap := _TestCapProvider.new()
 	cap.set_cap(GoodsLedger.KIND_WAREHOUSE, 10)
 	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, cap)
@@ -432,6 +441,7 @@ func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 	SimLoop.set_consumption_provider(cons)
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
+	PopulationModel.set_satisfaction_input_provider(_TestSatProvider.new())
 	var a := _TestCapProvider.new()
 	a.set_cap(GoodsLedger.KIND_WAREHOUSE, 5)
 	var b := _TestCapProvider.new()
@@ -492,6 +502,8 @@ func _reset_simloop_for_reboot() -> void:
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null
+	PopulationModel._loaded = false
+	PopulationModel._sat_input = null
 
 
 func _boot_ready_provider() -> TestConsumptionProvider:
@@ -500,6 +512,7 @@ func _boot_ready_provider() -> TestConsumptionProvider:
 	SimLoop.set_consumption_provider(cons)
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
+	PopulationModel.set_satisfaction_input_provider(_TestSatProvider.new())
 	var errors: Array = _boot_with_fixtures(fixtures)
 	assert_eq(errors.size(), 0, "boot must succeed: %s" % str(errors))
 	assert_true(SimLoop.is_booted())

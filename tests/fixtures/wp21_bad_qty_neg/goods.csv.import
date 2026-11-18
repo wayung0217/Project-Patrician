@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bkgd0dv210agy"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_bad_qty_neg/goods.name.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.tier.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.base.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.season.translation"]
+
+source_file="res://tests/fixtures/wp21_bad_qty_neg/goods.csv"
+dest_files=["res://tests/fixtures/wp21_bad_qty_neg/goods.name.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.tier.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.base.translation", "res://tests/fixtures/wp21_bad_qty_neg/goods.season.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -9,8 +9,10 @@ extends Resource
 @export var base_output_per_worker: float = 0.0
 @export var output_good_id: String = ""
 @export var input1_good_id: String = ""
-@export var input1_qty: int = 0
+## 定點數 — stored as float (D-18a; was int in 10-06).
+@export var input1_qty: float = 0.0
 @export var input2_good_id: String = ""
-@export var input2_qty: int = 0
+## 定點數 — stored as float (D-18a; was int in 10-06).
+@export var input2_qty: float = 0.0
 ## Enum: RESIDENCE／WAREHOUSE／IND1／IND2／IND3／PUBLIC／KONTOR (TechSpec 10-06 ②).
 @export var build_class: String = ""

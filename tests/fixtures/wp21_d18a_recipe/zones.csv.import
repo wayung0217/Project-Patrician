@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b66x005hkphe7"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_d18a_recipe/zones.zone.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.slot.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.rings.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.slots.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.open.translation"]
+
+source_file="res://tests/fixtures/wp21_d18a_recipe/zones.csv"
+dest_files=["res://tests/fixtures/wp21_d18a_recipe/zones.zone.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.slot.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.rings.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.slots.translation", "res://tests/fixtures/wp21_d18a_recipe/zones.open.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
