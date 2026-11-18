@@ -1,5 +1,5 @@
 extends Node
-## Autoload: BuildingEconomy — SYS-08 data + build + produce/wage (TechSpec §11–12 WP-18..20).
+## Autoload: BuildingEconomy — SYS-08 data + build + produce/wage + city/season (WP-18..23).
 ## _ready() field init only; load_and_validate() builds ST-SLOT (11-03).
 
 signal land_bought(actor: StringName, slot_id: StringName, seq: int)
@@ -27,6 +27,8 @@ const ERR_SYS08_05 := &"ERR-SYS08-05"
 const ERR_SYS08_07 := &"ERR-SYS08-07"
 const ERR_SYS08_08 := &"ERR-SYS08-08"
 const ERR_SYS08_09 := &"ERR-SYS08-09"
+const ERR_SYS08_10 := &"ERR-SYS08-10"
+const ERR_SYS08_12 := &"ERR-SYS08-12"
 const ERR_SYS08_13 := &"ERR-SYS08-13"
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
@@ -37,9 +39,20 @@ const CODE_WORKFORCE_PROVIDER_MISSING := &"WORKFORCE_PROVIDER_MISSING"
 const REASON_LAND_PURCHASE := &"LAND_PURCHASE"
 const REASON_CONSTRUCTION := &"CONSTRUCTION"
 const REASON_TRADE := &"TRADE"
+const REASON_WAGE := &"WAGE"
+const REASON_RENT := &"RENT"
+const REASON_LAND_RENT := &"LAND_RENT"
+const REASON_VACANCY_TAX := &"VACANCY_TAX"
+const REASON_LEVY := &"LEVY"
+const REASON_ZONE_OPEN := &"ZONE_OPEN"
+const REASON_CITY_BUY := &"CITY_BUILDING_BUY"
 const REQUESTER_SYS08 := &"SYS-08"
 const SHORTFALL_INPUT := &"INPUT"
 const SHORTFALL_CAPACITY := &"CAPACITY"
+
+const GOOD_ARMS := &"GD-026"
+const GOOD_POWDER := &"GD-023"
+const CB_BARRACKS := &"CB-09"
 
 const PRM_BASE_LAND_LI := "PRM-SYS08-BASE_LAND_LI"
 const PRM_POP_UNIT := "PRM-SYS08-POP_UNIT"
@@ -59,6 +72,26 @@ const PRM_RECIPE_N := "PRM-SYS08-RECIPE_KEEP_N"
 const PRM_WAGE_SHARE_W := "PRM-SYS08-WAGE_SHARE_W"
 const PRM_WAGE_BASE_LI := "PRM-SYS08-WAGE_BASE_LI"
 const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
+const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
+const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+const PRM_LAND_RENT_RATE := "PRM-SYS08-LAND_RENT_RATE_YEAR"
+const PRM_VACANCY_GRACE := "PRM-SYS08-VACANCY_GRACE_DAYS"
+const PRM_VACANCY_RATE := "PRM-SYS08-VACANCY_RATE"
+const PRM_HOUSING_SHARE := "PRM-SYS08-HOUSING_SHARE"
+const PRM_MGMT_FEE := "PRM-SYS08-MGMT_FEE"
+const PRM_CLASS_SPEND := "PRM-SYS08-CLASS_SPEND_LI"
+const PRM_GARRISON := "PRM-SYS08-GARRISON"
+const PRM_ARMS_PER := "PRM-SYS08-ARMS_PER_SOLDIER_WK"
+const PRM_POWDER_PER := "PRM-SYS08-POWDER_PER_SOLDIER_WK"
+const PRM_LEVY_THRESHOLD := "PRM-SYS08-LEVY_THRESHOLD_SEASONS"
+const PRM_LEVY_RATE := "PRM-SYS08-LEVY_RATE"
+const PRM_ZONE_POP_MIN := "PRM-SYS08-ZONE_POP_MIN"
+const PRM_ZONE_SAT_MIN := "PRM-SYS08-ZONE_SAT_MIN"
+const PRM_ZONE_SAT_DAYS := "PRM-SYS08-ZONE_SAT_DAYS"
+const PRM_ZONE_OPEN_COST := "PRM-SYS08-ZONE_OPEN_COST_LI"
+const PRM_TRANSFER_PREMIUM := "PRM-SYS08-TRANSFER_PREMIUM"
+const PRM_COMPENSATION_WEEKS := "PRM-SYS08-COMPENSATION_WEEKS"
+const BUILD_QUEUE_DIR := "res://data/build_queue/"
 
 const CLASS_RESIDENCE := &"RESIDENCE"
 const CLASS_WAREHOUSE := &"WAREHOUSE"
@@ -90,6 +123,15 @@ var _pending_started: Array = []
 var _pending_waiting: Array = [] ## {id, missing}
 var _pending_completed: Array = []
 var _pending_shortfalls: Array = [] ## {id, reason}
+## WP-23 season／city state
+var _queue_by_port: Dictionary = {} ## port → Array[BuildStep] sorted by step
+var _queue_pos: Dictionary = {} ## port → int next index
+var _zone_streak: Dictionary = {} ## port → int
+var _acc_arms: Dictionary = {} ## port → int (ACC_SCALE units)
+var _acc_powder: Dictionary = {} ## port → int
+var _city_spend_hist: Dictionary = {} ## port → Array[int] recent season spends
+var _season_city_spend: Dictionary = {} ## port → int spend this season
+var _land_held_days: Dictionary = {} ## slot_id → days held this season (player)
 
 
 func _ready() -> void:
@@ -220,12 +262,38 @@ func load_and_validate(
 				"PRM-SYS08-ACC_SCALE missing (D-12g)"
 			)
 		)
+	# WP-23 / TST-SYS08-15: no-value PRMs missing → ERR-SYS08-09 (C-06 collect all).
+	var wp23_required: Array = [
+		PRM_LAND_RENT_RATE,
+		PRM_VACANCY_GRACE,
+		PRM_VACANCY_RATE,
+		PRM_HOUSING_SHARE,
+		PRM_MGMT_FEE,
+		PRM_CLASS_SPEND,
+		PRM_GARRISON,
+		PRM_ARMS_PER,
+		PRM_POWDER_PER,
+		PRM_LEVY_THRESHOLD,
+		PRM_LEVY_RATE,
+		PRM_ZONE_POP_MIN,
+		PRM_ZONE_SAT_MIN,
+		PRM_ZONE_SAT_DAYS,
+		PRM_ZONE_OPEN_COST,
+		PRM_TRANSFER_PREMIUM,
+		PRM_COMPENSATION_WEEKS,
+	]
+	for key_v in wp23_required:
+		var key: String = String(key_v)
+		if not Params.has_prm(StringName(key)):
+			errors.append(_err(ERR_SYS08_09, key, null, "required WP-23 PRM missing"))
+	if not errors.is_empty():
 		_emit_errors(errors)
 		return errors
 
 	var zones_by_port: Dictionary = _load_zones(zones_dir, errors)
 	var city_by_port: Dictionary = _load_city_centers(city_center_dir, errors)
 	_building_defs = _load_building_defs(buildings_dir, errors)
+	_load_build_queues(BUILD_QUEUE_DIR, errors)
 	if not errors.is_empty():
 		_emit_errors(errors)
 		return errors
@@ -233,6 +301,15 @@ func load_and_validate(
 	for port_variant in PortRegistry.all_ids():
 		var port_id: String = String(port_variant)
 		_build_port_slots(port_id, zones_by_port, city_by_port)
+		CashLedger.create_account(CashLedger.make_city_id(port_id), Account.Kind.CITY)
+		if not _queue_pos.has(port_id):
+			_queue_pos[port_id] = 0
+		_zone_streak[port_id] = 0
+		_acc_arms[port_id] = 0
+		_acc_powder[port_id] = 0
+		_season_city_spend[port_id] = 0
+		if not _city_spend_hist.has(port_id):
+			_city_spend_hist[port_id] = []
 
 	_loaded = true
 	return errors
@@ -313,6 +390,9 @@ func buy_land(actor: StringName, slot_key: StringName) -> int:
 		return _fail(ERR_SYS08_07, "post", price, "land purchase post failed")
 
 	slot.land_owner = actor
+	# FRM-04 grace clock starts on purchase of empty land.
+	slot.vacancy_start_day = Clock.day if Clock != null else 0
+	_land_held_days[String(slot_key)] = 0
 	var seq: int = 0
 	if CashLedger._postings.size() > 0:
 		seq = int((CashLedger._postings[CashLedger._postings.size() - 1] as Posting).seq)
@@ -547,14 +627,37 @@ func demolish(actor: StringName, bld_key: StringName) -> int:
 
 
 func daily_step(day: int) -> Array:
-	## D-12h / 8.6 F: ① construction → ② workshop produce → ④ wage accrue.
-	## day kept for callers; production uses Clock-independent FRM-08..12 math.
+	## 8.6 F／14-05: ① build → ② produce → ③ garrison → ④ wage+rent → ⑤ zone streak.
 	assert(_loaded, "BuildingEconomy.daily_step before load")
-	var _day_unused: int = day
 	var errors: Array = []
 	_step_construction(errors)
 	_step_produce(errors)
+	_step_garrison_procure(day, errors)
 	_step_wage_accrual()
+	_step_rent_accrual()
+	_step_zone_streak()
+	_step_land_held_days()
+	return errors
+
+
+func season_step() -> Array:
+	## 14-05／14-06: fixed quarter-end six steps by port_id asc, before close_season.
+	assert(_loaded, "BuildingEconomy.season_step before load")
+	var errors: Array = []
+	var ports: Array = _buildings_by_port.keys()
+	for pid_v in _slots_by_port.keys():
+		if not ports.has(pid_v):
+			ports.append(pid_v)
+	ports.sort()
+	for pid_v in ports:
+		var port_id: String = String(pid_v)
+		_season_wages(port_id)
+		_season_rents(port_id)
+		_season_land_and_vacancy(port_id)
+		_season_city_build_queue(port_id)
+		_season_zone_open(port_id)
+		_season_levy(port_id)
+		_clear_season_accums(port_id)
 	return errors
 
 
@@ -1391,6 +1494,615 @@ func _load_building_defs(buildings_dir: String, errors: Array) -> Dictionary:
 	return by_type
 
 
+func quote_city_building(bld_key: StringName) -> int:
+	## FRM-18 quote (li); 0 + last_error on failure.
+	assert(_loaded, "BuildingEconomy.quote_city_building before load")
+	_clear_last_error()
+	var bld: Building = _building(bld_key)
+	if bld == null:
+		_record_fail(ERR_SYS08_08, "bld_id", bld_key, "unknown building")
+		return 0
+	if not _is_city_owner(bld.owner):
+		_record_fail(ERR_SYS08_12, "owner", bld.owner, "not city-owned building")
+		return 0
+	return _frm18_price(bld)
+
+
+func buy_city_building(actor: StringName, bld_key: StringName) -> int:
+	## FRM-18 purchase; full amount → CITY; land+building transfer.
+	assert(_loaded, "BuildingEconomy.buy_city_building before load")
+	_clear_last_error()
+	var bld: Building = _building(bld_key)
+	if bld == null:
+		return _fail(ERR_SYS08_08, "bld_id", bld_key, "unknown building")
+	if not _is_city_owner(bld.owner):
+		return _fail(ERR_SYS08_12, "owner", bld.owner, "not city-owned building")
+	var price: int = _frm18_price(bld)
+	if price <= 0:
+		return 0
+	var city_id: StringName = CashLedger.make_city_id(bld.port_id)
+	CashLedger.create_account(city_id, Account.Kind.CITY)
+	var post_err: Error = CashLedger.post(
+		[
+			CashLedger.make_entry(actor, 0 - price),
+			CashLedger.make_entry(city_id, price),
+		],
+		REASON_CITY_BUY,
+		REQUESTER_SYS08
+	)
+	if post_err != OK:
+		return _fail(ERR_SYS08_07, "post", price, "city building buy failed")
+	bld.owner = actor
+	var slot: Slot = _slot(bld.slot_id)
+	if slot != null:
+		slot.land_owner = actor
+	_note_city_spend(bld.port_id, 0) # purchase is income to city, not spend
+	var seq: int = 0
+	if CashLedger._postings.size() > 0:
+		seq = int((CashLedger._postings[CashLedger._postings.size() - 1] as Posting).seq)
+	return seq
+
+
+## Test／WP-24 helper: inject build queue steps for a port (sorted by step).
+func set_build_queue(port_id: String, steps: Array) -> void:
+	var copy: Array = steps.duplicate()
+	copy.sort_custom(func(a: BuildStep, b: BuildStep) -> bool: return a.step < b.step)
+	_queue_by_port[port_id] = copy
+	_queue_pos[port_id] = 0
+
+
+func _frm18_price(bld: Building) -> int:
+	var slot: Slot = _slot(bld.slot_id)
+	var land_li: int = 0
+	if slot != null:
+		land_li = land_price(bld.slot_id)
+	var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+	var build_li: int = int(cash_map.get(String(bld.build_class), 0))
+	var days_map: Dictionary = Params.get_value(PRM_BUILD_DAYS)
+	var weeks: float = float(int(days_map.get(String(bld.build_class), 0))) / float(
+		Params.get_int(PRM_DAYS_PER_WEEK)
+	)
+	var week_income: int = _weekly_income_estimate(bld)
+	var premium: float = Params.get_float(PRM_TRANSFER_PREMIUM)
+	var comp_w: int = Params.get_int(PRM_COMPENSATION_WEEKS)
+	var mid: float = (
+		(float(land_li) + float(build_li) + weeks * float(week_income)) * (1.0 + premium)
+		+ float(comp_w) * float(week_income)
+	)
+	return ceili(AmountQuantize.quantize_amount(mid))
+
+
+func _weekly_income_estimate(bld: Building) -> int:
+	if bld.build_class == CLASS_RESIDENCE:
+		# Use accrued rent scaled back to a week if any; else CLASS_SPEND proxy.
+		var share: float = Params.get_float(PRM_HOUSING_SHARE)
+		var mgmt: float = Params.get_float(PRM_MGMT_FEE)
+		var spend: Dictionary = Params.get_value(PRM_CLASS_SPEND)
+		var occ: Dictionary = _occupants_of(bld.building_id)
+		var raw: float = 0.0
+		for clazz in ["POOR", "CITIZEN", "RICH"]:
+			raw += float(int(occ.get(clazz.to_lower(), 0))) * float(int(spend.get(clazz, 0)))
+		return int(floor(AmountQuantize.quantize_amount(raw * share * (1.0 - mgmt))))
+	if _is_workshop(bld):
+		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
+		if def == null:
+			return 0
+		var workers: int = _workers_of(bld.building_id)
+		var k: float = Params.get_float(PRM_OUTPUT_K)
+		return int(
+			floor(
+				AmountQuantize.quantize_amount(
+					float(workers) * float(def.base_output_per_worker) * k * 10.0
+				)
+			)
+		)
+	return 0
+
+
+func _step_garrison_procure(_day: int, _errors: Array) -> void:
+	## FRM-14 daily: demand acc; buy min(floor(acc), market, affordable); no carry of unmet.
+	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
+	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
+	var garrison: Array = Params.get_value(PRM_GARRISON)
+	var arms_per: float = Params.get_float(PRM_ARMS_PER)
+	var powder_per: float = Params.get_float(PRM_POWDER_PER)
+	var ports: Array = _slots_by_port.keys()
+	ports.sort()
+	for pid_v in ports:
+		var port_id: String = String(pid_v)
+		var lv: int = public_level(StringName(port_id), CB_BARRACKS)
+		var soldiers := 0
+		if lv >= 1 and lv <= garrison.size():
+			soldiers = int(garrison[lv - 1])
+		var add_arms: float = float(soldiers) * arms_per / float(days_pw) * float(acc_scale)
+		var add_powder: float = float(soldiers) * powder_per / float(days_pw) * float(acc_scale)
+		_acc_arms[port_id] = int(_acc_arms.get(port_id, 0)) + floori(
+			AmountQuantize.quantize_amount(add_arms)
+		)
+		_acc_powder[port_id] = int(_acc_powder.get(port_id, 0)) + floori(
+			AmountQuantize.quantize_amount(add_powder)
+		)
+		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, acc_scale)
+		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, acc_scale)
+		# Unmet demand does not carry (OQ-14q): reset remainder below 1 unit.
+		if int(_acc_arms.get(port_id, 0)) < acc_scale:
+			_acc_arms[port_id] = 0
+		if int(_acc_powder.get(port_id, 0)) < acc_scale:
+			_acc_powder[port_id] = 0
+
+
+func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
+	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
+	if units <= 0:
+		return
+	var city: StringName = CashLedger.make_city_id(port_id)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	var market: Dictionary = GoodsLedger.make_market(port_id)
+	var stock: int = GoodsLedger.get_qty(market, good)
+	var afford: int = CashLedger.max_affordable_qty(city, StringName(port_id), good)
+	var q: int = mini(units, mini(stock, afford))
+	if q <= 0:
+		acc_map[port_id] = 0 # unmet discarded
+		return
+	var quote: Dictionary = MarketPricer.quote(
+		StringName(port_id), good, MarketPricer.SIDE_BUY, q
+	)
+	if quote.has(MarketPricer.KEY_ERROR):
+		acc_map[port_id] = 0
+		return
+	var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
+	var cash_rc: Error = CashLedger.post(
+		[
+			CashLedger.make_entry(city, 0 - price),
+			CashLedger.make_entry(CashLedger.ID_SINK, price),
+		],
+		REASON_TRADE,
+		REQUESTER_SYS08
+	)
+	if cash_rc != OK:
+		acc_map[port_id] = 0
+		return
+	var seq: int = GoodsLedger.transfer(
+		market,
+		GoodsLedger.make_external(),
+		good,
+		q,
+		GoodsLedger.REASON_CONSUME,
+		REQUESTER_SYS08
+	)
+	if seq <= 0:
+		acc_map[port_id] = 0
+		return
+	_note_city_spend(port_id, price)
+	acc_map[port_id] = int(acc_map.get(port_id, 0)) - q * acc_scale
+
+
+func _step_rent_accrual() -> void:
+	## FRM-13 daily: acc_rent += occupants × spend × share × (1−mgmt) × ACC_SCALE.
+	var share: float = Params.get_float(PRM_HOUSING_SHARE)
+	var mgmt: float = Params.get_float(PRM_MGMT_FEE)
+	var spend: Dictionary = Params.get_value(PRM_CLASS_SPEND)
+	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
+	var ids: Array = _buildings.keys()
+	ids.sort()
+	for id_v in ids:
+		var bld: Building = _buildings[String(id_v)] as Building
+		if bld.build_class != CLASS_RESIDENCE or bld.state != Building.State.ACTIVE:
+			continue
+		var occ: Dictionary = _occupants_of(bld.building_id)
+		var raw: float = 0.0
+		for clazz in ["POOR", "CITIZEN", "RICH"]:
+			var n: int = int(occ.get(clazz.to_lower(), 0))
+			raw += float(n) * float(int(spend.get(clazz, 0)))
+		var mid: float = raw * share * (1.0 - mgmt) * float(acc_scale)
+		bld.acc_rent_li = bld.acc_rent_li + floori(AmountQuantize.quantize_amount(mid))
+
+
+func _occupants_of(res_id: StringName) -> Dictionary:
+	if PopulationModel != null and PopulationModel.is_loaded():
+		return PopulationModel.residence_occupants(res_id)
+	return {"poor": 0, "citizen": 0, "rich": 0}
+
+
+func _step_zone_streak() -> void:
+	## FRM-16 daily half: streak++ if pop/sat gates pass, else 0.
+	var sat_min: int = Params.get_int(PRM_ZONE_SAT_MIN)
+	var pop_mins: Array = Params.get_value(PRM_ZONE_POP_MIN)
+	var ports: Array = _slots_by_port.keys()
+	ports.sort()
+	for pid_v in ports:
+		var port_id: String = String(pid_v)
+		var next_zone: int = int(_max_open_zone.get(port_id, -1)) + 1
+		var idx: int = next_zone - 2 # [0]=zone 2
+		if idx < 0 or idx >= pop_mins.size():
+			_zone_streak[port_id] = 0
+			continue
+		var pop: int = 0
+		if _population != null:
+			pop = _population.population(StringName(port_id))
+		var sat: int = 0
+		if PopulationModel != null and PopulationModel.is_loaded():
+			sat = PopulationModel.weighted_avg_sat(port_id)
+		if pop >= int(pop_mins[idx]) and sat >= sat_min:
+			_zone_streak[port_id] = int(_zone_streak.get(port_id, 0)) + 1
+		else:
+			_zone_streak[port_id] = 0
+
+
+func _step_land_held_days() -> void:
+	for slot_key_v in _slots.keys():
+		var slot: Slot = _slots[String(slot_key_v)] as Slot
+		if slot.building_id != &"":
+			continue
+		if _is_city_owner(slot.land_owner):
+			continue
+		var k := String(slot.slot_id)
+		_land_held_days[k] = int(_land_held_days.get(k, 0)) + 1
+
+
+func _season_wages(port_id: String) -> void:
+	## FRM-12 season: due = CEIL(acc / (DAYS_PER_WEEK * ACC_SCALE))? Spec: CEIL(acc_wage ÷ 7) with unit 1/7 li.
+	## With D-12g: acc stores ×ACC_SCALE of (1/7) li → due = CEIL(acc / (7 * ACC_SCALE))? 
+	## WP-20 stores floori(quantize(workers×base×K^W×ACC_SCALE)) per day as 1/(7) li × ACC_SCALE.
+	## due = CEIL(acc / (DAYS_PW * ACC_SCALE)) in li? Spec FRM-12: due = CEIL(acc_wage ÷ 7) when unit is 1/7 li.
+	## D-12g: acc units are 1/(DAYS×ACC_SCALE) li → due = CEIL(acc / (DAYS×ACC_SCALE)).
+	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
+	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
+	var denom: int = days_pw * acc_scale
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		if not _is_workshop(bld) or _is_city_owner(bld.owner):
+			continue
+		if bld.acc_wage_li <= 0:
+			continue
+		var due: int = int(ceili(float(bld.acc_wage_li) / float(denom)))
+		if due <= 0:
+			continue
+		CashLedger.create_account(bld.owner, Account.Kind.ACTOR)
+		CashLedger.charge_mandatory(bld.owner, due, REASON_WAGE, REQUESTER_SYS08)
+		bld.acc_wage_li = 0
+
+
+func _season_rents(port_id: String) -> void:
+	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
+	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
+	var denom: int = days_pw * acc_scale
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		if bld.build_class != CLASS_RESIDENCE:
+			continue
+		if bld.acc_rent_li <= 0:
+			continue
+		var r: int = int(floor(float(bld.acc_rent_li) / float(denom)))
+		if r <= 0:
+			bld.acc_rent_li = 0
+			continue
+		var owner: StringName = bld.owner
+		CashLedger.create_account(owner, Account.Kind.ACTOR)
+		CashLedger.post(
+			[
+				CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - r),
+				CashLedger.make_entry(owner, r),
+			],
+			REASON_RENT,
+			REQUESTER_SYS08
+		)
+		bld.acc_rent_li = 0
+
+
+func _season_land_and_vacancy(port_id: String) -> void:
+	## FRM-03 land rent + FRM-04 vacancy tax → CITY.
+	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
+	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+	var rate_year: float = Params.get_float(PRM_LAND_RENT_RATE)
+	var grace: int = Params.get_int(PRM_VACANCY_GRACE)
+	var vac_rates: Array = Params.get_value(PRM_VACANCY_RATE)
+	var city: StringName = CashLedger.make_city_id(port_id)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	var day_now: int = Clock.day if Clock != null else 0
+	for slot_v2 in _slots_by_port.get(port_id, []):
+		var s2: Slot = slot_v2
+		if _is_city_owner(s2.land_owner):
+			continue
+		var held2: int = int(_land_held_days.get(String(s2.slot_id), days_d))
+		if held2 <= 0:
+			held2 = days_d
+		var rent2: int = _land_rent_li(s2, held2, days_d, seasons_y, rate_year)
+		if rent2 > 0:
+			_charge_to_city(s2.land_owner, city, rent2, REASON_LAND_RENT, port_id)
+		if s2.building_id != &"":
+			continue
+		if s2.vacancy_start_day < 0:
+			continue
+		var vacant_elapsed: int = day_now - s2.vacancy_start_day
+		if vacant_elapsed <= grace:
+			continue
+		var vacant_days: int = mini(held2, vacant_elapsed - grace)
+		if vacant_days <= 0:
+			continue
+		var years: int = int(vacant_elapsed / (seasons_y * days_d))
+		var rate_i: int = mini(years, vac_rates.size() - 1)
+		if rate_i < 0:
+			rate_i = 0
+		var vrate: float = float(vac_rates[rate_i])
+		var price_now: int = land_price(s2.slot_id)
+		var vtax: int = ceili(
+			AmountQuantize.quantize_amount(
+				float(price_now) * vrate * float(vacant_days) / float(seasons_y * days_d)
+			)
+		)
+		if vtax > 0:
+			_charge_to_city(s2.land_owner, city, vtax, REASON_VACANCY_TAX, port_id)
+
+
+func _land_rent_li(slot: Slot, held: int, days_d: int, seasons_y: int, rate_year: float) -> int:
+	var base_li: int = Params.get_int(PRM_BASE_LAND_LI)
+	var pop_unit: int = Params.get_int(PRM_POP_UNIT)
+	var pop: int = 0
+	if _population != null:
+		pop = _population.population(StringName(slot.port_id))
+	if pop < 1:
+		pop = 1
+	var ring_f: float = 1.0
+	if slot.kind == Slot.Kind.CIVIL:
+		var r_total: int = int(_r_by_port.get(slot.port_id, 0))
+		var alpha: float = Params.get_float(PRM_RING_ALPHA)
+		var ring_base: float = 1.0 + float(r_total - slot.ring)
+		if ring_base < 1.0:
+			ring_base = 1.0
+		ring_f = pow(ring_base, alpha)
+		if ring_f < 1.0:
+			ring_f = 1.0
+	var mid: float = (
+		float(base_li)
+		* sqrt(float(pop) / float(pop_unit))
+		* ring_f
+		* rate_year
+		* float(held)
+		/ float(seasons_y * days_d)
+	)
+	return ceili(AmountQuantize.quantize_amount(mid))
+
+
+func _charge_to_city(
+	payer: StringName, city: StringName, amount: int, reason: StringName, _port_id: String
+) -> void:
+	CashLedger.create_account(payer, Account.Kind.ACTOR)
+	var bal: int = CashLedger.balance(payer)
+	var paid: int = mini(bal, amount)
+	var unpaid: int = amount - paid
+	if paid > 0:
+		CashLedger.post(
+			[CashLedger.make_entry(payer, 0 - paid), CashLedger.make_entry(city, paid)],
+			reason,
+			REQUESTER_SYS08
+		)
+	if unpaid > 0:
+		# Mirror mandatory arrears on payer; city does not receive unpaid.
+		CashLedger.charge_mandatory(payer, unpaid, reason, REQUESTER_SYS08)
+
+
+func _season_city_build_queue(port_id: String) -> void:
+	## FRM-15: start next queue items while CITY can afford; no skipping.
+	var steps: Array = _queue_by_port.get(port_id, [])
+	var pos: int = int(_queue_pos.get(port_id, 0))
+	var city: StringName = CashLedger.make_city_id(port_id)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	while pos < steps.size():
+		var step: BuildStep = steps[pos] as BuildStep
+		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+		var cost: int = int(cash_map.get("PUBLIC", 0))
+		# Upgrade cost if target_level > 1
+		if step.target_level > 1:
+			cost = _public_upgrade_cash(port_id, step.target_level)
+		if CashLedger.balance(city) < cost:
+			break
+		# Mark as started: advance pos (actual order_build needs free public slot — best-effort).
+		var started: bool = _try_start_city_public(port_id, city, step, cost)
+		if not started:
+			break
+		pos = pos + 1
+	_queue_pos[port_id] = pos
+
+
+func _public_upgrade_cash(port_id: String, to_level: int) -> int:
+	var pop: int = 0
+	if _population != null:
+		pop = _population.population(StringName(port_id))
+	var arr: Array = Params.get_value(PRM_UPGRADE_PER_CAPITA)
+	var idx: int = mini(to_level - 1, arr.size() - 1)
+	if idx < 0:
+		return 0
+	return ceili(AmountQuantize.quantize_amount(float(pop) * float(arr[idx])))
+
+
+func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
+	# Find free public slot.
+	var slot_id: StringName = &""
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
+			slot_id = s.slot_id
+			break
+	if slot_id == &"":
+		# Still advance? Spec: money enough → start. No slot → cannot start, don't skip.
+		return false
+	# Ensure a PUBLIC def exists for cb_id
+	var type_id: String = step.cb_id
+	if not _building_defs.has(type_id):
+		var d := BuildingDef.new()
+		d.type = type_id
+		d.build_class = "PUBLIC"
+		d.tier = 0
+		d.max_workers = 0
+		d.base_output_per_worker = 0.0
+		_building_defs[type_id] = d
+	var post_err: Error = CashLedger.post(
+		[
+			CashLedger.make_entry(city, 0 - cost),
+			CashLedger.make_entry(CashLedger.ID_SINK, cost),
+		],
+		REASON_CONSTRUCTION,
+		REQUESTER_SYS08
+	)
+	if post_err != OK:
+		return false
+	_note_city_spend(port_id, cost)
+	var bld := Building.new()
+	bld.building_id = _next_bld_id(port_id)
+	bld.type = StringName(type_id)
+	bld.build_class = CLASS_PUBLIC
+	bld.cb_id = StringName(step.cb_id)
+	bld.owner = city
+	bld.port_id = port_id
+	bld.slot_id = slot_id
+	bld.level = maxi(1, step.target_level)
+	bld.state = Building.State.ACTIVE
+	bld.days_left = 0
+	var slot: Slot = _slot(slot_id)
+	slot.building_id = bld.building_id
+	slot.vacancy_start_day = -1
+	_register_building(bld)
+	return true
+
+
+func _season_zone_open(port_id: String) -> void:
+	var need_days: int = Params.get_int(PRM_ZONE_SAT_DAYS)
+	if int(_zone_streak.get(port_id, 0)) < need_days:
+		return
+	var next_zone: int = int(_max_open_zone.get(port_id, -1)) + 1
+	var costs: Array = Params.get_value(PRM_ZONE_OPEN_COST)
+	var idx: int = next_zone - 2
+	if idx < 0 or idx >= costs.size():
+		return
+	var cost: int = int(costs[idx])
+	var city: StringName = CashLedger.make_city_id(port_id)
+	if CashLedger.balance(city) < cost:
+		return
+	var post_err: Error = CashLedger.post(
+		[
+			CashLedger.make_entry(city, 0 - cost),
+			CashLedger.make_entry(CashLedger.ID_SINK, cost),
+		],
+		REASON_ZONE_OPEN,
+		REQUESTER_SYS08
+	)
+	if post_err != OK:
+		return
+	_note_city_spend(port_id, cost)
+	# Open slots in that zone
+	var opened := false
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.CIVIL and s.zone == next_zone:
+			s.zone_open = true
+			opened = true
+	if opened:
+		_max_open_zone[port_id] = next_zone
+		# Recompute R
+		var r := 0
+		# Approximate: sum rings of open zones from zone defs via slots
+		var rings_seen: Dictionary = {}
+		for s2 in _slots_by_port.get(port_id, []):
+			var sl: Slot = s2
+			if sl.kind == Slot.Kind.CIVIL and sl.zone_open:
+				rings_seen[sl.ring] = true
+		r = rings_seen.size()
+		_r_by_port[port_id] = r
+		_zone_streak[port_id] = 0
+
+
+func _season_levy(port_id: String) -> void:
+	## FRM-17: thr = threshold × avg season spend; levy = FLOOR((bal−thr)×rate) → SINK.
+	var city: StringName = CashLedger.make_city_id(port_id)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	var hist: Array = _city_spend_hist.get(port_id, [])
+	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+	var avg := 0
+	if hist.is_empty():
+		avg = int(_season_city_spend.get(port_id, 0))
+	else:
+		var n: int = mini(hist.size(), seasons_y)
+		var sum := 0
+		for i in range(hist.size() - n, hist.size()):
+			sum = sum + int(hist[i])
+		avg = int(sum / maxi(1, n))
+	# No spend baseline yet → no levy (avoids thr=0 wiping CITY on first seasons).
+	if avg <= 0:
+		return
+	var thr_mult: int = Params.get_int(PRM_LEVY_THRESHOLD)
+	var thr: int = thr_mult * avg
+	var bal: int = CashLedger.balance(city)
+	if bal <= thr:
+		return
+	var rate: float = Params.get_float(PRM_LEVY_RATE)
+	var levy: int = int(floor(float(bal - thr) * rate))
+	if levy <= 0:
+		return
+	CashLedger.post(
+		[
+			CashLedger.make_entry(city, 0 - levy),
+			CashLedger.make_entry(CashLedger.ID_SINK, levy),
+		],
+		REASON_LEVY,
+		REQUESTER_SYS08
+	)
+
+
+func _clear_season_accums(port_id: String) -> void:
+	var spent: int = int(_season_city_spend.get(port_id, 0))
+	var hist: Array = _city_spend_hist.get(port_id, [])
+	hist.append(spent)
+	_city_spend_hist[port_id] = hist
+	_season_city_spend[port_id] = 0
+	_acc_arms[port_id] = 0
+	_acc_powder[port_id] = 0
+	for k in _land_held_days.keys():
+		var slot: Slot = _slot(StringName(String(k)))
+		if slot != null and slot.port_id == port_id:
+			_land_held_days[k] = 0
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		bld.acc_wage_li = 0
+		bld.acc_rent_li = 0
+
+
+func _note_city_spend(port_id: String, amount: int) -> void:
+	if amount <= 0:
+		return
+	_season_city_spend[port_id] = int(_season_city_spend.get(port_id, 0)) + amount
+
+
+func _load_build_queues(queue_dir: String, _errors: Array) -> void:
+	_queue_by_port = {}
+	_queue_pos = {}
+	var abs_dir: String = ProjectSettings.globalize_path(queue_dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		return
+	var dir := DirAccess.open(queue_dir)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	while true:
+		var fname: String = dir.get_next()
+		if fname == "":
+			break
+		if dir.current_is_dir() or not fname.ends_with(TRES_SUFFIX):
+			continue
+		var res: Resource = load(queue_dir.path_join(fname))
+		if res == null or not (res is BuildStep):
+			continue
+		var step: BuildStep = res as BuildStep
+		if not _queue_by_port.has(step.port_id):
+			_queue_by_port[step.port_id] = []
+		(_queue_by_port[step.port_id] as Array).append(step)
+	dir.list_dir_end()
+	for pid in _queue_by_port.keys():
+		var arr: Array = _queue_by_port[pid]
+		arr.sort_custom(func(a: BuildStep, b: BuildStep) -> bool: return a.step < b.step)
+		_queue_pos[pid] = 0
+
+
 func _clear_state() -> void:
 	_slots = {}
 	_slots_by_port = {}
@@ -1404,6 +2116,14 @@ func _clear_state() -> void:
 	_pending_waiting = []
 	_pending_completed = []
 	_pending_shortfalls = []
+	_queue_by_port = {}
+	_queue_pos = {}
+	_zone_streak = {}
+	_acc_arms = {}
+	_acc_powder = {}
+	_city_spend_hist = {}
+	_season_city_spend = {}
+	_land_held_days = {}
 	_loaded = false
 	_clear_last_error()
 
