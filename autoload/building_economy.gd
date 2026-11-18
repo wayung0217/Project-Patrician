@@ -214,7 +214,10 @@ func buy_land(actor: StringName, slot_key: StringName) -> int:
 		return _fail(ERR_SYS08_07, "post", price, "land purchase post failed")
 
 	slot.land_owner = actor
-	var seq: int = GoodsLedger.next_seq() - 1
+	# Seq allocated inside CashLedger.post via GoodsLedger.next_seq (TechSpec D148).
+	var seq: int = 0
+	if CashLedger._postings.size() > 0:
+		seq = int((CashLedger._postings[CashLedger._postings.size() - 1] as Posting).seq)
 	land_bought.emit(actor, slot_key, seq)
 	return seq
 
