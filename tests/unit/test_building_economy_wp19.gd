@@ -170,7 +170,19 @@ func test_TST_SYS08_05_waiting_material_no_countdown() -> void:
 	assert_eq(BuildingEconomy.get_building(bid).state, Building.State.BUILDING)
 
 
-func test_WP19_12_08_1_err_codes_sample() -> void:
+func test_WP19_12_08_1_err08_unknown_slot_type() -> void:
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	_setup_core(pop)
+	_write_layout_open_and_belt()
+	_write_defs()
+	_load_be()
+	assert_eq(BuildingEconomy.order_build(ACTOR, &"SLOT:NOPE", StringName(TYPE_KONTOR)), &"")
+	assert_true(_errors_have(BuildingEconomy.ERR_SYS08_08))
+	assert_push_error_count(BuildingEconomy.last_errors().size())
+
+
+func test_WP19_12_08_1_err05_not_land_owner() -> void:
 	var pop := TestPop.new()
 	pop.set_pop(PORT_PT01, 1000)
 	_setup_core(pop)
@@ -178,18 +190,191 @@ func test_WP19_12_08_1_err_codes_sample() -> void:
 	_write_defs()
 	_load_be()
 	_cheap_build_params()
-	_seed_market_mats(200)
 	_top_up(ACTOR, 5_000_000)
-
-	# ERR-08 unknown
-	assert_eq(BuildingEconomy.order_build(ACTOR, &"SLOT:NOPE", StringName(TYPE_KONTOR)), &"")
-	assert_true(_errors_have(BuildingEconomy.ERR_SYS08_08))
-
-	# ERR-05 not owner
 	var k1: StringName = _first_kontor_slot()
 	assert_eq(BuildingEconomy.order_build(ACTOR, k1, StringName(TYPE_KONTOR)), &"")
 	assert_true(_errors_have(BuildingEconomy.ERR_SYS08_05))
-	assert_push_error_count(BuildingEconomy.last_errors().size() + 1)
+	assert_push_error_count(BuildingEconomy.last_errors().size())
+
+
+func test_WP19_12_08_1_err02_slot_occupied() -> void:
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	_setup_core(pop)
+	_write_layout_open_and_belt()
+	_write_defs()
+	_load_be()
+	_cheap_build_params()
+	_seed_market_mats(50)
+	_top_up(ACTOR, 5_000_000)
+	var kid: StringName = _build_active_kontor()
+	var slot_id: StringName = BuildingEconomy.get_building(kid).slot_id
+	assert_eq(BuildingEconomy.order_build(ACTOR, slot_id, StringName(TYPE_KONTOR)), &"")
+	assert_true(_errors_have(BuildingEconomy.ERR_SYS08_02))
+	assert_push_error_count(BuildingEconomy.last_errors().size())
+
+
+func test_WP19_12_08_1_err01_zone_closed_not_belt() -> void:
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	_setup_core(pop)
+	# zone1 open, zone2 belt, zone3 closed beyond belt
+	_write_zone(ROOT + "zones/", PORT_PT01, 1, 1, 2, 1)
+	_write_zone(ROOT + "zones/", PORT_PT01, 2, 1, 2, 0)
+	_write_zone(ROOT + "zones/", PORT_PT01, 3, 1, 2, 0)
+	_write_city_center(ROOT + "city_center/", PORT_PT01, 0)
+	_write_defs()
+	_load_be()
+	_cheap_build_params()
+	_seed_market_mats(50)
+	_top_up(ACTOR, 5_000_000)
+	_build_active_kontor()
+	var closed: StringName = &""
+	for s in BuildingEconomy.slots_for_port(PORT_PT01):
+		var slot: Slot = s
+		if slot.kind == Slot.Kind.CIVIL and slot.zone == 3 and slot.building_id == &"":
+			closed = slot.slot_id
+			break
+	assert_ne(closed, &"")
+	# buy_land on non-belt closed → ERR-01
+	assert_eq(BuildingEconomy.buy_land(ACTOR, closed), 0)
+	assert_eq(
+		StringName(BuildingEconomy.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		BuildingEconomy.ERR_SYS08_01
+	)
+	assert_push_error_count(1)
+	# Force owner for order_build path of ERR-01
+	BuildingEconomy.get_slot(closed).land_owner = ACTOR
+	assert_eq(BuildingEconomy.order_build(ACTOR, closed, StringName(TYPE_RES)), &"")
+	assert_true(_errors_have(BuildingEconomy.ERR_SYS08_01))
+	assert_push_error_count(1 + BuildingEconomy.last_errors().size())
+
+
+func test_WP19_12_08_1_err03_wrong_placement() -> void:
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	_setup_core(pop)
+	_write_layout_open_and_belt()
+	_write_defs()
+	_load_be()
+	_cheap_build_params()
+	_seed_market_mats(50)
+	_top_up(ACTOR, 5_000_000)
+	_build_active_kontor()
+	var open_civil: StringName = _first_open_civil_owned()
+	# IND1 only on belt → ERR-03 on open city zone
+	assert_eq(BuildingEconomy.order_build(ACTOR, open_civil, StringName(TYPE_IND1)), &"")
+	assert_true(_errors_have(BuildingEconomy.ERR_SYS08_03))
+	assert_push_error_count(BuildingEconomy.last_errors().size())
+
+
+func test_WP19_12_08_1_err07_insufficient_build_cash() -> void:
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	_setup_core(pop)
+	_write_layout_open_and_belt()
+	_write_defs()
+	_load_be()
+	_cheap_build_params()
+	(Params._values["PRM-SYS08-BUILD_CASH_LI"] as Dictionary)["KONTOR"] = 50_000
+	_seed_market_mats(50)
+	var k1: StringName = _first_kontor_slot()
+	# Enough for land, not for BUILD_CASH
+	_top_up(ACTOR, 300_000)
+	assert_gt(BuildingEconomy.buy_land(ACTOR, k1), 0)
+	var bal: int = CashLedger.balance(ACTOR)
+	if bal > 1000:
+		assert_eq(
+			CashLedger.post(
+				[
+					CashLedger.make_entry(ACTOR, 0 - (bal - 1000)),
+					CashLedger.make_entry(CashLedger.ID_SINK, bal - 1000),
+				],
+				&"TEST_DRAIN",
+				BuildingEconomy.REQUESTER_SYS08
+			),
+			OK
+		)
+	assert_eq(BuildingEconomy.order_build(ACTOR, k1, StringName(TYPE_KONTOR)), &"")
+	assert_true(_errors_have(BuildingEconomy.ERR_SYS08_07))
+	assert_push_error_count(BuildingEconomy.last_errors().size())
+
+
+func test_WP19_12_08_4_warehouse_full_market_buy() -> void:
+	## 12-08 ④ / D-12e: warehouse full; market mats still acquired; build starts.
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	_setup_core(pop)
+	_write_layout_open_and_belt()
+	_write_defs()
+	_load_be()
+	_cheap_build_params()
+	(Params._values["PRM-SYS08-BUILD_MAT"] as Dictionary)["RESIDENCE"] = {"GD-001": 5}
+	(Params._values["PRM-SYS08-BUILD_CASH_LI"] as Dictionary)["RESIDENCE"] = 1000
+	(Params._values["PRM-SYS08-BUILD_DAYS"] as Dictionary)["RESIDENCE"] = 1
+	_seed_market_mats(200)
+	_top_up(ACTOR, 5_000_000)
+	_build_active_kontor()
+	var cap: int = BuildingEconomy.warehouse_capacity(ACTOR, StringName(PORT_PT01))
+	assert_gt(cap, 0)
+	var wh: Dictionary = GoodsLedger.make_warehouse(String(ACTOR), PORT_PT01)
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			wh,
+			&"GD-002",
+			cap,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		0,
+		"fill warehouse to capacity"
+	)
+	assert_eq(BuildingEconomy.warehouse_capacity_for_container(wh), cap)
+	# Any further GENESIS into WH must fail capacity — proves full
+	assert_eq(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			wh,
+			&"GD-001",
+			1,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		0
+	)
+	assert_push_error_count(1)
+	var mkt: Dictionary = GoodsLedger.make_market(PORT_PT01)
+	var m_before: int = GoodsLedger.get_qty(mkt, &"GD-001")
+	var civil: StringName = _first_open_civil_owned()
+	var bid: StringName = BuildingEconomy.order_build(ACTOR, civil, StringName(TYPE_RES))
+	assert_ne(bid, &"", str(BuildingEconomy.last_errors()))
+	assert_eq(BuildingEconomy.get_building(bid).state, Building.State.BUILDING)
+	assert_eq(GoodsLedger.get_qty(mkt, &"GD-001"), m_before - 5)
+	assert_eq(GoodsLedger.get_qty(wh, &"GD-001"), 0, "mats must not enter full warehouse")
+
+
+func test_WP19_D15b_kontor_upgrade_missing_boot_err09() -> void:
+	## D-15b ①: missing PRM-SYS08-KONTOR_UPGRADE → BuildingEconomy boot ERR-SYS08-09.
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	_setup_core(pop)
+	_write_layout_open_and_belt()
+	_write_defs()
+	assert_true(Params.has_prm("PRM-SYS08-KONTOR_UPGRADE"))
+	Params._values.erase("PRM-SYS08-KONTOR_UPGRADE")
+	assert_false(Params.has_prm("PRM-SYS08-KONTOR_UPGRADE"))
+	var errs: Array = BuildingEconomy.load_and_validate(
+		ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/"
+	)
+	assert_gt(errs.size(), 0)
+	var has09 := false
+	for e in errs:
+		if StringName((e as Dictionary).get(ErrorInfoUtil.KEY_CODE, &"")) == BuildingEconomy.ERR_SYS08_09:
+			has09 = true
+	assert_true(has09)
+	assert_false(BuildingEconomy.is_loaded())
+	assert_push_error_count(errs.size())
 
 
 func test_WP19_12_08_2_gathering_belt_ind1_only() -> void:

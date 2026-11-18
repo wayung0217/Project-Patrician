@@ -162,6 +162,19 @@ func load_and_validate(
 		_emit_errors(errors)
 		return errors
 
+	# D-12b / D-15b: missing KONTOR_UPGRADE → ERR-SYS08-09 refuse boot (not order-time).
+	if not Params.has_prm(PRM_KONTOR_UPGRADE):
+		errors.append(
+			_err(
+				ERR_SYS08_09,
+				PRM_KONTOR_UPGRADE,
+				null,
+				"PRM-SYS08-KONTOR_UPGRADE missing (D-12b／D-15b)"
+			)
+		)
+		_emit_errors(errors)
+		return errors
+
 	var zones_by_port: Dictionary = _load_zones(zones_dir, errors)
 	var city_by_port: Dictionary = _load_city_centers(city_center_dir, errors)
 	_building_defs = _load_building_defs(buildings_dir, errors)

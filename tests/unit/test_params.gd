@@ -44,7 +44,7 @@ func test_all_section4_params_json_keys_readable() -> void:
 			"bool_debug_release":
 				var gotb: bool = Params.get_bool(id)
 				assert_typeof(gotb, TYPE_BOOL)
-			"int_array", "float_array", "upgrade_per_capita_array":
+			"int_array", "float_array", "upgrade_per_capita_array", "kontor_upgrade_array":
 				var gota: Variant = Params.get_value(id)
 				assert_typeof(gota, TYPE_ARRAY)
 			"int_object", "build_mat_object":
