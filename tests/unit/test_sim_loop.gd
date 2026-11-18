@@ -313,11 +313,53 @@ func test_conservation_runs_on_tick_when_debug_prm() -> void:
 
 
 func test_no_public_subday_methods_D07() -> void:
-	# D-07: SimLoop／Clock 不得公開子日推進方法
+	# D-07（SimLoop 仍無公開子日推進）／D-14d（Clock.advance_one_tick 已撤銷禁令）
 	assert_false(SimLoop.has_method("advance_one_tick"))
 	assert_false(SimLoop.has_method("tick_subday"))
-	assert_false(Clock.has_method("advance_one_tick"))
+	assert_true(Clock.has_method("advance_one_tick"))
 	assert_false(Clock.has_method("advance_ticks"))
+	# 13-02／C-04: tick 步驟清單為 SimLoop 內明確步驟（WP-28 為空）
+	assert_true(SimLoop.has_method("_run_tick_steps"))
+
+
+func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
+	# 13-03／TST-SYS13-16: tick_day（TPD×tick＋空清單＋日結）與
+	# advance_one_day／TPD×advance_one_tick＋日結（PRODUCE）結果相同。
+	_boot_ready_provider()
+	var tpd: int = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
+	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
+	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
+	var before: int = GoodsLedger.get_qty(market, StringName(GOOD_DEMO))
+	SimLoop.tick_day()
+	var tick_via_loop: int = Clock.tick
+	var day_via_loop: int = Clock.day
+	var qty_via_loop: int = GoodsLedger.get_qty(market, StringName(GOOD_DEMO))
+	assert_eq(tick_via_loop, tpd)
+	assert_eq(day_via_loop, 1)
+	assert_eq(qty_via_loop, before + GoodsLedger.daily_produce_qty(PRODUCE_Q, 0))
+
+	_reset_simloop_for_reboot()
+	_boot_ready_provider()
+	Clock.advance_one_day()
+	assert_eq(Clock.tick, tick_via_loop)
+	assert_eq(Clock.day, day_via_loop)
+
+	_reset_simloop_for_reboot()
+	_boot_ready_provider()
+	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
+	for _i in range(tpd):
+		Clock.advance_one_tick()
+	assert_eq(Clock.tick, tpd)
+	assert_eq(Clock.day, 1)
+	GoodsLedger.set_day(Clock.day)
+	CashLedger.set_day(Clock.day)
+	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
+	var day_in_season: int = ((Clock.day - 1) % days_d) + 1
+	GoodsLedger.run_daily_produce(day_in_season - 1)
+	var qty_via_ticks: int = GoodsLedger.get_qty(
+		GoodsLedger.make_market(PORT_DEMO), StringName(GOOD_DEMO)
+	)
+	assert_eq(qty_via_ticks, qty_via_loop)
 
 
 func test_D08j_public_api_names_match_ruling() -> void:
@@ -438,6 +480,18 @@ class _TestCapProvider extends CapacityProvider:
 func _last_goods_err_is(code: StringName) -> bool:
 	var info: Dictionary = GoodsLedger.last_error()
 	return String(info.get("code", "")) == String(code)
+
+
+func _reset_simloop_for_reboot() -> void:
+	# Mirror before_each so a test may boot more than once without D-08j／D-11d errors.
+	_wipe_dir(GOODS_FIXTURE_ROOT)
+	_wipe_dir(PORTS_FIXTURE_ROOT)
+	SimLoop._booted = false
+	SimLoop._capacity_by_kind.clear()
+	SimLoop._capacity_reg_errors.clear()
+	SimLoop.set_consumption_provider(null)
+	BuildingEconomy._loaded = false
+	BuildingEconomy._population = null
 
 
 func _boot_ready_provider() -> TestConsumptionProvider:

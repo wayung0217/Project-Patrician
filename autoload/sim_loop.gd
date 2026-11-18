@@ -4,12 +4,13 @@ extends Node
 ## ConsumptionProvider is injected (2.3-03); formal SYS-06 is out of Phase 0 (1-A9).
 ## D-05: Clock mutates only; day_ticked／season_cutoff emitted here at step 6.
 ## D-03: boot() calls CashLedger.genesis_grant() once after validation.
-## D-07: no public sub-day methods; day advance only via Clock.advance_one_day().
+## D-14d／WP-28: step 1 advances tick-by-tick; empty tick-step list until WP-30.
 ## D-08e／D-08j: register_capacity_provider／set_consumption_provider only before boot().
 ## WP-18: boot loads BuildingEconomy and registers WAREHOUSE CapacityProvider when not pre-registered.
 ## WP-29 / D-14c: SeaLanes loads after PortRegistry (before GoodsLedger).
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
+const PRM_TICKS_PER_DAY := "PRM-SYS00-TICKS_PER_DAY"
 
 const FIELD_PROVIDER := "ConsumptionProvider"
 const FIELD_CAPACITY_PROVIDER := "CapacityProvider"
@@ -169,9 +170,13 @@ func tick_day() -> Array:
 		push_error("SimLoop.tick_day called while Clock.is_paused=true (GP-01)")
 		return day_errors
 
-	# 2.3-01 步驟 1: Clock 推進一日（D-05(a): mutate only；信號於步驟 6）
-	# D-05(b)／D-07: boot day=0 → first advance → day=1，執行 k=0 PRODUCE。
-	Clock.advance_one_day()
+	# 2.3-01 步驟 1: 逐 tick 推進一日份（D-14d／13-02）；信號於步驟 6。
+	# D-05(b)／D-07: boot day=0 → first day advance → day=1，執行 k=0 PRODUCE。
+	# 每個 tick 後執行「tick 步驟清單」（本 WP 為空；WP-30 加 ShipRegistry.tick_step）。
+	var tpd: int = Params.get_int(PRM_TICKS_PER_DAY)
+	for _i in range(tpd):
+		Clock.advance_one_tick()
+		_run_tick_steps(Clock.tick)
 	GoodsLedger.set_day(Clock.day)
 	CashLedger.set_day(Clock.day)
 
@@ -212,6 +217,12 @@ func tick_day() -> Array:
 		Clock.season_cutoff.emit(Clock.season_index)
 
 	return day_errors
+
+
+func _run_tick_steps(_current_tick: int) -> void:
+	# 13-02／C-04: explicit tick-step list in SimLoop (no signal / call_deferred).
+	# WP-28: empty. WP-30: ShipRegistry.tick_step(tick).
+	pass
 
 
 func _apply_capacity_providers() -> void:
