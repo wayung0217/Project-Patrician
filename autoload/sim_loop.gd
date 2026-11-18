@@ -6,6 +6,7 @@ extends Node
 ## D-03: boot() calls CashLedger.genesis_grant() once after validation.
 ## D-07: no public sub-day methods; day advance only via Clock.advance_one_day().
 ## D-08e／D-08j: register_capacity_provider／set_consumption_provider only before boot().
+## WP-18: boot loads BuildingEconomy and registers WAREHOUSE CapacityProvider when not pre-registered.
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 
@@ -93,6 +94,7 @@ func boot(
 	errors.append_array(GoodsLedger.load_and_validate())
 	errors.append_array(MarketPricer.load_and_validate(curve_path))
 	errors.append_array(CashLedger.load_and_validate())
+	errors.append_array(BuildingEconomy.load_and_validate())
 
 	# 2.3-03: 未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。
 	if _consumption == null:
@@ -110,6 +112,12 @@ func boot(
 	if not errors.is_empty():
 		_booted = false
 		return errors
+
+	# D-08e / WP-18: default WAREHOUSE provider from BuildingEconomy unless tests pre-register.
+	if not _capacity_by_kind.has(GoodsLedger.KIND_WAREHOUSE):
+		_capacity_by_kind[GoodsLedger.KIND_WAREHOUSE] = (
+			BuildingEconomy.get_warehouse_capacity_provider()
+		)
 
 	# D-08e: GoodsLedger.load_and_validate clears providers; apply SimLoop registrations after.
 	_apply_capacity_providers()

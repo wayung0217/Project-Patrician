@@ -30,6 +30,11 @@ const CONSUME_PER_TICK := 3
 const PRODUCE_Q := 90
 
 
+class _TestPopulationProvider extends PopulationProvider:
+	func population(_port_id: StringName) -> int:
+		return 0
+
+
 class TestConsumptionProvider extends ConsumptionProvider:
 	## Fixture double — weekly + consume tables only (1-A9／res://tests/).
 	var _weekly: Dictionary = {} ## "port|good" -> int
@@ -66,8 +71,9 @@ func before_each() -> void:
 	SimLoop._booted = false
 	SimLoop._capacity_by_kind.clear()
 	SimLoop._capacity_reg_errors.clear()
-	SimLoop._capacity_router = null
 	SimLoop.set_consumption_provider(null)
+	BuildingEconomy._loaded = false
+	BuildingEconomy._population = null
 
 
 func test_consumption_provider_base_push_error_2_1_03() -> void:
@@ -81,7 +87,7 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_autoload_order_2_2_01() -> void:
-	# 2.2-01: Params → Clock → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger → SimLoop
+	# 2.2-01: … → CashLedger → BuildingEconomy → SimLoop (D-09a / WP-18)
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -90,6 +96,7 @@ func test_autoload_order_2_2_01() -> void:
 		"GoodsLedger",
 		"MarketPricer",
 		"CashLedger",
+		"BuildingEconomy",
 		"SimLoop",
 	]
 	for name_variant in expected:
@@ -320,6 +327,7 @@ func test_D08e_register_capacity_provider_before_boot_applies() -> void:
 	var fixtures := _prepare_fixtures()
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
+	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	var cap := _TestCapProvider.new()
 	cap.set_cap(GoodsLedger.KIND_WAREHOUSE, 10)
 	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, cap)
@@ -368,6 +376,7 @@ func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 	var fixtures := _prepare_fixtures()
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
+	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	var a := _TestCapProvider.new()
 	a.set_cap(GoodsLedger.KIND_WAREHOUSE, 5)
 	var b := _TestCapProvider.new()
@@ -411,6 +420,7 @@ func _boot_ready_provider() -> TestConsumptionProvider:
 	var fixtures := _prepare_fixtures()
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
+	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
 	)

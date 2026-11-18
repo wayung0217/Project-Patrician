@@ -20,6 +20,8 @@ const IMPORT_ZONES_CSV := IMPORT_DIR + "zones.csv"
 const IMPORT_BUILDINGS_CSV := IMPORT_DIR + "buildings.csv"
 const IMPORT_OPENING_WORKSHOPS_CSV := IMPORT_DIR + "opening_workshops.csv"
 const IMPORT_BUILD_QUEUE_CSV := IMPORT_DIR + "build_queue.csv"
+const IMPORT_CITY_CENTER_CSV := IMPORT_DIR + "city_center.csv"
+const IMPORT_OPENING_PUBLIC_CSV := IMPORT_DIR + "opening_public.csv"
 
 ## D-08i fixed output roots.
 const GOODS_OUT_DIR := "res://data/goods/"
@@ -31,6 +33,8 @@ const ZONES_OUT_DIR := "res://data/zones/"
 const BUILDINGS_OUT_DIR := "res://data/buildings/"
 const OPENING_OUT_DIR := "res://data/opening/"
 const BUILD_QUEUE_OUT_DIR := "res://data/build_queue/"
+const CITY_CENTER_OUT_DIR := "res://data/city_center/"
+const OPENING_PUBLIC_OUT_DIR := "res://data/opening_public/"
 
 ## Resource kinds — one kind per CSV (2.1-04 ①).
 const KIND_GOOD_DEF := "GoodDef"
@@ -41,6 +45,8 @@ const KIND_ZONE_DEF := "ZoneDef"
 const KIND_BUILDING_DEF := "BuildingDef"
 const KIND_OPENING_WORKSHOP := "OpeningWorkshop"
 const KIND_BUILD_STEP := "BuildStep"
+const KIND_CITY_CENTER_DEF := "CityCenterDef"
+const KIND_OPENING_PUBLIC := "OpeningPublic"
 
 ## Column type tags — wording mirrors 03_Systems type column.
 const COL_TYPE_STRING := "String"
@@ -78,6 +84,8 @@ const FILE_ZONES := "zones.csv"
 const FILE_BUILDINGS := "buildings.csv"
 const FILE_OPENING_WORKSHOPS := "opening_workshops.csv"
 const FILE_BUILD_QUEUE := "build_queue.csv"
+const FILE_CITY_CENTER := "city_center.csv"
+const FILE_OPENING_PUBLIC := "opening_public.csv"
 
 ## WP-17 / 10-06 ② build_class allowlist.
 const BUILD_CLASS_RESIDENCE := "RESIDENCE"
@@ -149,6 +157,7 @@ const ZONE_DEF_FIELDS: Array[Dictionary] = [
 	{"name": "zone", "type": COL_TYPE_INT},
 	{"name": "slot_share", "type": COL_TYPE_FLOAT},
 	{"name": "rings", "type": COL_TYPE_INT},
+	{"name": "slots", "type": COL_TYPE_INT},
 	{"name": "open_at_start", "type": COL_TYPE_INT},
 ]
 
@@ -182,6 +191,19 @@ const BUILD_STEP_FIELDS: Array[Dictionary] = [
 	{"name": "target_level", "type": COL_TYPE_INT},
 ]
 
+## CityCenterDef — D-11c headers.
+const CITY_CENTER_FIELDS: Array[Dictionary] = [
+	{"name": "port_id", "type": COL_TYPE_STRING},
+	{"name": "public_slots", "type": COL_TYPE_INT},
+]
+
+## OpeningPublic — D-11c headers.
+const OPENING_PUBLIC_FIELDS: Array[Dictionary] = [
+	{"name": "port_id", "type": COL_TYPE_STRING},
+	{"name": "cb_id", "type": COL_TYPE_STRING},
+	{"name": "level", "type": COL_TYPE_INT},
+]
+
 
 func _run() -> void:
 	## D-08i: EditorScript entry uses fixed in/out paths only.
@@ -196,6 +218,12 @@ func _run() -> void:
 		print("csv_import WP-17: wrote %s resources" % str((wp17["written"] as Array).size()))
 	else:
 		push_error("csv_import WP-17: aborted with %s error(s)" % str((wp17["errors"] as PackedStringArray).size()))
+	## WP-18: city_center／opening_public batch (D-11c).
+	var wp18: Dictionary = run_batch_wp18()
+	if wp18["ok"]:
+		print("csv_import WP-18: wrote %s resources" % str((wp18["written"] as Array).size()))
+	else:
+		push_error("csv_import WP-18: aborted with %s error(s)" % str((wp18["errors"] as PackedStringArray).size()))
 
 
 ## Returns schema field list for a resource kind, or empty if unknown.
@@ -216,6 +244,10 @@ static func schema_for(resource_kind: String) -> Array[Dictionary]:
 		return OPENING_WORKSHOP_FIELDS
 	if resource_kind == KIND_BUILD_STEP:
 		return BUILD_STEP_FIELDS
+	if resource_kind == KIND_CITY_CENTER_DEF:
+		return CITY_CENTER_FIELDS
+	if resource_kind == KIND_OPENING_PUBLIC:
+		return OPENING_PUBLIC_FIELDS
 	return []
 
 
@@ -542,6 +574,7 @@ static func _collect_wp17_zone_errors(
 		var port_id: String = String(row["port_id"])
 		var zone: int = int(row["zone"])
 		var rings: int = int(row["rings"])
+		var slots: int = int(row["slots"])
 		var open_at_start: int = int(row["open_at_start"])
 		## 10-06 ① port_id ∈ ports
 		if not port_ids.has(port_id):
@@ -559,6 +592,11 @@ static func _collect_wp17_zone_errors(
 			errors.append(
 				"%s: 10-06 ⑤ int below zero row %s field rings value %s"
 				% [FILE_ZONES, str(row_index), str(rings)]
+			)
+		if slots < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field slots value %s"
+				% [FILE_ZONES, str(row_index), str(slots)]
 			)
 		if open_at_start < 0:
 			errors.append(
@@ -773,6 +811,7 @@ static func _write_zone_tres(
 		def.zone = int(row["zone"])
 		def.slot_share = float(row["slot_share"])
 		def.rings = int(row["rings"])
+		def.slots = int(row["slots"])
 		def.open_at_start = int(row["open_at_start"])
 		var file_name: String = "%s%s%s%s" % [
 			def.port_id, COMPOSITE_TRES_JOINER, str(def.zone), TRES_SUFFIX
@@ -781,6 +820,203 @@ static func _write_zone_tres(
 		var err: Error = ResourceSaver.save(def, path)
 		if err != OK:
 			errors.append("WP-17: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
+
+
+## WP-18 / D-11c: validate city_center／opening_public, clear + write all-or-nothing.
+static func run_batch_wp18(
+	import_dir: String = IMPORT_DIR,
+	city_center_dir: String = CITY_CENTER_OUT_DIR,
+	opening_public_dir: String = OPENING_PUBLIC_OUT_DIR
+) -> Dictionary:
+	var result: Dictionary = {
+		"ok": false,
+		"errors": PackedStringArray(),
+		"written": PackedStringArray(),
+	}
+	var errors: PackedStringArray = PackedStringArray()
+
+	var city_path: String = import_dir.path_join(FILE_CITY_CENTER)
+	var public_path: String = import_dir.path_join(FILE_OPENING_PUBLIC)
+	var ports_path: String = import_dir.path_join(FILE_PORTS)
+
+	var city_result: Dictionary = import_csv(city_path, KIND_CITY_CENTER_DEF, false)
+	var public_result: Dictionary = import_csv(public_path, KIND_OPENING_PUBLIC, false)
+	var ports_result: Dictionary = import_csv(ports_path, KIND_PORT_DEF, false)
+
+	_merge_prefixed_errors(errors, FILE_CITY_CENTER, city_result)
+	_merge_prefixed_errors(errors, FILE_OPENING_PUBLIC, public_result)
+	_merge_prefixed_errors(errors, FILE_PORTS, ports_result)
+
+	if city_result["ok"] and public_result["ok"] and ports_result["ok"]:
+		_collect_wp18_rule_errors(
+			city_result["rows"] as Array,
+			public_result["rows"] as Array,
+			ports_result["rows"] as Array,
+			errors
+		)
+
+	if not errors.is_empty():
+		return _abort_batch(result, errors)
+
+	var clear_errors: PackedStringArray = clear_output_tres_wp18(city_center_dir, opening_public_dir)
+	if not clear_errors.is_empty():
+		for message in clear_errors:
+			errors.append(message)
+		return _abort_batch(result, errors)
+
+	var written: PackedStringArray = PackedStringArray()
+	var write_errors: PackedStringArray = PackedStringArray()
+	_write_city_center_tres(city_result["rows"] as Array, city_center_dir, written, write_errors)
+	_write_opening_public_tres(public_result["rows"] as Array, opening_public_dir, written, write_errors)
+
+	if not write_errors.is_empty():
+		for message in write_errors:
+			errors.append(message)
+		return _abort_batch(result, errors)
+
+	result["ok"] = true
+	result["errors"] = PackedStringArray()
+	result["written"] = written
+	return result
+
+
+static func clear_output_tres_wp18(city_center_dir: String, opening_public_dir: String) -> PackedStringArray:
+	var errors: PackedStringArray = PackedStringArray()
+	_clear_tres_in_dir(city_center_dir, errors)
+	_clear_tres_in_dir(opening_public_dir, errors)
+	return errors
+
+
+static func _collect_wp18_rule_errors(
+	city_rows: Array,
+	public_rows: Array,
+	ports: Array,
+	errors: PackedStringArray
+) -> void:
+	var port_ids: Dictionary = {}
+	for row_variant in ports:
+		port_ids[String((row_variant as Dictionary)["port_id"])] = true
+
+	var cb_regex := RegEx.new()
+	var compile_err: int = cb_regex.compile(CB_ID_FORMAT_PATTERN)
+	assert(compile_err == OK, "CB_ID_FORMAT_PATTERN must compile")
+
+	_collect_wp18_city_center_errors(city_rows, port_ids, errors)
+	_collect_wp18_opening_public_errors(public_rows, port_ids, cb_regex, errors)
+
+
+static func _collect_wp18_city_center_errors(
+	rows: Array,
+	port_ids: Dictionary,
+	errors: PackedStringArray
+) -> void:
+	var seen: Dictionary = {}
+	var row_index: int = 0
+	for row_variant in rows:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var port_id: String = String(row["port_id"])
+		var public_slots: int = int(row["public_slots"])
+		if not port_ids.has(port_id):
+			errors.append(
+				"%s: 10-06 ① unknown port_id row %s value '%s'"
+				% [FILE_CITY_CENTER, str(row_index), port_id]
+			)
+		if public_slots < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field public_slots value %s"
+				% [FILE_CITY_CENTER, str(row_index), str(public_slots)]
+			)
+		if seen.has(port_id):
+			errors.append(
+				"%s: 10-06 ⑥ duplicate key row %s port_id='%s'"
+				% [FILE_CITY_CENTER, str(row_index), port_id]
+			)
+		else:
+			seen[port_id] = true
+
+
+static func _collect_wp18_opening_public_errors(
+	rows: Array,
+	port_ids: Dictionary,
+	cb_regex: RegEx,
+	errors: PackedStringArray
+) -> void:
+	var seen: Dictionary = {}
+	var row_index: int = 0
+	for row_variant in rows:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var port_id: String = String(row["port_id"])
+		var cb_id: String = String(row["cb_id"])
+		var level: int = int(row["level"])
+		if not port_ids.has(port_id):
+			errors.append(
+				"%s: 10-06 ① unknown port_id row %s value '%s'"
+				% [FILE_OPENING_PUBLIC, str(row_index), port_id]
+			)
+		var match: RegExMatch = cb_regex.search(cb_id)
+		var full_match := match != null and match.get_string() == cb_id
+		if not full_match:
+			errors.append(
+				"%s: 10-06 ③ cb_id format row %s value '%s' (expect %s)"
+				% [FILE_OPENING_PUBLIC, str(row_index), cb_id, CB_ID_FORMAT_PATTERN]
+			)
+		if level < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field level value %s"
+				% [FILE_OPENING_PUBLIC, str(row_index), str(level)]
+			)
+		var key: String = "%s%s%s" % [port_id, COMPOSITE_TRES_JOINER, cb_id]
+		if seen.has(key):
+			errors.append(
+				"%s: 10-06 ⑥ duplicate key row %s (port_id, cb_id)=(%s, %s)"
+				% [FILE_OPENING_PUBLIC, str(row_index), port_id, cb_id]
+			)
+		else:
+			seen[key] = true
+
+
+static func _write_city_center_tres(
+	rows: Array,
+	city_center_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := CityCenterDef.new()
+		def.port_id = String(row["port_id"])
+		def.public_slots = int(row["public_slots"])
+		var path: String = city_center_dir.path_join("%s%s" % [def.port_id, TRES_SUFFIX])
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-18: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
+
+
+static func _write_opening_public_tres(
+	rows: Array,
+	opening_public_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := OpeningPublic.new()
+		def.port_id = String(row["port_id"])
+		def.cb_id = String(row["cb_id"])
+		def.level = int(row["level"])
+		var file_name: String = "%s%s%s%s" % [
+			def.port_id, COMPOSITE_TRES_JOINER, def.cb_id, TRES_SUFFIX
+		]
+		var path: String = opening_public_dir.path_join(file_name)
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-18: failed to write %s (err=%s)" % [path, str(err)])
 		else:
 			written.append(path)
 
