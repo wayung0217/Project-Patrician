@@ -1,0 +1,2 @@
+type,tier,max_workers,base_output_per_worker,output_good_id,input1_good_id,input1_qty,input2_good_id,input2_qty,build_class
+WS-RICE,1,4,1.5,GD-001,,0,,0,FACTORY

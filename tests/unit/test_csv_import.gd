@@ -28,6 +28,10 @@ const DATA_SUBDIRS: Array[String] = [
 	"res://data/market",
 	"res://data/params",
 	"res://data/import",
+	"res://data/zones",
+	"res://data/buildings",
+	"res://data/opening",
+	"res://data/build_queue",
 ]
 
 
