@@ -1,5 +1,5 @@
 extends GutTest
-## WP-08 SimLoop + ConsumptionProvider — TechSpec 2.2／2.3／2.1-03／3.7; Owner D-05／D-03／D-07.
+## WP-08 SimLoop + ConsumptionProvider — TechSpec 2.2／2.3／2.1-03／3.7; Owner D-05／D-03／D-07／D-08e／D-08j.
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
@@ -62,6 +62,11 @@ func before_each() -> void:
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
 	# Reset SimLoop injection between tests (Autoload persists).
+	# D-08j: providers only before boot — clear _booted so setters take effect.
+	SimLoop._booted = false
+	SimLoop._capacity_by_kind.clear()
+	SimLoop._capacity_reg_errors.clear()
+	SimLoop._capacity_router = null
 	SimLoop.set_consumption_provider(null)
 
 
@@ -292,7 +297,115 @@ func test_no_public_subday_methods_D07() -> void:
 	assert_false(Clock.has_method("advance_ticks"))
 
 
+func test_D08j_public_api_names_match_ruling() -> void:
+	# D-08j／TST: five public APIs; #11 names already matched — no rename beyond ruling.
+	assert_true(SimLoop.has_method("boot"))
+	assert_true(SimLoop.has_method("tick_day"))
+	assert_true(SimLoop.has_method("is_booted"))
+	assert_true(SimLoop.has_method("set_consumption_provider"))
+	assert_true(SimLoop.has_method("register_capacity_provider"))
+
+
+func test_D08j_set_consumption_provider_ignored_after_boot() -> void:
+	# D-08j／TST: set_consumption_provider after boot → push_error, no effect
+	var first := _boot_ready_provider()
+	var second := TestConsumptionProvider.new()
+	SimLoop.set_consumption_provider(second)
+	assert_push_error_count(1)
+	assert_eq(SimLoop._consumption, first)
+
+
+func test_D08e_register_capacity_provider_before_boot_applies() -> void:
+	# D-08e／TST: register before boot; applied after GoodsLedger.load_and_validate
+	var fixtures := _prepare_fixtures()
+	var cons := _full_zero_provider()
+	SimLoop.set_consumption_provider(cons)
+	var cap := _TestCapProvider.new()
+	cap.set_cap(GoodsLedger.KIND_WAREHOUSE, 10)
+	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, cap)
+	var errors: Array = SimLoop.boot(
+		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
+	)
+	assert_eq(errors.size(), 0, "boot must succeed: %s" % str(errors))
+	assert_true(SimLoop.is_booted())
+	var wh: Dictionary = GoodsLedger.make_warehouse("ACT-PLAYER", PORT_DEMO)
+	var seq: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(),
+		wh,
+		StringName(GOOD_DEMO),
+		4,
+		GoodsLedger.REASON_GENESIS,
+		&"TEST"
+	)
+	assert_gt(seq, 0)
+	var fail: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(),
+		wh,
+		StringName(GOOD_DEMO),
+		10,
+		GoodsLedger.REASON_GENESIS,
+		&"TEST"
+	)
+	assert_eq(fail, 0)
+	assert_true(_last_goods_err_is(GoodsLedger.ERR_SYS03_03))
+	assert_push_error_count(1)
+
+
+func test_D08e_register_capacity_provider_ignored_after_boot() -> void:
+	# D-08e／D-08j／TST: register after boot → push_error, no effect
+	_boot_ready_provider()
+	var before_keys: Array = SimLoop._capacity_by_kind.keys()
+	var cap := _TestCapProvider.new()
+	cap.set_cap(GoodsLedger.KIND_HOLD, 99)
+	SimLoop.register_capacity_provider(GoodsLedger.KIND_HOLD, cap)
+	assert_push_error_count(1)
+	assert_eq(SimLoop._capacity_by_kind.keys(), before_keys)
+	assert_false(SimLoop._capacity_by_kind.has(GoodsLedger.KIND_HOLD))
+
+
+func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
+	# D-08e／TST: duplicate kind → ERR-SYS03-06；boot collects and refuses
+	var fixtures := _prepare_fixtures()
+	var cons := _full_zero_provider()
+	SimLoop.set_consumption_provider(cons)
+	var a := _TestCapProvider.new()
+	a.set_cap(GoodsLedger.KIND_WAREHOUSE, 5)
+	var b := _TestCapProvider.new()
+	b.set_cap(GoodsLedger.KIND_WAREHOUSE, 50)
+	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, a)
+	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, b)
+	assert_push_error_count(1)
+	assert_eq(SimLoop._capacity_by_kind[GoodsLedger.KIND_WAREHOUSE], a)
+	var errors: Array = SimLoop.boot(
+		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
+	)
+	assert_gt(errors.size(), 0)
+	assert_true(_has_err_code(errors, GoodsLedger.ERR_SYS03_06))
+	assert_false(SimLoop.is_booted())
+
+
 # --- helpers ---
+
+
+class _TestCapProvider extends CapacityProvider:
+	var _caps: Dictionary = {} ## kind:String -> int
+
+	func set_cap(kind: String, cap: int) -> void:
+		_caps[kind] = cap
+
+	func capacity(container: Variant) -> int:
+		if typeof(container) != TYPE_DICTIONARY:
+			return CAPACITY_FAILURE
+		var kind: String = String(container.get(GoodsLedger.KEY_KIND, ""))
+		if not _caps.has(kind):
+			return CAPACITY_FAILURE
+		return int(_caps[kind])
+
+
+func _last_goods_err_is(code: StringName) -> bool:
+	var info: Dictionary = GoodsLedger.last_error()
+	return String(info.get("code", "")) == String(code)
+
 
 func _boot_ready_provider() -> TestConsumptionProvider:
 	var fixtures := _prepare_fixtures()
