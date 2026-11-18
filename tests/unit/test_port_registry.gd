@@ -2,6 +2,7 @@ extends GutTest
 ## WP-04 PortRegistry tests. Fixture values from TechSpec §4 / TST-SYS02-01..05 / 3.3.
 ## D-04: failures are ErrorInfo Dictionaries {code, sys, detail}; no ERR→int.
 ## D-02: queue_role_change payload validated at enqueue.
+## D-08b／D-08c: port_id／name_zh format; id lookups unknown → fail＋last_error (R3-02).
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
@@ -24,6 +25,16 @@ const ERR_SYS02_02 := &"ERR-SYS02-02"
 const ERR_SYS02_03 := &"ERR-SYS02-03"
 const ERR_SYS02_05 := &"ERR-SYS02-05"
 const ERR_SYS02_06 := &"ERR-SYS02-06"
+const ERR_SYS02_07 := &"ERR-SYS02-07"
+const ERR_SYS02_08 := &"ERR-SYS02-08"
+const ERR_SYS02_09 := &"ERR-SYS02-09"
+
+## D-08b fixture ids that violate PORT_ID_PATTERN (^PT-[0-9]{2}$).
+const D08_BAD_PORT_ID_SHORT := "PT-1"
+const D08_BAD_PORT_ID_LONG := "PT-001"
+const D08_UNKNOWN_PORT_ID := "PT-99"
+const D08_UNKNOWN_GOOD_ID := "GD-999"
+const D08_BLANK_NAME_ZH := "   "
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -327,11 +338,217 @@ func test_valid_ports_load_queries_and_warnings() -> void:
 	assert_eq(PortRegistry.get_role(terminals[0], good_id), PortRegistry.ROLE_TERMINAL)
 	var port: PortDef = PortRegistry.get_port(ids[0])
 	assert_false(port.port_id.is_empty())
+	assert_true(PortRegistry.last_error().is_empty(), "successful get_port clears last_error")
 	# draft_limit_class stored, unused (B3).
 	assert_true(port.get("draft_limit_class") != null)
 
 	var recheck: Array = PortRegistry.validate()
 	assert_eq(recheck.size(), 0)
+
+
+func test_D08_TST_port_id_format_rejects() -> void:
+	# D-08b／TST: port_id 不符 ^PT-[0-9]{2}$（一位數）→ ERR-SYS02-07；拒絕啟動（C-06 收集）。
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "bad_port_id/", free_count)
+	var path := dir + "PT-01.tres"
+	var def: PortDef = load(path) as PortDef
+	def.port_id = D08_BAD_PORT_ID_SHORT
+	assert_eq(ResourceSaver.save(def, path), OK)
+
+	var errors: Array = PortRegistry.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(PortRegistry.is_loaded())
+	assert_true(_has_code(errors, ERR_SYS02_07), "expected ERR-SYS02-07 PORT_ID_FORMAT")
+
+
+func test_D08_TST_port_id_format_three_digits_rejects() -> void:
+	# D-08b／TST: 固定兩位寬度，PT-001 → ERR-SYS02-07.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "bad_port_id_long/", free_count)
+	var path := dir + "PT-01.tres"
+	var def: PortDef = load(path) as PortDef
+	def.port_id = D08_BAD_PORT_ID_LONG
+	assert_eq(ResourceSaver.save(def, path), OK)
+
+	var errors: Array = PortRegistry.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(PortRegistry.is_loaded())
+	assert_true(_has_code(errors, ERR_SYS02_07), "PT-001 must be ERR-SYS02-07")
+
+
+func test_D08_TST_name_zh_blank_rejects() -> void:
+	# D-08b／TST: name_zh 去除前後空白後為空 → ERR-SYS02-08.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "blank_name/", free_count)
+	var path := dir + "PT-01.tres"
+	var def: PortDef = load(path) as PortDef
+	def.name_zh = D08_BLANK_NAME_ZH
+	assert_eq(ResourceSaver.save(def, path), OK)
+
+	var errors: Array = PortRegistry.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(PortRegistry.is_loaded())
+	assert_true(_has_code(errors, ERR_SYS02_08), "expected ERR-SYS02-08 NAME_EMPTY")
+
+
+func test_D08_TST_name_zh_empty_rejects() -> void:
+	# D-08b／TST: name_zh 空字串 → ERR-SYS02-08.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "empty_name/", free_count)
+	var path := dir + "PT-02.tres"
+	var def: PortDef = load(path) as PortDef
+	def.name_zh = ""
+	assert_eq(ResourceSaver.save(def, path), OK)
+
+	var errors: Array = PortRegistry.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(PortRegistry.is_loaded())
+	assert_true(_has_code(errors, ERR_SYS02_08), "empty name_zh → ERR-SYS02-08")
+
+
+func test_D08_TST_get_port_unknown_id_null_last_error() -> void:
+	# D-08c／TST: get_port 未知 id → null＋last_error ERR-SYS02-09；不得中止、不得回空白物件.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "unknown_id/", free_count)
+	var errors: Array = PortRegistry.load_and_validate(dir)
+	assert_eq(errors.size(), 0)
+	assert_true(PortRegistry.is_loaded())
+
+	var missing: PortDef = PortRegistry.get_port(D08_UNKNOWN_PORT_ID)
+	assert_true(missing == null, "unknown id must return null (not blank PortDef)")
+	assert_true(_last_error_is(ERR_SYS02_09), "expected ERR-SYS02-09 UNKNOWN_ID in last_error")
+
+	var known_id: String = PortRegistry.all_ids()[0]
+	var found: PortDef = PortRegistry.get_port(known_id)
+	assert_true(found != null)
+	assert_eq(found.port_id, known_id)
+	assert_true(PortRegistry.last_error().is_empty(), "success clears last_error")
+
+
+func test_D08c_get_role_unknown_returns_role_invalid() -> void:
+	# R3-02 ①: get_role unknown port/good → ROLE_INVALID (0) + last_error ERR-SYS02-09; no assert abort.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "d08c_role/", free_count)
+	assert_eq(PortRegistry.load_and_validate(dir).size(), 0)
+
+	assert_eq(PortRegistry.ROLE_INVALID, 0, "ROLE_INVALID must be 0 (D-04)")
+	assert_ne(PortRegistry.ROLE_PRODUCER, 0, "valid roles renumbered from 1")
+	assert_ne(PortRegistry.ROLE_TRANSIT, 0)
+	assert_ne(PortRegistry.ROLE_TERMINAL, 0)
+
+	var good_id: String = GoodCatalog.all_ids()[0]
+	assert_eq(PortRegistry.get_role(D08_UNKNOWN_PORT_ID, good_id), PortRegistry.ROLE_INVALID)
+	assert_true(_last_error_is(ERR_SYS02_09), "unknown port → ERR-SYS02-09")
+
+	var known_port: String = PortRegistry.all_ids()[0]
+	assert_eq(PortRegistry.get_role(known_port, D08_UNKNOWN_GOOD_ID), PortRegistry.ROLE_INVALID)
+	assert_true(_last_error_is(ERR_SYS02_09), "unknown good → ERR-SYS02-09")
+
+	var role: int = PortRegistry.get_role(known_port, good_id)
+	assert_ne(role, PortRegistry.ROLE_INVALID)
+	assert_true(PortRegistry.last_error().is_empty(), "success clears last_error")
+
+
+func test_D08c_array_lookups_unknown_empty_last_error() -> void:
+	# R3-02 ②: get_downstream／producers_of／terminals_of unknown id → empty + last_error ERR-SYS02-09.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "d08c_arrays/", free_count)
+	assert_eq(PortRegistry.load_and_validate(dir).size(), 0)
+
+	var good_id: String = GoodCatalog.all_ids()[0]
+	var downs_bad: PackedStringArray = PortRegistry.get_downstream(D08_UNKNOWN_PORT_ID, good_id)
+	assert_eq(downs_bad.size(), 0)
+	assert_true(_last_error_is(ERR_SYS02_09), "get_downstream unknown port → ERR-SYS02-09")
+
+	var known_port: String = PortRegistry.all_ids()[0]
+	var downs_bad_good: PackedStringArray = PortRegistry.get_downstream(known_port, D08_UNKNOWN_GOOD_ID)
+	assert_eq(downs_bad_good.size(), 0)
+	assert_true(_last_error_is(ERR_SYS02_09), "get_downstream unknown good → ERR-SYS02-09")
+
+	var producers_bad: PackedStringArray = PortRegistry.producers_of(D08_UNKNOWN_GOOD_ID)
+	assert_eq(producers_bad.size(), 0)
+	assert_true(_last_error_is(ERR_SYS02_09), "producers_of unknown → ERR-SYS02-09")
+
+	var terminals_bad: PackedStringArray = PortRegistry.terminals_of(D08_UNKNOWN_GOOD_ID)
+	assert_eq(terminals_bad.size(), 0)
+	assert_true(_last_error_is(ERR_SYS02_09), "terminals_of unknown → ERR-SYS02-09")
+
+
+func test_D08c_success_clears_last_error_empty_not_failure() -> void:
+	# R3-02 ③: all id-lookup public methods clear last_error on success so empty array ≠ failure.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "d08c_clear/", free_count)
+	assert_eq(PortRegistry.load_and_validate(dir).size(), 0)
+
+	# Seed a failure first.
+	assert_eq(PortRegistry.get_role(D08_UNKNOWN_PORT_ID, GoodCatalog.all_ids()[0]), PortRegistry.ROLE_INVALID)
+	assert_true(_last_error_is(ERR_SYS02_09))
+
+	var good_id: String = GoodCatalog.all_ids()[0]
+	var known_port: String = PortRegistry.all_ids()[0]
+	assert_true(PortRegistry.get_port(known_port) != null)
+	assert_true(PortRegistry.last_error().is_empty(), "get_port success clears")
+
+	assert_eq(PortRegistry.producers_of(D08_UNKNOWN_GOOD_ID).size(), 0)
+	assert_true(_last_error_is(ERR_SYS02_09))
+	var producers: PackedStringArray = PortRegistry.producers_of(good_id)
+	assert_gt(producers.size(), 0)
+	assert_true(PortRegistry.last_error().is_empty(), "producers_of success clears")
+
+	assert_eq(PortRegistry.terminals_of(D08_UNKNOWN_GOOD_ID).size(), 0)
+	assert_true(_last_error_is(ERR_SYS02_09))
+	var terminals: PackedStringArray = PortRegistry.terminals_of(good_id)
+	assert_gt(terminals.size(), 0)
+	assert_true(PortRegistry.last_error().is_empty(), "terminals_of success clears")
+
+	# TERMINAL cells have empty downstream; success must still clear last_error.
+	assert_eq(PortRegistry.get_downstream(D08_UNKNOWN_PORT_ID, good_id).size(), 0)
+	assert_true(_last_error_is(ERR_SYS02_09))
+	var downs: PackedStringArray = PortRegistry.get_downstream(known_port, good_id)
+	assert_eq(downs.size(), 0, "TERMINAL fixture has empty downstream")
+	assert_true(PortRegistry.last_error().is_empty(), "empty success ≠ failure")
+
+
+func test_D08c_queue_role_change_unknown_rejects() -> void:
+	# R3-02 ④: queue_role_change unknown port/good → reject enqueue ERR-SYS02-09 (D-02); no assert.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "d08c_queue/", free_count)
+	assert_eq(PortRegistry.load_and_validate(dir).size(), 0)
+
+	var good_id: String = GoodCatalog.all_ids()[0]
+	var bad_port: Array = PortRegistry.queue_role_change(
+		D08_UNKNOWN_PORT_ID, good_id, PortRegistry.ROLE_TERMINAL, {}
+	)
+	assert_eq(bad_port.size(), 1)
+	assert_true(_has_code(bad_port, ERR_SYS02_09), "unknown port → ERR-SYS02-09")
+	assert_true(_last_error_is(ERR_SYS02_09))
+	assert_push_error_count(1)
+
+	var known_port: String = PortRegistry.all_ids()[0]
+	var bad_good: Array = PortRegistry.queue_role_change(
+		known_port, D08_UNKNOWN_GOOD_ID, PortRegistry.ROLE_TERMINAL, {}
+	)
+	assert_eq(bad_good.size(), 1)
+	assert_true(_has_code(bad_good, ERR_SYS02_09), "unknown good → ERR-SYS02-09")
+	assert_true(_last_error_is(ERR_SYS02_09))
+	assert_push_error_count(2)
+
+	# Nothing enqueued.
+	assert_eq(PortRegistry.apply_queued_role_changes().size(), 0)
+	assert_ne(PortRegistry.get_role(known_port, good_id), PortRegistry.ROLE_INVALID)
 
 
 func _build_valid_goods(dir: String) -> String:
@@ -502,6 +719,16 @@ func _has_code(errors: Array, code: StringName) -> bool:
 			assert_eq(typeof(detail), TYPE_DICTIONARY, "ErrorInfo.detail must be Dictionary")
 			return true
 	return false
+
+
+func _last_error_is(code: StringName) -> bool:
+	var e: Dictionary = PortRegistry.last_error()
+	if not _is_error_info(e):
+		return false
+	if StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")) != code:
+		return false
+	assert_eq(StringName(e.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID, "ErrorInfo.sys must be SYS-02")
+	return true
 
 
 func _is_error_info(e: Variant) -> bool:
