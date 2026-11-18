@@ -12,11 +12,17 @@ const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
 
 const SYS_ID := &"SYS-01"
+const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+
 const ERR_SYS01_01 := &"ERR-SYS01-01"
 const ERR_SYS01_02 := &"ERR-SYS01-02"
 const ERR_SYS01_03 := &"ERR-SYS01-03"
 const ERR_SYS01_04 := &"ERR-SYS01-04"
 const ERR_SYS01_05 := &"ERR-SYS01-05"
+const ERR_SYS01_06 := &"ERR-SYS01-06"
+const ERR_SYS01_07 := &"ERR-SYS01-07"
+const ERR_SYS01_08 := &"ERR-SYS01-08"
+const ERR_SYS01_09 := &"ERR-SYS01-09"
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -128,6 +134,7 @@ func test_valid_catalog_loads_sorted_ids_and_derives_scale() -> void:
 	assert_eq(errors.size(), 0)
 	assert_true(GoodCatalog.is_loaded())
 	assert_signal_emitted(GoodCatalog, "catalog_loaded")
+	assert_signal_emitted_with_parameters(GoodCatalog, "catalog_loaded", [count_min])
 
 	var ids: PackedStringArray = GoodCatalog.all_ids()
 	assert_eq(ids.size(), count_min)
@@ -220,7 +227,8 @@ func _make_good(
 	def.is_build_material = is_build_material
 	def.is_strategic = is_strategic
 	def.base_price_li = base_price_li
-	def.season_mask = 0
+	# D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
+	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
 	return def
 
 
@@ -283,3 +291,80 @@ func test_D04_error_info_shape_not_int_codes() -> void:
 		assert_true(_is_error_info(e), "every failure must be D-04 ErrorInfo Dictionary")
 		assert_false(typeof(e) == TYPE_INT, "must not return bare int error codes")
 	assert_true(_has_code(errors, ERR_SYS01_04), "expected ERR-SYS01-04 as StringName code")
+
+
+func test_D08a_TST_season_mask_not_full_year_rejects() -> void:
+	# D-08a: season_mask ≠ 2^SEASONS_PER_YEAR−1 → ERR-SYS01-06
+	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var dir := _build_valid_catalog(count_min, FIXTURE_ROOT + "d08a_mask/")
+	var bad := _make_good("GD-096", "壞季節", 1, false, false, false, 1)
+	bad.season_mask = 0
+	ResourceSaver.save(bad, dir + "bad_mask.tres")
+	_remove_file(dir + "GD-005.tres")
+
+	var errors: Array = GoodCatalog.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(GoodCatalog.is_loaded())
+	assert_true(_has_code(errors, ERR_SYS01_06), "expected ERR-SYS01-06")
+
+
+func test_D08b_TST_good_id_format_rejects() -> void:
+	# D-08b: good_id must match ^GD-[0-9]{3}$ → ERR-SYS01-07
+	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var dir := _build_valid_catalog(count_min, FIXTURE_ROOT + "d08b_id/")
+	var bad := _make_good("GD-9", "壞編號", 1, false, false, false, 1)
+	ResourceSaver.save(bad, dir + "bad_id.tres")
+	_remove_file(dir + "GD-005.tres")
+
+	var errors: Array = GoodCatalog.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(GoodCatalog.is_loaded())
+	assert_true(_has_code(errors, ERR_SYS01_07), "expected ERR-SYS01-07")
+
+
+func test_D08b_TST_name_zh_empty_rejects() -> void:
+	# D-08b: name_zh strip_edges empty → ERR-SYS01-08
+	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var dir := _build_valid_catalog(count_min, FIXTURE_ROOT + "d08b_name/")
+	var bad := _make_good("GD-095", "   ", 1, false, false, false, 1)
+	ResourceSaver.save(bad, dir + "bad_name.tres")
+	_remove_file(dir + "GD-005.tres")
+
+	var errors: Array = GoodCatalog.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(GoodCatalog.is_loaded())
+	assert_true(_has_code(errors, ERR_SYS01_08), "expected ERR-SYS01-08")
+
+
+func test_D08c_TST_get_good_unknown_id_null_last_error() -> void:
+	# D-08c: unknown id → null + last_error ERR-SYS01-09 (no assert abort)
+	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var dir := _build_valid_catalog(count_min, FIXTURE_ROOT + "d08c_unk/")
+	var errors: Array = GoodCatalog.load_and_validate(dir)
+	assert_eq(errors.size(), 0)
+	assert_true(GoodCatalog.is_loaded())
+
+	var missing: GoodDef = GoodCatalog.get_good("GD-999")
+	assert_null(missing, "unknown id must return null")
+	assert_push_error_count(1)
+	var info: Dictionary = GoodCatalog.last_error()
+	assert_true(_is_error_info(info), "last_error must be D-04 ErrorInfo")
+	assert_eq(StringName(info.get(ErrorInfoUtil.KEY_CODE, &"")), ERR_SYS01_09)
+	assert_eq(StringName(info.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID)
+
+	var rice: GoodDef = GoodCatalog.get_good("GD-001")
+	assert_not_null(rice)
+	assert_true(GoodCatalog.last_error().is_empty(), "successful get_good clears last_error")
+
+
+func test_D08f_TST_catalog_loaded_emits_count() -> void:
+	# D-08f: signal catalog_loaded(count)
+	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var dir := _build_valid_catalog(count_min, FIXTURE_ROOT + "d08f_sig/")
+	watch_signals(GoodCatalog)
+	var errors: Array = GoodCatalog.load_and_validate(dir)
+	assert_eq(errors.size(), 0)
+	assert_signal_emitted_with_parameters(GoodCatalog, "catalog_loaded", [count_min])

@@ -2,8 +2,9 @@ extends Node
 ## Autoload: GoodCatalog — loads res://data/goods/*.tres once, then read-only (TechSpec 3.2 / WP-03).
 ## _ready() only clears fields; load_and_validate() performs I/O and FRM checks (2.2-01).
 ## Errors are D-04 ErrorInfo Dictionaries (shared with C-06); no ERR→int.
+## D-08a/b/c/f: season_mask year-full、good_id／name_zh 格式、get_good null＋last_error、catalog_loaded(count).
 
-signal catalog_loaded
+signal catalog_loaded(count: int)
 
 const GOODS_DIR := "res://data/goods/"
 const TRES_SUFFIX := ".tres"
@@ -14,6 +15,7 @@ const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_GOOD_COUNT_MAX := "PRM-SYS01-GOOD_COUNT_MAX"
 const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
+const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 
 ## LCR-23 / FRM-SYS01-01 staple names (米、鹽、魚乾、木材).
 const STAPLE_NAME_RICE := "米"
@@ -21,11 +23,18 @@ const STAPLE_NAME_SALT := "鹽"
 const STAPLE_NAME_DRIED_FISH := "魚乾"
 const STAPLE_NAME_TIMBER := "木材"
 
+## D-08b: good_id format; digit width fixed so string sort matches numeric order.
+const GOOD_ID_FORMAT_PATTERN := "^GD-[0-9]{3}$"
+
 const ERR_SYS01_01 := &"ERR-SYS01-01"
 const ERR_SYS01_02 := &"ERR-SYS01-02"
 const ERR_SYS01_03 := &"ERR-SYS01-03"
 const ERR_SYS01_04 := &"ERR-SYS01-04"
 const ERR_SYS01_05 := &"ERR-SYS01-05"
+const ERR_SYS01_06 := &"ERR-SYS01-06" ## SEASON_MASK_NOT_FULL_YEAR (D-08a)
+const ERR_SYS01_07 := &"ERR-SYS01-07" ## GOOD_ID_FORMAT (D-08b)
+const ERR_SYS01_08 := &"ERR-SYS01-08" ## NAME_EMPTY (D-08b)
+const ERR_SYS01_09 := &"ERR-SYS01-09" ## UNKNOWN_ID (D-08c)
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
 const CODE_LOAD_FAIL := &"LOAD_FAIL"
@@ -34,8 +43,10 @@ const CODE_NOT_LOADED := &"NOT_LOADED"
 const CODE_DIR_OPEN := &"DIR_OPEN"
 
 const FIELD_GOOD_ID := "good_id"
+const FIELD_NAME_ZH := "name_zh"
 const FIELD_TIER := "tier"
 const FIELD_BASE_PRICE_LI := "base_price_li"
+const FIELD_SEASON_MASK := "season_mask"
 const FIELD_COUNT := "goods_count"
 const FIELD_STAPLE := "is_staple"
 const FIELD_PARAMS := "Params"
@@ -45,10 +56,15 @@ const TIER_MIN := 1
 var _by_id: Dictionary = {}
 var _ids_sorted: PackedStringArray = PackedStringArray()
 var _loaded: bool = false
+## D-08c／D-04: single-call ErrorInfo for get_good; empty Dictionary when none.
+var _last_error: Dictionary = {}
+var _good_id_regex: RegEx = RegEx.new()
 
 
 func _ready() -> void:
 	_clear_state()
+	var compile_err: int = _good_id_regex.compile(GOOD_ID_FORMAT_PATTERN)
+	assert(compile_err == OK, "GoodCatalog GOOD_ID_FORMAT_PATTERN must compile")
 
 
 func load_and_validate(goods_dir: String = GOODS_DIR) -> Array:
@@ -101,7 +117,8 @@ func load_and_validate(goods_dir: String = GOODS_DIR) -> Array:
 	ids.sort()
 	_ids_sorted = PackedStringArray(ids)
 	_loaded = true
-	catalog_loaded.emit()
+	# D-08f: catalog_loaded(count)
+	catalog_loaded.emit(_ids_sorted.size())
 	return errors
 
 
@@ -118,10 +135,18 @@ func validate() -> Array:
 
 
 func get_good(id: String) -> GoodDef:
-	# 缺口 C-05: unknown-id failure path not specified; keep assert (do not invent).
+	# D-08c: unknown id → null + last_error ERR-SYS01-09; do not assert／fabricate blank GoodDef.
 	assert(_loaded, "GoodCatalog.get_good before successful load")
-	assert(_by_id.has(id), "GoodCatalog.get_good unknown id: %s" % id)
+	_clear_last_error()
+	if not _by_id.has(id):
+		_set_last_error(_err(ERR_SYS01_09, GOODS_DIR, FIELD_GOOD_ID, id, "unknown good_id"))
+		return null
 	return _by_id[id] as GoodDef
+
+
+func last_error() -> Dictionary:
+	# D-08c／D-04: get_good unknown-id ErrorInfo lives here.
+	return _last_error.duplicate(true)
 
 
 func all_ids() -> PackedStringArray:
@@ -134,11 +159,14 @@ func is_loaded() -> bool:
 
 
 func _validate_loaded(loaded: Array) -> Array:
-	# FRM-SYS01-01
+	# FRM-SYS01-01 (+ D-08a／D-08b)
 	var errors: Array = []
 	var tier_max: int = Params.get_int(PRM_TIER_MAX)
 	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
 	var count_max: int = Params.get_int(PRM_GOOD_COUNT_MAX)
+	# D-08a: year-full mask from PRM-SYS00-SEASONS_PER_YEAR — never a literal like 15.
+	var seasons_per_year: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+	var year_full_mask: int = (1 << seasons_per_year) - 1
 
 	var count: int = loaded.size()
 	# ERR-SYS01-04 — goods count out of [GOOD_COUNT_MIN, GOOD_COUNT_MAX]
@@ -168,6 +196,14 @@ func _validate_loaded(loaded: Array) -> Array:
 		else:
 			seen_ids[def.good_id] = path
 
+		# D-08b ERR-SYS01-07 — good_id must match GOOD_ID_FORMAT_PATTERN
+		if _good_id_regex.search(def.good_id) == null:
+			errors.append(_err(ERR_SYS01_07, path, FIELD_GOOD_ID, def.good_id, "good_id must match %s" % GOOD_ID_FORMAT_PATTERN))
+
+		# D-08b ERR-SYS01-08 — name_zh strip_edges must be non-empty (no silent trim rewrite)
+		if def.name_zh.strip_edges().is_empty():
+			errors.append(_err(ERR_SYS01_08, path, FIELD_NAME_ZH, def.name_zh, "name_zh must be non-empty after strip_edges"))
+
 		# ERR-SYS01-02 — tier out of [1, TIER_MAX]
 		if def.tier < TIER_MIN or def.tier > tier_max:
 			errors.append(_err(ERR_SYS01_02, path, FIELD_TIER, def.tier, "tier out of [1, PRM-SYS01-TIER_MAX]"))
@@ -175,6 +211,10 @@ func _validate_loaded(loaded: Array) -> Array:
 		# ERR-SYS01-03 — base_price_li <= 0
 		if def.base_price_li <= 0:
 			errors.append(_err(ERR_SYS01_03, path, FIELD_BASE_PRICE_LI, def.base_price_li, "base_price_li must be > 0"))
+
+		# D-08a ERR-SYS01-06 — MVP season_mask must be year-full
+		if def.season_mask != year_full_mask:
+			errors.append(_err(ERR_SYS01_06, path, FIELD_SEASON_MASK, def.season_mask, "season_mask must be year-full (2^SEASONS_PER_YEAR - 1)"))
 
 		if def.is_staple:
 			var prev: int = int(staple_counts.get(def.name_zh, 0))
@@ -226,6 +266,16 @@ func _clear_state() -> void:
 	_by_id = {}
 	_ids_sorted = PackedStringArray()
 	_loaded = false
+	_clear_last_error()
+
+
+func _clear_last_error() -> void:
+	_last_error = {}
+
+
+func _set_last_error(info: Dictionary) -> void:
+	_last_error = info
+	push_error("GoodCatalog: %s" % str(info))
 
 
 func _err(code: StringName, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
