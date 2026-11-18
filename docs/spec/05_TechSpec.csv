@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,,,
-狀態：Phase 0＋Round 3 全數合併（main 1e048ec，143 測）｜2026-11-18｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 Phase 1 派工單（本期 WP-16、17）,,,,,,,,
+狀態：Phase 0＋Round 3 全數合併（main 1e048ec，143 測）｜2026-11-18｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）,,,,,,,,
 ,,,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,,,
@@ -34,11 +34,11 @@ C-14,不得改規格,Cursor 不得修改本工作簿。介面需變更時在 PR 
 1-A10,SimLoop,每日 tick 與商季 cutoff 的唯一排程者（第 2.3 節）。,—,03_Systems r298,可做,,,
 1-X1,CT-OQ-37／38／39,工坊毛利、買入倍率、產能解耦（k／w／n）。,任何工坊、工資、配方代碼都不寫。,04B_CityRules r556–558,禁止碰,,,
 1-X2,地價、地租、圈層開放,04B 第 4 節全部。,不寫槽位、地價、地租相關類別或欄位。,04B 第 4 節,禁止碰,,,
-1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。｜★ 2026-11-18 例外：第 10 節派工單開放的 WP-16、WP-17（只做參數載入與 CSV 匯入，不寫任何 SYS-06／07／08 邏輯）。,03_Systems 系統清單,禁止碰,,,
+1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。｜★ 2026-11-18 例外：第 10 節派工單開放的 WP-16、WP-17（只做參數載入與 CSV 匯入，不寫任何 SYS-06／07／08 邏輯）。｜★ Round 5 例外：第 11 節開放 WP-18（SYS-08 資料層，只做版圖、地價、購地與查詢）、WP-25。,03_Systems 系統清單,禁止碰,,,
 1-X4,曲線正式數值,W1..W5、M1..M5、HALF_SPREAD 的調整。,只抄錄現值，不得改。,03_Systems r421,禁止碰,,,
 1-X5,OQ-12 系列未決項,—,遇到即停（C-05）。,03_Systems,禁止碰,,,
 1-X6,04A_Buildings!G111 疑點,—,不得以任何形式引用該值。,04A_Buildings,禁止碰,,,
-1-X7,SYS-00 Rng,"派生演算法已定：對 (seed, day, port, item, purpose) 做固定雜湊後以 SplitMix64 播種。（Owner 2026-11-17 確認）",Phase 0 的 SYS-01..05 不需要隨機數；不建 Rng 檔案。字串鍵如何編碼成雜湊輸入，於 Rng 開工前另補細則，Cursor 不得自定。,ST-RNG、GP-03,禁止碰（演算法已定，但不在 Phase 0）,,,
+1-X7,SYS-00 Rng,"派生演算法已定：對 (seed, day, port, item, purpose) 做固定雜湊後以 SplitMix64 播種。（Owner 2026-11-17 確認）",Phase 0 的 SYS-01..05 不需要隨機數；不建 Rng 檔案。字串鍵如何編碼成雜湊輸入，於 Rng 開工前另補細則，Cursor 不得自定。｜★ 2026-11-18 OQ-15m：字串編碼已定為 03_Systems FRM-SYS23-10（UTF-8＋FNV-1a 64，欄位間 0x1F）；實作見 WP-25。,ST-RNG、GP-03,禁止碰（演算法已定，但不在 Phase 0）,,,
 1-X8,存檔／Steam Cloud,格式已定：Godot Resource 二進位＋整數 schema_version；目標支援 Steam Cloud（B-07）。（Owner 2026-11-17 確認）,存檔不在 Phase 0：不寫 save／load。,B-07,禁止碰（格式已定，但不在 Phase 0）,,,
 ,,,,,,,,
 2 目錄結構、載入順序與每日排程,,,,,,,,
@@ -273,7 +273,7 @@ N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked,,,
 ,,,,,,,,
 7 工作包總表（WP）— 唯一的工作包清單：新工作包一律接在表尾、編號連續；同一 WP 的後續修改記在 G 欄，不另開表（Owner 追蹤用；Cursor 不得修改）,,,,,,,,
 用法,Cursor 依 WP 編號與依賴開工；一個 PR 只做一個 WP；從最新 main 開分支、不堆疊（Owner 另行核准者除外）；依序搬到 main 後以 merge commit 合併；測試數以「合併前 main ＋ 該 PR 自己新增數」累計，舊測名不得消失。,PR 描述必須回報：WP 編號、新增檔案、測試結果（通過數／總數與新增測名）、遇到的規格缺口（未裁決不得自行補）。,狀態下拉：未開始／進行中／PR 待審／退件／完成；Owner 審後更新。,,,,,
-進度,共 25 個 WP｜完成 16｜進行中 0｜PR 待審 0｜退件 0｜未開始 9　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
+進度,共 28 個 WP｜完成 16｜進行中 0｜PR 待審 2｜退件 0｜未開始 10　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
 WP 編號,內容（對應規格）,依賴,交付物,驗收,狀態,PR／合併紀錄,階段,最後更新
 WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,完成,R1：PR #1｜1/1 ／ R2：無改動｜2026-11-18T03:19:32Z 合併 33018d6（main 1/1）,Phase 0（Round 1–2）,2026-11-18
 WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,完成,R1：PR #2｜9/9 ／ R2：+TICKS_PER_DAY、ROUND_EPS｜13/13｜搬到 main 後合併 57435c7（main 13）,Phase 0（Round 1–2）,2026-11-18
@@ -291,15 +291,18 @@ WP-12,D-08 修正 ── GoodsLedger（WP-05）：D-08d 容器 id 只查 kind �
 WP-13,D-08 修正 ── MarketPricer（WP-06）：D-08g 指示燈具名 enum、D-08h TransitAnchorProvider,WP-06,market_pricer.gd、測試（+4）,D-08g／h 各有測試,完成,R3-4｜PR #14｜merge f3bbe71｜main 134｜乾淨 rebase,Phase 0 修正（Round 3，D-08）,2026-11-18
 WP-14,D-08 修正 ── csv_import（WP-09）：D-08i 固定路徑、全有或全無、寫前清舊檔,WP-09,csv_import.gd、測試（+4）,D-08i 各規則有測試,完成,R3-5｜PR #18｜merge 53e6a03｜main 138｜乾淨 rebase,Phase 0 修正（Round 3，D-08）,2026-11-18
 WP-15,D-08 修正 ── SimLoop（WP-08）：D-08e 由 SimLoop 登錄容量提供者、D-08j 公開入口,WP-08,sim_loop.gd、測試（+5）,D-08e／j 各有測試,完成,"R3-6｜PR #16（8664f15）｜merge 1e048ec｜main 143、CI success｜rebase 衝突（goods_ledger.gd、sim_loop.gd）已解：改呼叫 WP-05 的 GoodsLedger.register_capacity_provider(kind, …)，刪未用的 _KindCapacityRouter → 見 R3-03",Phase 0 修正（Round 3，D-08）,2026-11-18
-WP-16,Params 擴充：登錄 SYS-06／07／08 附錄 A 全部 PRM（03_Systems 6.x、7.8、8.7）；無值者缺鍵拒絕啟動,WP-10 至 15 全部完成（已滿足）,params.gd 更新、測試,每個新 PRM 可讀、型別與範圍驗證；11＋5 項無值 PRM 缺鍵即 ERR（C-06 一次列出）,未開始,★ 2026-11-18 已派工（D-09h、第 10 節派工單）；範圍限 SYS-07／08（D-10b）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-17,csv_import 擴充：新增 zones.csv、buildings.csv、opening_workshops.csv、build_queue.csv 的匯入與驗證（schema 見 D-09d；資料來源 04_Content 第 7 節）,—（與 WP-16 平行開發；合併順序 WP-16 → WP-17）,csv_import.gd、fixtures、測試,表頭逐字、全有或全無、不得手寫正式資料（2.1-04 ⑤）,未開始,★ 2026-11-18 已派工（D-09h、第 10 節派工單）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-18,SYS-08 資料層：ST-SLOT（槽位版圖、商館地、公共槽）、地價 FRM-SYS08-01、購地 02、CapacityProvider(WAREHOUSE) 19、WorkplaceProvider 20,WP-17,building_economy.gd、slot.gd、building.gd、測試,TST-SYS08-01、02、03；D-08e 登錄 WAREHOUSE 提供者,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-16,Params 擴充：登錄 SYS-06／07／08 附錄 A 全部 PRM（03_Systems 6.x、7.8、8.7）；無值者缺鍵拒絕啟動,WP-10 至 15 全部完成（已滿足）,params.gd 更新、測試,每個新 PRM 可讀、型別與範圍驗證；11＋5 項無值 PRM 缺鍵即 ERR（C-06 一次列出）,PR 待審,R4｜PR #20（727e987）｜+10 → 預期 153｜CI 綠｜★ D-10d 已授權合併（#20 先）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-17,csv_import 擴充：新增 zones.csv、buildings.csv、opening_workshops.csv、build_queue.csv 的匯入與驗證（schema 見 D-09d；資料來源 04_Content 第 7 節）,—（與 WP-16 平行開發；合併順序 WP-16 → WP-17）,csv_import.gd、fixtures、測試,表頭逐字、全有或全無、不得手寫正式資料（2.1-04 ⑤）,PR 待審,R4｜PR #19（7549c4c）｜+11 → 預期 164｜CI 綠｜★ D-10d 已授權合併（#20 之後）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-18,SYS-08 資料層：BuildingEconomy Autoload、ST-SLOT 版圖產生（D-09c、D-11a／b）、地價 FRM-01、購地 FRM-02、倉儲容量 FRM-19＋CapacityProvider(WAREHOUSE) 登錄、WorkplaceProvider FRM-20、PopulationProvider 介面（D-11d）；csv_import 補 zones.slots、city_center、opening_public（D-11a、c）,WP-16、WP-17 合併後,building_economy.gd、slot.gd、building.gd、population_provider.gd、city_center_def.gd、opening_public.gd、csv_import.gd、測試,見第 11 節 11-07,未開始,★ 2026-11-18 已派工（第 11 節派工單，Round 5）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-19,SYS-08 建造：下單、BC-2 取料、待料、工期、完工、升級、暫停與拆除（FRM-05、06、07、23）,WP-18,building_economy.gd、測試,TST-SYS08-04、05；FRM-23 測試,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-20,★ SYS-08 工坊生產與工資：FRM-08 至 12；★ SimLoop 每日 PRODUCE 改由工坊驅動（OQ-14b），角色格產量只作驗證,WP-19,building_economy.gd、sim_loop.gd、測試,TST-SYS08-06 至 10、17；舊 PRODUCE 測試依 D-09g 處理,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-21,SYS-07 PopulationModel：四種人口、滿意度、流動、招工、安置抽籤（FRM-SYS07-01 至 15；7.15）,WP-20,population_model.gd、測試,TST-SYS07-01 至 19；滿意度輸入先以介面注入（fixture）,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-22,SYS-06 DemandModel：正式 ConsumptionProvider（FRM-SYS06-01 至 09、商品替代、滿意度輸入）；執行範圍依 D-09b,WP-21,demand_model.gd、測試,TST-SYS06-01 至 10,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-23,SYS-08 城市與季末：店賃、地租、空置稅、城防採購、建設佇列、開區、上級抽調（FRM-03、04、13 至 17）；收購城營建築 18,WP-22,building_economy.gd、測試,TST-SYS08-11 至 16,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-24,開局初始化與整合：FRM-SYS08-21（04_Content 第 4 至 7 節）、SimLoop 新排程全線、守恆整季測試,WP-23,sim_loop.gd、測試,TST-SYS08-18；一季全流程守恆（FRM-SYS03-01）不觸發,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-25,SYS-00 Rng 派生雜湊：FRM-SYS23-10（UTF-8＋FNV-1a 64＋0x1F 分隔 → SplitMix64），補 1-X7 細則,—（獨立，可隨時派）,res://core/rng.gd（或 Owner 指定）、測試,TST-SYS23-08 測試向量；同輸入同輸出；mod 2^64 環繞只准在此函數（C-10 例外）,未開始,★ 2026-11-18 已派工（第 11 節派工單，Round 5）,工具批 T-1（模擬器）,2026-11-18
+WP-26,SYS-23 模擬器核心：sim_runner、情境檔驗證（9.6、ERR-SYS23-01 至 07）、參數合併 FRM-01、網格 FRM-02、季末取樣、MET／OBS、五個輸出 CSV（9.9）,WP-24、WP-25,res://sim/ 全部、測試,TST-SYS23-01 至 04、08 至 11,未開始,—（需 Phase 1 代碼完成）,工具批 T-1（模擬器）,2026-11-18
+WP-27,SYS-23 第二層理想運貨者：FRM-SYS23-04、原因碼 SIM_RELOCATE（FRM-05，非模擬模式即 ERR-SYS03-04）,WP-26,res://sim/、goods_ledger.gd（原因碼）、測試,TST-SYS23-05、06、07,未開始,—,工具批 T-1（模擬器）,2026-11-18
 ,,,,,,,,
 8 Owner 裁決總表（D 系列）— 所有實作裁決集中於此，新裁決接在表尾；優先於第 3 節同主題的 D 欄註記,,,,,,,,
 編號,主題,裁決,實作要求,影響 WP,回寫來源 Sheet,,,
@@ -331,6 +334,12 @@ D-09h,今晚派工範圍,只派 WP-16（Params 擴充，限 SYS-07／08）與 WP
 D-10a,分組參數在 params.json 的寫法,依類別的參數用物件（鍵＝build_class 七值或 POOR／CITIZEN／RICH）；依等級或區號的用陣列（第 1 個元素＝最低一級）；鍵名為 PRM ID 去掉「[類別]」「[級]」「[k]」「[class]」「_L1／L2／L3」「_Y1／Y2／Y3」。每貨產量與配方不入 params.json，只走 buildings.csv。,物件鍵必須恰為列舉全集（缺鍵、多鍵皆錯）；陣列長度須等於規格長度；逐元素驗型別與下限；全部錯誤一次列出（C-06）。各鍵形狀見 03_Systems 7.8／8.7 的 I 欄。,WP-16,03_Systems I1152:I1154、H1368:I1404,,,
 D-10b,SYS-08 參數下限與 SYS-06 參數,SYS-08 補結構性下限（數量、天數、容量 ≥ 1；比率、金額 ≥ 0；倍率 k、n > 0；不設上限），標 [待審]。SYS-06 的 6.2 參數尚未登記為 PRM，延到派 WP-22 前登記。,WP-16 只做 SYS-07、SYS-08；SYS-07 依 7.8 G／H 欄、SYS-08 依 8.7 H 欄驗範圍；無上限欄者不驗上限。,WP-16、WP-22,03_Systems H1368:H1404,,,
 D-10c,GoodsLedger 容量提供者登錄方法名,"追認 #16 使用的 register_capacity_provider(kind, provider) 為正式名稱，回寫 03_Systems；代碼不改。",SYS-08 登錄 WAREHOUSE 提供者時一律經此方法（WP-18）。,WP-12、WP-15、WP-18,03_Systems C300,,,
+D-10d,Round 4 追認三項處理,追認 Cursor 在 #20／#19 的三項處理：① 複合鍵資源檔名以「__」連接（例 PT-01__1.tres）；② 定點數以 float 讀入並驗 ≥ 0，同 Phase 0 PRM-SYS02-FREE_PORT_RATIO；③ 四個新 CSV 與 goods／ports 分批匯入，各批全有或全無。授權依 #20 → #19 以 merge commit 合併、合後刪遠端分支，預期 main 153 → 164。,照現狀，不改代碼。,WP-16、WP-17,—,,,
+D-11a,zones.csv 格數,zones.csv 加 slots 欄，直接取 04_Content 第 3 節 J:N 已算好的各區格數；不由比例自算。,"WP-18 PR 一併把 csv_import 的 zones 表頭加上 slots（int ≥ 0）。註：各區分別四捨五入，全圖合計 6,433，與民用槽 6,430 差 3，以 zones.csv 為準。",WP-18,04_Content F753、AR752:AR831,,,
+D-11b,區內各環格數,每區格數平均分到該區各環，餘數以 FRM-SYS05-12 最大餘數法分配（權重皆 1，同值環號小者先＝內環先拿）；[待審]。,環號全港連續：第 1 區為 1..r1，第 2 區接 r1＋1 起，依此類推。,WP-18,03_Systems FRM-SYS08-01,,,
+D-11c,市中心資料,"新增 city_center.csv（port_id, public_slots）與 opening_public.csv（port_id, cb_id, level）；由 04_Content 7.5、7.6 公式匯出；開局公共建築等級一律 1 [待審]。",WP-18 PR 一併新增兩個 CSV 的匯入（規則同 10-06）；opening_public 的建築在 WP-24 初始化時才建立，WP-18 只匯入不使用。,WP-18、WP-24,04_Content 7.5、7.6,,,
+D-11d,人口來源介面（AI 比照 1-A9 先例）,SYS-07 未上線前，BuildingEconomy 以注入的 PopulationProvider 讀人口：population(port_id) -> int；基底方法 push_error 並回失敗值（2.1-03）。PopulationModel 於 WP-21 實作此介面。,新檔 res://core/interfaces/population_provider.gd；未注入 → boot() 回錯誤；測試只用 fixtures。,WP-18、WP-21,—（待 Owner 追認）,,,
+D-11e,地價的浮點運算（AI 依 C-09 精神）,FRM-SYS08-01 的 SQRT 與次方只在中間值用 float；結果先經 quantize_amount()（D-01）再 ceili 成 int 厘。,不得另寫取整函數（N-04）。,WP-18,—（待 Owner 追認）,,,
 ,,,,,,,,
 9 收件審查與合併紀錄（R 系列）— 每份 Cursor 報告的審查結論集中於此，新紀錄接在表尾,,,,,,,,
 註,R2-01 至 R2-12 的原始全文於 2026-11-18 工作簿重整時遺失，下表依 AI_README 更新日誌摘要重建；R2-13 起為完整內容。,,,,,,,
@@ -353,7 +362,7 @@ R3-00,Round 3 派工（D-08a–j）,六個 PR 各從 main 開分支、不堆疊�
 R3-01,Round 3 報告審查,#13、#15、#17、#14、#18、#16 CI 綠、新增 28 測、111 舊測名齊全；D-08a–j 逐項有測試。三項觀察（name_zh 純空白、其他 id 查詢方法、寫法類規定）請 Cursor 於合併報告答覆。授權依序合併，預期 116 → 121 → 126 → 130 → 134 → 139。,—,有效,2026-11-18,,,
 R3-02,合併停在 #15（稽核 ②）,#13 已合（669d146，main 116）；①③ 已實作；② D-08c 只做了 get_port。裁決 A：在 #15 補完（見 D-08c），加測試，後續預期數 ＋N。,等 Cursor 回報 N,結清,2026-11-18,,,
 R3-03,Round 3 合併完成,"六個 PR 全數 merge commit；main 1e048ec，143 測，CI success；R3 與 Round 2 殘留遠端分支已刪。#15 依 R3-02 補 4 測（N＝4）。#16 relocate 時改用 WP-05 已實作的 GoodsLedger.register_capacity_provider(kind, …)：此公開方法名尚未寫入 03_Systems（C-14 回寫待 Owner 追認）。",WP-10 至 15 改為完成；方法名已依 D-10c 回寫,結清,2026-11-18,,,
-,,,,,,,,
+R4-01,Round 4（D-09h）收件：WP-16 #20、WP-17 #19,兩 PR 皆從 main e23e5f1 開、不堆疊、CI 綠；無新 Autoload、未改 SimLoop、無經濟邏輯。預期 143 → 153 → 164。Cursor 列出的 C-05 缺口：WP-16 ① PF6 兩速率交叉檢查（ERR-SYS07-02）② SYS-06 參數 ③ ZONE_* 陣列長度 ④ good_id 存在性 ⑤ 正式 params 不寫 Phase 1 值；WP-17 ⑥ 複合鍵 .tres 檔名暫用「__」連接 ⑦ 跨表規則 ⑧ 定點數以 float ≥ 0 驗證 ⑨ 四 CSV 與 goods／ports 分批匯入 ⑩ 尚無 Owner 正式 CSV。AI 審查：①–⑤、⑦ 皆照派工單規定延後，非缺陷；⑥⑧⑨ 為合理處理，待 Owner 追認；⑩ 屬 Owner 動作（從 04_Content 第 7 節匯出）。,Owner 授權合併 #20 → #19（D-10d），三項處理追認,有效,2026-11-18,,,
 10 Phase 1 派工單 — 本期開放 WP-16、WP-17（2026-11-18；其餘 Phase 1 WP 未開放）,,,,,,,,
 編號,項目,內容,實作要求,依據,狀態,,,
 10-01,共同前提,兩個 WP 各一 PR，都從 main 1e048ec 開分支，不堆疊；合併順序 WP-16 → WP-17，測試數照「合併前 main ＋ 自己新增數」累計。,禁止：不建 BuildingEconomy／PopulationModel／DemandModel、不登錄新 Autoload、不改 SimLoop 排程、不以這些資料做任何經濟邏輯；不得寫入正式 params.json 的 Phase 1 鍵（本期只做載入與驗證，測試只用 fixtures）。,C-01、C-13、D-09h,可做,,,
@@ -364,3 +373,15 @@ R3-03,Round 3 合併完成,"六個 PR 全數 merge commit；main 1e048ec，143 �
 10-06,WP-17 欄位型別與檢查,型別：port_id、good_id、type、cb_id、build_class、*_good_id 為字串；zone、rings、tier、max_workers、count、step、target_level、input*_qty、open_at_start 為 int；slot_share、base_output_per_worker 為定點數。,"檢查：① port_id 須存在於已匯入的 ports，good_id 與非空的 *_good_id 須存在於 goods；② build_class 限 RESIDENCE／WAREHOUSE／IND1／IND2／IND3／PUBLIC／KONTOR；③ cb_id 只驗格式 ^CB-[0-9]{2}$；④ open_at_start 限 0／1；⑤ int 欄 ≥ 0；⑥ 唯一鍵：zones (port_id, zone)、buildings type、opening (port_id, good_id)、build_queue (port_id, step)。其他跨表規則（佔槽比例加總、座數合理性）不在本期，不得自行加。",C-05、C-06,可做,,,
 10-07,驗收,WP-16：純量、物件、陣列三種形狀正常載入各一測試；缺鍵、多鍵、型別錯、低於下限、列舉錯各一測試；無值鍵缺鍵即拒絕一測試。WP-17：四個 CSV 各一個正常 fixture 匯入測試；10-06 ①–⑥ 各一失敗測試；全有或全無一測試。,測試名含 WP 與規則編號（例 test_WP17_10_06_3_cb_id_format）；PR 描述回報新增測試數與名單。,C-13,可做,,,
 10-08,遇到缺口,本派工單未寫到的事一律不做。,在 PR 描述列「缺口」並停止該項，其餘照常（C-05）。,C-05,可做,,,
+,,,,,,,,
+11 Phase 1 派工單 Round 5 — WP-18（SYS-08 資料層）、WP-25（抽籤雜湊）（2026-11-18）,,,,,,,,
+編號,項目,內容,實作要求,依據,狀態,,,
+11-01,共同前提,#20、#19 合併後，從最新 main（預期 164）各開一個分支、不堆疊；兩 PR 互不依賴，合併順序 WP-25 → WP-18。,"WP-18 新增 Autoload BuildingEconomy，登錄於 CashLedger 之後、SimLoop 之前（D-09a）；SimLoop 只允許在 boot() 內以 register_capacity_provider(WAREHOUSE, BuildingEconomy) 登錄（D-08e、D-10c），每日排程與季末一律不改。",C-13、D-09a,可做,,,
+11-02,WP-18 範圍,只做：版圖產生、land_price()、buy_land()、warehouse_capacity()、capacity(container)、workplaces()／residences()／public_level() 查詢、last_error()、信號 land_bought。,不做：建造、升級、生產、工資、店賃、城防、季末任何動作、開局初始化（WP-19 起）。本期沒有任何建築，查詢回空清單或 0 屬正常。,03_Systems 8.6 H,可做,,,
+11-03,版圖產生（boot 時）,依 port_id 升序；每港：① CIVIL：zones 依 zone 升序，格數＝slots，平均分到各環、餘數內環先拿（D-11b），環號全港連續；② PUBLIC：public_slots 格，zone＝0、ring＝0；③ KONTOR：PRM-SYS08-KONTOR_PLOTS 格，zone＝0、ring＝0。slot_id＝SLOT:<port_id>:<nnnn>，nnnn 由 0001 起依 CIVIL → PUBLIC → KONTOR、zone、ring 升序編號，只由 slot_id() 產生。,全部 land_owner＝CITY-<port_id>、building＝null。zone_open 取 zones.open_at_start；PUBLIC／KONTOR 恆開放。R＝已開放各區環數合計。,D-09c、D-11a、D-11b；03_Systems 8.6 D,可做,,,
+11-04,地價 FRM-SYS08-01,pop 經 PopulationProvider.population(port_id)（D-11d）；scarcity 的「空槽」＝該區 CIVIL 格中 building＝null 者；商館地與公共槽 scarcity＝1、ring_f＝1。,SQRT 與次方只在中間值��� float，結果經 quantize_amount() 後 ceili（D-11e）；每個參數讀取處註 PRM ID（C-12）。,FRM-SYS08-01,可做,,,
+11-05,購地 FRM-SYS08-02,"前置：slot 存在（否則 ERR-SYS08-08）、所屬區已開放（ERR-01）、地主為城市且無建築（ERR-02）；價格＝當下 land_price；CashLedger.post({actor: −P, CITY-<port>: +P}, LAND_PURCHASE, SYS-08)，失敗轉 ERR-SYS08-07，全有或全無；成功後 land_owner＝actor，回傳該筆 Posting 的 seq，發 land_bought。",CITY-<port_id> 帳戶若 CashLedger 無建立帳戶的公開方法可用 → 列缺口停止該項（C-05），不得自行加方法。土地不能賣回城市（無對應方法）。,FRM-SYS08-02；R2-05,可做,,,
+11-06,倉儲與工作住處查詢,capacity(WAREHOUSE:<actor>:<port>)＝KONTOR_CAP[商館等級]＋倉庫座數 × WAREHOUSE_CAP，無商館＝0（FRM-19）；workplaces／residences／public_level 依 FRM-20，只列 ACTIVE 建築。,本期無建築：只測「無商館 → 0」「無建築 → 空清單」；有建築的測試在 WP-19。,FRM-SYS08-19、20,可做,,,
+11-07,WP-18 驗收,TST-SYS08-01（校準城地價，fixture 人口與 04B B286 口徑）、TST-SYS08-02；另加：① 各區格數合計＝zones.slots；② 97 格 4 環 → 25／24／24／24；③ slot_id 格式與編號順序；④ PUBLIC、KONTOR 格數；⑤ 環位與稀缺改變地價方向正確；⑥ 購地成功的過帳與地主變更；⑦ ERR-08 未知 slot、ERR-02 已售、ERR-07 現金不足且全無；⑧ 無 PopulationProvider → boot 錯誤；⑨ zones.slots 與兩個新 CSV 的匯入成功與 10-06 規則失敗各一。,測試名含 TST ID 或 11-07 編號；PR 描述回報新增測試數與名單。,C-13,可做,,,
+11-08,WP-25 抽籤雜湊,"靜態工具（非 Autoload）res://core/rng.gd：derive_seed(seed: int, day: int, port_id: String, item: String, purpose: String) -> int 依 03_Systems FRM-SYS23-10；SplitMix64 next(state) 照標準演算法。","測試：TST-SYS23-08 兩個 FNV 向量；SplitMix64 以 0 為狀態的第一個輸出＝0xE220A8397B1DCDAF；欄位分隔防碰撞（""PT-1""+""0"" ≠ ""PT-10""）；同輸入同輸出。mod 2^64 環繞只准在此檔（C-10 例外）。",FRM-SYS23-10；1-X7,可做,,,
+11-09,遇到缺口,本派工單未寫到的事一律不做。,在 PR 描述列「缺口」並停止該項，其餘照常（C-05）。,C-05,可做,,,
