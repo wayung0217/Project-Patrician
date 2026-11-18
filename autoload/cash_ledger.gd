@@ -616,7 +616,8 @@ func close_season() -> SeasonLedgerReport:
 	_season_index = _season_index + 1
 	_season_start_day = season_end_exclusive
 	_reset_season_stats_opening()
-	season_ledger_closed.emit(report.season_index - 1, report)
+	# D-05(c): emit closed season_index（首季 0）；report already holds pre-bump index.
+	season_ledger_closed.emit(report.season_index, report)
 	return report
 
 
