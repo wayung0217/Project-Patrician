@@ -1,10 +1,11 @@
 @tool
 extends EditorScript
-## CSV → Resource converter framework (05_TechSpec 2.1-04 + D-08i + WP-17 / 10-05／10-06).
+## CSV → Resource converter framework (05_TechSpec 2.1-04 + D-08i + WP-17 / 10-05／10-06 + WP-29 D-14e).
 ## Validates CSV against 03_Systems／04_Content data-structure field names/types.
 ## Public API is static so headless GUT can call without instantiating EditorScript.
 ## D-08i: fixed in/out paths; validate all four CSVs then write all-or-nothing; clear old outputs first.
 ## WP-17: second all-or-nothing batch for zones／buildings／opening_workshops／build_queue.
+## WP-29: third all-or-nothing batch for nodes／regions／lanes → res://data/sea/ (D-14e).
 
 const FIXTURES_PREFIX := "res://tests/fixtures/"
 const DATA_PREFIX := "res://data/"
@@ -22,6 +23,10 @@ const IMPORT_OPENING_WORKSHOPS_CSV := IMPORT_DIR + "opening_workshops.csv"
 const IMPORT_BUILD_QUEUE_CSV := IMPORT_DIR + "build_queue.csv"
 const IMPORT_CITY_CENTER_CSV := IMPORT_DIR + "city_center.csv"
 const IMPORT_OPENING_PUBLIC_CSV := IMPORT_DIR + "opening_public.csv"
+## WP-29 / D-14e fixed import filenames (same IMPORT_DIR).
+const IMPORT_NODES_CSV := IMPORT_DIR + "nodes.csv"
+const IMPORT_REGIONS_CSV := IMPORT_DIR + "regions.csv"
+const IMPORT_LANES_CSV := IMPORT_DIR + "lanes.csv"
 
 ## D-08i fixed output roots.
 const GOODS_OUT_DIR := "res://data/goods/"
@@ -35,6 +40,11 @@ const OPENING_OUT_DIR := "res://data/opening/"
 const BUILD_QUEUE_OUT_DIR := "res://data/build_queue/"
 const CITY_CENTER_OUT_DIR := "res://data/city_center/"
 const OPENING_PUBLIC_OUT_DIR := "res://data/opening_public/"
+## WP-29 / D-14e fixed output roots under res://data/sea/.
+const SEA_OUT_DIR := "res://data/sea/"
+const SEA_NODES_OUT_DIR := SEA_OUT_DIR + "nodes/"
+const SEA_REGIONS_OUT_DIR := SEA_OUT_DIR + "regions/"
+const SEA_LANES_OUT_DIR := SEA_OUT_DIR + "lanes/"
 
 ## Resource kinds — one kind per CSV (2.1-04 ①).
 const KIND_GOOD_DEF := "GoodDef"
@@ -47,6 +57,9 @@ const KIND_OPENING_WORKSHOP := "OpeningWorkshop"
 const KIND_BUILD_STEP := "BuildStep"
 const KIND_CITY_CENTER_DEF := "CityCenterDef"
 const KIND_OPENING_PUBLIC := "OpeningPublic"
+const KIND_SEA_NODE := "SeaNode"
+const KIND_SEA_REGION := "SeaRegion"
+const KIND_SEA_LANE := "SeaLane"
 
 ## Column type tags — wording mirrors 03_Systems type column.
 const COL_TYPE_STRING := "String"
@@ -86,6 +99,22 @@ const FILE_OPENING_WORKSHOPS := "opening_workshops.csv"
 const FILE_BUILD_QUEUE := "build_queue.csv"
 const FILE_CITY_CENTER := "city_center.csv"
 const FILE_OPENING_PUBLIC := "opening_public.csv"
+const FILE_NODES := "nodes.csv"
+const FILE_REGIONS := "regions.csv"
+const FILE_LANES := "lanes.csv"
+
+## WP-29 / D-14e kind／lane_type allowlists.
+const SEA_KIND_PORT := "PORT"
+const SEA_KIND_JUNCTION := "JUNCTION"
+const SEA_KIND_ALLOWED: PackedStringArray = [SEA_KIND_PORT, SEA_KIND_JUNCTION]
+const SEA_LANE_TYPE_SPUR := "SPUR"
+const SEA_LANE_TYPE_TRUNK := "TRUNK"
+const SEA_LANE_TYPE_NEIGHBOR := "NEIGHBOR"
+const SEA_LANE_TYPE_ALLOWED: PackedStringArray = [
+	SEA_LANE_TYPE_SPUR,
+	SEA_LANE_TYPE_TRUNK,
+	SEA_LANE_TYPE_NEIGHBOR,
+]
 
 ## WP-17 / 10-06 ② build_class allowlist.
 const BUILD_CLASS_RESIDENCE := "RESIDENCE"
@@ -204,6 +233,33 @@ const OPENING_PUBLIC_FIELDS: Array[Dictionary] = [
 	{"name": "level", "type": COL_TYPE_INT},
 ]
 
+## SeaNode — D-14e / 04_Content 8.2 headers.
+const SEA_NODE_FIELDS: Array[Dictionary] = [
+	{"name": "node_id", "type": COL_TYPE_STRING},
+	{"name": "kind", "type": COL_TYPE_STRING},
+	{"name": "name_zh", "type": COL_TYPE_STRING},
+	{"name": "x", "type": COL_TYPE_INT},
+	{"name": "y", "type": COL_TYPE_INT},
+]
+
+## SeaRegion — D-14e / 04_Content 8.3 headers (note replaces 說明).
+const SEA_REGION_FIELDS: Array[Dictionary] = [
+	{"name": "region_id", "type": COL_TYPE_STRING},
+	{"name": "name_zh", "type": COL_TYPE_STRING},
+	{"name": "note", "type": COL_TYPE_STRING},
+]
+
+## SeaLane — D-14e / 04_Content 8.4 headers.
+const SEA_LANE_FIELDS: Array[Dictionary] = [
+	{"name": "lane_id", "type": COL_TYPE_STRING},
+	{"name": "node_a", "type": COL_TYPE_STRING},
+	{"name": "node_b", "type": COL_TYPE_STRING},
+	{"name": "region_id", "type": COL_TYPE_STRING},
+	{"name": "length", "type": COL_TYPE_FLOAT},
+	{"name": "waypoints", "type": COL_TYPE_INT},
+	{"name": "lane_type", "type": COL_TYPE_STRING},
+]
+
 
 func _run() -> void:
 	## D-08i: EditorScript entry uses fixed in/out paths only.
@@ -224,6 +280,12 @@ func _run() -> void:
 		print("csv_import WP-18: wrote %s resources" % str((wp18["written"] as Array).size()))
 	else:
 		push_error("csv_import WP-18: aborted with %s error(s)" % str((wp18["errors"] as PackedStringArray).size()))
+	## WP-29: nodes／regions／lanes batch (D-14e).
+	var wp29: Dictionary = run_batch_wp29()
+	if wp29["ok"]:
+		print("csv_import WP-29: wrote %s resources" % str((wp29["written"] as Array).size()))
+	else:
+		push_error("csv_import WP-29: aborted with %s error(s)" % str((wp29["errors"] as PackedStringArray).size()))
 
 
 ## Returns schema field list for a resource kind, or empty if unknown.
@@ -248,6 +310,12 @@ static func schema_for(resource_kind: String) -> Array[Dictionary]:
 		return CITY_CENTER_FIELDS
 	if resource_kind == KIND_OPENING_PUBLIC:
 		return OPENING_PUBLIC_FIELDS
+	if resource_kind == KIND_SEA_NODE:
+		return SEA_NODE_FIELDS
+	if resource_kind == KIND_SEA_REGION:
+		return SEA_REGION_FIELDS
+	if resource_kind == KIND_SEA_LANE:
+		return SEA_LANE_FIELDS
 	return []
 
 
@@ -887,6 +955,247 @@ static func clear_output_tres_wp18(city_center_dir: String, opening_public_dir: 
 	_clear_tres_in_dir(city_center_dir, errors)
 	_clear_tres_in_dir(opening_public_dir, errors)
 	return errors
+
+
+## WP-29 / D-14e: validate nodes／regions／lanes, clear + write all-or-nothing under sea/.
+static func run_batch_wp29(
+	import_dir: String = IMPORT_DIR,
+	nodes_dir: String = SEA_NODES_OUT_DIR,
+	regions_dir: String = SEA_REGIONS_OUT_DIR,
+	lanes_dir: String = SEA_LANES_OUT_DIR
+) -> Dictionary:
+	var result: Dictionary = {
+		"ok": false,
+		"errors": PackedStringArray(),
+		"written": PackedStringArray(),
+	}
+	var errors: PackedStringArray = PackedStringArray()
+
+	var nodes_path: String = import_dir.path_join(FILE_NODES)
+	var regions_path: String = import_dir.path_join(FILE_REGIONS)
+	var lanes_path: String = import_dir.path_join(FILE_LANES)
+
+	var nodes_result: Dictionary = import_csv(nodes_path, KIND_SEA_NODE, false)
+	var regions_result: Dictionary = import_csv(regions_path, KIND_SEA_REGION, false)
+	var lanes_result: Dictionary = import_csv(lanes_path, KIND_SEA_LANE, false)
+
+	_merge_prefixed_errors(errors, FILE_NODES, nodes_result)
+	_merge_prefixed_errors(errors, FILE_REGIONS, regions_result)
+	_merge_prefixed_errors(errors, FILE_LANES, lanes_result)
+
+	if nodes_result["ok"] and regions_result["ok"] and lanes_result["ok"]:
+		_collect_wp29_rule_errors(
+			nodes_result["rows"] as Array,
+			regions_result["rows"] as Array,
+			lanes_result["rows"] as Array,
+			errors
+		)
+
+	if not errors.is_empty():
+		return _abort_batch(result, errors)
+
+	var clear_errors: PackedStringArray = clear_output_tres_wp29(nodes_dir, regions_dir, lanes_dir)
+	if not clear_errors.is_empty():
+		for message in clear_errors:
+			errors.append(message)
+		return _abort_batch(result, errors)
+
+	var written: PackedStringArray = PackedStringArray()
+	var write_errors: PackedStringArray = PackedStringArray()
+	_write_sea_node_tres(nodes_result["rows"] as Array, nodes_dir, written, write_errors)
+	_write_sea_region_tres(regions_result["rows"] as Array, regions_dir, written, write_errors)
+	_write_sea_lane_tres(lanes_result["rows"] as Array, lanes_dir, written, write_errors)
+
+	if not write_errors.is_empty():
+		for message in write_errors:
+			errors.append(message)
+		return _abort_batch(result, errors)
+
+	result["ok"] = true
+	result["errors"] = PackedStringArray()
+	result["written"] = written
+	return result
+
+
+static func clear_output_tres_wp29(
+	nodes_dir: String,
+	regions_dir: String,
+	lanes_dir: String
+) -> PackedStringArray:
+	var errors: PackedStringArray = PackedStringArray()
+	_clear_tres_in_dir(nodes_dir, errors)
+	_clear_tres_in_dir(regions_dir, errors)
+	_clear_tres_in_dir(lanes_dir, errors)
+	return errors
+
+
+static func _collect_wp29_rule_errors(
+	node_rows: Array,
+	region_rows: Array,
+	lane_rows: Array,
+	errors: PackedStringArray
+) -> void:
+	var node_ids: Dictionary = {}
+	var region_ids: Dictionary = {}
+	var row_index: int = 0
+	for row_variant in node_rows:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var node_id: String = String(row["node_id"])
+		var kind: String = String(row["kind"])
+		if node_ids.has(node_id):
+			errors.append(
+				"%s: D-14e duplicate node_id row %s value '%s'"
+				% [FILE_NODES, str(row_index), node_id]
+			)
+		else:
+			node_ids[node_id] = true
+		if not SEA_KIND_ALLOWED.has(kind):
+			errors.append(
+				"%s: D-14e kind allowlist row %s value '%s' (expect PORT／JUNCTION)"
+				% [FILE_NODES, str(row_index), kind]
+			)
+		var name_zh: String = String(row["name_zh"]).strip_edges()
+		if name_zh.is_empty():
+			errors.append(
+				"%s: D-14e name_zh empty row %s" % [FILE_NODES, str(row_index)]
+			)
+
+	row_index = 0
+	for row_variant in region_rows:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var region_id: String = String(row["region_id"])
+		if region_ids.has(region_id):
+			errors.append(
+				"%s: D-14e duplicate region_id row %s value '%s'"
+				% [FILE_REGIONS, str(row_index), region_id]
+			)
+		else:
+			region_ids[region_id] = true
+		if String(row["name_zh"]).strip_edges().is_empty():
+			errors.append(
+				"%s: D-14e name_zh empty row %s" % [FILE_REGIONS, str(row_index)]
+			)
+
+	var lane_ids: Dictionary = {}
+	var pairs: Dictionary = {}
+	row_index = 0
+	for row_variant in lane_rows:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var lane_id: String = String(row["lane_id"])
+		var node_a: String = String(row["node_a"])
+		var node_b: String = String(row["node_b"])
+		var region_id: String = String(row["region_id"])
+		var waypoints: int = int(row["waypoints"])
+		var lane_type: String = String(row["lane_type"])
+		if lane_ids.has(lane_id):
+			errors.append(
+				"%s: D-14e duplicate lane_id row %s value '%s'"
+				% [FILE_LANES, str(row_index), lane_id]
+			)
+		else:
+			lane_ids[lane_id] = true
+		if not node_ids.has(node_a) or not node_ids.has(node_b):
+			errors.append(
+				"%s: D-14e lane endpoint unknown row %s (%s–%s)"
+				% [FILE_LANES, str(row_index), node_a, node_b]
+			)
+		if node_a == node_b:
+			errors.append(
+				"%s: D-14e lane endpoints equal row %s value '%s'"
+				% [FILE_LANES, str(row_index), node_a]
+			)
+		var pair: String = node_a + "|" + node_b if node_a < node_b else node_b + "|" + node_a
+		if pairs.has(pair):
+			errors.append(
+				"%s: D-14e duplicate undirected pair row %s value '%s'"
+				% [FILE_LANES, str(row_index), pair]
+			)
+		else:
+			pairs[pair] = true
+		if not region_ids.has(region_id):
+			errors.append(
+				"%s: D-14e region_id unknown row %s value '%s'"
+				% [FILE_LANES, str(row_index), region_id]
+			)
+		if waypoints < 1:
+			errors.append(
+				"%s: D-14e waypoints must be ≥ 1 row %s value '%s'"
+				% [FILE_LANES, str(row_index), str(waypoints)]
+			)
+		if not SEA_LANE_TYPE_ALLOWED.has(lane_type):
+			errors.append(
+				"%s: D-14e lane_type allowlist row %s value '%s' (expect SPUR／TRUNK／NEIGHBOR)"
+				% [FILE_LANES, str(row_index), lane_type]
+			)
+
+
+static func _write_sea_node_tres(
+	rows: Array,
+	nodes_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := SeaNode.new()
+		def.node_id = String(row["node_id"])
+		def.kind = String(row["kind"])
+		def.name_zh = String(row["name_zh"])
+		def.x = int(row["x"])
+		def.y = int(row["y"])
+		var path: String = nodes_dir.path_join("%s%s" % [def.node_id, TRES_SUFFIX])
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-29: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
+
+
+static func _write_sea_region_tres(
+	rows: Array,
+	regions_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := SeaRegion.new()
+		def.region_id = String(row["region_id"])
+		def.name_zh = String(row["name_zh"])
+		def.note = String(row["note"])
+		var path: String = regions_dir.path_join("%s%s" % [def.region_id, TRES_SUFFIX])
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-29: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
+
+
+static func _write_sea_lane_tres(
+	rows: Array,
+	lanes_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := SeaLane.new()
+		def.lane_id = String(row["lane_id"])
+		def.node_a = String(row["node_a"])
+		def.node_b = String(row["node_b"])
+		def.region_id = String(row["region_id"])
+		def.length = float(row["length"])
+		def.waypoints = int(row["waypoints"])
+		def.lane_type = String(row["lane_type"])
+		var path: String = lanes_dir.path_join("%s%s" % [def.lane_id, TRES_SUFFIX])
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-29: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
 
 
 static func _collect_wp18_rule_errors(

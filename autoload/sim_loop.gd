@@ -7,6 +7,7 @@ extends Node
 ## D-07: no public sub-day methods; day advance only via Clock.advance_one_day().
 ## D-08e／D-08j: register_capacity_provider／set_consumption_provider only before boot().
 ## WP-18: boot loads BuildingEconomy and registers WAREHOUSE CapacityProvider when not pre-registered.
+## WP-29 / D-14c: SeaLanes loads after PortRegistry (before GoodsLedger).
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 
@@ -77,9 +78,12 @@ func boot(
 	params_path: String = Params.PARAMS_PATH,
 	goods_dir: String = GoodCatalog.GOODS_DIR,
 	ports_dir: String = PortRegistry.PORTS_DIR,
-	curve_path: String = MarketPricer.CURVE_PATH
+	curve_path: String = MarketPricer.CURVE_PATH,
+	sea_nodes_dir: String = SeaLanes.NODES_DIR,
+	sea_regions_dir: String = SeaLanes.REGIONS_DIR,
+	sea_lanes_dir: String = SeaLanes.LANES_DIR
 ) -> Array:
-	# 2.2-02: call load_and_validate in 2.2-01 order; collect every error; do not stop early.
+	# 2.2-02: call load_and_validate in D-14c order; collect every error; do not stop early.
 	# 任一錯誤 → 回傳完整清單且不啟動時鐘（_booted 維持 false）。
 	_booted = false
 	var errors: Array = []
@@ -91,6 +95,7 @@ func boot(
 	errors.append_array(Clock.load_and_validate())
 	errors.append_array(GoodCatalog.load_and_validate(goods_dir))
 	errors.append_array(PortRegistry.load_and_validate(ports_dir))
+	errors.append_array(SeaLanes.load_and_validate(sea_nodes_dir, sea_regions_dir, sea_lanes_dir))
 	errors.append_array(GoodsLedger.load_and_validate())
 	errors.append_array(MarketPricer.load_and_validate(curve_path))
 	errors.append_array(CashLedger.load_and_validate())

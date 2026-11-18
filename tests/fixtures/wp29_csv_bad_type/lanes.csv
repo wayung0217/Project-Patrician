@@ -1,0 +1,2 @@
+lane_id,node_a,node_b,region_id,length,waypoints,lane_type
+LN-01,PT-01,PT-02,RG-01,10,1,NEIGHBOR

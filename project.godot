@@ -1,5 +1,6 @@
 ; Engine configuration file.
-; Godot 4.7.2-stable — Autoload order 2.2-01: Params → Clock → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger → BuildingEconomy → SimLoop.
+; Godot 4.7.2-stable — Autoload order D-14c: Params → Clock → GoodCatalog → PortRegistry → SeaLanes → GoodsLedger → MarketPricer → CashLedger → BuildingEconomy → SimLoop.
+; ShipRegistry (D-14c) is WP-30 — not registered in this WP.
 
 config_version=5
 
@@ -14,6 +15,7 @@ Params="*res://autoload/params.gd"
 Clock="*res://autoload/clock.gd"
 GoodCatalog="*res://autoload/good_catalog.gd"
 PortRegistry="*res://autoload/port_registry.gd"
+SeaLanes="*res://autoload/sea_lanes.gd"
 GoodsLedger="*res://autoload/goods_ledger.gd"
 MarketPricer="*res://autoload/market_pricer.gd"
 CashLedger="*res://autoload/cash_ledger.gd"
