@@ -20,41 +20,12 @@ const ERR_PROVIDER_MISSING := "ERR-SIMLOOP-PROVIDER_MISSING"
 ## set_consumption_provider／register_capacity_provider.
 
 
-class _KindCapacityRouter extends CapacityProvider:
-	## Routes capacity(container) to the provider registered for that kind (D-08e).
-	## Unregistered WAREHOUSE／HOLD kinds return CAPACITY_FAILURE → ERR-SYS03-03 upstream.
-	var _by_kind: Dictionary = {} ## kind:String -> CapacityProvider
-
-	func configure(by_kind: Dictionary) -> void:
-		_by_kind = by_kind.duplicate(true)
-
-	func capacity(container: Variant) -> int:
-		var kind: String = _kind_of(container)
-		if kind.is_empty() or not _by_kind.has(kind):
-			push_error(
-				"SimLoop capacity router: no CapacityProvider for kind=%s (D-08e → ERR-SYS03-03)"
-				% kind
-			)
-			return CAPACITY_FAILURE
-		var provider: CapacityProvider = _by_kind[kind]
-		return provider.capacity(container)
-
-	func _kind_of(container: Variant) -> String:
-		if typeof(container) != TYPE_DICTIONARY:
-			return ""
-		var d: Dictionary = container
-		if not d.has(GoodsLedger.KEY_KIND):
-			return ""
-		return String(d[GoodsLedger.KEY_KIND])
-
-
 var _consumption: ConsumptionProvider = null
 var _booted: bool = false
 ## D-08e: kind:String → CapacityProvider; only WAREHOUSE／HOLD are consulted (MARKET／CONFISCATED unbounded).
 var _capacity_by_kind: Dictionary = {}
 ## D-08e: duplicate-register ErrorInfo collected for boot() (C-06).
 var _capacity_reg_errors: Array = []
-var _capacity_router: _KindCapacityRouter = null
 
 
 func _ready() -> void:
@@ -63,7 +34,6 @@ func _ready() -> void:
 	_booted = false
 	_capacity_by_kind = {}
 	_capacity_reg_errors = []
-	_capacity_router = null
 
 
 func set_consumption_provider(provider: ConsumptionProvider) -> void:
@@ -227,13 +197,19 @@ func tick_day() -> Array:
 
 
 func _apply_capacity_providers() -> void:
-	# Phase 0: no formal providers is expected; leave GoodsLedger unset → ERR-SYS03-03.
+	# D-08e／R3-02 relocate: after GoodsLedger.load_and_validate clears providers,
+	# register each kind via GoodsLedger.register_capacity_provider (WP-05 API; set_capacity_provider removed).
+	# Phase 0 with no registrations leaves GoodsLedger unset → ERR-SYS03-03.
 	if _capacity_by_kind.is_empty():
-		_capacity_router = null
 		return
-	_capacity_router = _KindCapacityRouter.new()
-	_capacity_router.configure(_capacity_by_kind)
-	GoodsLedger.set_capacity_provider(_capacity_router)
+	var kinds: Array = _capacity_by_kind.keys()
+	kinds.sort()
+	for kind_variant in kinds:
+		var kind_s: String = String(kind_variant)
+		var provider: CapacityProvider = _capacity_by_kind[kind_s]
+		var rc: int = GoodsLedger.register_capacity_provider(StringName(kind_s), provider)
+		if rc != GoodsLedger.CODE_OK:
+			push_error("SimLoop: GoodsLedger.register_capacity_provider failed for kind=%s" % kind_s)
 
 
 func _run_daily_consume(day: int) -> Array:
