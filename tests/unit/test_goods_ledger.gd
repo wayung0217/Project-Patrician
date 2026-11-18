@@ -1,6 +1,7 @@
 extends GutTest
 ## WP-05 GoodsLedger tests. Fixture values from TechSpec §4 / TST-SYS03-01..06 / 3.4.
 ## D-04: transfer fail→0 + ErrorInfo last_error(); no ERR→int (−1..−5 withdrawn).
+## D-08d／e／f: container_id; register_capacity_provider; signal params.
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
@@ -112,7 +113,7 @@ func test_TST_SYS03_01_conservation_violated_on_manual_mutate() -> void:
 
 	watch_signals(GoodsLedger)
 	# 人為改動：繞過 transfer 直接改 _stock（紅隊-03／TST-SYS03-01 Given）
-	var key: String = "MARKET|PT-01"
+	var key: String = String(GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01"))
 	var bucket: Dictionary = GoodsLedger._stock[key]
 	bucket[String(good)] = int(bucket[String(good)]) + 1
 	GoodsLedger._stock[key] = bucket
@@ -132,7 +133,10 @@ func test_TST_SYS03_02_insufficient_balance_unchanged() -> void:
 	var provider := TestCapacityProvider.new()
 	# Cap large enough to accept the GENESIS load into HOLD.
 	provider.set_cap(hold, TST_SYS03_02_HOLD_QTY + TST_SYS03_02_HOLD_QTY)
-	GoodsLedger.set_capacity_provider(provider)
+	assert_eq(
+		GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_HOLD), provider),
+		GoodsLedger.CODE_OK
+	)
 
 	var load_seq: int = GoodsLedger.transfer(
 		GoodsLedger.make_external(), hold, good, TST_SYS03_02_HOLD_QTY, GoodsLedger.REASON_GENESIS, &"TEST"
@@ -158,7 +162,10 @@ func test_TST_SYS03_03_insufficient_capacity_all_or_nothing() -> void:
 	var hold: Dictionary = GoodsLedger.make_hold("SHIP-B")
 	var provider := TestCapacityProvider.new()
 	provider.set_cap(hold, TST_SYS03_03_REMAINING_CAP)
-	GoodsLedger.set_capacity_provider(provider)
+	assert_eq(
+		GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_HOLD), provider),
+		GoodsLedger.CODE_OK
+	)
 
 	var src_seq: int = GoodsLedger.transfer(
 		GoodsLedger.make_external(), market, good, TST_SYS03_03_TRANSFER_QTY, GoodsLedger.REASON_GENESIS, &"TEST"
@@ -335,6 +342,115 @@ func test_qty_zero_is_err_01() -> void:
 	assert_eq(err, 0, "D-04: transfer fail → 0")
 	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_01), "expected ERR-SYS03-01 in last_error")
 	assert_push_error_count(1)
+
+
+func test_D08d_container_id_unique_formats() -> void:
+	# D-08d／TST: sole address producer; MARKET／WAREHOUSE／HOLD／CONFISCATED formats
+	var m1: StringName = GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01")
+	var m2: StringName = GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01")
+	assert_eq(m1, m2, "same args → identical container_id")
+	assert_eq(String(m1), GoodsLedger.CONTAINER_ID_FMT_MARKET % "PT-01")
+	assert_eq(
+		String(GoodsLedger.container_id(StringName(GoodsLedger.KIND_WAREHOUSE), "AC-1", "PT-02")),
+		GoodsLedger.CONTAINER_ID_FMT_WAREHOUSE % ["AC-1", "PT-02"]
+	)
+	assert_eq(
+		String(GoodsLedger.container_id(StringName(GoodsLedger.KIND_HOLD), "SHIP-1")),
+		GoodsLedger.CONTAINER_ID_FMT_HOLD % "SHIP-1"
+	)
+	assert_eq(
+		String(GoodsLedger.container_id(StringName(GoodsLedger.KIND_CONFISCATED))),
+		GoodsLedger.CONTAINER_ID_CONFISCATED
+	)
+	# Dictionary kind field drives address; stock key matches container_id
+	var market: Dictionary = GoodsLedger.make_market("PT-01")
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	var seq: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(), market, good, 1, GoodsLedger.REASON_GENESIS, &"TEST"
+	)
+	assert_gt(seq, 0)
+	assert_true(GoodsLedger._stock.has(String(m1)), "stock keyed by container_id")
+	assert_eq(String(GoodsLedger._kind_by_id[String(m1)]), GoodsLedger.KIND_MARKET)
+
+
+func test_D08e_duplicate_provider_err_sys03_06() -> void:
+	# D-08e／TST: same kind registered twice → ERR-SYS03-06
+	var provider_a := TestCapacityProvider.new()
+	var provider_b := TestCapacityProvider.new()
+	assert_eq(
+		GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_HOLD), provider_a),
+		GoodsLedger.CODE_OK
+	)
+	assert_true(GoodsLedger.last_error().is_empty())
+	var rc: int = GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_HOLD), provider_b)
+	assert_eq(rc, GoodsLedger.CODE_FAIL)
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_06), "duplicate kind → ERR-SYS03-06")
+	assert_push_error_count(1)
+	# WAREHOUSE is a separate kind slot
+	assert_eq(
+		GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_WAREHOUSE), provider_b),
+		GoodsLedger.CODE_OK
+	)
+
+
+func test_D08e_unregistered_kind_err_sys03_03() -> void:
+	# D-08e／TST: WAREHOUSE／HOLD without provider → ERR-SYS03-03 (not infinite)
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	var market: Dictionary = GoodsLedger.make_market("PT-01")
+	var warehouse: Dictionary = GoodsLedger.make_warehouse("AC-1", "PT-01")
+	GoodsLedger.transfer(
+		GoodsLedger.make_external(), market, good, 1, GoodsLedger.REASON_GENESIS, &"TEST"
+	)
+	var err: int = GoodsLedger.transfer(market, warehouse, good, 1, GoodsLedger.REASON_LOAD, &"TEST")
+	assert_eq(err, 0, "D-04: transfer fail → 0")
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_03), "unregistered kind → ERR-SYS03-03")
+	assert_push_error_count(1)
+
+
+func test_D08f_conservation_violated_signal_params() -> void:
+	# D-08f／TST: conservation_violated(good_id, expected, actual)
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	var market: Dictionary = GoodsLedger.make_market("PT-01")
+	var seq: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(), market, good, 1, GoodsLedger.REASON_GENESIS, &"TEST"
+	)
+	assert_gt(seq, 0)
+	var key: String = String(GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01"))
+	var bucket: Dictionary = GoodsLedger._stock[key]
+	var expected_before: int = 1
+	bucket[String(good)] = expected_before + 1
+	GoodsLedger._stock[key] = bucket
+	watch_signals(GoodsLedger)
+	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_FAIL)
+	assert_push_error_count(1)
+	assert_signal_emitted(GoodsLedger, "conservation_violated")
+	var params: Array = get_signal_parameters(GoodsLedger, "conservation_violated", 0)
+	assert_eq(params.size(), 3, "D-08f: three params")
+	assert_eq(params[0], good)
+	assert_eq(params[1], expected_before)
+	assert_eq(params[2], expected_before + 1)
+
+
+func test_D08f_goods_transferred_event_param() -> void:
+	# D-08f／TST: goods_transferred(event: TransferEvent)
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	watch_signals(GoodsLedger)
+	var seq: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(),
+		GoodsLedger.make_market("PT-01"),
+		good,
+		1,
+		GoodsLedger.REASON_GENESIS,
+		&"TEST"
+	)
+	assert_gt(seq, 0)
+	assert_signal_emitted(GoodsLedger, "goods_transferred")
+	var params: Array = get_signal_parameters(GoodsLedger, "goods_transferred", 0)
+	assert_eq(params.size(), 1, "D-08f: single event param")
+	var event: TransferEvent = params[0]
+	assert_eq(event.seq, seq)
+	assert_eq(event.good_id, good)
+	assert_eq(event.qty, 1)
 
 
 # --- helpers ---

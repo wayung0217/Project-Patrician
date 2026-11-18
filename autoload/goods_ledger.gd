@@ -3,9 +3,12 @@ extends Node
 ## _ready() only clears fields; load_and_validate() inits seq／stock (2.2-01).
 ## WAREHOUSE／HOLD capacity only via CapacityProvider (1-A6); no SYS-08／SYS-13 providers here.
 ## D-04: transfer success→seq≥1, fail→0; ErrorInfo via last_error()／validate Arrays. No ERR→int.
+## D-08d: container addresses only via container_id(kind,…); kind from Dictionary kind field.
+## D-08e: per-kind CapacityProvider; duplicate → ERR-SYS03-06; unregistered → ERR-SYS03-03.
+## D-08f: goods_transferred(event); conservation_violated(good_id, expected, actual).
 
 signal goods_transferred(event: TransferEvent)
-signal conservation_violated(good_id: StringName)
+signal conservation_violated(good_id: StringName, expected: int, actual: int)
 
 const SYS_ID := &"SYS-03"
 const SCRIPT_PATH := "res://autoload/goods_ledger.gd"
@@ -22,6 +25,7 @@ const ERR_SYS03_02 := &"ERR-SYS03-02"
 const ERR_SYS03_03 := &"ERR-SYS03-03"
 const ERR_SYS03_04 := &"ERR-SYS03-04"
 const ERR_SYS03_05 := &"ERR-SYS03-05"
+const ERR_SYS03_06 := &"ERR-SYS03-06"
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
 const CODE_PORT_REGISTRY_NOT_LOADED := &"PORT_REGISTRY_NOT_LOADED"
@@ -49,21 +53,32 @@ const KIND_HOLD := "HOLD"
 const KIND_CONFISCATED := "CONFISCATED"
 const KIND_EXTERNAL := "EXTERNAL"
 
+## D-08d: named format patterns only (no hand-typed address literals at call sites).
+const CONTAINER_ID_FMT_MARKET := "MARKET:%s"
+const CONTAINER_ID_FMT_WAREHOUSE := "WAREHOUSE:%s:%s"
+const CONTAINER_ID_FMT_HOLD := "HOLD:%s"
+const CONTAINER_ID_CONFISCATED := "CONFISCATED"
+## EXTERNAL is not a D-08d address; internal sentinel for genesis／produce／consume only.
+const EXTERNAL_KEY := "EXTERNAL"
+
 const FIELD_PARAMS := "Params"
 const FIELD_QTY := "qty"
 const FIELD_REASON := "reason"
 const FIELD_PORT_REGISTRY := "PortRegistry"
+const FIELD_KIND := "kind"
 const REQUESTER_SYS03 := &"SYS-03"
 
 ## Day when Clock Autoload absent (WP-02 not on WP-04 stack) — see PR 缺口.
 ## D-05(b): Clock boot day = 0; keep injectable default aligned until Clock is on stack.
 const DAY_PLACEHOLDER := 0
 
-var _stock: Dictionary = {} ## container_key:String -> Dictionary[good_id:String -> int qty]
+var _stock: Dictionary = {} ## container_id:String -> Dictionary[good_id:String -> int qty]
 var _expected_net: Dictionary = {} ## good_id:String -> int (Σ GENESIS+PRODUCE − CONSUME − CONSTRUCT_USE − SEA_LOSS)
+var _kind_by_id: Dictionary = {} ## container_id:String -> kind:String (D-08d: never parse id string)
 var _next_seq: int = 1
 var _loaded: bool = false
-var _capacity_provider: CapacityProvider = null
+## D-08e: one CapacityProvider per kind (WAREHOUSE／HOLD); MARKET／CONFISCATED never registered.
+var _capacity_providers: Dictionary = {} ## kind:String -> CapacityProvider
 ## 缺口：TransferEvent.day 應讀 Clock.day；本堆疊無 Clock。暫存 _day，預設 DAY_PLACEHOLDER；測試可 set_day。
 var _day: int = DAY_PLACEHOLDER
 ## D-04: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
@@ -97,9 +112,17 @@ func last_error() -> Dictionary:
 	return _last_error.duplicate(true)
 
 
-func set_capacity_provider(provider: CapacityProvider) -> void:
-	## 缺口：TechSpec 未寫登錄 API；暫用 set_capacity_provider（WP-05 測試／未來 SYS-08／13）。
-	_capacity_provider = provider
+func register_capacity_provider(kind: StringName, provider: CapacityProvider) -> int:
+	# D-08e: one provider per kind (WAREHOUSE→SYS-08、HOLD→SYS-13).
+	# Duplicate kind → ERR-SYS03-06 in last_error(); return CODE_FAIL (1).
+	# SimLoop.before-boot gate is WP-08 (D-08e／D-08j).
+	_clear_last_error()
+	var kind_s: String = String(kind)
+	if _capacity_providers.has(kind_s):
+		_record_error(ERR_SYS03_06, FIELD_KIND, kind, "duplicate capacity provider")
+		return CODE_FAIL
+	_capacity_providers[kind_s] = provider
+	return CODE_OK
 
 
 func set_day(day: int) -> void:
@@ -198,6 +221,7 @@ func total(good: StringName) -> int:
 
 func in_transit(good: StringName) -> int:
 	## 推導：航行中船艙＝在途（r282）。缺口：無 SYS-13 航行旗標；Phase 0 加總全部 HOLD。
+	## D-08d: kind from _kind_by_id registry (set when container_id／Dictionary kind seen); never parse id.
 	assert(_loaded, "GoodsLedger.in_transit before load_and_validate")
 	var good_s: String = String(good)
 	var keys: Array = _stock.keys()
@@ -205,7 +229,7 @@ func in_transit(good: StringName) -> int:
 	var sum: int = 0
 	for key_variant in keys:
 		var key: String = String(key_variant)
-		if key.begins_with("%s|" % KIND_HOLD):
+		if String(_kind_by_id.get(key, "")) == KIND_HOLD:
 			sum = sum + _get_qty_by_key(key, good_s)
 	return sum
 
@@ -213,6 +237,7 @@ func in_transit(good: StringName) -> int:
 func check_conservation() -> int:
 	# FRM-SYS03-01: Σ 容器(good) = expected_net(good)；違反 → conservation_violated + ERR-SYS03-05
 	# D-04: return 0 OK／1 fail；ErrorInfo in last_error()
+	# D-08f: conservation_violated(good_id, expected, actual)
 	assert(_loaded, "GoodsLedger.check_conservation before load_and_validate")
 	_clear_last_error()
 	var goods: Dictionary = {}
@@ -238,7 +263,7 @@ func check_conservation() -> int:
 		var expected: int = int(_expected_net.get(good_s, 0))
 		if actual != expected:
 			violated = true
-			conservation_violated.emit(StringName(good_s))
+			conservation_violated.emit(StringName(good_s), expected, actual)
 			if first_good.is_empty():
 				first_good = good_s
 				first_actual = actual
@@ -318,6 +343,22 @@ func run_daily_produce(day_index_k: int) -> Array:
 	return results
 
 
+func container_id(kind: StringName, arg1: String = "", arg2: String = "") -> StringName:
+	# D-08d: sole producer of container addresses. Formats are named constants only.
+	var kind_s: String = String(kind)
+	match kind_s:
+		KIND_MARKET:
+			return StringName(CONTAINER_ID_FMT_MARKET % arg1)
+		KIND_WAREHOUSE:
+			return StringName(CONTAINER_ID_FMT_WAREHOUSE % [arg1, arg2])
+		KIND_HOLD:
+			return StringName(CONTAINER_ID_FMT_HOLD % arg1)
+		KIND_CONFISCATED:
+			return StringName(CONTAINER_ID_CONFISCATED)
+		_:
+			return StringName()
+
+
 func make_market(port_id: String) -> Dictionary:
 	return {KEY_KIND: KIND_MARKET, KEY_PORT: port_id}
 
@@ -341,15 +382,17 @@ func make_external() -> Dictionary:
 func _has_capacity_for(container: Variant, container_key: String, qty_i: int) -> bool:
 	if _is_external_key(container_key):
 		return true
-	var kind: String = _kind_of_key(container_key)
-	# MARKET／CONFISCATED：不設上限（OQ-09 9b／預留池）
+	# D-08d: kind only from Dictionary kind field (or remembered registry), never parse id.
+	var kind: String = _kind_of_container(container, container_key)
+	# MARKET／CONFISCATED：不設上限（OQ-09 9b／預留池）；D-08e：不登錄提供者
 	if kind == KIND_MARKET or kind == KIND_CONFISCATED:
 		return true
-	# WAREHOUSE／HOLD：只問 CapacityProvider；無提供者 → ERR-SYS03-03（TechSpec 3.4 D）
+	# WAREHOUSE／HOLD：只問該 kind 的 CapacityProvider；未登錄 → ERR-SYS03-03（D-08e）
 	if kind == KIND_WAREHOUSE or kind == KIND_HOLD:
-		if _capacity_provider == null:
+		if not _capacity_providers.has(kind):
 			return false
-		var cap: int = _capacity_provider.capacity(container)
+		var provider: CapacityProvider = _capacity_providers[kind]
+		var cap: int = provider.capacity(container)
 		if cap <= CapacityProvider.CAPACITY_FAILURE:
 			return false
 		var used: int = _container_used(container_key)
@@ -396,6 +439,7 @@ func _is_positive_int(qty: Variant) -> bool:
 
 
 func _container_key(container: Variant) -> String:
+	# D-08d: address only via container_id(kind,…); kind read from Dictionary kind field.
 	if typeof(container) != TYPE_DICTIONARY:
 		return ""
 	var d: Dictionary = container
@@ -404,34 +448,46 @@ func _container_key(container: Variant) -> String:
 	var kind: String = String(d[KEY_KIND])
 	match kind:
 		KIND_EXTERNAL:
-			return "%s|" % KIND_EXTERNAL
+			return EXTERNAL_KEY
 		KIND_CONFISCATED:
-			return "%s|" % KIND_CONFISCATED
+			var cid_c: String = String(container_id(StringName(KIND_CONFISCATED)))
+			_kind_by_id[cid_c] = kind
+			return cid_c
 		KIND_MARKET:
 			if not d.has(KEY_PORT):
 				return ""
-			return "%s|%s" % [KIND_MARKET, String(d[KEY_PORT])]
+			var cid_m: String = String(container_id(StringName(KIND_MARKET), String(d[KEY_PORT])))
+			_kind_by_id[cid_m] = kind
+			return cid_m
 		KIND_WAREHOUSE:
 			if not d.has(KEY_OWNER) or not d.has(KEY_PORT):
 				return ""
-			return "%s|%s|%s" % [KIND_WAREHOUSE, String(d[KEY_OWNER]), String(d[KEY_PORT])]
+			var cid_w: String = String(container_id(
+				StringName(KIND_WAREHOUSE), String(d[KEY_OWNER]), String(d[KEY_PORT])
+			))
+			_kind_by_id[cid_w] = kind
+			return cid_w
 		KIND_HOLD:
 			if not d.has(KEY_SHIP):
 				return ""
-			return "%s|%s" % [KIND_HOLD, String(d[KEY_SHIP])]
+			var cid_h: String = String(container_id(StringName(KIND_HOLD), String(d[KEY_SHIP])))
+			_kind_by_id[cid_h] = kind
+			return cid_h
 		_:
 			return ""
 
 
-func _kind_of_key(key: String) -> String:
-	var parts: PackedStringArray = key.split("|")
-	if parts.is_empty():
-		return ""
-	return parts[0]
+func _kind_of_container(container: Variant, container_key: String) -> String:
+	# D-08d: kind from Dictionary kind field; fall back to registry written at container_id time.
+	if typeof(container) == TYPE_DICTIONARY:
+		var d: Dictionary = container
+		if d.has(KEY_KIND):
+			return String(d[KEY_KIND])
+	return String(_kind_by_id.get(container_key, ""))
 
 
 func _is_external_key(key: String) -> bool:
-	return key == "%s|" % KIND_EXTERNAL
+	return key == EXTERNAL_KEY
 
 
 func _get_qty_by_key(container_key: String, good_s: String) -> int:
@@ -459,9 +515,10 @@ func _set_qty_by_key(container_key: String, good_s: String, qty_i: int) -> void:
 func _clear_state() -> void:
 	_stock = {}
 	_expected_net = {}
+	_kind_by_id = {}
 	_next_seq = 1
 	_loaded = false
-	_capacity_provider = null
+	_capacity_providers = {}
 	_day = DAY_PLACEHOLDER
 	_clear_last_error()
 
