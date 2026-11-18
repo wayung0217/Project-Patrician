@@ -40,6 +40,11 @@ class _TestPopulationProvider extends PopulationProvider:
 		return 0
 
 
+class _TestWorkforceProvider extends WorkforceProvider:
+	func workers(_ws_id: StringName) -> int:
+		return 0
+
+
 class TestConsumptionProvider extends ConsumptionProvider:
 	## Fixture double — weekly + consume tables only (1-A9／res://tests/).
 	var _weekly: Dictionary = {} ## "port|good" -> int
@@ -80,6 +85,7 @@ func before_each() -> void:
 	SimLoop.set_consumption_provider(null)
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
+	BuildingEconomy._workforce = null
 	SeaLanes._loaded = false
 
 
@@ -180,7 +186,7 @@ func test_boot_day_zero_and_genesis_grant_D03_D05() -> void:
 
 
 func test_first_tick_runs_k0_produce_D05() -> void:
-	# D-05(b): first tick → day=1，k=0 PRODUCE（不得跳過）
+	# D-05(b)／D-12d／D-09g: first tick → day=1；role-cell PRODUCE removed (WP-20).
 	var cons := _boot_ready_provider()
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
@@ -188,9 +194,8 @@ func test_first_tick_runs_k0_produce_D05() -> void:
 	var day_errors: Array = SimLoop.tick_day()
 	assert_eq(day_errors.size(), 0)
 	assert_eq(Clock.day, 1)
-	var produced: int = GoodsLedger.daily_produce_qty(PRODUCE_Q, 0)
-	assert_eq(GoodsLedger.get_qty(market, StringName(GOOD_DEMO)), before + produced)
-	assert_eq(produced, GoodsLedger.daily_produce_qty(PRODUCE_Q, 0))
+	# No workshops → market unchanged despite role-cell Q (D-12d).
+	assert_eq(GoodsLedger.get_qty(market, StringName(GOOD_DEMO)), before)
 
 
 func test_boot_success_and_tick_advances_clock_2_3_01() -> void:
@@ -202,7 +207,8 @@ func test_boot_success_and_tick_advances_clock_2_3_01() -> void:
 
 
 func test_tick_produce_then_consume_order_2_3_02_03() -> void:
-	# 2.3-02／2.3-03: PRODUCE 後 CONSUME；consume 呼叫依 (port_id, good_id) 升序
+	# 2.3-03／D-12d／D-09g: daily_step (workshop PRODUCE) then CONSUME; consume asc.
+	# Role-cell Q no longer feeds MARKET; with empty workshops only CONSUME runs.
 	var cons := _boot_ready_provider()
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
 	_seed_market(PORT_DEMO, GOOD_DEMO, SEED_STOCK)
@@ -217,18 +223,12 @@ func test_tick_produce_then_consume_order_2_3_02_03() -> void:
 	var before: int = GoodsLedger.get_qty(market, StringName(GOOD_DEMO))
 	SimLoop.tick_day()
 	var after: int = GoodsLedger.get_qty(market, StringName(GOOD_DEMO))
-
-	# First tick: day 0→1；k=0；produce out(0) then consume
-	var k: int = 0
-	var produced: int = GoodsLedger.daily_produce_qty(PRODUCE_Q, k)
-	assert_eq(after, before + produced - CONSUME_PER_TICK)
+	assert_eq(after, before - CONSUME_PER_TICK)
 
 	assert_gt(reasons.size(), 0)
-	var first_produce_i: int = reasons.find(String(GoodsLedger.REASON_PRODUCE))
+	assert_eq(reasons.find(String(GoodsLedger.REASON_PRODUCE)), 0 - 1, "no role-cell PRODUCE")
 	var first_consume_i: int = reasons.find(String(GoodsLedger.REASON_CONSUME))
-	assert_gte(first_produce_i, 0)
 	assert_gte(first_consume_i, 0)
-	assert_lt(first_produce_i, first_consume_i, "PRODUCE before CONSUME (2.3)")
 
 	assert_gt(cons.consume_calls.size(), 1)
 	for i in range(cons.consume_calls.size() - 1):
@@ -323,8 +323,7 @@ func test_no_public_subday_methods_D07() -> void:
 
 
 func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
-	# 13-03／TST-SYS13-16: tick_day（TPD×tick＋空清單＋日結）與
-	# advance_one_day／TPD×advance_one_tick＋日結（PRODUCE）結果相同。
+	# 13-03／TST-SYS13-16／D-09g: tick_day vs TPD×tick + BuildingEconomy.daily_step settle.
 	_boot_ready_provider()
 	var tpd: int = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
@@ -336,7 +335,7 @@ func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
 	var qty_via_loop: int = GoodsLedger.get_qty(market, StringName(GOOD_DEMO))
 	assert_eq(tick_via_loop, tpd)
 	assert_eq(day_via_loop, 1)
-	assert_eq(qty_via_loop, before + GoodsLedger.daily_produce_qty(PRODUCE_Q, 0))
+	assert_eq(qty_via_loop, before, "D-12d: no role-cell PRODUCE")
 
 	_reset_simloop_for_reboot()
 	_boot_ready_provider()
@@ -353,9 +352,7 @@ func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
 	assert_eq(Clock.day, 1)
 	GoodsLedger.set_day(Clock.day)
 	CashLedger.set_day(Clock.day)
-	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
-	var day_in_season: int = ((Clock.day - 1) % days_d) + 1
-	GoodsLedger.run_daily_produce(day_in_season - 1)
+	BuildingEconomy.daily_step(Clock.day)
 	var qty_via_ticks: int = GoodsLedger.get_qty(
 		GoodsLedger.make_market(PORT_DEMO), StringName(GOOD_DEMO)
 	)
@@ -386,6 +383,7 @@ func test_D08e_register_capacity_provider_before_boot_applies() -> void:
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
+	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	var cap := _TestCapProvider.new()
 	cap.set_cap(GoodsLedger.KIND_WAREHOUSE, 10)
 	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, cap)
@@ -433,6 +431,7 @@ func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
+	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	var a := _TestCapProvider.new()
 	a.set_cap(GoodsLedger.KIND_WAREHOUSE, 5)
 	var b := _TestCapProvider.new()
@@ -492,6 +491,7 @@ func _reset_simloop_for_reboot() -> void:
 	SimLoop.set_consumption_provider(null)
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
+	BuildingEconomy._workforce = null
 
 
 func _boot_ready_provider() -> TestConsumptionProvider:
@@ -499,6 +499,7 @@ func _boot_ready_provider() -> TestConsumptionProvider:
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
+	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	var errors: Array = _boot_with_fixtures(fixtures)
 	assert_eq(errors.size(), 0, "boot must succeed: %s" % str(errors))
 	assert_true(SimLoop.is_booted())

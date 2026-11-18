@@ -46,6 +46,11 @@ class TestPop extends PopulationProvider:
 		return int(_pop[key])
 
 
+class TestWorkforce extends WorkforceProvider:
+	func workers(_ws_id: StringName) -> int:
+		return 0
+
+
 func before_each() -> void:
 	_wipe_dir(ROOT)
 	BuildingEconomy._loaded = false
@@ -57,6 +62,7 @@ func before_each() -> void:
 	BuildingEconomy._buildings_by_port = {}
 	BuildingEconomy._building_defs = {}
 	BuildingEconomy._population = null
+	BuildingEconomy._workforce = null
 
 
 func test_TST_SYS08_01_land_price_calibration() -> void:
@@ -333,6 +339,7 @@ func _setup_core(pop: TestPop) -> void:
 	assert_eq(cl.size(), 0)
 	assert_eq(CashLedger.genesis_grant(), OK)
 	BuildingEconomy.set_population_provider(pop)
+	BuildingEconomy.set_workforce_provider(TestWorkforce.new())
 
 
 ## Fixture top-up so land_price (often > START_CASH) can succeed in buy tests.

@@ -184,13 +184,9 @@ func tick_day() -> Array:
 	# 2.3-01: day_in_season = ((day−1) mod D) + 1（公式在 SimLoop；Clock 公開面無此 getter）
 	var day_in_season: int = ((Clock.day - 1) % days_d) + 1
 
-	# D-12h／8.6 F ①: BuildingEconomy.daily_step before PRODUCE (WP-19; only allowed SimLoop hook).
+	# D-12h／D-12d／8.6 F: BuildingEconomy.daily_step = ① build + ② workshop PRODUCE + ④ wages.
+	# Role-cell PRODUCE path removed (WP-20); GoodsLedger.run_daily_produce kept for SYS-03 tests only.
 	day_errors.append_array(BuildingEconomy.daily_step(Clock.day))
-
-	# 2.3-02 步驟 2: GoodsLedger 當日 PRODUCE；k = day_in_season − 1（FRM-SYS03-03）
-	# D-05(b): 首日 day=1 → k=0，不得跳過。
-	var day_index_k: int = day_in_season - 1
-	GoodsLedger.run_daily_produce(day_index_k)
 
 	# 2.3-03 步驟 3: 注入的 ConsumptionProvider 執行 CONSUME，依 (port_id, good_id) 升序
 	day_errors.append_array(_run_daily_consume(Clock.day))

@@ -92,6 +92,7 @@
     "days_min": 1,
     "good_id_pattern": "^GD-[0-9]{3}$"
   },
+  "PRM-SYS08-ACC_SCALE": { "type": "int", "min": 1 },
   "PRM-SYS08-OUTPUT_PER_WORKER_K": { "type": "float", "min_exclusive": 0 },
   "PRM-SYS08-RECIPE_KEEP_N": { "type": "float", "min_exclusive": 0 },
   "PRM-SYS08-WAGE_SHARE_W": { "type": "float", "min": 0 },
