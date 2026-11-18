@@ -46,6 +46,8 @@ func test_WP18_11_07_9_csv_new_csvs_fail_10_06() -> void:
 			break
 	assert_true(found)
 	assert_eq((wp18["written"] as PackedStringArray).size(), 0)
+	# C-06: each collected error was push_error'd during import.
+	assert_push_error_count(errors.size())
 	_wipe_out()
 
 

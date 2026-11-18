@@ -2,7 +2,9 @@ extends GutTest
 ## WP-18 / TechSpec 11-07 BuildingEconomy acceptance.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
+## Use demo params (START_CASH > 0) — same SYS-08 keys as all_keys for land_price.
+const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
+const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const PORT_PT01 := "PT-01"
 const ACTOR := &"ACT-PLAYER"
 
@@ -10,6 +12,19 @@ const PRM_BASE := "PRM-SYS08-BASE_LAND_LI"
 const PRM_POP_UNIT := "PRM-SYS08-POP_UNIT"
 const PRM_SCARCITY_FLOOR := "PRM-SYS08-SCARCITY_FLOOR"
 const PRM_RING_ALPHA := "PRM-SYS08-RING_ALPHA"
+const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
+const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
+const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
+const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
+const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
+const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
+
+const STAPLE_RICE := "米"
+const STAPLE_SALT := "鹽"
+const STAPLE_FISH := "魚乾"
+const STAPLE_TIMBER := "木材"
+const ANCHOR_LI := 1000
 
 const ROOT := "user://wp18_be/"
 
@@ -254,7 +269,7 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	SimLoop._booted = false
 	SimLoop.set_consumption_provider(_SimCons.new())
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], "res://tests/fixtures/price_curve.tres"
+		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
 	)
 	assert_gt(errors.size(), 0)
 	assert_true(_has_code(errors, BuildingEconomy.CODE_POPULATION_PROVIDER_MISSING))
@@ -275,13 +290,14 @@ func test_WP18_11_07_9_warehouse_capacity_empty() -> void:
 
 func _setup_core(pop: TestPop) -> void:
 	var perr: Array = Params.load_and_validate(PARAMS_FIXTURE)
-	assert_eq(perr.size(), 0)
-	var port_count: int = Params.get_int("PRM-SYS02-PORT_COUNT_MIN")
-	var ports_dir := _build_ports(port_count, ROOT + "ports/")
-	var gerr: Array = GoodCatalog.load_and_validate(_build_goods(ROOT + "goods/"))
-	assert_eq(gerr.size(), 0)
+	assert_eq(perr.size(), 0, "params: %s" % str(perr))
+	var goods_dir := _build_valid_goods(ROOT + "goods/")
+	var gerr: Array = GoodCatalog.load_and_validate(goods_dir)
+	assert_eq(gerr.size(), 0, "goods: %s" % str(gerr))
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var ports_dir := _build_valid_ports(port_count, ROOT + "ports/")
 	var perr2: Array = PortRegistry.load_and_validate(ports_dir)
-	assert_eq(perr2.size(), 0)
+	assert_eq(perr2.size(), 0, "ports: %s" % str(perr2))
 	var gled: Array = GoodsLedger.load_and_validate()
 	assert_eq(gled.size(), 0)
 	var cl: Array = CashLedger.load_and_validate()
@@ -331,40 +347,113 @@ func _first_civil_slot() -> StringName:
 	return &""
 
 
-func _build_goods(dir: String) -> String:
+func _build_valid_goods(dir: String) -> String:
+	_wipe_dir(dir)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	var g := GoodDef.new()
-	g.good_id = "GD-001"
-	g.name_zh = "米"
-	g.tier = 1
-	g.is_staple = true
-	g.is_build_material = false
-	g.is_strategic = false
-	g.base_price_li = 1000
-	g.season_mask = 0
-	ResourceSaver.save(g, dir + "GD-001.tres")
+	var count: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var staples: Array = [
+		{"id": "GD-001", "name": STAPLE_RICE, "build": false},
+		{"id": "GD-002", "name": STAPLE_SALT, "build": false},
+		{"id": "GD-003", "name": STAPLE_TIMBER, "build": true},
+		{"id": "GD-004", "name": STAPLE_FISH, "build": false},
+	]
+	var free_max: int = Params.get_int(PRM_FREE_PORT_TIER_MAX)
+	var written: int = 0
+	for s in staples:
+		if written >= count:
+			break
+		ResourceSaver.save(
+			_make_good(s["id"], s["name"], 1, true, s["build"], false, ANCHOR_LI),
+			dir + "%s.tres" % s["id"]
+		)
+		written += 1
+	var next_n: int = 5
+	while written < count:
+		var gid := "GD-%03d" % next_n
+		var tier: int = (next_n % (free_max + 1)) + 1
+		if tier > Params.get_int(PRM_TIER_MAX):
+			tier = Params.get_int(PRM_TIER_MAX)
+		ResourceSaver.save(
+			_make_good(gid, "填料%d" % next_n, tier, false, false, false, ANCHOR_LI),
+			dir + "%s.tres" % gid
+		)
+		written += 1
+		next_n += 1
 	return dir
 
 
-func _build_ports(count: int, dir: String) -> String:
+func _build_valid_ports(port_count: int, dir: String) -> String:
+	_wipe_dir(dir)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	for i in range(count):
-		var id := "PT-%02d" % (i + 1)
-		var p := PortDef.new()
-		p.port_id = id
-		p.name_zh = "港"
-		p.is_free_port = false
-		p.draft_limit_class = 0
-		p.regime_id = "REG-01"
-		ResourceSaver.save(p, dir + id + ".tres")
+	var free_count: int = _valid_free_count(port_count)
+	var good_ids: PackedStringArray = GoodCatalog.all_ids()
+	for i in range(port_count):
+		var n: int = i + 1
+		var port_id := "PT-%02d" % n
+		var def := PortDef.new()
+		def.port_id = port_id
+		def.name_zh = "港%d" % n
+		def.is_free_port = i < free_count
+		def.draft_limit_class = 0
+		def.regime_id = "RG-TEST"
+		def.role_cells = {}
+		for good_variant in good_ids:
+			var good_id: String = String(good_variant)
+			var cell := RoleCell.new()
+			if i == 0:
+				cell.role = PortRegistry.ROLE_PRODUCER
+				cell.base_output_per_season = 1
+				cell.downstream_terminals = PackedStringArray()
+			else:
+				cell.role = PortRegistry.ROLE_TERMINAL
+				cell.base_output_per_season = 0
+				cell.downstream_terminals = PackedStringArray()
+			def.role_cells[good_id] = cell
+		ResourceSaver.save(def, dir + "%s.tres" % port_id)
 	return dir
+
+
+func _valid_free_count(port_count: int) -> int:
+	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
+	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
+	if port_count <= 0:
+		return 0
+	var free_count: int = 0
+	while free_count <= port_count:
+		var ratio: float = float(free_count) / float(port_count)
+		if ratio >= ratio_min and ratio <= ratio_max:
+			return free_count
+		free_count += 1
+	return 0
+
+
+func _make_good(
+	good_id: String,
+	name_zh: String,
+	tier: int,
+	is_staple: bool,
+	is_build_material: bool,
+	is_strategic: bool,
+	base_price_li: int
+) -> GoodDef:
+	var def := GoodDef.new()
+	def.good_id = good_id
+	def.name_zh = name_zh
+	def.tier = tier
+	def.is_staple = is_staple
+	def.is_build_material = is_build_material
+	def.is_strategic = is_strategic
+	def.base_price_li = base_price_li
+	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+	return def
 
 
 func _prepare_sim_fixtures() -> Dictionary:
 	Params.load_and_validate(PARAMS_FIXTURE)
-	var goods := _build_goods(ROOT + "sim_goods/")
+	var goods := _build_valid_goods(ROOT + "sim_goods/")
 	GoodCatalog.load_and_validate(goods)
-	var ports := _build_ports(1, ROOT + "sim_ports/")
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var ports := _build_valid_ports(port_count, ROOT + "sim_ports/")
 	return {"goods": goods, "ports": ports}
 
 
@@ -404,3 +493,4 @@ func _wipe_dir(rel: String) -> void:
 				else:
 					DirAccess.remove_absolute(path)
 			dir.list_dir_end()
+	DirAccess.make_dir_recursive_absolute(abs)
