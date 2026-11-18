@@ -2,9 +2,9 @@ extends Node
 ## Autoload: CashLedger — SYS-05 ST-CASH (TechSpec 3.6 / WP-07).
 ## _ready() only clears fields; load_and_validate() inits SOURCE／SINK (2.2-01).
 ## TradeSlider／帳本報表 UI 不做（1-A8）。
-## D-04: post／revalidate／create_account → 0 OK／1 fail；ErrorInfo via last_error(). No ERR→int.
+## D-04／R2-05: post() -> Error：成功 OK、失敗 FAILED；原因只經 last_error()（03_Systems r589／TechSpec D290）.
 ## D-03: genesis_grant() API only（SimLoop.boot 呼叫屬 WP-08）.
-## D-01: money float→int only via AmountMath.quantize_amount（core/ shared with WP-06）.
+## D-01／N-04: money float→int only via AmountQuantize.quantize_amount then ceili／floori（from WP-06）.
 
 signal cash_changed(id: StringName, new_balance: int, delta: int, reason: StringName)
 signal arrears_changed(id: StringName, arrears: int, seasons: int)
@@ -19,9 +19,8 @@ const PRM_START_CASH := "PRM-SYS05-START_CASH"
 const PRM_ARREARS_SEASONS_TO_BANKRUPT := "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT"
 const PRM_MIN_CASH_UNIT := "PRM-SYS05-MIN_CASH_UNIT"
 
-## ->int status literals only 0／1 (D-04); paid／qty returns stay domain values.
-const CODE_OK := 0
-const CODE_FAIL := 1
+## post()／create_account／revalidate／genesis use Godot Error OK／FAILED (r589／D290／R2-05).
+## paid／qty returns stay domain ints; ->int fail surfaces as 0 only where applicable (D-04).
 
 const ERR_SYS05_01 := &"ERR-SYS05-01"
 const ERR_SYS05_02 := &"ERR-SYS05-02"
@@ -66,6 +65,10 @@ const REASON_GENESIS_CASH := &"GENESIS_CASH"
 ## quote side（TechSpec 3.5 H：BUY=0, SELL=1）
 const SIDE_BUY := 0
 const SIDE_SELL := 1
+
+## quantize_money mode literals 0／1 only (D-04／C-03); ceili／floori after AmountQuantize.
+const MODE_CEIL := 0
+const MODE_FLOOR := 1
 
 const FIELD_PARAMS := "Params"
 const FIELD_ENTRIES := "entries"
@@ -152,14 +155,14 @@ func set_quote_provider(provider: Object) -> void:
 	_quote_provider = provider
 
 
-func create_account(id: StringName, kind: Account.Kind, owner_id: StringName = &"") -> int:
+func create_account(id: StringName, kind: Account.Kind, owner_id: StringName = &"") -> Error:
 	## 缺口：H 未列建戶 API；測試／開局需要。SOURCE／SINK 已於 load 建立。
-	## D-04: 0 OK／1 fail + last_error.
+	## D-04／R2-05: OK／FAILED + last_error.
 	assert(_loaded, "CashLedger.create_account before load")
 	_clear_last_error()
 	var key := String(id)
 	if _accounts.has(key):
-		return CODE_OK
+		return OK
 	if kind == Account.Kind.SOURCE or kind == Account.Kind.SINK:
 		return _fail(ERR_SYS05_04, FIELD_ACCOUNT, id, "system accounts are singleton")
 	var acc := Account.new()
@@ -171,7 +174,7 @@ func create_account(id: StringName, kind: Account.Kind, owner_id: StringName = &
 	acc.arrears_seasons = 0
 	_accounts[key] = acc
 	_init_season_stats(key)
-	return CODE_OK
+	return OK
 
 
 func make_actor_id(owner_token: String) -> StringName:
@@ -193,15 +196,15 @@ func register_charge(schedule: ChargeSchedule) -> void:
 	_charges.append(schedule)
 
 
-func genesis_grant() -> int:
+func genesis_grant() -> Error:
 	# D-03: {SOURCE: −START_CASH, ACT-PLAYER: +START_CASH}, reason GENESIS_CASH.
 	# Sole ERR-SYS05-06 exception via REQUESTER_GENESIS_GRANT. SimLoop.boot calls once（WP-08）.
 	assert(_loaded, "CashLedger.genesis_grant before load")
 	_clear_last_error()
 	var start_cash: int = Params.get_int(PRM_START_CASH)
 	if not _accounts.has(String(ACCOUNT_PLAYER)):
-		var created: int = create_account(ACCOUNT_PLAYER, Account.Kind.ACTOR)
-		if created != CODE_OK:
+		var created: Error = create_account(ACCOUNT_PLAYER, Account.Kind.ACTOR)
+		if created != OK:
 			return created
 	return post([
 		make_entry(ID_SOURCE, 0 - start_cash),
@@ -209,9 +212,9 @@ func genesis_grant() -> int:
 	], REASON_GENESIS_CASH, REQUESTER_GENESIS_GRANT)
 
 
-func post(entries: Array, reason: StringName, requester: StringName) -> int:
+func post(entries: Array, reason: StringName, requester: StringName) -> Error:
 	# FRM-SYS05-01／02；授權 ERR-SYS05-06；金額 ERR-SYS05-05
-	# D-04: success → 0；fail → 1 + ErrorInfo in last_error()
+	# 03_Systems r589／TechSpec D290（R2-05）：成功 OK、失敗 FAILED；原因只經 last_error().
 	assert(_loaded, "CashLedger.post before load")
 	_clear_last_error()
 
@@ -322,7 +325,7 @@ func post(entries: Array, reason: StringName, requester: StringName) -> int:
 	for aid in arrears_signals:
 		var acc_a: Account = _accounts[String(aid)]
 		arrears_changed.emit(acc_a.id, acc_a.arrears, acc_a.arrears_seasons)
-	return CODE_OK
+	return OK
 
 
 func balance(id: StringName) -> int:
@@ -386,15 +389,15 @@ func apply_inbound_credit(account: Account, credit: int) -> Dictionary:
 	return result
 
 
-func revalidate_submit(account_balance: int, new_total_b_prime: int) -> int:
+func revalidate_submit(account_balance: int, new_total_b_prime: int) -> Error:
 	# FRM-SYS05-11：提交重驗 — 獨立單一函數（D157）
 	# B′ ≤ balance → OK；否則 ERR-SYS05-07，不自動減量。
-	# D-04: 0 OK／1 fail + last_error.
+	# D-04／R2-05: OK／FAILED + last_error.
 	_clear_last_error()
 	if new_total_b_prime <= 0:
 		return _fail(ERR_SYS05_05, FIELD_AMOUNT, new_total_b_prime, "B' must be > 0")
 	if new_total_b_prime <= account_balance:
-		return CODE_OK
+		return OK
 	return _fail(ERR_SYS05_07, FIELD_AMOUNT, new_total_b_prime, "stale quote unaffordable")
 
 
@@ -486,11 +489,11 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
 	var unpaid: int = due - paid
 	if paid > 0:
 		# 分錄：帳戶 −paid，SINK +paid
-		var err: int = post([
+		var err: Error = post([
 			make_entry(id, 0 - paid),
 			make_entry(ID_SINK, paid),
 		], reason, requester)
-		if err != CODE_OK:
+		if err != OK:
 			return 0
 	if unpaid > 0:
 		acc.arrears = acc.arrears + unpaid
@@ -634,8 +637,12 @@ func market_net_recovery_delta(sink_delta: int, source_issued_delta: int) -> int
 
 
 func quantize_money(x: float, mode: int) -> int:
-	# D-01／N-04: SYS-05 money float→int only via shared AmountMath.quantize_amount.
-	return AmountMath.quantize_amount(x, mode)
+	# D-01／N-04: sole snap = AmountQuantize.quantize_amount；then ceili／floori (C-09).
+	assert(mode == MODE_CEIL or mode == MODE_FLOOR, "CashLedger.quantize_money mode must be CEIL or FLOOR")
+	var q: float = AmountQuantize.quantize_amount(x)
+	if mode == MODE_CEIL:
+		return ceili(q)
+	return floori(q)
 
 
 func _quote_buy_total(port: StringName, good: StringName, qty: int) -> int:
@@ -781,10 +788,10 @@ func _clear_last_error() -> void:
 	_last_error = {}
 
 
-func _fail(code: StringName, field: String, value: Variant, message: String) -> int:
-	# D-04: status fail → 1 (literal); ErrorInfo via last_error().
+func _fail(code: StringName, field: String, value: Variant, message: String) -> Error:
+	# r589／D290／R2-05: status fail → FAILED；ErrorInfo via last_error() only.
 	_record_error(code, field, value, message)
-	return CODE_FAIL
+	return FAILED
 
 
 func _record_error(code: StringName, field: String, value: Variant, message: String) -> void:
