@@ -5,6 +5,7 @@ extends Node
 ## WAREHOUSE / HOLD capacity are SYS-08 / SYS-13 — out of scope.
 ## Errors are D-04 ErrorInfo Dictionaries (shared with C-06); no ERR→int.
 ## D-02: queue_role_change(..., payload) rejects bad payload at enqueue.
+## D-08b: port_id ^PT-[0-9]{2}$／name_zh strip非空；D-08c: get_port 未知 id → null＋last_error().
 
 signal role_changed(port: String, good: String, old_role: int, new_role: int)
 
@@ -12,6 +13,9 @@ const PORTS_DIR := "res://data/ports/"
 const TRES_SUFFIX := ".tres"
 
 const SYS_ID := &"SYS-02"
+
+## D-08b: named format constant (fixed width so string sort stays correct).
+const PORT_ID_PATTERN := "^PT-[0-9]{2}$"
 
 ## Role enum ints — declaration order PRODUCER／TRANSIT／TERMINAL (03_Systems r261); no NONE.
 ## Numeric mapping not spelled in TechSpec H (unlike MarketPricer BUY=0); Godot enum order 0..n-1.
@@ -36,6 +40,9 @@ const ERR_SYS02_03 := &"ERR-SYS02-03"
 const ERR_SYS02_04 := &"ERR-SYS02-04"
 const ERR_SYS02_05 := &"ERR-SYS02-05"
 const ERR_SYS02_06 := &"ERR-SYS02-06"
+const ERR_SYS02_07 := &"ERR-SYS02-07"
+const ERR_SYS02_08 := &"ERR-SYS02-08"
+const ERR_SYS02_09 := &"ERR-SYS02-09"
 const WRN_SYS02_01 := &"WRN-SYS02-01"
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
@@ -45,7 +52,6 @@ const CODE_LOAD_TYPE := &"LOAD_TYPE"
 const CODE_NOT_LOADED := &"NOT_LOADED"
 const CODE_DIR_OPEN := &"DIR_OPEN"
 const CODE_DUPLICATE_PORT_ID := &"DUPLICATE_PORT_ID"
-const CODE_EMPTY_NAME_ZH := &"EMPTY_NAME_ZH"
 
 const FIELD_PORT_ID := "port_id"
 const FIELD_NAME_ZH := "name_zh"
@@ -70,9 +76,14 @@ var _ids_sorted: PackedStringArray = PackedStringArray()
 var _loaded: bool = false
 var _warnings: Array = []
 var _role_change_queue: Array = []
+## D-04／D-08c: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
+var _last_error: Dictionary = {}
+var _port_id_regex: RegEx = RegEx.new()
 
 
 func _ready() -> void:
+	var compile_err: int = _port_id_regex.compile(PORT_ID_PATTERN)
+	assert(compile_err == OK, "PortRegistry PORT_ID_PATTERN must compile")
 	_clear_state()
 
 
@@ -144,9 +155,18 @@ func validate() -> Array:
 
 
 func get_port(id: String) -> PortDef:
+	# D-08c: unknown id → null + last_error ERR-SYS02-09; do not abort / do not return blank PortDef.
 	assert(_loaded, "PortRegistry.get_port before successful load")
-	assert(_by_id.has(id), "PortRegistry.get_port unknown id: %s" % id)
+	_clear_last_error()
+	if not _by_id.has(id):
+		_record_error(ERR_SYS02_09, FIELD_PORT_ID, id, "unknown port_id")
+		return null
 	return _by_id[id] as PortDef
+
+
+func last_error() -> Dictionary:
+	# D-04／D-08c: single-call failures (get_port unknown id) expose ErrorInfo here.
+	return _last_error.duplicate(true)
 
 
 func get_role(port: String, good: String) -> int:
@@ -381,14 +401,19 @@ func _validate_loaded(loaded: Array) -> Array:
 		var path: String = String(item["path"])
 		var def: PortDef = item["def"]
 
+		# D-08b: port_id must match PORT_ID_PATTERN (^PT-[0-9]{2}$).
+		if not _is_valid_port_id(def.port_id):
+			errors.append(_err(ERR_SYS02_07, path, FIELD_PORT_ID, def.port_id, "port_id must match PORT_ID_PATTERN"))
+
 		if seen_ids.has(def.port_id):
 			errors.append(_err(CODE_DUPLICATE_PORT_ID, path, FIELD_PORT_ID, def.port_id, "duplicate port_id"))
 		else:
 			seen_ids[def.port_id] = path
 			by_port[def.port_id] = def
 
-		if def.name_zh.is_empty():
-			errors.append(_err(CODE_EMPTY_NAME_ZH, path, FIELD_NAME_ZH, def.name_zh, "name_zh must be non-empty"))
+		# D-08b: name_zh strip_edges 後不得為空 → ERR-SYS02-08.
+		if def.name_zh.strip_edges().is_empty():
+			errors.append(_err(ERR_SYS02_08, path, FIELD_NAME_ZH, def.name_zh, "name_zh must be non-empty after strip"))
 
 		if def.is_free_port:
 			free_count += 1
@@ -626,6 +651,12 @@ func _is_valid_role(role: int) -> bool:
 	return role == ROLE_PRODUCER or role == ROLE_TRANSIT or role == ROLE_TERMINAL
 
 
+func _is_valid_port_id(port_id: String) -> bool:
+	# D-08b: full-string match against named PORT_ID_PATTERN.
+	var m: RegExMatch = _port_id_regex.search(port_id)
+	return m != null and m.get_string() == port_id
+
+
 func _list_tres_paths(dir_path: String, errors: Array) -> Array:
 	var paths: Array = []
 	var dir := DirAccess.open(dir_path)
@@ -649,6 +680,15 @@ func _clear_state() -> void:
 	_loaded = false
 	_warnings = []
 	_role_change_queue = []
+	_clear_last_error()
+
+
+func _clear_last_error() -> void:
+	_last_error = {}
+
+
+func _record_error(code: StringName, field: String, value: Variant, message: String) -> void:
+	_last_error = _err(code, PORTS_DIR, field, value, message)
 
 
 func _err(code: StringName, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
