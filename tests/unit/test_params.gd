@@ -35,7 +35,7 @@ func test_all_section4_params_json_keys_readable() -> void:
 		var rule: Dictionary = schema[id]
 		var type_name: String = String(rule["type"])
 		match type_name:
-			"int":
+			"int", "int_enum":
 				var got: int = Params.get_int(id)
 				assert_typeof(got, TYPE_INT)
 			"float":
@@ -44,6 +44,14 @@ func test_all_section4_params_json_keys_readable() -> void:
 			"bool_debug_release":
 				var gotb: bool = Params.get_bool(id)
 				assert_typeof(gotb, TYPE_BOOL)
+			"int_array", "float_array", "upgrade_per_capita_array":
+				var gota: Variant = Params.get_value(id)
+				assert_typeof(gota, TYPE_ARRAY)
+			"int_object", "build_mat_object":
+				var gotd: Variant = Params.get_value(id)
+				assert_typeof(gotd, TYPE_DICTIONARY)
+			_:
+				fail_test("unknown schema type %s for %s" % [type_name, id])
 
 
 func test_fixture_values_match_techspec_section4() -> void:
