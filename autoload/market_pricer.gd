@@ -20,12 +20,21 @@ const PRM_MIN_CASH_UNIT := "PRM-SYS05-MIN_CASH_UNIT"
 const SIDE_BUY := 0
 const SIDE_SELL := 1
 
-## FRM-SYS04-10 band enum 0..4 — ascending mid/anchor (過低→過高). Mapping not lettered in Systems; see PR.
-const BAND_TOO_LOW := 0
-const BAND_LOW := 1
-const BAND_EQUILIBRIUM := 1 + 1
-const BAND_HIGH := BAND_EQUILIBRIUM + 1
-const BAND_TOO_HIGH := BAND_HIGH + 1
+## FRM-SYS04-10／D-08g: named band enum — 0 過低／1 偏低／2 均衡／3 偏高／4 過高（數字越大越貴）.
+## Call sites must use BAND_* names; never compare bare 0..4 (D-08g).
+enum Band {
+	VERY_LOW,
+	LOW,
+	EQUILIBRIUM,
+	HIGH,
+	VERY_HIGH,
+}
+
+const BAND_VERY_LOW := Band.VERY_LOW
+const BAND_LOW := Band.LOW
+const BAND_EQUILIBRIUM := Band.EQUILIBRIUM
+const BAND_HIGH := Band.HIGH
+const BAND_VERY_HIGH := Band.VERY_HIGH
 
 ## FRM-SYS04-07: 斷點數 ≥ 2 (built from 0／1 only).
 const MIN_BREAKPOINTS := 1 + 1
@@ -66,6 +75,8 @@ const EQ_MULT := 1.0 ## FRM-SYS04-10／r475: IND_LO1 ≤ 1 ≤ IND_HI1 (結構 1
 
 var _curve: PriceCurve = null
 var _consumption: ConsumptionProvider = null
+## D-08h: optional TransitAnchorProvider (SYS-15). Phase 0 null → TRANSIT always ERR-SYS04-07.
+var _transit_anchor: TransitAnchorProvider = null
 var _loaded: bool = false
 ## D-04: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
 var _last_error: Dictionary = {}
@@ -104,8 +115,8 @@ func load_and_validate(curve_path: String = CURVE_PATH) -> Array:
 	errors.append_array(_validate_indicator_order())
 	errors.append_array(_validate_floor_anchors())
 
-	# 缺口：ERR-SYS04-07（中轉格 Q-16 錨定價）於 validate 不掃 TRANSIT——Q-16 未實作，掃則 Phase 0 無法啟動。
-	# quote／mid_price 遇 TRANSIT 仍回 ERR-SYS04-07。
+	# D-08h／ERR-SYS04-07：validate 不掃 TRANSIT（Phase 0 無 TransitAnchorProvider，掃則無法啟動）。
+	# quote／mid_price 經 TransitAnchorProvider；無提供者或回 0 → ERR-SYS04-07（不得自填運費／比例）。
 
 	if errors.is_empty():
 		_loaded = true
@@ -128,6 +139,11 @@ func last_error() -> Dictionary:
 func set_consumption_provider(provider: ConsumptionProvider) -> void:
 	## 缺口：TechSpec H 未列登錄 API；比照 GoodsLedger.register_capacity_provider（測試／未來 SYS-06）。
 	_consumption = provider
+
+
+func set_transit_anchor_provider(provider: TransitAnchorProvider) -> void:
+	## D-08h：中轉格錨定價由 SYS-15 實作；Phase 0 不注入 → TRANSIT 一律 ERR-SYS04-07。
+	_transit_anchor = provider
 
 
 func validate() -> Array:
@@ -226,14 +242,14 @@ func indicator_band(ratio: float) -> int:
 	var lo1: float = Params.get_float(PRM_IND_LO1)
 	var lo2: float = Params.get_float(PRM_IND_LO2)
 	if ratio >= hi2:
-		return BAND_TOO_HIGH
+		return BAND_VERY_HIGH
 	if ratio > hi1:
 		return BAND_HIGH
 	if ratio >= lo1:
 		return BAND_EQUILIBRIUM
 	if ratio > lo2:
 		return BAND_LOW
-	return BAND_TOO_LOW
+	return BAND_VERY_LOW
 
 
 func multiplier_at_weeks(w: float) -> float:
@@ -259,7 +275,7 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 	var good: GoodDef = GoodCatalog.get_good(good_s)
 	var anchor: int = good.base_price_li
 
-	# TRANSIT needs Q-16 anchor — not implemented → ERR-SYS04-07 (TechSpec 3.5 D／G).
+	# D-08h: PRODUCER／TERMINAL = GoodDef.base_price_li；TRANSIT via TransitAnchorProvider.
 	if PortRegistry.is_loaded():
 		var port_found := false
 		for pid_variant in PortRegistry.all_ids():
@@ -271,12 +287,15 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 			if port.role_cells.has(good_s):
 				var cell: RoleCell = port.role_cells[good_s]
 				if cell.role == PortRegistry.ROLE_TRANSIT:
-					return {
-						KEY_ERROR: ERR_SYS04_07,
-						"field": "role",
-						"value": good_s,
-						"message": "TRANSIT anchor requires Q-16 (not implemented)",
-					}
+					var transit_anchor: int = _transit_anchor_price(port_id, good_id)
+					if transit_anchor <= TransitAnchorProvider.ANCHOR_FAILURE:
+						return {
+							KEY_ERROR: ERR_SYS04_07,
+							"field": FIELD_ANCHOR,
+							"value": good_s,
+							"message": "TRANSIT anchor missing (TransitAnchorProvider unset or failed)",
+						}
+					anchor = transit_anchor
 
 	if _consumption == null:
 		return {
@@ -458,9 +477,17 @@ func _validate_floor_anchors() -> Array:
 	return errors
 
 
+func _transit_anchor_price(port_id: StringName, good_id: StringName) -> int:
+	# D-08h: Phase 0 no provider → failure；provider fail (≤0) → failure. Never invent freight／ratios.
+	if _transit_anchor == null:
+		return TransitAnchorProvider.ANCHOR_FAILURE
+	return _transit_anchor.anchor_price_li(port_id, good_id)
+
+
 func _clear_state() -> void:
 	_curve = null
 	_consumption = null
+	_transit_anchor = null
 	_loaded = false
 	_clear_last_error()
 
