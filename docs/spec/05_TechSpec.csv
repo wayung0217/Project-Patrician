@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,,,
-狀態：Phase 0＋Round 3 全數合併（main 1e048ec，143 測）｜2026-11-18｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）,,,,,,,,
+狀態：Phase 0＋Round 3 全數合併（main 1e048ec，143 測）｜2026-11-18｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）,,,,,,,,
 ,,,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,,,
@@ -34,7 +34,7 @@ C-14,不得改規格,Cursor 不得修改本工作簿。介面需變更時在 PR 
 1-A10,SimLoop,每日 tick 與商季 cutoff 的唯一排程者（第 2.3 節）。,—,03_Systems r298,可做,,,
 1-X1,CT-OQ-37／38／39,工坊毛利、買入倍率、產能解耦（k／w／n）。,任何工坊、工資、配方代碼都不寫。,04B_CityRules r556–558,禁止碰,,,
 1-X2,地價、地租、圈層開放,04B 第 4 節全部。,不寫槽位、地價、地租相關類別或欄位。,04B 第 4 節,禁止碰,,,
-1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。｜★ 2026-11-18 例外：第 10 節派工單開放的 WP-16、WP-17（只做參數載入與 CSV 匯入，不寫任何 SYS-06／07／08 邏輯）。｜★ Round 5 例外：第 11 節開放 WP-18（SYS-08 資料層，只做版圖、地價、購地與查詢）、WP-25。｜★ Round 6 例外：第 12 節開放 WP-19（建造）、WP-20（工坊生產與工資累計），依序派工。,03_Systems 系統清單,禁止碰,,,
+1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。｜★ 2026-11-18 例外：第 10 節派工單開放的 WP-16、WP-17（只做參數載入與 CSV 匯入，不寫任何 SYS-06／07／08 邏輯）。｜★ Round 5 例外：第 11 節開放 WP-18（SYS-08 資料層，只做版圖、地價、購地與查詢）、WP-25。｜★ Round 6 例外：第 12 節開放 WP-19（建造）、WP-20（工坊生產與工資累計），依序派工。｜★ Round 7 例外：第 13 節開放 WP-28（時鐘 tick）、WP-29（航道圖）；WP-30、31 待派。,03_Systems 系統清單,禁止碰,,,
 1-X4,曲線正式數值,W1..W5、M1..M5、HALF_SPREAD 的調整。,只抄錄現值，不得改。,03_Systems r421,禁止碰,,,
 1-X5,OQ-12 系列未決項,—,遇到即停（C-05）。,03_Systems,禁止碰,,,
 1-X6,04A_Buildings!G111 疑點,—,不得以任何形式引用該值。,04A_Buildings,禁止碰,,,
@@ -62,7 +62,8 @@ C-14,不得改規格,Cursor 不得修改本工作簿。介面需變更時在 PR 
 3 各模組規格（C 欄為 03_Systems 原文即時引用）,,,,,,,,
 段,項目,規格原文,Cursor 實作補充,來源,狀態,,,
 3.1,SYS-00 Clock,res://autoload/clock.gd,"公開：day:int（唯讀）、season_index:int（唯讀，= floori((day−1)/D)）、is_paused:bool、set_paused(bool)、advance_one_day()（僅 SimLoop 呼叫）。信號：day_ticked(day)、season_cutoff(season_index)。
-★ Owner 2026-11-18 裁決 D-07：內部計數改為私有 _tick（1 日 = PRM-SYS00-TICKS_PER_DAY），day = floori(_tick ÷ TPD)；對外公開面不變，不得新增子日推進的公開方法。",GP-01、LCR-01、LCR-03；名稱 Owner 2026-11-17 確認,可做,,,
+★ Owner 2026-11-18 裁決 D-07：內部計數改為私有 _tick（1 日 = PRM-SYS00-TICKS_PER_DAY），day = floori(_tick ÷ TPD)；對外公開面不變，不得新增子日推進的公開方法。
+★ D-14d（2026-11-18）：新增 advance_one_tick() 與唯讀 tick，撤銷上句「不得新增子日推進的公開方法」；實作見 WP-28。",GP-01、LCR-01、LCR-03；名稱 Owner 2026-11-17 確認,可做,,,
 3.1,暫停,GP-01：暫停時一切不變,is_paused = true 時 advance_one_day() 不得被呼叫；呼叫即 push_error 並不推進。day_ticked／season_cutoff／advance_one_day 名稱已定，不得改名。速度檔位見 1-A3：PRM 未登記前不寫 _process 推進。,GP-01,可做,,,
 3.2,SYS-01 GoodCatalog,res://autoload/good_catalog.gd,啟動一次載入 res://data/goods/*.tres，之後唯讀。all_ids() 回傳升序。,03_Systems r246,可做,,,
 C 邊界,只定義欄位與驗證；不含價格公式、需求量、產量（產量在 SYS-02 角色格）,—,,03_Systems r233,可做,,,
@@ -273,7 +274,7 @@ N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked,,,
 ,,,,,,,,
 7 工作包總表（WP）— 唯一的工作包清單：新工作包一律接在表尾、編號連續；同一 WP 的後續修改記在 G 欄，不另開表（Owner 追蹤用；Cursor 不得修改）,,,,,,,,
 用法,Cursor 依 WP 編號與依賴開工；一個 PR 只做一個 WP；從最新 main 開分支、不堆疊（Owner 另行核准者除外）；依序搬到 main 後以 merge commit 合併；測試數以「合併前 main ＋ 該 PR 自己新增數」累計，舊測名不得消失。,PR 描述必須回報：WP 編號、新增檔案、測試結果（通過數／總數與新增測名）、遇到的規格缺口（未裁決不得自行補）。,狀態下拉：未開始／進行中／PR 待審／退件／完成；Owner 審後更新。,,,,,
-進度,共 28 個 WP｜完成 18｜進行中 0｜PR 待審 2｜退件 0｜未開始 8　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
+進度,共 32 個 WP｜完成 18｜進行中 0｜PR 待審 2｜退件 0｜未開始 12　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
 WP 編號,內容（對應規格）,依賴,交付物,驗收,狀態,PR／合併紀錄,階段,最後更新
 WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,完成,R1：PR #1｜1/1 ／ R2：無改動｜2026-11-18T03:19:32Z 合併 33018d6（main 1/1）,Phase 0（Round 1–2）,2026-11-18
 WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,完成,R1：PR #2｜9/9 ／ R2：+TICKS_PER_DAY、ROUND_EPS｜13/13｜搬到 main 後合併 57435c7（main 13）,Phase 0（Round 1–2）,2026-11-18
@@ -303,6 +304,10 @@ WP-24,開局初始化與整合：FRM-SYS08-21（04_Content 第 4 至 7 節）、
 WP-25,SYS-00 Rng 派生雜湊：FRM-SYS23-10（UTF-8＋FNV-1a 64＋0x1F 分隔 → SplitMix64），補 1-X7 細則,—（獨立，可隨時派）,res://core/rng.gd（或 Owner 指定）、測試,TST-SYS23-08 測試向量；同輸入同輸出；mod 2^64 環繞只准在此函數（C-10 例外）,PR 待審,R5｜PR #21（5b5b659）｜+5 → 預期 169｜CI 綠｜★ D-13a 已授權合併（#21 先）,工具批 T-1（模擬器）,2026-11-18
 WP-26,SYS-23 模擬器核心：sim_runner、情境檔驗證（9.6、ERR-SYS23-01 至 07）、參數合併 FRM-01、網格 FRM-02、季末取樣、MET／OBS、五個輸出 CSV（9.9）,WP-24、WP-25,res://sim/ 全部、測試,TST-SYS23-01 至 04、08 至 11,未開始,—（需 Phase 1 代碼完成）,工具批 T-1（模擬器）,2026-11-18
 WP-27,SYS-23 第二層理想運貨者：FRM-SYS23-04、原因碼 SIM_RELOCATE（FRM-05，非模擬模式即 ERR-SYS03-04）,WP-26,res://sim/、goods_ledger.gd（原因碼）、測試,TST-SYS23-05、06、07,未開始,—,工具批 T-1（模擬器）,2026-11-18
+WP-28,SYS-00 時鐘 tick（D-14d）：Clock.advance_one_tick()、唯讀 tick；advance_one_day() 改為連續 TPD 次 tick；SimLoop 每日第 1 步改為逐 tick 推進＋tick 步驟清單（本 WP 為空）,WP-18 合併後（可與 WP-19 平行；合併在 WP-19、WP-29 之後）,clock.gd、sim_loop.gd、測試,見第 13 節 13-03,未開始,★ 2026-11-18 已派工（第 13 節，Round 7）,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
+WP-29,SYS-14 航道圖：SeaLanes Autoload、FRM-SYS14-01 載入驗證、FRM-SYS14-02 尋路；csv_import 新增 nodes／regions／lanes.csv（D-14e）,WP-18 合併後（可與 WP-19 平行；合併在 WP-19 之後）,sea_lanes.gd、sea_node.gd、sea_region.gd、sea_lane.gd、csv_import.gd、fixtures、測試,見第 13 節 13-06,未開始,★ 2026-11-18 已派工（第 13 節，Round 7）,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
+WP-30,SYS-13／14 船與航行：ShipRegistry、開局船、聘解（SailorPoolProvider，D-14b）、出航、改道、位置、抵港、港口吃水、HOLD 容量、工資與維修；Params 登錄 §10 PRM,WP-28、WP-29 合併後,ship_registry.gd、ship.gd、sailor_pool_provider.gd、params.gd、sim_loop.gd、測試,見第 13 節 13-08,未開始,派工單已寫（第 13 節 13-07、08）；WP-28、29 合併後派,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
+WP-31,SYS-13 船廠造船與賣船：order_ship、排隊與開工（BC-2 共用入口）、工期、sell_ship,WP-19、WP-30 合併後,ship_registry.gd、sim_loop.gd、測試,見第 13 節 13-10,未開始,派工單已寫（第 13 節 13-09、10）；派工前須先裁決 BC-2 共用入口,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
 ,,,,,,,,
 8 Owner 裁決總表（D 系列）— 所有實作裁決集中於此，新裁決接在表尾；優先於第 3 節同主題的 D 欄註記,,,,,,,,
 編號,主題,裁決,實作要求,影響 WP,回寫來源 Sheet,,,
@@ -350,6 +355,11 @@ D-12g,累加器精度,"零頭以 1／(DAYS_PER_WEEK × ACC_SCALE) 為單位的 i
 D-12h,每日與信號入口,BuildingEconomy 對 SimLoop 只開兩個入口：daily_step(day) -> Array（依 8.6 F 每日 ①–⑤，回傳當日錯誤清單）與 flush_signals()（SimLoop 第 6 步呼叫，把當日暫存的信號一次發出）。,玩家即時操作（購地、下單）的信號仍於該筆提交後立即發出（GP-02）。,WP-19 起,03_Systems C1361（Owner 2026-11-18 追認）,,,
 D-13a,Round 5 合併授權,授權依序合併 #21（WP-25）→ #22（WP-18）：合併前各自 rebase 到最新 main；預期 164 → 169 → 182（#22 自身 +13）。,合併一律 merge commit；先前 main 測試名不得缺漏或改名；合併後回報 merge SHA 與測試數。,WP-25、WP-18,R5-01,,,
 D-13b,#22 三項缺口的處置,① D-11d／D-11e 已於 2026-11-18 由 Owner 追認（v6.69），不再是缺口；② opening_public 只匯入不使用，符合 D-11c（建築於 WP-24 建立）；③ 本期無建築，倉儲／工作／住處容量為 0 或空清單，符合 11-02、11-06。,三項皆照現狀，不改代碼。,WP-18,R5-01,,,
+D-14a,船隊與航程拆包,拆四包：WP-28 時鐘 tick、WP-29 航道圖匯入與尋路（可與 WP-19／20 平行開發）；WP-30 船與航行（WP-28、29 合併後派）；WP-31 船廠造船與賣船（WP-19、WP-30 合併後派）。,合併順序 WP-19 → WP-29 → WP-28；同改 sim_loop.gd 者由後合併的一方 rebase 解衝突，不得改動對方邏輯。,WP-28 至 31,03_Systems §10（Owner 2026-11-18）,,,
+D-14b,水手來源介面,"SailorPoolProvider：beggars(port_id) -> int、hire_sailors(port_id, n) -> int（成功回 n、失敗回 0）、release_sailors(port_id, n) -> int；ShipRegistry 以注入方式取得（同 D-11d）；PopulationModel 於 WP-21 實作。碼頭與船廠等級直接查 BuildingEconomy.public_level()。",新檔 res://core/interfaces/sailor_pool_provider.gd；基底方法 push_error 並回失敗值；未注入 → boot() 錯誤；測試只用 fixtures。,WP-30、WP-21,03_Systems 10.5 B（Owner 2026-11-18）,,,
+D-14c,新 Autoload 定名與順序,定名 SeaLanes（res://autoload/sea_lanes.gd）、ShipRegistry（res://autoload/ship_registry.gd）。登錄順序：Params → Clock → GoodCatalog → PortRegistry → SeaLanes → GoodsLedger → MarketPricer → CashLedger → BuildingEconomy → ShipRegistry → SimLoop。,"_ready() 不讀資料；載入一律由 SimLoop.boot() 依此順序呼叫（2.2-01、2.2-02）；HOLD 容量提供者由 SimLoop.boot() 以 register_capacity_provider(HOLD, ShipRegistry) 登錄（D-10c）。",WP-29、WP-30,03_Systems 10.5 H（Owner 2026-11-18）,,,
+D-14d,時鐘介面變更（C-14）,依 Q-16c：Clock 新增 advance_one_tick()（僅 SimLoop 呼叫）與唯讀 tick:int；advance_one_day() 改為連續呼叫 TICKS_PER_DAY 次 advance_one_tick()。撤銷 D-07「不得新增子日推進的公開方法」一句；D-07 其餘不變（經濟只在日界結算）。,暫停時 advance_one_tick() push_error 不推進（GP-01）；Clock 仍不發信號（D-05）；第 3.1 節 D60 以本條為準。,WP-28,03_Systems 10.5 F；Q-16c（Owner 2026-11-18）,,,
+D-14e,航道 CSV 格式,"nodes.csv：node_id, kind（PORT／JUNCTION）, name_zh, x（int）, y（int）；regions.csv：region_id, name_zh, note；lanes.csv：lane_id, node_a, node_b, region_id, length（float，僅供參考）, waypoints（int ≥ 1）, lane_type（SPUR／TRUNK／NEIGHBOR）。由 04_Content 8.2–8.4 匯出；資源目錄 res://data/sea/（本書允許目錄）。",匯入規則同 2.1-04 與 D-08i（表頭逐字、全有或全無、寫前清舊檔）；Godot 不得由座標重算 waypoints。,WP-29,04_Content 8.2–8.4,,,
 ,,,,,,,,
 9 收件審查與合併紀錄（R 系列）— 每份 Cursor 報告的審查結論集中於此，新紀錄接在表尾,,,,,,,,
 註,R2-01 至 R2-12 的原始全文於 2026-11-18 工作簿重整時遺失，下表依 AI_README 更新日誌摘要重建；R2-13 起為完整內容。,,,,,,,
@@ -413,3 +423,17 @@ R5-01,Round 5 收件：WP-25 #21、WP-18 #22,兩 PR 皆從 main e715047 開、�
 12-11,工資累計（FRM-12 每日部分）,玩家工坊 ACTIVE 時：acc_wage ＋＝ floori(quantize(workers × WAGE_BASE_LI × K^W × ACC_SCALE))；停產（原料不足）照計；PAUSED 不計（FRM-23）；城營工坊不計。,季末換算與扣款在 WP-23；本期只驗累加值。,FRM-SYS08-12；D-12g,可做,,,
 12-12,WP-20 驗收,TST-SYS08-06、07、08、09（產出與工資部分）、17（fixture 一季守恆）；另加：① 7 日合計＝FLOOR(週產)；② 上游當日產出下游可用；③ PAUSED 無產出無工資；④ 無 WorkforceProvider → boot 錯誤；⑤ SimLoop 不再依角色格產出（舊測試依 D-09g 改內容不改名並列於 PR）。,測試名含 TST ID 或 12-12 編號。,C-13,可做,,,
 12-13,遇到缺口,本派工單未寫到的事一律不做。,在 PR 描述列「缺口」並停止該項，其餘照常（C-05）。,C-05,可做,,,
+,,,,,,,,
+13 Phase 2 派工單 Round 7 — 船隊與航程：WP-28（時鐘 tick）、WP-29（航道圖）先派；WP-30（船與航行）、WP-31（造船與賣船）依序後派（2026-11-18，D-14a）,,,,,,,,
+編號,項目,內容,要求,依據,狀態,,,
+13-01,共同前提,WP-28、WP-29 於 #22 合併後從最新 main（預期 182）各開一個分支、不堆疊，可與 WP-19 平行開發；合併順序 WP-19 → WP-29 → WP-28。WP-30 於 WP-28、29 合併後派；WP-31 於 WP-19、WP-30 合併後派。,一個 PR 只做一個 WP；規格權威 03_Systems §10（r1643 起）；新 Autoload 依 D-14c 順序登錄；§10 其他部分一律不做。,C-13、D-14a、D-14c,可做,,,
+13-02,WP-28 範圍,Clock 新增 advance_one_tick() 與唯讀 tick:int；advance_one_day() 保留，改為連續呼叫 TICKS_PER_DAY 次 advance_one_tick()；day ＝ floori(tick ÷ TPD) 不變。SimLoop 每日第 1 步改為：逐 tick 推進一日份，每個 tick 後依序執行「tick 步驟清單」（本 WP 清單為空，WP-30 加入 ShipRegistry.tick_step）→ 之後日結（原第 2 步起不變）。,不做：任何船隊邏輯、_process／計時器推進（1-A3 仍有效）。暫停時 advance_one_tick() push_error 不推進（GP-01）；Clock 不發信號（D-05）；tick 步驟清單寫成 SimLoop 內明確步驟，不得用 signal 連線或 call_deferred（C-04）。,D-14d；Q-16c；03_Systems 10.5 F,可做,,,
+13-03,WP-28 驗收,TST-SYS13-16（advance_one_day() 與 TICKS_PER_DAY 次 advance_one_tick() 加日結，結果完全相同）；另加：① tick 從 0 起、每次 +1；② 跨日邊界 day 正確；③ 暫停時 advance_one_tick() 不推進；④ 既有測試全綠、測試名不變。,測試名含 TST ID 或 13-03 編號；PR 描述回報新增測試數與名單。,C-13,可做,,,
+13-04,WP-29 範圍,"Autoload SeaLanes：load_and_validate()（FRM-SYS14-01）、path(from_node, to_node) -> Array[{lane_id, from_node}]（FRM-SYS14-02）、waypoints(lane_id) -> int、region(lane_id) -> StringName、nodes() -> Array、validate() -> Array、last_error() -> Dictionary；csv_import 新增 nodes.csv、regions.csv、lanes.csv（D-14e）；資料類別 sea_node.gd、sea_region.gd、sea_lane.gd（res://core/types/）。",不做：吃水、船、時間、海域風險。查無 id 回失敗值＋last_error()（同 D-08c）。waypoints 直接讀 CSV，不由座標重算；length 只存不用。,03_Systems FRM-SYS14-01／02；D-14c、D-14e,可做,,,
+13-05,WP-29 尋路細則,Dijkstra，權重＝waypoints；中途節點只能是 JUNCTION（起訖港除外）；平手依序比：航點總數 → 航道數 → lane_id 序列字典序。鄰接清單建好後依 lane_id 升序固定。,無路回空陣列＋ERR-SYS14-03；起點＝終點回空陣列＋ERR-SYS14-04。不得依 Dictionary 插入順序（C-08）。,FRM-SYS14-02；C-08,可做,,,
+13-06,WP-29 驗收,TST-SYS14-01（fixture 照 docs/spec 匯出的 55 條航道：0 錯誤、16 港兩兩可達）、TST-SYS14-02、03、04、09（路徑部分）；另加：① 三個 CSV 表頭逐字、缺欄／多欄／型別錯即中止；② PORT 節點與 PortRegistry 不一致 → ERR-SYS14-01；③ 平手規則各一例；④ 港口不作中途節點。,fixture 只放 res://tests/fixtures/（屬測試資料）；正式資料由 Owner 匯出（2.1-04 ⑤）。測試名含 TST ID 或 13-06 編號。,C-13,可做,,,
+13-07,WP-30 範圍（待派）,"Autoload ShipRegistry：開局船（FRM-SYS13-06）、hire_crew／fire_crew（04、05，經 SailorPoolProvider，D-14b）、sail（FRM-SYS14-03）、reroute（05）、position（04）、tick_step 抵港（06）、port_draft（FRM-SYS13-11）、HOLD 容量（10）、can_trade(ship_id, port_id)、日結工資累計與季末工資、維修（07、08）；Params 登錄 03_Systems 10.7 全部 PRM。SimLoop：tick 步驟清單加入 ShipRegistry.tick_step(tick)；日結加工資累計；季末在 2.3-05 (b) close_season() 之前加 (1) 工資 (2) 維修。",不做：order_ship、船廠排隊、賣船（WP-31）；交易指令層（航行中不得交易以 can_trade() 提供查詢）。,03_Systems 10.5–10.8,待派（WP-28、29 合併後）,,,
+13-08,WP-30 驗收（待派）,TST-SYS13-01、06、07、08、09、13、14、15；TST-SYS14-05、06、07、08、09；另加：無 SailorPoolProvider → boot 錯誤。,同上。,C-13,待派,,,
+13-09,WP-31 範圍（待派）,order_ship（FRM-SYS13-01）、船廠排隊與開工（02）、工期（03）、sell_ship（09）；日結加工期推進與開工。,★ 派工前須先裁決 BC-2 取料共用入口：WP-19 的取料實作須開放給 ShipRegistry 呼叫，不得另寫一份（N-04）。,03_Systems FRM-SYS13-01–03、09,待派（WP-19、WP-30 合併後）,,,
+13-10,WP-31 驗收（待派）,TST-SYS13-02、03、04、05、10、11、12；紅隊-46、47、48 各一個測試。,同上。,C-13,待派,,,
+13-11,遇到缺口,本派工單未寫到的事一律不做。,在 PR 描述列「缺口」並停止該項，其餘照常（C-05）。,C-05,可做,,,

@@ -6,7 +6,7 @@
 Workbook 名稱,遊戲開發建議書（Game Design & Implementation Proposal）,,,,
 擁有者,Rex Tsoi,,,,
 最後更新日期,2026-11-18,,,,
-版本,v6.76,,,,
+版本,v6.77,,,,
 ,,,,,
 1. AI 的責任（Responsibilities）,,,,,
 編號,責任項目,說明,,,
@@ -259,3 +259,4 @@ N11,docs/spec 一次 commit,Pending,★ 現在可 commit：Round 3 已全部合�
 2026-11-18,v6.74,航道圖第 2 版（OQ-16n 補充裁決 ①②③）：04_Content 第 8 節依新規則重建——港口只作起終點、支線（港接 3 航點內要衝）、主幹（要衝之間）、近鄰直航（3 航點內無陸地阻隔）；要衝 9 → 13（新增 JN-10 釣魚嶼、JN-11 姑米山、JN-12 澎湖水道、JN-13 伊平屋；JN-01、03、04、06、07 座標調整），節點 29、航道 55（支線 27、主幹 16、近鄰 12）；lanes.csv 新增 lane_type 欄；8.1 新增門檻參數 3 [待審]；8.5 驗證航線 5 → 8 條全部 OK（福州→那霸 8 日、那霸→長崎 6.5 日、松江→釜山 10 日）。04C_SeaChart 重建原生圖表（海域分色、制度分色、節點名標籤；圖表資料改指新列號）。03_Systems OQ-16n 補註。航道圖待 Owner 審，暫不 commit、不發 Cursor。,03_Systems、04_Content、04C_SeaChart、AI_README,,
 2026-11-18,v6.75,★ Owner 審定航道圖第 2 版。OQ-16 第 4 輪：16o 船廠按吃水分三級（一級沙船／二級加鳥船、老閘船／三級加福船）；16p 船廠依等級同時 1／2／3 艘；16q 開局沙船滿編、水手隨船不扣魍港人口；16r 可賣回船廠，回收 ＝ 造船費 × 0.5 [待審]，水手原地解散為乞丐。Q-16a 賣船須清空船艙；Q-16b 船廠滿額排隊——下單即付造船費、不插隊不取消、建材開工時才扣或按時價買；Q-16c 時鐘新增 advance_one_tick()（SYS-00 介面變更，待依 C-14 回寫 05_TechSpec）。03_Systems §10 插入 OQ-16o–r（r1700–1703），寫入正式規格 10.5–10.12（r1720–1853）：A–K、船型表、PRM 10 項（8 項無值）、FRM-SYS13-01–11／SYS14-01–06、ERR-SYS13-01–12／SYS14-01–05、TST 25 條、紅隊-46–53、Gate 64/72 PASS。,03_Systems、04_Content、04C_SeaChart、AI_README,,
 2026-11-18,v6.76,收件 Cursor Round 4 合併＋Round 5 報告：R4-02（#20 → 5665ce0／153、#19 → e715047／164，與預期相符）；R5-01（WP-25 #21 +5、WP-18 #22 +13，CI 綠、未合併）。05_TechSpec 新增 D-13a（授權 #21 → #22 依序合併，預期 169 → 182）、D-13b（#22 三項缺口：D-11d／e 已追認、opening_public 只匯入、無建築容量 0，皆照現狀）；WP-16、17 改已合併，WP-25、18 改 PR 待審（已授權），WP-19 派工。,05_TechSpec、AI_README,,
+2026-11-18,v6.77,船隊與航程派工前裁決（Owner 全採建議）：D-14a 拆四包——WP-28 時鐘 tick、WP-29 航道圖匯入與尋路（可與 WP-19 平行，合併序 WP-19 → 29 → 28）、WP-30 船與航行（28、29 合併後）、WP-31 造船與賣船（WP-19、30 合併後，派前須裁決 BC-2 共用入口）；D-14b SailorPoolProvider 注入介面；D-14c 定名 SeaLanes、ShipRegistry 與 Autoload 順序；D-14d 時鐘介面變更（advance_one_tick，撤銷 D-07 一句，C-14）；D-14e 航道 CSV 格式。05_TechSpec 第 7 節新增 WP-28 至 31（共 32 包）、第 13 節派工單 Round 7（13-01 至 13-11）、D35／D60／A2 同步。03_Systems §10 定名、SailorPoolProvider、can_trade() 回寫。04_Content 8.3 表頭「說明」改 note、8.4 lane_type 改代碼 SPUR／TRUNK／NEIGHBOR。,05_TechSpec、03_Systems、04_Content、AI_README,,
