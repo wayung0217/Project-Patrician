@@ -2,39 +2,40 @@ extends Node
 ## Autoload: CashLedger — SYS-05 ST-CASH (TechSpec 3.6 / WP-07).
 ## _ready() only clears fields; load_and_validate() inits SOURCE／SINK (2.2-01).
 ## TradeSlider／帳本報表 UI 不做（1-A8）。
+## D-04: post／revalidate／create_account → 0 OK／1 fail；ErrorInfo via last_error(). No ERR→int.
+## D-03: genesis_grant() API only（SimLoop.boot 呼叫屬 WP-08）.
+## D-01: money float→int only via AmountMath.quantize_amount（core/ shared with WP-06）.
 
 signal cash_changed(id: StringName, new_balance: int, delta: int, reason: StringName)
 signal arrears_changed(id: StringName, arrears: int, seasons: int)
 signal bankruptcy_referred(id: StringName)
 signal season_ledger_closed(season_index: int, report: SeasonLedgerReport)
 
+const SYS_ID := &"SYS-05"
+const SCRIPT_PATH := "res://autoload/cash_ledger.gd"
+
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_START_CASH := "PRM-SYS05-START_CASH"
 const PRM_ARREARS_SEASONS_TO_BANKRUPT := "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT"
 const PRM_MIN_CASH_UNIT := "PRM-SYS05-MIN_CASH_UNIT"
 
-## ERR-SYS05-01..09 as negative ints for post()->int（H 寫 Error；見 PR 缺口）.
-const _ONE := 1
+## ->int status literals only 0／1 (D-04); paid／qty returns stay domain values.
 const CODE_OK := 0
-const CODE_ERR_SYS05_01 := 0 - _ONE
-const CODE_ERR_SYS05_02 := CODE_ERR_SYS05_01 - _ONE
-const CODE_ERR_SYS05_03 := CODE_ERR_SYS05_02 - _ONE
-const CODE_ERR_SYS05_04 := CODE_ERR_SYS05_03 - _ONE
-const CODE_ERR_SYS05_05 := CODE_ERR_SYS05_04 - _ONE
-const CODE_ERR_SYS05_06 := CODE_ERR_SYS05_05 - _ONE
-const CODE_ERR_SYS05_07 := CODE_ERR_SYS05_06 - _ONE
-const CODE_ERR_SYS05_08 := CODE_ERR_SYS05_07 - _ONE
-const CODE_ERR_SYS05_09 := CODE_ERR_SYS05_08 - _ONE
+const CODE_FAIL := 1
 
-const ERR_SYS05_01 := "ERR-SYS05-01"
-const ERR_SYS05_02 := "ERR-SYS05-02"
-const ERR_SYS05_03 := "ERR-SYS05-03"
-const ERR_SYS05_04 := "ERR-SYS05-04"
-const ERR_SYS05_05 := "ERR-SYS05-05"
-const ERR_SYS05_06 := "ERR-SYS05-06"
-const ERR_SYS05_07 := "ERR-SYS05-07"
-const ERR_SYS05_08 := "ERR-SYS05-08"
-const ERR_SYS05_09 := "ERR-SYS05-09"
+const ERR_SYS05_01 := &"ERR-SYS05-01"
+const ERR_SYS05_02 := &"ERR-SYS05-02"
+const ERR_SYS05_03 := &"ERR-SYS05-03"
+const ERR_SYS05_04 := &"ERR-SYS05-04"
+const ERR_SYS05_05 := &"ERR-SYS05-05"
+const ERR_SYS05_06 := &"ERR-SYS05-06"
+const ERR_SYS05_07 := &"ERR-SYS05-07"
+const ERR_SYS05_08 := &"ERR-SYS05-08"
+const ERR_SYS05_09 := &"ERR-SYS05-09"
+
+const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
+const CODE_MISSING_KEY := &"MISSING_KEY"
+const CODE_MIN_CASH_UNIT := &"MIN_CASH_UNIT"
 
 ## 帳戶 id 具名常數（TechSpec 3.6）；組 id 一律經常數，不得手打字串判斷種類。
 const PREFIX_ACT := "ACT-"
@@ -42,8 +43,11 @@ const PREFIX_CITY := "CITY-"
 const PREFIX_REG := "REG-"
 const ID_SOURCE := &"SOURCE"
 const ID_SINK := &"SINK"
+## D-03: player actor account; kind = ACTOR. AI ACT-AI-nn is SYS-18（Phase 0 不建）.
+const ACCOUNT_PLAYER := &"ACT-PLAYER"
 
 ## ERR-SYS05-06 授權請求者清單（來源：03_Systems ST-CASH r73／TechSpec G ERR-SYS05-06）。
+## D-03: list itself unchanged — genesis exception is a separate named constant below.
 const AUTHORIZED_REQUESTERS: Array[StringName] = [
 	&"SYS-04",
 	&"SYS-08",
@@ -55,9 +59,13 @@ const AUTHORIZED_REQUESTERS: Array[StringName] = [
 	&"SYS-21",
 ]
 
+## D-03: sole ERR-SYS05-06 exception for genesis_grant()（裁決 D-03）；不寫入 AUTHORIZED_REQUESTERS。
+const REQUESTER_GENESIS_GRANT := &"GENESIS_GRANT"
+const REASON_GENESIS_CASH := &"GENESIS_CASH"
+
 ## quote side（TechSpec 3.5 H：BUY=0, SELL=1）
 const SIDE_BUY := 0
-const SIDE_SELL := _ONE
+const SIDE_SELL := 1
 
 const FIELD_PARAMS := "Params"
 const FIELD_ENTRIES := "entries"
@@ -82,6 +90,8 @@ var _season_stats: Dictionary = {}
 var _loaded: bool = false
 ## 缺口：應呼叫 MarketPricer.quote；WP-06 平行未登錄。暫用 set_quote_provider。
 var _quote_provider: Object = null
+## D-04: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
+var _last_error: Dictionary = {}
 
 
 func _ready() -> void:
@@ -93,14 +103,14 @@ func load_and_validate() -> Array:
 	var errors: Array = []
 	_clear_state()
 	if not Params.is_loaded():
-		errors.append(_err("PARAMS_NOT_LOADED", "res://autoload/cash_ledger.gd", FIELD_PARAMS, null, "Params must load_and_validate before CashLedger"))
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, FIELD_PARAMS, null, "Params must load_and_validate before CashLedger"))
 		_emit_errors(errors)
 		return errors
 	# 1-A8: START_CASH／ARREARS_SEASONS_TO_BANKRUPT 缺鍵由 Params 拒絕；此處再確認可讀。
 	if not Params.has_prm(PRM_START_CASH):
-		errors.append(_err("MISSING_KEY", "Params", PRM_START_CASH, null, "PRM-SYS05-START_CASH required (1-A8)"))
+		errors.append(_err(CODE_MISSING_KEY, PRM_START_CASH, null, "PRM-SYS05-START_CASH required (1-A8)"))
 	if not Params.has_prm(PRM_ARREARS_SEASONS_TO_BANKRUPT):
-		errors.append(_err("MISSING_KEY", "Params", PRM_ARREARS_SEASONS_TO_BANKRUPT, null, "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT required (1-A8)"))
+		errors.append(_err(CODE_MISSING_KEY, PRM_ARREARS_SEASONS_TO_BANKRUPT, null, "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT required (1-A8)"))
 	if not errors.is_empty():
 		_emit_errors(errors)
 		return errors
@@ -108,8 +118,8 @@ func load_and_validate() -> Array:
 	var _start: int = Params.get_int(PRM_START_CASH)
 	var _arrears_lim: int = Params.get_int(PRM_ARREARS_SEASONS_TO_BANKRUPT)
 	var _min_unit: int = Params.get_int(PRM_MIN_CASH_UNIT)
-	if _min_unit != _ONE:
-		errors.append(_err("MIN_CASH_UNIT", "Params", PRM_MIN_CASH_UNIT, _min_unit, "MIN_CASH_UNIT must be 1"))
+	if _min_unit != 1:
+		errors.append(_err(CODE_MIN_CASH_UNIT, PRM_MIN_CASH_UNIT, _min_unit, "MIN_CASH_UNIT must be 1"))
 		_emit_errors(errors)
 		return errors
 	_ensure_system_account(ID_SOURCE, Account.Kind.SOURCE)
@@ -119,12 +129,17 @@ func load_and_validate() -> Array:
 	_season_index = 0
 	_season_start_day = DAY_PLACEHOLDER
 	_loaded = true
-	# 缺口：開局 START_CASH 由 SOURCE 發出，但玩家帳戶 id 規格未定；不自動發放（見 PR）。
+	# D-03: START_CASH 發放經 genesis_grant()；SimLoop.boot 呼叫屬 WP-08，此處不自動發放。
 	return errors
 
 
 func is_loaded() -> bool:
 	return _loaded
+
+
+func last_error() -> Dictionary:
+	# D-04: single-call failures (post／revalidate／create_account／genesis_grant／charge) expose ErrorInfo here.
+	return _last_error.duplicate(true)
 
 
 func set_day(day: int) -> void:
@@ -139,13 +154,14 @@ func set_quote_provider(provider: Object) -> void:
 
 func create_account(id: StringName, kind: Account.Kind, owner_id: StringName = &"") -> int:
 	## 缺口：H 未列建戶 API；測試／開局需要。SOURCE／SINK 已於 load 建立。
+	## D-04: 0 OK／1 fail + last_error.
 	assert(_loaded, "CashLedger.create_account before load")
+	_clear_last_error()
 	var key := String(id)
 	if _accounts.has(key):
 		return CODE_OK
 	if kind == Account.Kind.SOURCE or kind == Account.Kind.SINK:
-		push_error("CashLedger: system accounts are singleton")
-		return CODE_ERR_SYS05_04
+		return _fail(ERR_SYS05_04, FIELD_ACCOUNT, id, "system accounts are singleton")
 	var acc := Account.new()
 	acc.id = id
 	acc.kind = kind
@@ -177,37 +193,55 @@ func register_charge(schedule: ChargeSchedule) -> void:
 	_charges.append(schedule)
 
 
+func genesis_grant() -> int:
+	# D-03: {SOURCE: −START_CASH, ACT-PLAYER: +START_CASH}, reason GENESIS_CASH.
+	# Sole ERR-SYS05-06 exception via REQUESTER_GENESIS_GRANT. SimLoop.boot calls once（WP-08）.
+	assert(_loaded, "CashLedger.genesis_grant before load")
+	_clear_last_error()
+	var start_cash: int = Params.get_int(PRM_START_CASH)
+	if not _accounts.has(String(ACCOUNT_PLAYER)):
+		var created: int = create_account(ACCOUNT_PLAYER, Account.Kind.ACTOR)
+		if created != CODE_OK:
+			return created
+	return post([
+		make_entry(ID_SOURCE, 0 - start_cash),
+		make_entry(ACCOUNT_PLAYER, start_cash),
+	], REASON_GENESIS_CASH, REQUESTER_GENESIS_GRANT)
+
+
 func post(entries: Array, reason: StringName, requester: StringName) -> int:
 	# FRM-SYS05-01／02；授權 ERR-SYS05-06；金額 ERR-SYS05-05
+	# D-04: success → 0；fail → 1 + ErrorInfo in last_error()
 	assert(_loaded, "CashLedger.post before load")
+	_clear_last_error()
 
-	# 1 驗證請求者
+	# 1 驗證請求者（D-03 genesis exception）
 	if not _is_authorized(requester):
-		return _fail(ERR_SYS05_06, CODE_ERR_SYS05_06, FIELD_REQUESTER, requester, "unauthorized requester")
+		return _fail(ERR_SYS05_06, FIELD_REQUESTER, requester, "unauthorized requester")
 
 	if entries.is_empty():
-		return _fail(ERR_SYS05_02, CODE_ERR_SYS05_02, FIELD_ENTRIES, entries, "empty posting")
+		return _fail(ERR_SYS05_02, FIELD_ENTRIES, entries, "empty posting")
 
 	var parsed: Array = [] ## Array[PostingEntry]
 	var sum_amount: int = 0
 	for item in entries:
 		var pe: PostingEntry = _coerce_entry(item)
 		if pe == null:
-			return _fail(ERR_SYS05_05, CODE_ERR_SYS05_05, FIELD_AMOUNT, item, "invalid entry")
+			return _fail(ERR_SYS05_05, FIELD_AMOUNT, item, "invalid entry")
 		# ERR-SYS05-05：金額須為非整 0 的整數（正入／負出）；≤0 且非負入帳之出帳已含於 amount==0
 		if pe.amount == 0:
-			return _fail(ERR_SYS05_05, CODE_ERR_SYS05_05, FIELD_AMOUNT, pe.amount, "amount must be non-zero int")
+			return _fail(ERR_SYS05_05, FIELD_AMOUNT, pe.amount, "amount must be non-zero int")
 		var acc_key := String(pe.account_id)
 		if not _accounts.has(acc_key):
-			return _fail(ERR_SYS05_04, CODE_ERR_SYS05_04, FIELD_ACCOUNT, pe.account_id, "unknown account")
+			return _fail(ERR_SYS05_04, FIELD_ACCOUNT, pe.account_id, "unknown account")
 		if not _add_checked(sum_amount, pe.amount):
-			return _fail(ERR_SYS05_08, CODE_ERR_SYS05_08, FIELD_AMOUNT, pe.amount, "int64 overflow on sum")
+			return _fail(ERR_SYS05_08, FIELD_AMOUNT, pe.amount, "int64 overflow on sum")
 		sum_amount = sum_amount + pe.amount
 		parsed.append(pe)
 
 	# FRM-SYS05-01
 	if sum_amount != 0:
-		return _fail(ERR_SYS05_02, CODE_ERR_SYS05_02, FIELD_ENTRIES, sum_amount, "unbalanced posting")
+		return _fail(ERR_SYS05_02, FIELD_ENTRIES, sum_amount, "unbalanced posting")
 
 	# Snapshot for rollback
 	var snap_balances: Dictionary = {}
@@ -224,7 +258,7 @@ func post(entries: Array, reason: StringName, requester: StringName) -> int:
 		if pe3.amount < 0 and acc3.kind != Account.Kind.SOURCE:
 			var projected: int = acc3.balance + pe3.amount
 			if projected < 0:
-				return _fail(ERR_SYS05_01, CODE_ERR_SYS05_01, FIELD_AMOUNT, pe3.amount, "insufficient cash")
+				return _fail(ERR_SYS05_01, FIELD_AMOUNT, pe3.amount, "insufficient cash")
 
 	# Apply entries；正入帳走 FRM-SYS05-07
 	var deltas: Array = [] ## {id, delta, reason} for signals after commit
@@ -235,13 +269,13 @@ func post(entries: Array, reason: StringName, requester: StringName) -> int:
 			var applied: Dictionary = apply_inbound_credit(acc4, pe4.amount)
 			if bool(applied.get("overflow", false)):
 				_restore_snap(snap_balances, snap_arrears)
-				return _fail(ERR_SYS05_08, CODE_ERR_SYS05_08, FIELD_AMOUNT, pe4.amount, "overflow on credit")
+				return _fail(ERR_SYS05_08, FIELD_AMOUNT, pe4.amount, "overflow on credit")
 			deltas.append({"id": acc4.id, "delta": int(applied["balance_delta"]), "reason": reason})
 			if int(applied["arrears_offset"]) > 0:
 				var sink: Account = _accounts[String(ID_SINK)]
 				if not _add_checked(sink.balance, int(applied["arrears_offset"])):
 					_restore_snap(snap_balances, snap_arrears)
-					return _fail(ERR_SYS05_08, CODE_ERR_SYS05_08, FIELD_AMOUNT, applied["arrears_offset"], "overflow on SINK")
+					return _fail(ERR_SYS05_08, FIELD_AMOUNT, applied["arrears_offset"], "overflow on SINK")
 				sink.balance = sink.balance + int(applied["arrears_offset"])
 				deltas.append({"id": ID_SINK, "delta": int(applied["arrears_offset"]), "reason": reason})
 				_bump_season_stat(String(ID_SINK), SeasonLedgerReport.KEY_SUM_CREDIT, int(applied["arrears_offset"]))
@@ -255,12 +289,12 @@ func post(entries: Array, reason: StringName, requester: StringName) -> int:
 			# 出帳
 			if not _add_checked(acc4.balance, pe4.amount):
 				_restore_snap(snap_balances, snap_arrears)
-				return _fail(ERR_SYS05_08, CODE_ERR_SYS05_08, FIELD_AMOUNT, pe4.amount, "overflow on debit")
+				return _fail(ERR_SYS05_08, FIELD_AMOUNT, pe4.amount, "overflow on debit")
 			var new_bal: int = acc4.balance + pe4.amount
 			if acc4.kind != Account.Kind.SOURCE and new_bal < 0:
 				# ERR-SYS05-03 保底
 				_restore_snap(snap_balances, snap_arrears)
-				return _fail(ERR_SYS05_03, CODE_ERR_SYS05_03, FIELD_AMOUNT, pe4.amount, "negative balance")
+				return _fail(ERR_SYS05_03, FIELD_AMOUNT, pe4.amount, "negative balance")
 			acc4.balance = new_bal
 			deltas.append({"id": acc4.id, "delta": pe4.amount, "reason": reason})
 			_bump_season_stat(String(acc4.id), SeasonLedgerReport.KEY_SUM_DEBIT, 0 - pe4.amount)
@@ -355,12 +389,13 @@ func apply_inbound_credit(account: Account, credit: int) -> Dictionary:
 func revalidate_submit(account_balance: int, new_total_b_prime: int) -> int:
 	# FRM-SYS05-11：提交重驗 — 獨立單一函數（D157）
 	# B′ ≤ balance → OK；否則 ERR-SYS05-07，不自動減量。
+	# D-04: 0 OK／1 fail + last_error.
+	_clear_last_error()
 	if new_total_b_prime <= 0:
-		return CODE_ERR_SYS05_05
+		return _fail(ERR_SYS05_05, FIELD_AMOUNT, new_total_b_prime, "B' must be > 0")
 	if new_total_b_prime <= account_balance:
 		return CODE_OK
-	push_error("CashLedger: %s B'=%s balance=%s" % [ERR_SYS05_07, new_total_b_prime, account_balance])
-	return CODE_ERR_SYS05_07
+	return _fail(ERR_SYS05_07, FIELD_AMOUNT, new_total_b_prime, "stale quote unaffordable")
 
 
 func split_largest_remainder(total: int, weights: Array) -> Array:
@@ -368,28 +403,28 @@ func split_largest_remainder(total: int, weights: Array) -> Array:
 	# base_i = FLOOR(T·w_i ÷ W)；r = T − Σbase；依 MOD(T·w_i, W) 大到小、同值索引小者先，前 r 名 +1
 	var out: Array = []
 	if total < 0:
-		push_error("CashLedger: %s total negative" % ERR_SYS05_09)
+		_record_error(ERR_SYS05_09, FIELD_WEIGHTS, total, "total negative")
 		return out
 	if weights.is_empty():
-		push_error("CashLedger: %s empty weights" % ERR_SYS05_09)
+		_record_error(ERR_SYS05_09, FIELD_WEIGHTS, weights, "empty weights")
 		return out
 	var w_sum: int = 0
 	var w_ints: Array = []
 	for w_variant in weights:
 		if typeof(w_variant) != TYPE_INT and typeof(w_variant) != TYPE_FLOAT:
-			push_error("CashLedger: %s non-numeric weight" % ERR_SYS05_09)
+			_record_error(ERR_SYS05_09, FIELD_WEIGHTS, w_variant, "non-numeric weight")
 			return []
 		if typeof(w_variant) == TYPE_FLOAT and float(w_variant) != floorf(float(w_variant)):
-			push_error("CashLedger: %s non-int weight" % ERR_SYS05_09)
+			_record_error(ERR_SYS05_09, FIELD_WEIGHTS, w_variant, "non-int weight")
 			return []
 		var wi: int = int(w_variant)
 		if wi < 0:
-			push_error("CashLedger: %s negative weight" % ERR_SYS05_09)
+			_record_error(ERR_SYS05_09, FIELD_WEIGHTS, wi, "negative weight")
 			return []
 		w_ints.append(wi)
 		w_sum = w_sum + wi
 	if w_sum == 0:
-		push_error("CashLedger: %s weight sum 0" % ERR_SYS05_09)
+		_record_error(ERR_SYS05_09, FIELD_WEIGHTS, w_sum, "weight sum 0")
 		return []
 
 	var bases: Array = []
@@ -419,29 +454,30 @@ func prorate(fee: int, days_held: int) -> int:
 	# FRM-SYS05-05：CEIL(fee × days_held ÷ D)；D = PRM-SYS00-DAYS_PER_SEASON
 	assert(_loaded, "CashLedger.prorate before load")
 	if fee < 0 or days_held < 0:
-		push_error("CashLedger: prorate negative input")
+		_record_error(ERR_SYS05_05, FIELD_AMOUNT, {"fee": fee, "days_held": days_held}, "prorate negative input")
 		return 0
 	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
 	assert(days_d > 0, "DAYS_PER_SEASON must be > 0")
 	if days_held == 0 or fee == 0:
 		return 0
 	# 整數 CEIL(fee * days_held / D) = (fee * days_held + D - 1) / D
-	var numer: int = fee * days_held + days_d - _ONE
+	var numer: int = fee * days_held + days_d - 1
 	return floori(numer / days_d)
 
 
 func charge_mandatory(id: StringName, due: int, reason: StringName, requester: StringName) -> int:
 	# FRM-SYS05-06：paid = MIN(balance, due)；arrears += due − paid；balance 最低到 0
 	assert(_loaded, "CashLedger.charge_mandatory before load")
+	_clear_last_error()
 	if not _is_authorized(requester):
-		_fail(ERR_SYS05_06, CODE_ERR_SYS05_06, FIELD_REQUESTER, requester, "unauthorized")
+		_fail(ERR_SYS05_06, FIELD_REQUESTER, requester, "unauthorized")
 		return 0
 	if due <= 0:
-		_fail(ERR_SYS05_05, CODE_ERR_SYS05_05, FIELD_AMOUNT, due, "due must be > 0")
+		_fail(ERR_SYS05_05, FIELD_AMOUNT, due, "due must be > 0")
 		return 0
 	var key := String(id)
 	if not _accounts.has(key):
-		_fail(ERR_SYS05_04, CODE_ERR_SYS05_04, FIELD_ACCOUNT, id, "unknown account")
+		_fail(ERR_SYS05_04, FIELD_ACCOUNT, id, "unknown account")
 		return 0
 	var acc: Account = _accounts[key]
 	var paid: int = due
@@ -471,7 +507,7 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 	if bal <= 0:
 		return 0
 	if _quote_provider == null:
-		push_error("CashLedger: quote provider missing (MarketPricer WP-06 gap)")
+		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
 		return 0
 	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗
 	var lo: int = 0
@@ -597,11 +633,16 @@ func market_net_recovery_delta(sink_delta: int, source_issued_delta: int) -> int
 	return sink_delta - source_issued_delta
 
 
+func quantize_money(x: float, mode: int) -> int:
+	# D-01／N-04: SYS-05 money float→int only via shared AmountMath.quantize_amount.
+	return AmountMath.quantize_amount(x, mode)
+
+
 func _quote_buy_total(port: StringName, good: StringName, qty: int) -> int:
 	if _quote_provider == null:
 		return 0 - 1
 	if not _quote_provider.has_method("quote"):
-		push_error("CashLedger: quote provider missing quote()")
+		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing quote()")
 		return 0 - 1
 	var q: Variant = _quote_provider.call("quote", port, good, SIDE_BUY, qty)
 	if typeof(q) != TYPE_DICTIONARY:
@@ -626,6 +667,9 @@ func _days_held_in_season(sched: ChargeSchedule, season_start: int, season_end_e
 
 
 func _is_authorized(requester: StringName) -> bool:
+	# AUTHORIZED_REQUESTERS unchanged（D-03）；sole exception = REQUESTER_GENESIS_GRANT.
+	if requester == REQUESTER_GENESIS_GRANT:
+		return true
 	for r in AUTHORIZED_REQUESTERS:
 		if r == requester:
 			return true
@@ -730,21 +774,28 @@ func _clear_state() -> void:
 	_season_stats = {}
 	_loaded = false
 	_quote_provider = null
+	_clear_last_error()
 
 
-func _fail(code: String, code_int: int, field: String, value: Variant, message: String) -> int:
-	push_error("CashLedger: %s field=%s value=%s %s" % [code, field, str(value), message])
-	return code_int
+func _clear_last_error() -> void:
+	_last_error = {}
 
 
-func _err(code: String, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
-	return {
-		"code": code,
-		"file": file_path,
-		"field": field,
-		"value": value,
-		"message": message,
-	}
+func _fail(code: StringName, field: String, value: Variant, message: String) -> int:
+	# D-04: status fail → 1 (literal); ErrorInfo via last_error().
+	_record_error(code, field, value, message)
+	return CODE_FAIL
+
+
+func _record_error(code: StringName, field: String, value: Variant, message: String) -> void:
+	var info: Dictionary = _err(code, field, value, message)
+	_last_error = info
+	push_error("CashLedger: %s" % str(info))
+
+
+func _err(code: StringName, field: String, value: Variant, message: String) -> Dictionary:
+	# D-04 ErrorInfo = {code, sys, detail}; C-06 file/field/value live in detail.
+	return ErrorInfoUtil.make_validation(code, SYS_ID, SCRIPT_PATH, field, value, message)
 
 
 func _emit_errors(errors: Array) -> void:

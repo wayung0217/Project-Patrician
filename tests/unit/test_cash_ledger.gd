@@ -1,9 +1,11 @@
 extends GutTest
-## WP-07 CashLedger tests. Fixture／期望值來源：TST-SYS05-01..12、示範 5.1（03_Systems B608..B637）。
+## WP-07 CashLedger tests. Fixture／期望值來源：TST-SYS05-01..12、示範 5.1（03_Systems B608..B637）.
+## Round 2: D-04 ErrorInfo；D-03 genesis_grant；D-01 quantize／TST-SYS05-03 xlsx.
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
 const PARAMS_DEMO := "res://tests/fixtures/params_sys05_demo.json"
+const SYS_ID := &"SYS-05"
 
 const REQUESTER_SYS04 := &"SYS-04"
 const REQUESTER_SYS13 := &"SYS-13"
@@ -13,7 +15,7 @@ const REASON_OPEN := &"OPEN"
 const REASON_CHARGE := &"CHARGE"
 const REASON_TEST := &"TEST"
 
-## 示範 5.1／TST-SYS05-03（B608、B609、B614、B619）
+## 示範 5.1／TST-SYS05-03 xlsx（D-01：B463=144000、B470=−13715；B608／B609／B618／B620）
 const DEMO_C0 := 150000
 const DEMO_BUY_Q := 120
 const DEMO_BUY_TOTAL := 144000
@@ -21,6 +23,13 @@ const DEMO_SELL_TOTAL := 130285
 const DEMO_NET_RECOVERY := 13715
 const DEMO_AFTER_BUY_BAL := 6000
 const DEMO_AFTER_SELL_BAL := 136285
+
+## D-01 float64 area factors that should quantize to 144000 before ceili（xlsx B463）
+const DEMO_AREA_A := 1000.0
+const DEMO_AREA_B := 105.0
+const DEMO_AREA_C := 64.0
+const DEMO_AREA_D := 49.0
+const DEMO_AREA_E := 1.05
 
 ## TST-SYS05-04／示範 5.1 B628–B630
 const DEMO_FEE := 9000
@@ -66,12 +75,10 @@ const TST02_SPEND := 101
 const TST10_Q := 120
 const TST10_NEW_TOTAL := 160000
 
-const ACTOR_TOKEN := "PLAYER"
-
 
 class DemoQuoteProvider extends RefCounted:
 	## Test double for MarketPricer.quote（WP-06 平行未登錄）.
-	## 邊界對齊示範 5.1：total(120)/total(124)/total(125)。
+	## 邊界對齊示範 5.1：total(120)/total(124)/total(125) — xlsx 期望值.
 	var buy_totals: Dictionary = {}
 	var override_total: int = 0 - 1
 
@@ -115,57 +122,93 @@ func test_autoload_order_cash_after_goods() -> void:
 	assert_true(GoodsLedger.is_loaded())
 
 
+func test_account_player_constant() -> void:
+	# D-03: ACCOUNT_PLAYER = ACT-PLAYER
+	assert_eq(CashLedger.ACCOUNT_PLAYER, &"ACT-PLAYER")
+	assert_eq(CashLedger.ACCOUNT_PLAYER, CashLedger.make_actor_id("PLAYER"))
+
+
+func test_D01_quantize_amount_xlsx_buy_total() -> void:
+	# D-01: Area×(1+HALF) float64 near 144000 → quantize then ceili = 144000（xlsx B463）
+	var area: float = DEMO_AREA_A * DEMO_AREA_B * DEMO_AREA_C / DEMO_AREA_D * DEMO_AREA_E
+	var total: int = AmountMath.quantize_amount(area, AmountMath.MODE_CEIL)
+	assert_eq(total, DEMO_BUY_TOTAL)
+	assert_eq(CashLedger.quantize_money(area, AmountMath.MODE_CEIL), DEMO_BUY_TOTAL)
+
+
+func test_D03_genesis_grant() -> void:
+	# D-03: genesis_grant posts SOURCE/−START_CASH + ACT-PLAYER/+START_CASH, reason GENESIS_CASH
+	var start: int = Params.get_int(CashLedger.PRM_START_CASH)
+	assert_eq(start, DEMO_C0)
+	var err: int = CashLedger.genesis_grant()
+	assert_eq(err, CashLedger.CODE_OK)
+	assert_true(CashLedger.last_error().is_empty())
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), start)
+	assert_eq(CashLedger.balance(CashLedger.ID_SOURCE), 0 - start)
+	assert_eq(CashLedger.sum_all_balances(), 0)
+
+
+func test_D03_genesis_requester_is_sole_auth_exception() -> void:
+	# D-03: REQUESTER_GENESIS_GRANT is the only ERR-SYS05-06 exception; list unchanged.
+	assert_false(CashLedger.AUTHORIZED_REQUESTERS.has(CashLedger.REQUESTER_GENESIS_GRANT))
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	var ok: int = CashLedger.post([
+		CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - DEMO_BAL_FOR_CHARGE),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, DEMO_BAL_FOR_CHARGE),
+	], CashLedger.REASON_GENESIS_CASH, CashLedger.REQUESTER_GENESIS_GRANT)
+	assert_eq(ok, CashLedger.CODE_OK)
+
+
 func test_TST_SYS05_01_unbalanced_post_rejected() -> void:
 	# TST-SYS05-01: Σ ≠ 0 → ERR-SYS05-02，餘額不變
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_C0)
-	var before: int = CashLedger.balance(actor)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
+	var before: int = CashLedger.balance(CashLedger.ACCOUNT_PLAYER)
 	var err: int = CashLedger.post([
-		CashLedger.make_entry(actor, 0 - DEMO_BUY_TOTAL),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, 0 - DEMO_BUY_TOTAL),
 	], REASON_TRADE, REQUESTER_SYS04)
-	assert_eq(err, CashLedger.CODE_ERR_SYS05_02)
+	assert_eq(err, CashLedger.CODE_FAIL)
+	assert_true(_last_error_is(CashLedger.ERR_SYS05_02))
 	assert_push_error_count(1)
-	assert_eq(CashLedger.balance(actor), before)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), before)
 
 
 func test_TST_SYS05_02_insufficient_cash_voluntary() -> void:
 	# TST-SYS05-02: 餘額 100，自願支出 101 → ERR-SYS05-01，餘額仍 100
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, TST02_BAL)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, TST02_BAL)
 	var err: int = CashLedger.post([
-		CashLedger.make_entry(actor, 0 - TST02_SPEND),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, 0 - TST02_SPEND),
 		CashLedger.make_entry(CashLedger.ID_SINK, TST02_SPEND),
 	], REASON_TRADE, REQUESTER_SYS04)
-	assert_eq(err, CashLedger.CODE_ERR_SYS05_01)
+	assert_eq(err, CashLedger.CODE_FAIL)
+	assert_true(_last_error_is(CashLedger.ERR_SYS05_01))
 	assert_push_error_count(1)
-	assert_eq(CashLedger.balance(actor), TST02_BAL)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), TST02_BAL)
 
 
 func test_TST_SYS05_03_demo_buy_sell_conservation() -> void:
-	# TST-SYS05-03: 示範 5.1 買 120 後原港賣回；Σ=0；淨回收=13715
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_C0)
+	# TST-SYS05-03: 示範 5.1 買 120 後原港賣回；Σ=0；淨回收=13715（xlsx B618／B620）
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
 	assert_eq(CashLedger.balance(CashLedger.ID_SOURCE), 0 - DEMO_C0)
 
 	var buy_err: int = CashLedger.post([
-		CashLedger.make_entry(actor, 0 - DEMO_BUY_TOTAL),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, 0 - DEMO_BUY_TOTAL),
 		CashLedger.make_entry(CashLedger.ID_SINK, DEMO_BUY_TOTAL),
 	], REASON_TRADE, REQUESTER_SYS04)
 	assert_eq(buy_err, CashLedger.CODE_OK)
-	assert_eq(CashLedger.balance(actor), DEMO_AFTER_BUY_BAL)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), DEMO_AFTER_BUY_BAL)
 
 	var sink_after_buy: int = CashLedger.balance(CashLedger.ID_SINK)
 	var source_before_sell: int = CashLedger.balance(CashLedger.ID_SOURCE)
 
 	var sell_err: int = CashLedger.post([
 		CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - DEMO_SELL_TOTAL),
-		CashLedger.make_entry(actor, DEMO_SELL_TOTAL),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, DEMO_SELL_TOTAL),
 	], REASON_TRADE, REQUESTER_SYS04)
 	assert_eq(sell_err, CashLedger.CODE_OK)
-	assert_eq(CashLedger.balance(actor), DEMO_AFTER_SELL_BAL)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), DEMO_AFTER_SELL_BAL)
 	assert_eq(CashLedger.sum_all_balances(), 0)
 
 	var sink_delta: int = CashLedger.balance(CashLedger.ID_SINK) - 0
@@ -189,31 +232,29 @@ func test_TST_SYS05_04_prorate() -> void:
 
 func test_TST_SYS05_05_charge_mandatory() -> void:
 	# TST-SYS05-05: 餘額 2000、應付 3000 → 實付 2000、欠款 1000、餘額 0
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_BAL_FOR_CHARGE)
-	var paid: int = CashLedger.charge_mandatory(actor, DEMO_DUE, REASON_CHARGE, REQUESTER_SYS13)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_BAL_FOR_CHARGE)
+	var paid: int = CashLedger.charge_mandatory(CashLedger.ACCOUNT_PLAYER, DEMO_DUE, REASON_CHARGE, REQUESTER_SYS13)
 	assert_eq(paid, DEMO_PAID)
-	assert_eq(CashLedger.balance(actor), 0)
-	assert_eq(CashLedger.arrears(actor), DEMO_ARREARS_AFTER)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), 0)
+	assert_eq(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), DEMO_ARREARS_AFTER)
 
 
 func test_TST_SYS05_06_arrears_priority_credit() -> void:
 	# TST-SYS05-06 / FRM-SYS05-07: 欠款 1000，入帳 1500 → 先抵 1000，餘額 +500
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_BAL_FOR_CHARGE)
-	CashLedger.charge_mandatory(actor, DEMO_DUE, REASON_CHARGE, REQUESTER_SYS13)
-	assert_eq(CashLedger.arrears(actor), TST06_ARREARS)
-	assert_eq(CashLedger.balance(actor), 0)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_BAL_FOR_CHARGE)
+	CashLedger.charge_mandatory(CashLedger.ACCOUNT_PLAYER, DEMO_DUE, REASON_CHARGE, REQUESTER_SYS13)
+	assert_eq(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), TST06_ARREARS)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), 0)
 
 	var err: int = CashLedger.post([
 		CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - TST06_CREDIT),
-		CashLedger.make_entry(actor, TST06_CREDIT),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, TST06_CREDIT),
 	], REASON_TEST, REQUESTER_SYS04)
 	assert_eq(err, CashLedger.CODE_OK)
-	assert_eq(CashLedger.arrears(actor), 0)
-	assert_eq(CashLedger.balance(actor), TST06_BAL_AFTER)
+	assert_eq(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), 0)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), TST06_BAL_AFTER)
 	assert_eq(CashLedger.sum_all_balances(), 0)
 
 
@@ -221,7 +262,7 @@ func test_FRM_SYS05_07_is_single_function() -> void:
 	# D153: FRM-SYS05-07 為單一函數 apply_inbound_credit
 	assert_true(CashLedger.has_method("apply_inbound_credit"))
 	var acc := Account.new()
-	acc.id = CashLedger.make_actor_id("X")
+	acc.id = CashLedger.ACCOUNT_PLAYER
 	acc.kind = Account.Kind.ACTOR
 	acc.arrears = TST06_ARREARS
 	acc.balance = 0
@@ -235,42 +276,40 @@ func test_FRM_SYS05_07_is_single_function() -> void:
 func test_TST_SYS05_07_bankruptcy_referred_and_reset() -> void:
 	# TST-SYS05-07: 連續欠款達門檻 → bankruptcy_referred；清償後計數歸 0
 	# Fixture ARREARS_SEASONS_TO_BANKRUPT = 2（params_sys05_demo.json）
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_BAL_FOR_CHARGE)
-	CashLedger.charge_mandatory(actor, DEMO_DUE, REASON_CHARGE, REQUESTER_SYS13)
-	assert_gt(CashLedger.arrears(actor), 0)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_BAL_FOR_CHARGE)
+	CashLedger.charge_mandatory(CashLedger.ACCOUNT_PLAYER, DEMO_DUE, REASON_CHARGE, REQUESTER_SYS13)
+	assert_gt(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), 0)
 
 	watch_signals(CashLedger)
 	CashLedger.close_season()
-	assert_eq(CashLedger.arrears_seasons(actor), 1)
+	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 1)
 	assert_signal_not_emitted(CashLedger, "bankruptcy_referred")
 
 	CashLedger.close_season()
-	assert_eq(CashLedger.arrears_seasons(actor), 1 + 1)
+	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 1 + 1)
 	assert_signal_emitted(CashLedger, "bankruptcy_referred")
 
 	# 清償欠款
-	var ar: int = CashLedger.arrears(actor)
+	var ar: int = CashLedger.arrears(CashLedger.ACCOUNT_PLAYER)
 	var pay_err: int = CashLedger.post([
 		CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - ar),
-		CashLedger.make_entry(actor, ar),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, ar),
 	], REASON_TEST, REQUESTER_SYS04)
 	assert_eq(pay_err, CashLedger.CODE_OK)
-	assert_eq(CashLedger.arrears(actor), 0)
+	assert_eq(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), 0)
 
 	CashLedger.close_season()
-	assert_eq(CashLedger.arrears_seasons(actor), 0)
+	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 0)
 
 
 func test_TST_SYS05_08_max_affordable_qty() -> void:
 	# TST-SYS05-08: q_afford=124；total(124)≤c0 < total(125)
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_C0)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
 	var qp := DemoQuoteProvider.new()
 	CashLedger.set_quote_provider(qp)
-	var q: int = CashLedger.max_affordable_qty(actor, &"PT-01", &"米")
+	var q: int = CashLedger.max_affordable_qty(CashLedger.ACCOUNT_PLAYER, &"PT-01", &"米")
 	assert_eq(q, DEMO_Q_AFFORD)
 	assert_true(qp.quote(&"PT-01", &"米", CashLedger.SIDE_BUY, DEMO_Q_AFFORD)[CashLedger.KEY_TOTAL_LI] <= DEMO_C0)
 	assert_true(qp.quote(&"PT-01", &"米", CashLedger.SIDE_BUY, DEMO_Q_AFFORD + 1)[CashLedger.KEY_TOTAL_LI] > DEMO_C0)
@@ -289,24 +328,25 @@ func test_TST_SYS05_09_slider_caps() -> void:
 func test_FRM_SYS05_11_and_TST_SYS05_10_stale_quote() -> void:
 	# TST-SYS05-10 / FRM-SYS05-11: 新總額 > 餘額 → ERR-SYS05-07；ST-CASH 不變
 	assert_true(CashLedger.has_method("revalidate_submit"))
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_C0)
-	var bal_before: int = CashLedger.balance(actor)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
+	var bal_before: int = CashLedger.balance(CashLedger.ACCOUNT_PLAYER)
 	var source_before: int = CashLedger.balance(CashLedger.ID_SOURCE)
 	var sink_before: int = CashLedger.balance(CashLedger.ID_SINK)
 
 	var rev: int = CashLedger.revalidate_submit(bal_before, TST10_NEW_TOTAL)
-	assert_eq(rev, CashLedger.CODE_ERR_SYS05_07)
+	assert_eq(rev, CashLedger.CODE_FAIL)
+	assert_true(_last_error_is(CashLedger.ERR_SYS05_07))
 	assert_push_error_count(1)
 	# 拒絕後不呼叫 post／transfer — 餘額不變
-	assert_eq(CashLedger.balance(actor), bal_before)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), bal_before)
 	assert_eq(CashLedger.balance(CashLedger.ID_SOURCE), source_before)
 	assert_eq(CashLedger.balance(CashLedger.ID_SINK), sink_before)
 
 	# 付得起則 OK（仍用當刻 B′）
 	var ok: int = CashLedger.revalidate_submit(bal_before, DEMO_BUY_TOTAL)
 	assert_eq(ok, CashLedger.CODE_OK)
+	assert_true(CashLedger.last_error().is_empty())
 	# 未使用常量保底
 	assert_eq(TST10_Q, DEMO_BUY_Q)
 
@@ -324,37 +364,38 @@ func test_TST_SYS05_11_split_largest_remainder() -> void:
 
 func test_TST_SYS05_12_unauthorized_and_invalid_amount() -> void:
 	# TST-SYS05-12: SYS-07 → ERR-SYS05-06；金額 0 或 1.5 → ERR-SYS05-05
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_C0)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
 
 	var err_unauth: int = CashLedger.post([
-		CashLedger.make_entry(actor, 0 - DEMO_BUY_TOTAL),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, 0 - DEMO_BUY_TOTAL),
 		CashLedger.make_entry(CashLedger.ID_SINK, DEMO_BUY_TOTAL),
 	], REASON_TRADE, REQUESTER_SYS07)
-	assert_eq(err_unauth, CashLedger.CODE_ERR_SYS05_06)
+	assert_eq(err_unauth, CashLedger.CODE_FAIL)
+	assert_true(_last_error_is(CashLedger.ERR_SYS05_06))
 
 	var err_zero: int = CashLedger.post([
-		CashLedger.make_entry(actor, 0),
+		CashLedger.make_entry(CashLedger.ACCOUNT_PLAYER, 0),
 		CashLedger.make_entry(CashLedger.ID_SINK, 0),
 	], REASON_TRADE, REQUESTER_SYS04)
-	assert_eq(err_zero, CashLedger.CODE_ERR_SYS05_05)
+	assert_eq(err_zero, CashLedger.CODE_FAIL)
+	assert_true(_last_error_is(CashLedger.ERR_SYS05_05))
 
 	var err_float: int = CashLedger.post([
-		{"account_id": actor, "amount": 1.5},
+		{"account_id": CashLedger.ACCOUNT_PLAYER, "amount": 1.5},
 		{"account_id": CashLedger.ID_SINK, "amount": -1.5},
 	], REASON_TRADE, REQUESTER_SYS04)
-	assert_eq(err_float, CashLedger.CODE_ERR_SYS05_05)
+	assert_eq(err_float, CashLedger.CODE_FAIL)
+	assert_true(_last_error_is(CashLedger.ERR_SYS05_05))
 	assert_push_error_count(1 + 1 + 1)
 
 
 func test_close_season_prorate_via_schedule() -> void:
 	# 季末依 ChargeSchedule 按日扣費（F 寫入順序）
-	var actor := CashLedger.make_actor_id(ACTOR_TOKEN)
-	assert_eq(CashLedger.create_account(actor, Account.Kind.ACTOR), CashLedger.CODE_OK)
-	_open_from_source(actor, DEMO_C0)
+	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), CashLedger.CODE_OK)
+	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
 	var sched := ChargeSchedule.new()
-	sched.account_id = actor
+	sched.account_id = CashLedger.ACCOUNT_PLAYER
 	sched.requester = REQUESTER_SYS13
 	sched.reason = REASON_CHARGE
 	sched.fee_per_season = DEMO_FEE
@@ -366,7 +407,7 @@ func test_close_season_prorate_via_schedule() -> void:
 	assert_not_null(report)
 	assert_signal_emitted(CashLedger, "season_ledger_closed")
 	# 扣 3000 後餘額
-	assert_eq(CashLedger.balance(actor), DEMO_C0 - DEMO_PRORATE)
+	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), DEMO_C0 - DEMO_PRORATE)
 
 
 func test_params_fixture_not_official_pending_keys() -> void:
@@ -377,9 +418,46 @@ func test_params_fixture_not_official_pending_keys() -> void:
 	assert_false(Params.is_loaded())
 
 
+func test_D04_status_literals_only_ok_fail() -> void:
+	# D-04: withdraw ERR→int (−1..−9); ->int status only CODE_OK／CODE_FAIL.
+	assert_eq(CashLedger.CODE_OK, 0)
+	assert_eq(CashLedger.CODE_FAIL, 1)
+	assert_eq(typeof(CashLedger.ERR_SYS05_01), TYPE_STRING_NAME)
+
+
+# --- helpers ---
+
 func _open_from_source(actor: StringName, amount: int) -> void:
 	var err: int = CashLedger.post([
 		CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - amount),
 		CashLedger.make_entry(actor, amount),
 	], REASON_OPEN, REQUESTER_SYS04)
 	assert_eq(err, CashLedger.CODE_OK, "open from SOURCE failed")
+
+
+func _last_error_is(code: StringName) -> bool:
+	var e: Dictionary = CashLedger.last_error()
+	if not _is_error_info(e):
+		return false
+	if StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")) != code:
+		return false
+	assert_eq(StringName(e.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID, "ErrorInfo.sys must be SYS-05")
+	var detail: Variant = e.get(ErrorInfoUtil.KEY_DETAIL, null)
+	assert_eq(typeof(detail), TYPE_DICTIONARY, "ErrorInfo.detail must be Dictionary")
+	return true
+
+
+func _is_error_info(e: Variant) -> bool:
+	# D-04 carrier: {code: StringName, sys: StringName, detail: Dictionary}.
+	if typeof(e) != TYPE_DICTIONARY:
+		return false
+	var d: Dictionary = e
+	if d.is_empty():
+		return false
+	if not d.has(ErrorInfoUtil.KEY_CODE):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_SYS):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_DETAIL):
+		return false
+	return typeof(d[ErrorInfoUtil.KEY_DETAIL]) == TYPE_DICTIONARY
