@@ -8,6 +8,10 @@ const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
 const GOODS_FIXTURE_ROOT := "user://market_pricer_goods/"
 const PORTS_FIXTURE_ROOT := "user://market_pricer_ports/"
 const CURVE_FIXTURE_ROOT := "user://market_pricer_curves/"
+## R2-13 / 2.1-04 ⑤: tests load curve from fixtures only (formal path after #11 via Owner csv_import).
+## weeks: PRM-SYS04-CURVE_W1=0, W2=1, W3=3, W4=6, W5=10 (03_Systems §4)
+## mults: PRM-SYS04-CURVE_M1=2, M2=1.4, M3=1, M4=1, M5=0.6 (03_Systems §4)
+const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const PARAMS_OVERRIDE_ROOT := "user://market_pricer_params/"
 
 const SYS_ID := &"SYS-04"
@@ -247,7 +251,7 @@ func test_TST_SYS04_06_min_half_spread_still_loss() -> void:
 	assert_eq(perr.size(), 0)
 	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
 	_seed_market(DEMO_STOCK)
-	var merr: Array = MarketPricer.load_and_validate()
+	var merr: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_eq(merr.size(), 0)
 	var cons := TestConsumptionProvider.new()
 	cons.set_weekly(PORT_DEMO, GOOD_DEMO, DEMO_WEEKLY_C)
@@ -283,7 +287,7 @@ func test_TST_SYS04_07_zero_consumption_floor() -> void:
 func test_TST_SYS04_08_floor_anchor_rejects() -> void:
 	# TST-SYS04-08: anchor=1 → ERR-SYS04-05
 	_boot_catalog_ports_ledger(TST08_ANCHOR_LI)
-	var errors: Array = MarketPricer.load_and_validate()
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_true(_has_code(errors, MarketPricer.ERR_SYS04_05))
 	assert_false(MarketPricer.is_loaded())
 	assert_push_error_count(errors.size())
@@ -303,7 +307,7 @@ func test_TST_SYS04_09_indicator_bands_and_order() -> void:
 	assert_eq(perr.size(), 0)
 	# Reload curve validation with bad IND order
 	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
-	var errors: Array = MarketPricer.load_and_validate()
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_true(_has_code(errors, MarketPricer.ERR_SYS04_08))
 	assert_push_error_count(errors.size())
 
@@ -348,7 +352,7 @@ func test_D01_quantize_amount_snaps_near_integer() -> void:
 func _boot_full(anchor_li: int, weekly_c: int, stock: int) -> void:
 	_boot_catalog_ports_ledger(anchor_li)
 	_seed_market(stock)
-	var errors: Array = MarketPricer.load_and_validate()
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_eq(errors.size(), 0, "MarketPricer must load: %s" % str(errors))
 	var cons := TestConsumptionProvider.new()
 	cons.set_weekly(PORT_DEMO, GOOD_DEMO, weekly_c)
