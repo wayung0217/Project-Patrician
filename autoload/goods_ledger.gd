@@ -2,27 +2,29 @@ extends Node
 ## Autoload: GoodsLedger — SYS-03 ST-GOOD (TechSpec 3.4 / WP-05).
 ## _ready() only clears fields; load_and_validate() inits seq／stock (2.2-01).
 ## WAREHOUSE／HOLD capacity only via CapacityProvider (1-A6); no SYS-08／SYS-13 providers here.
+## D-04: transfer success→seq≥1, fail→0; ErrorInfo via last_error()／validate Arrays. No ERR→int.
 
 signal goods_transferred(event: TransferEvent)
 signal conservation_violated(good_id: StringName)
 
+const SYS_ID := &"SYS-03"
+const SCRIPT_PATH := "res://autoload/goods_ledger.gd"
+
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_CONSERVATION_CHECK_EVERY_TICK := "PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK"
 
-## ERR-SYS03-01..05 as negative ints for transfer()->int (H). Mapping not in TechSpec — see PR 缺口.
-const _ONE := 1
+## ->int success／fail literals only 0／1 (D-04); transfer success returns seq≥1 separately.
 const CODE_OK := 0
-const CODE_ERR_SYS03_01 := 0 - _ONE
-const CODE_ERR_SYS03_02 := CODE_ERR_SYS03_01 - _ONE
-const CODE_ERR_SYS03_03 := CODE_ERR_SYS03_02 - _ONE
-const CODE_ERR_SYS03_04 := CODE_ERR_SYS03_03 - _ONE
-const CODE_ERR_SYS03_05 := CODE_ERR_SYS03_04 - _ONE
+const CODE_FAIL := 1
 
-const ERR_SYS03_01 := "ERR-SYS03-01"
-const ERR_SYS03_02 := "ERR-SYS03-02"
-const ERR_SYS03_03 := "ERR-SYS03-03"
-const ERR_SYS03_04 := "ERR-SYS03-04"
-const ERR_SYS03_05 := "ERR-SYS03-05"
+const ERR_SYS03_01 := &"ERR-SYS03-01"
+const ERR_SYS03_02 := &"ERR-SYS03-02"
+const ERR_SYS03_03 := &"ERR-SYS03-03"
+const ERR_SYS03_04 := &"ERR-SYS03-04"
+const ERR_SYS03_05 := &"ERR-SYS03-05"
+
+const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
+const CODE_PORT_REGISTRY_NOT_LOADED := &"PORT_REGISTRY_NOT_LOADED"
 
 const REASON_GENESIS := &"GENESIS"
 const REASON_PRODUCE := &"PRODUCE"
@@ -35,7 +37,7 @@ const REASON_CONFISCATE := &"CONFISCATE"
 const REASON_SEA_LOSS := &"SEA_LOSS"
 
 ## Container Dictionary schema (TechSpec MARKET(port)／WAREHOUSE(owner,port)／HOLD(ship)／CONFISCATED／外部).
-## Exact key names not in D 欄 — see PR 缺口.
+## Exact key names not in D 欄 — see PR 缺口 (C-05).
 const KEY_KIND := "kind"
 const KEY_PORT := "port"
 const KEY_OWNER := "owner"
@@ -50,18 +52,22 @@ const KIND_EXTERNAL := "EXTERNAL"
 const FIELD_PARAMS := "Params"
 const FIELD_QTY := "qty"
 const FIELD_REASON := "reason"
+const FIELD_PORT_REGISTRY := "PortRegistry"
 const REQUESTER_SYS03 := &"SYS-03"
 
-## Day placeholder when Clock Autoload absent (WP-02 not on WP-04 stack) — see PR 缺口.
-const DAY_PLACEHOLDER := 1
+## Day when Clock Autoload absent (WP-02 not on WP-04 stack) — see PR 缺口.
+## D-05(b): Clock boot day = 0; keep injectable default aligned until Clock is on stack.
+const DAY_PLACEHOLDER := 0
 
 var _stock: Dictionary = {} ## container_key:String -> Dictionary[good_id:String -> int qty]
 var _expected_net: Dictionary = {} ## good_id:String -> int (Σ GENESIS+PRODUCE − CONSUME − CONSTRUCT_USE − SEA_LOSS)
 var _next_seq: int = 1
 var _loaded: bool = false
 var _capacity_provider: CapacityProvider = null
-## 缺口：TransferEvent.day 應讀 Clock.day；本堆疊無 Clock。暫存 _day，預設 DAY_PLACEHOLDER。
+## 缺口：TransferEvent.day 應讀 Clock.day；本堆疊無 Clock。暫存 _day，預設 DAY_PLACEHOLDER；測試可 set_day。
 var _day: int = DAY_PLACEHOLDER
+## D-04: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
+var _last_error: Dictionary = {}
 
 
 func _ready() -> void:
@@ -73,7 +79,7 @@ func load_and_validate() -> Array:
 	var errors: Array = []
 	_clear_state()
 	if not Params.is_loaded():
-		errors.append(_err("PARAMS_NOT_LOADED", "res://autoload/goods_ledger.gd", FIELD_PARAMS, null, "Params must load_and_validate before GoodsLedger"))
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, FIELD_PARAMS, null, "Params must load_and_validate before GoodsLedger"))
 		_emit_errors(errors)
 		return errors
 	_next_seq = 1
@@ -86,13 +92,18 @@ func is_loaded() -> bool:
 	return _loaded
 
 
+func last_error() -> Dictionary:
+	# D-04: single-call failures (transfer／check_conservation) expose ErrorInfo here.
+	return _last_error.duplicate(true)
+
+
 func set_capacity_provider(provider: CapacityProvider) -> void:
 	## 缺口：TechSpec 未寫登錄 API；暫用 set_capacity_provider（WP-05 測試／未來 SYS-08／13）。
 	_capacity_provider = provider
 
 
 func set_day(day: int) -> void:
-	## 缺口：應由 Clock.day 驅動；無 Clock 時測試／呼叫端可 set_day。
+	## 缺口：應由 Clock.day 驅動；無 Clock 時測試／呼叫端可 set_day。不新增子日公開 API（D-07）。
 	_day = day
 
 
@@ -106,15 +117,17 @@ func next_seq() -> int:
 
 func transfer(from: Variant, to: Variant, good: StringName, qty: Variant, reason: StringName, requester: StringName) -> int:
 	# FRM-SYS03-02: qty 整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無
+	# D-04: success → seq≥1；fail → 0 + ErrorInfo in last_error()
 	assert(_loaded, "GoodsLedger.transfer before load_and_validate")
+	_clear_last_error()
 
 	# ERR-SYS03-04 — SEA_LOSS 停用（OQ-08 7c）
 	if reason == REASON_SEA_LOSS:
-		return _fail(ERR_SYS03_04, CODE_ERR_SYS03_04, FIELD_REASON, reason, "SEA_LOSS disabled")
+		return _fail(ERR_SYS03_04, FIELD_REASON, reason, "SEA_LOSS disabled")
 
 	# ERR-SYS03-01 — qty ≤ 0 或非整數
 	if not _is_positive_int(qty):
-		return _fail(ERR_SYS03_01, CODE_ERR_SYS03_01, FIELD_QTY, qty, "qty must be integer > 0")
+		return _fail(ERR_SYS03_01, FIELD_QTY, qty, "qty must be integer > 0")
 	var qty_i: int = int(qty)
 
 	var from_key: String = _container_key(from)
@@ -122,20 +135,21 @@ func transfer(from: Variant, to: Variant, good: StringName, qty: Variant, reason
 	var good_s: String = String(good)
 
 	if from_key.is_empty() or to_key.is_empty():
-		return _fail(ERR_SYS03_01, CODE_ERR_SYS03_01, KEY_KIND, from if from_key.is_empty() else to, "invalid container")
+		return _fail(ERR_SYS03_01, KEY_KIND, from if from_key.is_empty() else to, "invalid container")
 
 	# Snapshot for all-or-nothing rollback
 	var from_before: int = _get_qty_by_key(from_key, good_s)
 	var to_before: int = _get_qty_by_key(to_key, good_s)
 
 	# ERR-SYS03-02 — from 餘額不足（EXTERNAL 不檢查餘額）
+	# D-05(d): CONSUME 同一般 transfer — 不足即 ERR-SYS03-02、全有或全無、收進錯誤清單
 	if not _is_external_key(from_key):
 		if from_before < qty_i:
-			return _fail(ERR_SYS03_02, CODE_ERR_SYS03_02, FIELD_QTY, qty_i, "insufficient balance")
+			return _fail(ERR_SYS03_02, FIELD_QTY, qty_i, "insufficient balance")
 
 	# ERR-SYS03-03 — to 容量不足
 	if not _has_capacity_for(to, to_key, qty_i):
-		return _fail(ERR_SYS03_03, CODE_ERR_SYS03_03, FIELD_QTY, qty_i, "insufficient capacity")
+		return _fail(ERR_SYS03_03, FIELD_QTY, qty_i, "insufficient capacity")
 
 	# Apply (both sides); EXTERNAL 不記帳
 	if not _is_external_key(from_key):
@@ -198,7 +212,9 @@ func in_transit(good: StringName) -> int:
 
 func check_conservation() -> int:
 	# FRM-SYS03-01: Σ 容器(good) = expected_net(good)；違反 → conservation_violated + ERR-SYS03-05
+	# D-04: return 0 OK／1 fail；ErrorInfo in last_error()
 	assert(_loaded, "GoodsLedger.check_conservation before load_and_validate")
+	_clear_last_error()
 	var goods: Dictionary = {}
 	for good_variant in _expected_net.keys():
 		goods[String(good_variant)] = true
@@ -213,6 +229,9 @@ func check_conservation() -> int:
 	var good_list: Array = goods.keys()
 	good_list.sort()
 	var violated := false
+	var first_good: String = ""
+	var first_actual: int = 0
+	var first_expected: int = 0
 	for g_variant in good_list:
 		var good_s: String = String(g_variant)
 		var actual: int = total(StringName(good_s))
@@ -220,9 +239,17 @@ func check_conservation() -> int:
 		if actual != expected:
 			violated = true
 			conservation_violated.emit(StringName(good_s))
-			push_error("GoodsLedger: %s good=%s actual=%s expected=%s" % [ERR_SYS03_05, good_s, actual, expected])
+			if first_good.is_empty():
+				first_good = good_s
+				first_actual = actual
+				first_expected = expected
 	if violated:
-		return CODE_ERR_SYS03_05
+		_record_error(ERR_SYS03_05, "good_id", {
+			"good": first_good,
+			"actual": first_actual,
+			"expected": first_expected,
+		}, "conservation violated")
+		return CODE_FAIL
 	return CODE_OK
 
 
@@ -255,7 +282,7 @@ func run_daily_produce(day_index_k: int) -> Array:
 	assert(_loaded, "GoodsLedger.run_daily_produce before load")
 	var results: Array = []
 	if not PortRegistry.is_loaded():
-		results.append(_err("PORT_REGISTRY_NOT_LOADED", "res://autoload/goods_ledger.gd", "PortRegistry", null, "PortRegistry required for PRODUCE"))
+		results.append(_err(CODE_PORT_REGISTRY_NOT_LOADED, FIELD_PORT_REGISTRY, null, "PortRegistry required for PRODUCE"))
 		_emit_errors(results)
 		return results
 	var jobs: Array = []
@@ -286,8 +313,8 @@ func run_daily_produce(day_index_k: int) -> Array:
 			continue
 		var from_c: Dictionary = {KEY_KIND: KIND_EXTERNAL}
 		var to_c: Dictionary = {KEY_KIND: KIND_MARKET, KEY_PORT: String(job["port"])}
-		var seq_or_err: int = transfer(from_c, to_c, StringName(String(job["good"])), qty, REASON_PRODUCE, REQUESTER_SYS03)
-		results.append({"port": job["port"], "good": job["good"], "qty": qty, "result": seq_or_err})
+		var seq_or_zero: int = transfer(from_c, to_c, StringName(String(job["good"])), qty, REASON_PRODUCE, REQUESTER_SYS03)
+		results.append({"port": job["port"], "good": job["good"], "qty": qty, "result": seq_or_zero})
 	return results
 
 
@@ -436,21 +463,28 @@ func _clear_state() -> void:
 	_loaded = false
 	_capacity_provider = null
 	_day = DAY_PLACEHOLDER
+	_clear_last_error()
 
 
-func _fail(code: String, code_int: int, field: String, value: Variant, message: String) -> int:
-	push_error("GoodsLedger: %s" % str(_err(code, "res://autoload/goods_ledger.gd", field, value, message)))
-	return code_int
+func _clear_last_error() -> void:
+	_last_error = {}
 
 
-func _err(code: String, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
-	return {
-		"code": code,
-		"file": file_path,
-		"field": field,
-		"value": value,
-		"message": message,
-	}
+func _fail(code: StringName, field: String, value: Variant, message: String) -> int:
+	# D-04: transfer fail → 0 (literal); ErrorInfo via last_error().
+	_record_error(code, field, value, message)
+	return 0
+
+
+func _record_error(code: StringName, field: String, value: Variant, message: String) -> void:
+	var info: Dictionary = _err(code, field, value, message)
+	_last_error = info
+	push_error("GoodsLedger: %s" % str(info))
+
+
+func _err(code: StringName, field: String, value: Variant, message: String) -> Dictionary:
+	# D-04 ErrorInfo = {code, sys, detail}; C-06 file/field/value live in detail.
+	return ErrorInfoUtil.make_validation(code, SYS_ID, SCRIPT_PATH, field, value, message)
 
 
 func _emit_errors(errors: Array) -> void:

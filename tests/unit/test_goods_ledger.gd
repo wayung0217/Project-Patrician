@@ -1,10 +1,13 @@
 extends GutTest
 ## WP-05 GoodsLedger tests. Fixture values from TechSpec §4 / TST-SYS03-01..06 / 3.4.
+## D-04: transfer fail→0 + ErrorInfo last_error(); no ERR→int (−1..−5 withdrawn).
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
 const GOODS_FIXTURE_ROOT := "user://goods_ledger_goods/"
 const PORTS_FIXTURE_ROOT := "user://goods_ledger_ports/"
+
+const SYS_ID := &"SYS-03"
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
@@ -31,6 +34,9 @@ const TST_SYS03_04_Q := 1000
 const TST_SYS03_04_MAX_DAY_DELTA := 1
 ## TST-SYS03-06: 10 seasons of produce, MARKET grows unboundedly
 const TST_SYS03_06_SEASONS := 10
+## D-05(d): CONSUME shortage fixture
+const TST_CONSUME_HAVE := 2
+const TST_CONSUME_WANT := 3
 
 
 class TestCapacityProvider extends CapacityProvider:
@@ -101,6 +107,7 @@ func test_TST_SYS03_01_conservation_violated_on_manual_mutate() -> void:
 	)
 	assert_gt(seq, 0)
 	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
+	assert_true(GoodsLedger.last_error().is_empty(), "success clears last_error")
 
 	watch_signals(GoodsLedger)
 	# 人為改動：繞過 transfer 直接改 _stock（紅隊-03／TST-SYS03-01 Given）
@@ -110,7 +117,8 @@ func test_TST_SYS03_01_conservation_violated_on_manual_mutate() -> void:
 	GoodsLedger._stock[key] = bucket
 
 	var result: int = GoodsLedger.check_conservation()
-	assert_eq(result, GoodsLedger.CODE_ERR_SYS03_05)
+	assert_eq(result, GoodsLedger.CODE_FAIL)
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_05), "conservation → ERR-SYS03-05 in last_error")
 	assert_push_error_count(1)
 	assert_signal_emitted(GoodsLedger, "conservation_violated")
 
@@ -135,7 +143,8 @@ func test_TST_SYS03_02_insufficient_balance_unchanged() -> void:
 	var err: int = GoodsLedger.transfer(
 		hold, market, good, TST_SYS03_02_TRANSFER_QTY, GoodsLedger.REASON_UNLOAD, &"TEST"
 	)
-	assert_eq(err, GoodsLedger.CODE_ERR_SYS03_02)
+	assert_eq(err, 0, "D-04: transfer fail → 0")
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_02), "expected ERR-SYS03-02 in last_error")
 	assert_push_error_count(1)
 	assert_eq(GoodsLedger.get_qty(hold, good), TST_SYS03_02_HOLD_QTY)
 	assert_eq(GoodsLedger.get_qty(market, good), 0)
@@ -160,7 +169,8 @@ func test_TST_SYS03_03_insufficient_capacity_all_or_nothing() -> void:
 	var err: int = GoodsLedger.transfer(
 		market, hold, good, TST_SYS03_03_TRANSFER_QTY, GoodsLedger.REASON_LOAD, &"TEST"
 	)
-	assert_eq(err, GoodsLedger.CODE_ERR_SYS03_03)
+	assert_eq(err, 0, "D-04: transfer fail → 0")
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_03), "expected ERR-SYS03-03 in last_error")
 	assert_push_error_count(1)
 	assert_eq(GoodsLedger.get_qty(market, good), TST_SYS03_03_TRANSFER_QTY)
 	assert_eq(GoodsLedger.get_qty(hold, good), 0)
@@ -175,8 +185,34 @@ func test_TST_SYS03_03_no_provider_is_capacity_error() -> void:
 		GoodsLedger.make_external(), market, good, 1, GoodsLedger.REASON_GENESIS, &"TEST"
 	)
 	var err: int = GoodsLedger.transfer(market, hold, good, 1, GoodsLedger.REASON_LOAD, &"TEST")
-	assert_eq(err, GoodsLedger.CODE_ERR_SYS03_03)
+	assert_eq(err, 0, "D-04: transfer fail → 0")
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_03), "expected ERR-SYS03-03 in last_error")
 	assert_push_error_count(1)
+
+
+func test_D05_consume_shortage_err_sys03_02_all_or_nothing() -> void:
+	# D-05(d): CONSUME 庫存不足 = ERR-SYS03-02、全有或全無、收進 last_error（不得只 push_error／clamp）
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	var market: Dictionary = GoodsLedger.make_market("PT-01")
+	var seq: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(), market, good, TST_CONSUME_HAVE, GoodsLedger.REASON_GENESIS, &"TEST"
+	)
+	assert_gt(seq, 0)
+	assert_eq(GoodsLedger.get_qty(market, good), TST_CONSUME_HAVE)
+
+	var err: int = GoodsLedger.transfer(
+		market,
+		GoodsLedger.make_external(),
+		good,
+		TST_CONSUME_WANT,
+		GoodsLedger.REASON_CONSUME,
+		&"SYS-06"
+	)
+	assert_eq(err, 0, "D-04: CONSUME shortage → transfer fail 0")
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_02), "D-05(d): CONSUME shortage → ERR-SYS03-02")
+	assert_push_error_count(1)
+	assert_eq(GoodsLedger.get_qty(market, good), TST_CONSUME_HAVE, "all-or-nothing: qty unchanged")
+	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 
 func test_TST_SYS03_04_season_produce_sums_to_q() -> void:
@@ -216,7 +252,8 @@ func test_TST_SYS03_05_sea_loss_rejected() -> void:
 	var err: int = GoodsLedger.transfer(
 		market, GoodsLedger.make_external(), good, 1, GoodsLedger.REASON_SEA_LOSS, &"TEST"
 	)
-	assert_eq(err, GoodsLedger.CODE_ERR_SYS03_04)
+	assert_eq(err, 0, "D-04: transfer fail → 0")
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_04), "expected ERR-SYS03-04 in last_error")
 	assert_push_error_count(1)
 	assert_eq(GoodsLedger.get_qty(market, good), before)
 
@@ -258,10 +295,30 @@ func test_transfer_seq_and_timestamp_match() -> void:
 		&"TEST"
 	)
 	assert_gt(seq, 0)
+	assert_true(GoodsLedger.last_error().is_empty(), "success clears last_error")
 	assert_signal_emitted(GoodsLedger, "goods_transferred")
 	var event: TransferEvent = get_signal_parameters(GoodsLedger, "goods_transferred", 0)[0]
 	assert_eq(event.seq, seq)
 	assert_eq(event.timestamp, seq)
+
+
+func test_transfer_event_day_uses_injected_set_day() -> void:
+	# 缺口：無 Clock；set_day 可測注入（D-05／D-07：不發明子日公開 API）
+	var inject_day: int = 1
+	GoodsLedger.set_day(inject_day)
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	watch_signals(GoodsLedger)
+	var seq: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(),
+		GoodsLedger.make_market("PT-01"),
+		good,
+		1,
+		GoodsLedger.REASON_GENESIS,
+		&"TEST"
+	)
+	assert_gt(seq, 0)
+	var event: TransferEvent = get_signal_parameters(GoodsLedger, "goods_transferred", 0)[0]
+	assert_eq(event.day, inject_day)
 
 
 func test_qty_zero_is_err_01() -> void:
@@ -274,8 +331,42 @@ func test_qty_zero_is_err_01() -> void:
 		GoodsLedger.REASON_GENESIS,
 		&"TEST"
 	)
-	assert_eq(err, GoodsLedger.CODE_ERR_SYS03_01)
+	assert_eq(err, 0, "D-04: transfer fail → 0")
+	assert_true(_last_error_is(GoodsLedger.ERR_SYS03_01), "expected ERR-SYS03-01 in last_error")
 	assert_push_error_count(1)
+
+
+# --- helpers ---
+
+func _last_error_is(code: StringName) -> bool:
+	var e: Dictionary = GoodsLedger.last_error()
+	if not _is_error_info(e):
+		return false
+	if StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")) != code:
+		return false
+	assert_eq(StringName(e.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID, "ErrorInfo.sys must be SYS-03")
+	var detail: Variant = e.get(ErrorInfoUtil.KEY_DETAIL, null)
+	assert_eq(typeof(detail), TYPE_DICTIONARY, "ErrorInfo.detail must be Dictionary")
+	return true
+
+
+func _is_error_info(e: Variant) -> bool:
+	# D-04 carrier: {code: StringName, sys: StringName, detail: Dictionary}.
+	if typeof(e) != TYPE_DICTIONARY:
+		return false
+	var d: Dictionary = e
+	if d.is_empty():
+		return false
+	if not d.has(ErrorInfoUtil.KEY_CODE):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_SYS):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_DETAIL):
+		return false
+	# Reject legacy flat shape and any int-coded errors (D-04 withdraw −1..−5).
+	if typeof(d[ErrorInfoUtil.KEY_CODE]) == TYPE_INT:
+		return false
+	return true
 
 
 # --- fixtures ---
