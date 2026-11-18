@@ -1,0 +1,2 @@
+port_id,zone,slot_share,rings,slots,open_at_start
+PT-01,0,0.5,2,4,1

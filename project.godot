@@ -1,5 +1,5 @@
 ; Engine configuration file.
-; Godot 4.7.2-stable — Autoload order 2.2-01: Params → Clock → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger → SimLoop.
+; Godot 4.7.2-stable — Autoload order 2.2-01: Params → Clock → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger → BuildingEconomy → SimLoop.
 
 config_version=5
 
@@ -17,6 +17,7 @@ PortRegistry="*res://autoload/port_registry.gd"
 GoodsLedger="*res://autoload/goods_ledger.gd"
 MarketPricer="*res://autoload/market_pricer.gd"
 CashLedger="*res://autoload/cash_ledger.gd"
+BuildingEconomy="*res://autoload/building_economy.gd"
 SimLoop="*res://autoload/sim_loop.gd"
 
 [editor_plugins]

@@ -37,6 +37,7 @@ func test_WP17_zones_ok_import() -> void:
 	assert_eq(zone.zone, 0, "source fixture wp17_import_ok/zones.csv")
 	assert_eq(zone.slot_share, 0.5, "source fixture wp17_import_ok/zones.csv")
 	assert_eq(zone.rings, 2, "source fixture wp17_import_ok/zones.csv")
+	assert_eq(zone.slots, 4, "source fixture wp17_import_ok/zones.csv slots")
 	assert_eq(zone.open_at_start, 1, "source fixture wp17_import_ok/zones.csv")
 	_wipe_out()
 
