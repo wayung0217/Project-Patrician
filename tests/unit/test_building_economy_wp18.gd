@@ -48,6 +48,10 @@ func before_each() -> void:
 	BuildingEconomy._slots = {}
 	BuildingEconomy._slots_by_port = {}
 	BuildingEconomy._r_by_port = {}
+	BuildingEconomy._max_open_zone = {}
+	BuildingEconomy._buildings = {}
+	BuildingEconomy._buildings_by_port = {}
+	BuildingEconomy._building_defs = {}
 	BuildingEconomy._population = null
 
 

@@ -181,5 +181,20 @@
     250000
   ],
   "PRM-SYS08-OPENING_MIN_WORKSHOPS": 1,
-  "PRM-SYS08-DEMAND_BASIS": 1
+  "PRM-SYS08-DEMAND_BASIS": 1,
+  "PRM-SYS08-KONTOR_UPGRADE": [
+    {
+      "CASH_LI": 100000,
+      "DAYS": 42,
+      "GD-001": 10,
+      "GD-002": 5
+    },
+    {
+      "CASH_LI": 200000,
+      "DAYS": 56,
+      "GD-001": 20,
+      "GD-002": 10,
+      "GD-003": 2
+    }
+  ]
 }

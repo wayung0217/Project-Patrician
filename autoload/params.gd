@@ -16,6 +16,7 @@ const TYPE_FLOAT_ARRAY_NAME := "float_array"
 const TYPE_INT_OBJECT_NAME := "int_object"
 const TYPE_BUILD_MAT_OBJECT_NAME := "build_mat_object"
 const TYPE_UPGRADE_PER_CAPITA_ARRAY_NAME := "upgrade_per_capita_array"
+const TYPE_KONTOR_UPGRADE_ARRAY_NAME := "kontor_upgrade_array"
 const SCHEMA_TYPE := "type"
 const SCHEMA_MIN := "min"
 const SCHEMA_MAX := "max"
@@ -25,6 +26,8 @@ const SCHEMA_KEYS := "keys"
 const SCHEMA_VALUES := "values"
 const SCHEMA_GOOD_ID_PATTERN := "good_id_pattern"
 const SCHEMA_CASH_KEY := "cash_key"
+const SCHEMA_DAYS_KEY := "days_key"
+const SCHEMA_DAYS_MIN := "days_min"
 
 var _values: Dictionary = {}
 var _schema: Dictionary = {}
@@ -193,6 +196,8 @@ func _parse_and_check(key: String, value: Variant, rule: Dictionary, file_path: 
 			return _parse_build_mat_object(key, value, rule, file_path, errors)
 		TYPE_UPGRADE_PER_CAPITA_ARRAY_NAME:
 			return _parse_upgrade_per_capita_array(key, value, rule, file_path, errors)
+		TYPE_KONTOR_UPGRADE_ARRAY_NAME:
+			return _parse_kontor_upgrade_array(key, value, rule, file_path, errors)
 		_:
 			errors.append(_err("SCHEMA_TYPE", SCHEMA_PATH, key, type_name, "unknown schema type"))
 			return null
@@ -477,6 +482,82 @@ func _parse_upgrade_per_capita_array(key: String, value: Variant, rule: Dictiona
 				elem_bad = true
 				continue
 			elem_out[k] = as_float
+		if elem_bad:
+			had_error = true
+			continue
+		out.append(elem_out)
+	if had_error:
+		return null
+	return out
+
+
+func _parse_kontor_upgrade_array(key: String, value: Variant, rule: Dictionary, file_path: String, errors: Array) -> Variant:
+	## D-12b / D-15b: length 2; each {"CASH_LI": int, "DAYS": int ≥ 1, good_id: 擔數 int}.
+	if typeof(value) != TYPE_ARRAY:
+		errors.append(_err("TYPE", file_path, key, value, "expected kontor_upgrade array"))
+		return null
+	var arr: Array = value
+	if rule.has(SCHEMA_LENGTH) and arr.size() != int(rule[SCHEMA_LENGTH]):
+		errors.append(_err("LENGTH", file_path, key, arr.size(), "array length mismatch"))
+		return null
+	var cash_key := String(rule.get(SCHEMA_CASH_KEY, "CASH_LI"))
+	var days_key := String(rule.get(SCHEMA_DAYS_KEY, "DAYS"))
+	var days_min: int = int(rule.get(SCHEMA_DAYS_MIN, 1))
+	var pattern := String(rule.get(SCHEMA_GOOD_ID_PATTERN, ""))
+	var out: Array = []
+	var had_error := false
+	for i in range(arr.size()):
+		var elem: Variant = arr[i]
+		var field := "%s[%d]" % [key, i]
+		if typeof(elem) != TYPE_DICTIONARY:
+			errors.append(_err("TYPE", file_path, field, elem, "expected object element"))
+			had_error = true
+			continue
+		var d: Dictionary = elem
+		if not d.has(cash_key):
+			errors.append(_err("MISSING_KEY", file_path, "%s.%s" % [field, cash_key], null, "missing CASH_LI"))
+			had_error = true
+			continue
+		if not d.has(days_key):
+			errors.append(_err("MISSING_KEY", file_path, "%s.%s" % [field, days_key], null, "missing DAYS"))
+			had_error = true
+			continue
+		var cash_raw: Variant = d[cash_key]
+		var days_raw: Variant = d[days_key]
+		if not _is_json_int(cash_raw) or not _is_json_int(days_raw):
+			errors.append(_err("TYPE", file_path, field, elem, "CASH_LI／DAYS must be int"))
+			had_error = true
+			continue
+		var cash_int: int = floori(float(cash_raw))
+		var days_int: int = floori(float(days_raw))
+		if not _in_range_number(float(cash_int), rule) or days_int < days_min:
+			errors.append(_err("RANGE", file_path, field, elem, "CASH_LI／DAYS out of range"))
+			had_error = true
+			continue
+		var elem_out: Dictionary = {}
+		elem_out[cash_key] = cash_int
+		elem_out[days_key] = days_int
+		var elem_bad := false
+		for k_variant in d.keys():
+			var k: String = String(k_variant)
+			if k == cash_key or k == days_key:
+				continue
+			var gfield := "%s.%s" % [field, k]
+			if not _matches_pattern(k, pattern):
+				errors.append(_err("TYPE", file_path, gfield, k, "good_id format mismatch"))
+				elem_bad = true
+				continue
+			var qty: Variant = d[k]
+			if not _is_json_int(qty):
+				errors.append(_err("TYPE", file_path, gfield, qty, "expected int 擔數"))
+				elem_bad = true
+				continue
+			var as_int: int = floori(float(qty))
+			if not _in_range_number(float(as_int), rule):
+				errors.append(_err("RANGE", file_path, gfield, as_int, "擔數 out of range"))
+				elem_bad = true
+				continue
+			elem_out[k] = as_int
 		if elem_bad:
 			had_error = true
 			continue
