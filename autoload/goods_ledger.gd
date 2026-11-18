@@ -25,6 +25,7 @@ const ERR_SYS03_02 := &"ERR-SYS03-02"
 const ERR_SYS03_03 := &"ERR-SYS03-03"
 const ERR_SYS03_04 := &"ERR-SYS03-04"
 const ERR_SYS03_05 := &"ERR-SYS03-05"
+## D-08e: duplicate CapacityProvider registration for the same container kind.
 const ERR_SYS03_06 := &"ERR-SYS03-06"
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"

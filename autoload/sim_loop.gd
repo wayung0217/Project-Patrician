@@ -5,30 +5,97 @@ extends Node
 ## D-05: Clock mutates only; day_ticked／season_cutoff emitted here at step 6.
 ## D-03: boot() calls CashLedger.genesis_grant() once after validation.
 ## D-07: no public sub-day methods; day advance only via Clock.advance_one_day().
+## D-08e／D-08j: register_capacity_provider／set_consumption_provider only before boot().
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 
 const FIELD_PROVIDER := "ConsumptionProvider"
+const FIELD_CAPACITY_PROVIDER := "CapacityProvider"
 const REQUESTER_SYS06 := &"SYS-06"
 
 ## Error code when boot() runs without set_consumption_provider (2.3-03).
 const ERR_PROVIDER_MISSING := "ERR-SIMLOOP-PROVIDER_MISSING"
 
+## D-08j public surface (names locked): boot／tick_day／is_booted／
+## set_consumption_provider／register_capacity_provider.
+
+
+class _KindCapacityRouter extends CapacityProvider:
+	## Routes capacity(container) to the provider registered for that kind (D-08e).
+	## Unregistered WAREHOUSE／HOLD kinds return CAPACITY_FAILURE → ERR-SYS03-03 upstream.
+	var _by_kind: Dictionary = {} ## kind:String -> CapacityProvider
+
+	func configure(by_kind: Dictionary) -> void:
+		_by_kind = by_kind.duplicate(true)
+
+	func capacity(container: Variant) -> int:
+		var kind: String = _kind_of(container)
+		if kind.is_empty() or not _by_kind.has(kind):
+			push_error(
+				"SimLoop capacity router: no CapacityProvider for kind=%s (D-08e → ERR-SYS03-03)"
+				% kind
+			)
+			return CAPACITY_FAILURE
+		var provider: CapacityProvider = _by_kind[kind]
+		return provider.capacity(container)
+
+	func _kind_of(container: Variant) -> String:
+		if typeof(container) != TYPE_DICTIONARY:
+			return ""
+		var d: Dictionary = container
+		if not d.has(GoodsLedger.KEY_KIND):
+			return ""
+		return String(d[GoodsLedger.KEY_KIND])
+
+
 var _consumption: ConsumptionProvider = null
 var _booted: bool = false
+## D-08e: kind:String → CapacityProvider; only WAREHOUSE／HOLD are consulted (MARKET／CONFISCATED unbounded).
+var _capacity_by_kind: Dictionary = {}
+## D-08e: duplicate-register ErrorInfo collected for boot() (C-06).
+var _capacity_reg_errors: Array = []
+var _capacity_router: _KindCapacityRouter = null
 
 
 func _ready() -> void:
 	# 2.2-01: field init only; do not read data or call other modules.
 	_consumption = null
 	_booted = false
+	_capacity_by_kind = {}
+	_capacity_reg_errors = []
+	_capacity_router = null
 
 
 func set_consumption_provider(provider: ConsumptionProvider) -> void:
-	## 2.3-03: inject before boot. Also wires MarketPricer (SYS-04 weekly_consumption).
-	## 缺口：D-08j SimLoop.register_capacity_provider before boot — WP-08；GoodsLedger 側見 register_capacity_provider。
+	## D-08j: inject before boot only; after boot → push_error, no effect.
+	## Also wires MarketPricer (SYS-04 weekly_consumption).
+	if _booted:
+		push_error("SimLoop.set_consumption_provider called after boot (D-08j); ignored")
+		return
 	_consumption = provider
 	MarketPricer.set_consumption_provider(provider)
+
+
+func register_capacity_provider(kind: Variant, provider: CapacityProvider) -> void:
+	## D-08e／D-08j: per-kind CapacityProvider; only before boot().
+	## Duplicate kind → ERR-SYS03-06 (DUPLICATE_PROVIDER); first registration kept.
+	if _booted:
+		push_error("SimLoop.register_capacity_provider called after boot (D-08e／D-08j); ignored")
+		return
+	var kind_s: String = String(kind)
+	if _capacity_by_kind.has(kind_s):
+		var dup: Dictionary = ErrorInfoUtil.make_validation(
+			GoodsLedger.ERR_SYS03_06,
+			GoodsLedger.SYS_ID,
+			"res://autoload/sim_loop.gd",
+			FIELD_CAPACITY_PROVIDER,
+			kind_s,
+			"duplicate CapacityProvider for kind (D-08e DUPLICATE_PROVIDER)"
+		)
+		_capacity_reg_errors.append(dup)
+		push_error("SimLoop: %s" % str(dup))
+		return
+	_capacity_by_kind[kind_s] = provider
 
 
 func is_booted() -> bool:
@@ -45,6 +112,9 @@ func boot(
 	# 任一錯誤 → 回傳完整清單且不啟動時鐘（_booted 維持 false）。
 	_booted = false
 	var errors: Array = []
+
+	# D-08e: surface duplicate-register errors collected before boot (C-06).
+	errors.append_array(_capacity_reg_errors)
 
 	errors.append_array(Params.load_and_validate(params_path))
 	errors.append_array(Clock.load_and_validate())
@@ -70,6 +140,9 @@ func boot(
 	if not errors.is_empty():
 		_booted = false
 		return errors
+
+	# D-08e: GoodsLedger.load_and_validate clears providers; apply SimLoop registrations after.
+	_apply_capacity_providers()
 
 	# Sync quote provider for CashLedger when available (WP-07 set_quote_provider bridge).
 	if CashLedger.has_method("set_quote_provider"):
@@ -104,7 +177,7 @@ func boot(
 func tick_day() -> Array:
 	## 每日 tick：步驟順序與 TechSpec 第 2.3 節逐字一致。
 	## D-04／C-06: 回傳當日錯誤清單（CONSUME 不足等 ErrorInfo）。
-	## 缺口：TechSpec H 未列 SimLoop 每日入口函式名；採 tick_day()。
+	## D-08j: public name tick_day()（當日錯誤清單）.
 	var day_errors: Array = []
 	if not _booted:
 		push_error("SimLoop.tick_day called before successful boot (2.2-02)")
@@ -151,6 +224,16 @@ func tick_day() -> Array:
 		Clock.season_cutoff.emit(Clock.season_index)
 
 	return day_errors
+
+
+func _apply_capacity_providers() -> void:
+	# Phase 0: no formal providers is expected; leave GoodsLedger unset → ERR-SYS03-03.
+	if _capacity_by_kind.is_empty():
+		_capacity_router = null
+		return
+	_capacity_router = _KindCapacityRouter.new()
+	_capacity_router.configure(_capacity_by_kind)
+	GoodsLedger.set_capacity_provider(_capacity_router)
 
 
 func _run_daily_consume(day: int) -> Array:
