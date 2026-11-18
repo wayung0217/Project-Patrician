@@ -1,8 +1,8 @@
 extends Node
-## Autoload: Clock — SYS-00 (TechSpec §3.1 / 1-A3; Owner D-05 / D-07).
-## Phase 0: advance_one_day only; no _process / Timer (1-A3).
-## D-05: advance_one_day mutates state only — SimLoop step 6 emits signals.
+## Autoload: Clock — SYS-00 (TechSpec §3.1 / 1-A3; Owner D-05 / D-07 / D-14d).
+## No _process / Timer (1-A3). D-05: mutate only — SimLoop step 6 emits signals.
 ## D-07: internal _tick; day = floori(_tick / TPD); TPD from Params.
+## D-14d: public advance_one_tick() + read-only tick; advance_one_day = TPD ticks.
 
 signal day_ticked(day: int)
 signal season_cutoff(season_index: int)
@@ -23,6 +23,12 @@ var day: int:
 		if not _loaded or _ticks_per_day < 1:
 			return 0
 		return floori(float(_tick) / float(_ticks_per_day))
+
+
+## D-14d: read-only public tick (same value as private _tick).
+var tick: int:
+	get:
+		return _tick
 
 
 var season_index: int:
@@ -123,16 +129,28 @@ func set_paused(paused: bool) -> void:
 	_is_paused = paused
 
 
+func advance_one_tick() -> void:
+	# D-14d / GP-01: paused → push_error, do not advance. D-05: mutate only; no emit.
+	if _is_paused:
+		push_error("Clock.advance_one_tick called while is_paused=true (GP-01)")
+		return
+	if not _loaded:
+		push_error("Clock.advance_one_tick called before load_and_validate")
+		return
+	_tick += 1
+
+
 func advance_one_day() -> void:
-	# GP-01 / §3.1: paused → push_error, do not advance.
+	# GP-01 / §3.1: paused → push_error once, do not advance (existing contract).
 	if _is_paused:
 		push_error("Clock.advance_one_day called while is_paused=true (GP-01)")
 		return
 	if not _loaded:
 		push_error("Clock.advance_one_day called before load_and_validate")
 		return
-	# D-07: advance_one_day = advance TPD ticks. D-05: mutate only; no emit.
-	_tick += _ticks_per_day
+	# D-14d: advance_one_day = TICKS_PER_DAY successive advance_one_tick() calls.
+	for _i in range(_ticks_per_day):
+		advance_one_tick()
 
 
 func _emit_errors(errors: Array) -> void:
