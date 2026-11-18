@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,
-狀態：Draft｜2026-11-18｜範圍：SYS-00 Clock 至 SYS-05 CashLedger（見第 1 節）｜規格權威：03_Systems（C 欄以公式即時引用原文）｜硬規則權威：AI_README 第 8 節｜本書未寫的事 = 不准做，先問｜★ 工作包與進度見第 7 節，一個 PR 只做一個 WP。｜★ Owner 2026-11-18 裁決 D-01 至 D-07 見第 8 節，優先於同主題的既有 D 欄註記。,,,,,,
+狀態：Draft｜2026-11-18｜範圍：SYS-00 Clock 至 SYS-05 CashLedger（見第 1 節）｜規格權威：03_Systems（C 欄以公式即時引用原文）｜硬規則權威：AI_README 第 8 節｜本書未寫的事 = 不准做，先問｜★ 工作包與進度見第 7 節，一個 PR 只做一個 WP。｜★ Owner 2026-11-18 裁決 D-01 至 D-07 見第 8 節，優先於同主題的既有 D 欄註記。｜★ 2026-11-18 Round 2 已收件（全數 CI 綠、未合併），收件審查見第 9 節。,,,,,,
 ,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,
@@ -52,7 +52,7 @@ C-14,不得改規格,Cursor 不得修改本工作簿。介面需變更時在 PR 
 ★ 允許的工具目錄（不算本書外目錄）：.github/、addons/gut/、.cursor/、docs/。",C-13,可做,
 2.2-01,Autoload 登錄順序,Params → Clock → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger → SimLoop,順序＝規格依賴方向。各 Autoload 的 _ready() 只做自身欄位初始化，不讀資料、不呼叫他模組；載入與驗證一律由 SimLoop.boot() 依本順序明確呼叫。,03_Systems 依賴欄,可做,
 2.2-02,SimLoop.boot() -> Array,依 2.2-01 順序呼叫各模組 load_and_validate()，彙總全部錯誤後回傳。,任一錯誤 → 回傳完整清單且不啟動時鐘；不得在第一個錯誤就停止收集。,C-06,可做,
-2.3-01,每日 tick 步驟 1,Clock 推進一日（day 由 1 起算；day_in_season = ((day−1) mod D) + 1，D = DAYS_PER_SEASON）。,"時鐘推進 → PRODUCE（依 port_id, good_id 排序）→ CONSUME（SYS-06）→ 守恆檢查",03_Systems r298,可做,
+2.3-01,每日 tick 步驟 1,Clock 推進一日（day 由 1 起算；day_in_season = ((day−1) mod D) + 1，D = DAYS_PER_SEASON）。,"★ D-05／D-07（2026-11-18）：開機 Clock.day = 0（尚未開局）。每日 tick：時鐘推進一日（= TICKS_PER_DAY 個 tick）→ PRODUCE（依 port_id, good_id 排序；k = day_in_season − 1，首季 k = 0 不得跳過）→ CONSUME（SYS-06；視同一般 transfer：庫存不足即 ERR-SYS03-02、全有或全無、收進當日錯誤清單，不得部分扣）→ 守恆檢查 → 全部寫入完成後，由 SimLoop 經 Clock 發出 day_ticked／season_cutoff（Clock 自身不發信號）",03_Systems r298,可做,
 2.3-02,步驟 2,"GoodsLedger 執行當日 PRODUCE：依 (port_id, good_id) 升序，數量用 FRM-SYS03-03。",排序寫在 SimLoop／GoodsLedger 代碼內，不靠遍歷順序。,FRM-SYS03-03,可做,
 2.3-03,步驟 3,"以注入的 ConsumptionProvider 執行 CONSUME，同樣依 (port_id, good_id) 升序。",未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。,SYS-06 介面,可做,
 2.3-04,步驟 4,守恆檢查 FRM-SYS03-01（是否每日執行依 PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK）。,以 OS.is_debug_build() 選取參數的 debug／release 值；不得另寫旗標。,r318,可做,
@@ -93,9 +93,9 @@ D 欄位 RoleCell,base_output_per_season,產地每商季基準產量（擔）,,0
 E 公式,FRM-SYS02-01,"載入驗證：(1) 每港 × 每貨恰一個角色；(2) TRANSIT 至少 1 個下游，且每個下游對該貨為 TERMINAL、不得為自身；(3) PRODUCER 產量 > 0，其餘 = 0；(4) 每貨至少 1 個 PRODUCER 與 1 個 TERMINAL；(5) 港口數∈[PORT_COUNT_MIN,MAX]；(6) 自由港比例∈[FREE_PORT_RATIO_MIN,MAX]",,03_Systems r264,可做,
 E 公式,FRM-SYS02-02,Q-7 檢查：自由港上 controlled_scale_only 的貨若為 PRODUCER → 產出警告 WRN-SYS02-01,WRN-01 只警告不阻擋：寫入警告清單，不加入錯誤清單。,03_Systems r265,可做,
 E 公式,FRM-SYS02-03,地圖外出口：門戶港對該貨設 TERMINAL（如馬尼拉大帆船、澳門→果阿）；不設虛擬去化,,03_Systems r266,可做,
-F 寫入順序,EV-SYS02-ROLE_CHANGE,角色變更（如建造完工）先排入佇列，於商季 cutoff 生效,,03_Systems r267,可做,
+F 寫入順序,EV-SYS02-ROLE_CHANGE,"角色變更（如建造完工）以 queue_role_change(port_id, good_id, new_role, payload) 排入佇列，payload 入隊即驗：PRODUCER 必含 base_output_per_season（int > 0）且不得含 downstream_terminals；TRANSIT 必含非空 downstream_terminals 且不得含產量；TERMINAL 的 payload 必為空。缺鍵、多鍵、型別不符即以 ERR-SYS02-01 至 06 對應碼拒絕，不延到 cutoff。於商季 cutoff 由 apply_queued_role_changes() 套用，套用時重跑 FRM-SYS02-01 全部六項（★ D-02，2026-11-18）",,03_Systems r267,可做,
 G 邊界失敗,ERR-SYS02-01 至 06,對應 FRM-SYS02-01 (1)–(6),,03_Systems r268,可做,
-H 可觀察性,Godot 介面,"Autoload PortRegistry：get_port(id)、get_role(port,good)->int、get_downstream(port,good)、producers_of(good)、terminals_of(good)；signal role_changed(port,good,old,new)",,03_Systems r269,可做,
+H 可觀察性,Godot 介面,"Autoload PortRegistry：get_port(id)、get_role(port,good)->int、get_downstream(port,good)、producers_of(good)、terminals_of(good)、queue_role_change(port_id, good_id, new_role, payload: Dictionary)、apply_queued_role_changes()（僅 SimLoop 於 cutoff 呼叫）；signal role_changed(port,good,old,new)（★ D-02）",,03_Systems r269,可做,
 K 未決,不應吸收某貨的港,以 TERMINAL＋極小消費處理，消費量於 SYS-06 定,未決：不實作。,03_Systems r273,可做,
 3.4,SYS-03 GoodsLedger,res://autoload/goods_ledger.gd,transfer() 全有或全無；seq 全域單調遞增 int。容器鍵用 Dictionary 時，任何彙總先排序鍵再加總。,03_Systems r300,可做,
 C 邊界,不計價、不計現金；價格由 SYS-04 推導,—,,03_Systems r279,可做,
@@ -115,9 +115,9 @@ D 原因碼,SEA_LOSS,海損（停用；使用即錯誤）,使用即回 ERR-SYS03
 E 公式,FRM-SYS03-01,守恆：Σ 全部容器(good) = Σ GENESIS + Σ PRODUCE − Σ CONSUME − Σ CONSTRUCT_USE − Σ SEA_LOSS（各 good 分別）,,03_Systems r294,可做,
 E 公式,FRM-SYS03-02,轉移：qty 為整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無,,03_Systems r295,可做,
 E 公式,FRM-SYS03-03,每日產出 out(k) = FLOOR(Q·(k+1)/D) − FLOOR(Q·k/D)，k = 0..D−1；Q = base_output_per_season，D = PRM-SYS00-DAYS_PER_SEASON,整數除法用 floori 於 int 運算，不經 float。,03_Systems r296,可做,
-F 寫入順序,每日 tick,"時鐘推進 → PRODUCE（依 port_id, good_id 排序）→ CONSUME（SYS-06）→ 守恆檢查",,03_Systems r298,可做,
-G 邊界失敗,ERR-SYS03-01 至 05,01 qty≤0 或非整數／02 餘額不足／03 容量不足／04 原因碼停用／05 守恆違反,,03_Systems r299,可做,
-H 可觀察性,Godot 介面,"Autoload GoodsLedger：transfer(from,to,good,qty,reason,requester)->int、get_qty(container,good)、total(good)、in_transit(good)（推導）；signals goods_transferred、conservation_violated",,03_Systems r300,可做,
+F 寫入順序,每日 tick,"★ D-05／D-07（2026-11-18）：開機 Clock.day = 0（尚未開局）。每日 tick：時鐘推進一日（= TICKS_PER_DAY 個 tick）→ PRODUCE（依 port_id, good_id 排序；k = day_in_season − 1，首季 k = 0 不得跳過）→ CONSUME（SYS-06；視同一般 transfer：庫存不足即 ERR-SYS03-02、全有或全無、收進當日錯誤清單，不得部分扣）→ 守恆檢查 → 全部寫入完成後，由 SimLoop 經 Clock 發出 day_ticked／season_cutoff（Clock 自身不發信號）",,03_Systems r298,可做,
+G 邊界失敗,ERR-SYS03-01 至 05,"01 qty≤0 或非整數／02 餘額不足／03 容量不足／04 原因碼停用／05 守恆違反｜★ D-04：一律以 ErrorInfo {code: StringName（例 &""ERR-SYS03-02""）, sys, detail} 回報，不得用負整數",,03_Systems r299,可做,
+H 可觀察性,Godot 介面,"Autoload GoodsLedger：transfer(from,to,good,qty,reason,requester)->int（成功回 seq ≥ 1、失敗回 0，原因經 last_error() 取得 ErrorInfo，★ D-04）、next_seq()->int（全域唯一發號，從 1 起每次 +1，與 CashLedger 共用）、last_error()->Dictionary、get_qty(container,good)、total(good)、in_transit(good)（推導）；signals goods_transferred、conservation_violated",,03_Systems r300,可做,
 K 未決,散商總運力、反應遲滯,PRM 已登記為 [待審]，Phase 3.2 定值,未決：不實作。,03_Systems r303,可做,
 3.5,SYS-04 MarketPricer,res://autoload/market_pricer.gd,純函數：不得持有可變狀態、不得發信號、不得寫入其他模組。,03_Systems r417,可做,
 C 邊界,"只計算報價與指示燈；扣現金由 SYS-05、搬貨由 SYS-03 transfer；週消耗量由 SYS-06 提供（本批只定介面 weekly_consumption(port,good)）",—,,03_Systems r401,可做,
@@ -128,7 +128,7 @@ E 公式,FRM-SYS04-01 庫存週數,w = stock ÷ weekly_consumption（weekly_cons
 E 公式,FRM-SYS04-02 線性插值倍率,找 i 使 W_i ≤ w < W_{i+1}：m = M_i + (M_{i+1} − M_i) × (w − W_i) ÷ (W_{i+1} − W_i)；w ≥ W_n → m = M_n,,03_Systems r406,可做,
 E 公式,FRM-SYS04-03 中價,mid = anchor_price_li × m(w),,03_Systems r407,可做,
 E 公式,FRM-SYS04-04 整批面積,買 q 擔：庫存 s → s − q；賣 q 擔：s → s + q。Area = anchor × weekly_consumption × [G(w_後) − G(w_前)] 取絕對值；G(x) = ∫₀ˣ m(w)dw，逐段梯形精確計算（線性段梯形無誤差），超過 W_n 部分 = (x − W_n) × M_n,面積以 float64 梯形公式一次算出，禁止逐擔迴圈。,03_Systems r408,可做,
-E 公式,FRM-SYS04-05 買賣總額取整,買總額 = CEIL(Area × (1 + HALF_SPREAD))；賣總額 = FLOOR(Area × (1 − HALF_SPREAD)),ceili／floori；不得 round。,03_Systems r409,可做,
+E 公式,FRM-SYS04-05 買賣總額取整,"買總額 = CEIL(Area × (1 + HALF_SPREAD))；賣總額 = FLOOR(Area × (1 − HALF_SPREAD))｜★ D-01（2026-11-18）：取整前先經單一函數 quantize_amount() 規範化——|x − round(x)| ≤ PRM-SYS04-ROUND_EPS × max(1, |x|) 時取 round(x)，再 CEIL／FLOOR；SYS-04 與 SYS-05 所有金額取整只准經此函數（N-04）",ceili／floori；不得 round。,03_Systems r409,可做,
 E 公式,FRM-SYS04-06 邊際顯示價,買價 = CEIL(mid × (1 + HALF_SPREAD))；賣價 = FLOOR(mid × (1 − HALF_SPREAD)),,03_Systems r410,可做,
 E 公式,FRM-SYS04-07 曲線驗證,W_1 = 0；W 嚴格遞增；M 非遞增；全部 M > 0；斷點數 ≥ 2,,03_Systems r411,可做,
 E 公式,FRM-SYS04-08 地板下限檢查,對每個錨定價：FLOOR(anchor × M_n × (1 − HALF_SPREAD)) ≥ 1 厘,,03_Systems r412,可做,
@@ -163,17 +163,17 @@ E 公式,FRM-SYS05-11,提交重驗：放手時以當刻 quote 重算 B′；B′
 E 公式,FRM-SYS05-12,"最大餘數分攤：base_i = FLOOR(T·w_i ÷ W)；r = T − Σbase；依 MOD(T·w_i, W) 由大到小、同值索引小者先，前 r 名各 +1",Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems r577,可做,
 F 寫入順序,成交（原子）,1 驗證請求者在 ST-CASH 請求清單且金額為正整數 → 2 以提交時刻呼叫 SYS-04 quote() → 3 FRM-SYS05-11 重驗 → 4 組分錄並驗 FRM-SYS05-01 → 5 寫 ST-CASH → 6 SYS-03 transfer 寫 ST-GOOD → 任一步失敗全部回滾 → 7 提交後才發信號,七步順序逐字照寫；任一步失敗回滾已寫入的 ST-CASH 與 ST-GOOD。,03_Systems r578,可做,
 F 寫入順序,季末結算（不暫停）,1 依 account_id 升序逐帳戶 → 2 依 ChargeSchedule 登記序計 FRM-SYS05-05 → 3 FRM-SYS05-06 扣費入 SINK → 4 FRM-SYS05-08 更新計數、必要時移交 SYS-22 → 5 產生 SeasonLedgerReport → 6 清除上季 Posting 明細,六步順序逐字照寫。,03_Systems r579,可做,
-G 邊界失敗,ERR-SYS05-01,INSUFFICIENT_CASH：自願支出（交易、建設、打點）餘額不足 → 拒絕，不部分成交,,03_Systems r580,可做,
+G 邊界失敗,ERR-SYS05-01,INSUFFICIENT_CASH：自願支出（交易、建設、打點）餘額不足 → 拒絕，不部分成交｜★ D-04：ERR-SYS05-01 至 09 一律以 ErrorInfo（code: StringName）回報，見 r589,,03_Systems r580,可做,
 G 邊界失敗,ERR-SYS05-02,UNBALANCED_POSTING：Σ ≠ 0 → 中止並回滾；記錄為程式錯誤,,03_Systems r581,可做,
 G 邊界失敗,ERR-SYS05-03,NEGATIVE_BALANCE：非 SOURCE 帳戶將為負（任何路徑）→ 拒絕；強制費應走 FRM-SYS05-06 不會觸發,,03_Systems r582,可做,
 G 邊界失敗,ERR-SYS05-04,UNKNOWN_ACCOUNT：帳戶不存在 → 拒絕,,03_Systems r583,可做,
 G 邊界失敗,ERR-SYS05-05,INVALID_AMOUNT：金額非整數或 ≤ 0 → 拒絕,,03_Systems r584,可做,
-G 邊界失敗,ERR-SYS05-06,UNAUTHORIZED_REQUESTER：請求者不在 SYS-04、08、09、10、12、13、16、21 → 拒絕,,03_Systems r585,可做,
+G 邊界失敗,ERR-SYS05-06,UNAUTHORIZED_REQUESTER：請求者不在 SYS-04、08、09、10、12、13、16、21 → 拒絕｜★ D-03 唯一例外：CashLedger.genesis_grant()，由 SimLoop.boot() 呼叫一次；授權清單本身不改,,03_Systems r585,可做,
 G 邊界失敗,ERR-SYS05-07,STALE_QUOTE_UNAFFORDABLE：放手時新報價超出餘額 → 整筆拒絕，拉桿歸 0,,03_Systems r586,可做,
 G 邊界失敗,ERR-SYS05-08,OVERFLOW：int64 溢位 → 拒絕並記錄,,03_Systems r587,可做,
 G 邊界失敗,ERR-SYS05-09,INVALID_WEIGHTS：分攤權重有負值或總和 0 → 拒絕,,03_Systems r588,可做,
-H 可觀察性,Autoload CashLedger,"post(entries, reason, requester) -> Error；balance(id) -> int；arrears(id) -> int；can_afford(id, amount) -> bool；max_affordable_qty(actor, port, good) -> int；charge_mandatory(id, due, reason, requester) -> int；prorate(fee, days_held) -> int；split_largest_remainder(total, weights) -> Array[int]；close_season() -> SeasonLedgerReport",,03_Systems r589,可做,
-H 可觀察性,信號,"cash_changed(id, new_balance, delta, reason)；arrears_changed(id, arrears, seasons)；bankruptcy_referred(id)；season_ledger_closed(season_index, report)",,03_Systems r590,可做,
+H 可觀察性,Autoload CashLedger,"post(entries, reason, requester) -> Error；balance(id) -> int；arrears(id) -> int；can_afford(id, amount) -> bool；max_affordable_qty(actor, port, good) -> int；charge_mandatory(id, due, reason, requester) -> int；prorate(fee, days_held) -> int；split_largest_remainder(total, weights) -> Array[int]；close_season() -> SeasonLedgerReport；★ genesis_grant()（D-03：{SOURCE: −START_CASH, ACT-PLAYER: +START_CASH}，reason = GENESIS_CASH）；last_error() -> Dictionary（ErrorInfo）。★ post() 回傳約定（R2-05，Owner 2026-11-18）：成功回 OK、失敗回 FAILED，失敗原因一律經 last_error() 取得 ErrorInfo，與 transfer() 同一套",,03_Systems r589,可做,
+H 可觀察性,信號,"cash_changed(id, new_balance, delta, reason)；arrears_changed(id, arrears, seasons)；bankruptcy_referred(id)；season_ledger_closed(season_index, report)｜★ D-05：所有信號只在當日全部寫入完成後發出；day_ticked／season_cutoff 由 SimLoop 經 Clock 發出",,03_Systems r590,可做,
 H 可觀察性,TradeSlider UI,HSlider，step = 1 擔；拖動開始與市場信號時重算 max_value（FRM-SYS05-10）；拖動中即時顯示整批總額與成交後指示燈；總額 > 餘額時預覽轉紅；drag_ended 才提交；收到 ERR-SYS05-01／07 → value = 0 並提示,UI 不做（1-A8）；max_affordable_qty() 必須實作。,03_Systems r591,可做,
 H 可觀察性,帳本報表 UI,季末彈出非阻斷通知，可開 SeasonLedgerReport；欠款帳戶以紅字＋連續商季數顯示,UI 不做（1-A8）；只發 season_ledger_closed 信號。,03_Systems r592,可做,
 K 未決,[待審],PRM-SYS05-START_CASH、PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT 正式值；固定費費率屬 SYS-13／產業,未決：不實作。,03_Systems r595,可做,
@@ -273,18 +273,18 @@ N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked,
 ,,,,,,
 7 工作包與進度（Owner 追蹤用；Cursor 不得修改本表）,,,,,,
 用法,Cursor 依 WP 編號順序開工，一個 PR 只做一個 WP；不得在依賴未「完成」前開工。,PR 描述必須回報：WP 編號、狀態、新增檔案清單、測試結果（通過數／總數）、遇到的規格缺口（未裁決不得自行補）。,Owner 審完 PR 後在 F 欄更新狀態（下拉選單）。,,,
-進度,已完成 0 / 10｜進行中 0｜PR 待審 10｜退件 0（2026-11-18 通宵批次全數 open、CI 綠、未合併）,,,,,
+進度,已完成 0 / 10｜進行中 0｜PR 待審 10｜退件 0（2026-11-18 Round 2 全數推送、CI 綠、未合併；收件審查見第 9 節）,,,,,
 WP 編號,內容（對應範圍）,依賴,交付物,驗收,狀態,PR／測試（Owner 2026-11-18 收訖）
-WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,PR 待審,PR #1｜測試 1/1｜CI green
-WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,PR 待審,PR #2｜測試 9/9｜CI green（base #1）
-WP-02,SYS-00 Clock（第 3.1 節）,WP-01,res://autoload/clock.gd、測試,第 3.1 節各列逐項有測試：暫停時呼叫 advance_one_day() 即 push_error 不推進；season_cutoff 於季末發出；★ D-07：Clock 內部以 _tick 計數並由 Params 讀入 TICKS_PER_DAY，公開面維持原樣，另加一個測試驗證 advance_one_day() 恰推進 TPD 個 tick,PR 待審,PR #5｜測試 17/17｜CI green（base #2）
-WP-03,SYS-01 GoodCatalog（第 3.2 節）,WP-01,good_catalog.gd、good_def.gd、測試,TST-SYS01-01..04 全部通過,PR 待審,PR #6｜測試 17/17｜CI green（base #2）
-WP-04,SYS-02 PortRegistry（第 3.3 節）,WP-03,port_registry.gd、port_def.gd、role_cell.gd、測試,TST-SYS02-01..05 全部通過,PR 待審,PR #7｜測試 24/24｜CI green（base #6）
-WP-05,SYS-03 GoodsLedger＋CapacityProvider 介面（第 3.4 節、2.1-03）,WP-04,goods_ledger.gd、transfer_event.gd、capacity_provider.gd、測試,TST-SYS03-01..06 全部通過；next_seq() 從 1 起每次 +1（D101）,PR 待審,PR #8｜測試 35/35｜CI green（base #7）
-WP-06,SYS-04 MarketPricer（第 3.5 節）,WP-05,market_pricer.gd、price_curve.gd、測試,TST-SYS04-01..10 全部通過,PR 待審,PR #10｜測試 46/46｜CI green（base #8）
-WP-07,SYS-05 CashLedger（第 3.6 節）,WP-05,cash_ledger.gd、account.gd、posting_entry.gd、posting.gd、charge_schedule.gd、season_ledger_report.gd、測試,TST-SYS05-01..12 全部通過；FRM-SYS05-07／11／12 各為單一函數（D153／D157／D158）,PR 待審,PR #9｜測試 51/51｜CI green（base #8）
-WP-08,ConsumptionProvider 介面＋SimLoop 開機與每日排程（第 2.2、2.3 節）,WP-02、WP-06、WP-07,sim_loop.gd、consumption_provider.gd、測試,每日步驟順序與第 2.3 節逐字一致；介面基底方法一律 push_error（2.1-03）,PR 待審,PR #11｜測試 79/79｜CI green（base #10）
-WP-09,csv_import 轉檔器框架（2.1-04）,WP-00,res://tools/csv_import.gd、fixtures CSV、測試,2.1-04 規則 ①–⑤ 各有測試：缺欄、多欄、型別不符皆中止,PR 待審,PR #4｜測試 10/10｜CI green（base #1）
+WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,PR 待審,R1：PR #1｜1/1｜CI green ／ ★ R2（11-18）：無裁決改動｜1/1｜CI green
+WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,PR 待審,R1：PR #2｜9/9 ／ ★ R2：+TICKS_PER_DAY、ROUND_EPS｜13/13｜CI green
+WP-02,SYS-00 Clock（第 3.1 節）,WP-01,res://autoload/clock.gd、測試,第 3.1 節各列逐項有測試：暫停時呼叫 advance_one_day() 即 push_error 不推進；season_cutoff 於季末發出；★ D-07：Clock 內部以 _tick 計數並由 Params 讀入 TICKS_PER_DAY，公開面維持原樣，另加一個測試驗證 advance_one_day() 恰推進 TPD 個 tick,PR 待審,R1：PR #5｜17/17 ／ ★ R2：D-05＋D-07 _tick｜22/22（head 10dbd95；先前一版 24/24，見 R2-03）｜CI green
+WP-03,SYS-01 GoodCatalog（第 3.2 節）,WP-01,good_catalog.gd、good_def.gd、測試,TST-SYS01-01..04 全部通過,PR 待審,R1：PR #6｜17/17 ／ ★ R2：D-04 ErrorInfo｜22/22｜CI green
+WP-04,SYS-02 PortRegistry（第 3.3 節）,WP-03,port_registry.gd、port_def.gd、role_cell.gd、測試,TST-SYS02-01..05 全部通過,PR 待審,R1：PR #7｜24/24 ／ ★ R2：D-02 payload｜33/33｜CI green（疊在 #6）
+WP-05,SYS-03 GoodsLedger＋CapacityProvider 介面（第 3.4 節、2.1-03）,WP-04,goods_ledger.gd、transfer_event.gd、capacity_provider.gd、測試,TST-SYS03-01..06 全部通過；next_seq() 從 1 起每次 +1（D101）,PR 待審,R1：PR #8｜35/35 ／ ★ R2：D-04＋CONSUME 全有或全無｜46/46｜CI green（疊在 #7）
+WP-06,SYS-04 MarketPricer（第 3.5 節）,WP-05,market_pricer.gd、price_curve.gd、測試,TST-SYS04-01..10 全部通過,PR 待審,"R1：PR #10｜46/46 ／ ★ R2：D-01 AmountQuantize｜58/58｜B463 = 144,000、B470 = −13,715 已對齊｜CI green"
+WP-07,SYS-05 CashLedger（第 3.6 節）,WP-05,cash_ledger.gd、account.gd、posting_entry.gd、posting.gd、charge_schedule.gd、season_ledger_report.gd、測試,TST-SYS05-01..12 全部通過；FRM-SYS05-07／11／12 各為單一函數（D153／D157／D158）,PR 待審,R1：PR #9｜51/51 ／ ★ R2：D-01／D-03／D-04｜67/67｜CI green｜⚠ 仍含 AmountMath（R2-02）
+WP-08,ConsumptionProvider 介面＋SimLoop 開機與每日排程（第 2.2、2.3 節）,WP-02、WP-06、WP-07,sim_loop.gd、consumption_provider.gd、測試,每日步驟順序與第 2.3 節逐字一致；介面基底方法一律 push_error（2.1-03）,PR 待審,R1：PR #11｜79/79 ／ ★ R2：D-05＋整合＋統一 AmountQuantize｜102/102｜CI green
+WP-09,csv_import 轉檔器框架（2.1-04）,WP-00,res://tools/csv_import.gd、fixtures CSV、測試,2.1-04 規則 ①–⑤ 各有測試：缺欄、多欄、型別不符皆中止,PR 待審,R1：PR #4｜10/10 ／ ★ R2：rebase 到 #2，無邏輯變更｜測試數未回報（R2-04）｜CI green
 ,,,,,,
 ,,,,,,
 8 Owner 裁決（2026-11-18，回覆 Cursor 通宵報告；本表為 C-02 規格權威的補充，Cursor 不得修改）,,,,,,
@@ -292,7 +292,20 @@ WP-09,csv_import 轉檔器框架（2.1-04）,WP-00,res://tools/csv_import.gd、f
 D-01,取整對帳：WP-06 與 xlsx B463／B470 差 1 厘,"以 xlsx 的數學精確值為準：整批買入 B463 = 144,000 厘、同港來回 B470 = −13,715 厘。本案成因為 float64 誤差（示範值的精確面積 = 1000×105×64/49×1.05 = 144,000 整），非規格衝突，不適用 C-02 的停工條款。","FRM-SYS04-05 取整前加一道規範化：設 x 為 Area×(1±HALF_SPREAD) 的 float64 值，若 |x − round(x)| <= PRM-SYS04-ROUND_EPS × max(1,|x|) 則令 x = round(x)，再 ceili／floori。規範化寫成單一函數（例 quantize_amount()），SYS-04 與 SYS-05 所有金額取整只准經此函數，不得各自寫一份（N-04）。EPS 已登錄第 4 節，禁止裸寫 1e-9。TST-SYS04-04／05、TST-SYS05-03 的期望值一律取 xlsx 值。",WP-06（#10）、WP-07（#9）,03_Systems r409 D 欄＋附錄 A 參數表,
 D-02,WP-04：queue_role_change 無法帶 output／downstream,"介面擴充為 queue_role_change(port_id, good_id, new_role, payload: Dictionary)。payload 為角色必要欄位，不得以清空代替。",payload 鍵：new_role = PRODUCER 時必含 base_output_per_season（int > 0）、不得含 downstream_terminals；= TRANSIT 時必含 downstream_terminals（非空陣列）、不得含 base_output_per_season；= TERMINAL 時 payload 必為空。缺鍵、多鍵、型別不符 → 入隊即 ERR-SYS02-01..06 對應碼拒絕，不得延到 cutoff 才爆。cutoff 套用時仍重跑 FRM-SYS02-01 全部六項。套用方法名定為 apply_queued_role_changes()。SYS-08 之後若需更多欄位，另開裁決，不得自行擴 payload。,WP-04（#7）,03_Systems r267、r269,
 D-03,WP-07：START_CASH 發放對象帳戶 id,開局資金發給玩家行為者帳戶，id 常數 ACCOUNT_PLAYER = ACT-PLAYER（kind = ACTOR）。AI 競爭者帳戶（ACT-AI-nn）屬 SYS-18，Phase 0 不建、不發。,"單一入口 CashLedger.genesis_grant()：分錄 {SOURCE: −START_CASH, ACT-PLAYER: +START_CASH}，reason = GENESIS_CASH，由 SimLoop.boot() 在 CashLedger 驗證通過後呼叫一次。此為 ERR-SYS05-06 授權清單的唯一例外，寫成具名常數並註明本裁決編號；不得改寫授權清單本身。PRM-SYS05-START_CASH 仍 [待審]：缺鍵即拒絕啟動，Cursor 不得填值，測試只用 fixtures。",WP-07（#9）、WP-08（#11）,03_Systems r585、r589,
-D-04,WP-05／07：ERR → int 對照表,不頒布 ERR → 負整數對照表。裸負數違反 C-03，且各模組自行編號必然發散。錯誤一律以 StringName 錯誤碼回傳。,"統一錯誤載體 ErrorInfo Dictionary {code: StringName（例 &""ERR-SYS03-02""）, sys: StringName, detail: Dictionary}，與 C-06 的「收集全部錯誤一次列出」共用同一型別。回傳值約定：transfer() 成功回 seq（>= 1）、失敗回 0；post() 成功回 0、失敗回 0 以外時改以錯誤清單判定——即所有 ->int 介面只准出現 0 與 1 以外無語意的字面量。失敗時把 ErrorInfo 追加到該次呼叫的錯誤清單（load_and_validate／tick 回傳 Array，單次呼叫經 last_error()）。WP-05 暫用的 −1..−5 一律撤回。",WP-03（#6）、WP-05（#8）、WP-07（#9）,03_Systems r299、r300、r580..r588,
+D-04,WP-05／07：ERR → int 對照表,不頒布 ERR → 負整數對照表。裸負數違反 C-03，且各模組自行編號必然發散。錯誤一律以 StringName 錯誤碼回傳。,"統一錯誤載體 ErrorInfo Dictionary {code: StringName（例 &""ERR-SYS03-02""）, sys: StringName, detail: Dictionary}，與 C-06 的「收集全部錯誤一次列出」共用同一型別。回傳值約定：transfer() 成功回 seq（>= 1）、失敗回 0；post() -> Error：成功回 OK、失敗回 FAILED（★ R2-05 Owner 2026-11-18 釐清，原句作廢）；所有 ->int 介面只准以 0 表示失敗。失敗時把 ErrorInfo 追加到該次呼叫的錯誤清單（load_and_validate／tick 回傳 Array，單次呼叫經 last_error()）。WP-05 暫用的 −1..−5 一律撤回。｜★ R2-05：失敗原因一律經 last_error() 取得 ErrorInfo，post() 與 transfer() 同一套。",WP-03（#6）、WP-05（#8）、WP-07（#9）,03_Systems r299、r300、r580..r588,
 D-05,WP-08：信號時序與首季 k = 0,(a) 2.3-06 優先於 Clock：Clock.advance_one_day() 只改 day，不得自行發信號。(b) 首季 k = 0 不得跳過。(c) 首季 season_index = 0，不得為 −1。(d) CONSUME 庫存不足不得僅 push_error 繼續。,(a) day_ticked／season_cutoff 由 SimLoop 在步驟 6（全部寫入完成後）經 Clock 的 emit 介面發出，信號名不變。(b) Clock.day 開機初值 = 0，代表尚未開局、非遊戲日；第一次 tick 推進至 day = 1 並以 k = day_in_season − 1 = 0 執行 PRODUCE，確保 TST-SYS03-04 的 Σ PRODUCE = Q。(c) season_index = floori((day − 1) ÷ D)，於 day_in_season = D 當日求值，首季得 0。(d) CONSUME 視同一般 transfer：餘額不足即 ERR-SYS03-02、全有或全無，該筆不執行並收進當日錯誤清單（C-06），不得部分扣、不得 clamp。,WP-02（#5）、WP-05（#8）、WP-08（#11）,03_Systems r298、r590；本書 2.3-06、3.1,
 D-06,合併順序與其餘缺口,合併順序：#1 → #2 →（#5、#6）→ #7 → #8 →（#10、#9）→ #11；#4 於 #2 之後任意插入。#1、#2、#5 可即刻合併；#6 依 D-04、#7 依 D-02、#8 依 D-04／D-05、#10 依 D-01、#9 依 D-01／D-03／D-04、#11 依 D-05 先修正再合。,各 WP 其餘缺口（season_mask bit 值、name_zh／good_id 格式驗證、get_good 未知 id、容器 Dictionary schema、CapacityProvider 登錄 API、信號參數、Q-16 中轉錨定價、csv_import 的 _run() 路徑等）維持 C-05：不得自填預設值，於 PR 描述列缺口並停工該項，其餘照常。下一輪裁決前不得擴大介面。,全部,本書第 7 節,
 D-07,SYS-00 時間軸：子日 tick（為 SYS-13 航運預留，現在只定介面不實作）,時間軸最小刻度改為 tick，1 日 = PRM-SYS00-TICKS_PER_DAY（= 24）個 tick。經濟仍以「日」為唯一結算週期：PRODUCE、CONSUME、守恆檢查、季末 cutoff 全部只在日界執行，不得切到子日。子日只服務兩件事：(1) SYS-13 的航行推進與到港時刻；(2) 日內成交排序。參考大航海家3（內部 1 日 = 256 tick），但不採用其「各港錯開在一天中不同 tick 更新」的做法——本作維持每日集中結算，以保住 2.3-06 的「全部寫入完成才發信號」與守恆可驗證性。,"Phase 0 實作邊界：(a) Clock 內部計數改為 _tick: int（私有），day = floori(_tick ÷ TICKS_PER_DAY)，對外公開欄位與方法一字不變——只有 day、season_index、is_paused、set_paused()、advance_one_day()；advance_one_day() 的語意＝推進 TICKS_PER_DAY 個 tick，日界動作與 D-05 完全相同（開機 _tick = 0 → 第一次 tick 推進至 day = 1，執行 k = 0 的 PRODUCE）。(b) 不得新增任何子日推進的公開方法、不得寫 _process／Timer（1-A3 仍有效）。(c) TICKS_PER_DAY 必須由 Params 讀入並驗整數，Clock 不得寫死。(d) 預留但不實作：航段最小長度 = 1 tick（禁止 floor 到 0，否則同一瞬間可連跳多港）、抵達時刻作為日內排序鍵併入 (day, seq) 之前。此兩項待 SYS-13 開工時另行裁決，Phase 0 不得預先實作。",WP-01（#2）、WP-02（#5）、WP-08（#11）,03_Systems LCR-02、r307 附近參數表；本書 3.1、第 4 節,
+,,,,,,
+9 Round 2 收件審查（2026-11-18，依 Cursor round2-fix-report；AI 未讀取 PR 程式碼，F 欄維持「PR 待審」，由 Owner 審 diff 後更新）,,,,,,
+編號,發現,依據,影響 PR,建議處置,狀態,
+R2-01,★ 介面已改、規格未回寫：D-02／03／04／05／07 已落到代碼，但 03_Systems r267、r269、r298–r300、r580–r588、r590、LCR-02 與附錄 A（TICKS_PER_DAY、ROUND_EPS）尚未回寫。本書第 3 節 C 欄即時引用 03_Systems 原文，合併後代碼將與 C 欄不一致。,C-14、C-02；本書 F287–F293,#2、#5、#6、#7、#8、#9、#10、#11（僅 #1、#4 不受影響）,先完成 03_Systems 回寫（原待辦 A），再依 D-06 合併；或 Owner 明示接受「先合併、後回寫」,待 Owner 裁決,
+R2-02,★ #9 仍含 AmountMath（第二份取整函數），要到 #11 才刪除。依 D-06，#9 在 #11 之前合併，main 會有一段期間同時存在兩份 quantize。,N-04；D-01「只准經單一函數」,#9、#11,#10 合併後，請 Cursor 把 #9 rebase 到 #10，改用 AmountQuantize 並刪除 AmountMath，CI 綠後再合 #9,待 Cursor 修正,
+R2-03,#5 同一輪內測試數由 24/24 降為 22/22（head 10dbd95），報告未說明刪掉哪 2 項。E275 要求另加一個「advance_one_day() 恰推進 TPD 個 tick」的測試。,C-13、C270 回報義務；E275,#5,請 Cursor 列出 22 個測試名稱並說明移除原因，對照 E275 逐項確認,待 Cursor 說明,
+R2-04,#4 rebase 後未回報測試通過數／總數（報告寫「既有」）。,C270,#4,請補回報通過數／總數,待 Cursor 補件,
+R2-05,D-04 對 post() 回傳值的文字有歧義（D290：「成功回 0、失敗回 0 以外時改以錯誤清單判定」），且 03_Systems r589 寫 post(...) -> Error。報告未寫 #9 的 post() 最終簽名。,D-04（D290）；03_Systems r589,#9、#11,先回寫 03_Systems，再依 D-06 合併；#1、#4 不受影響可先合（Owner 2026-11-18）,★ 已裁決；回寫已完成（2026-11-18），待 Owner 審 diff,
+R2-06,C-05 缺口仍未裁決（Cursor 未自填，符合守則）：season_mask bit 值、name_zh／good_id 格式驗證、get_* 遇未知 id、容器 Dictionary schema、CapacityProvider 登錄 API、信號參數、Q-16 中轉錨定價、指示燈 band enum、csv_import 的 _run() 路徑、SimLoop H 段公開 API 名稱。,C-05；D-06（D292）,全部,不阻擋合併；但要做相關功能前須開下一輪裁決（D-08 起）,待 Owner 決定是否開輪,
+R2-07,報告只列 #5 的 head SHA。,審查追溯,全部,合併時於 G 欄記錄各 PR 合併 SHA,建議,
+,,,,,,
+,,,,,★ 已裁決 2026-11-18：採「先回成功／失敗，原因另問 last_error()」；D290 已改寫、03_Systems r589 已加註；待 Cursor 確認 #9,
+,,,,,★ 已裁決 2026-11-18：回寫與合併完成後再開 D-08，逐條問 Owner,
