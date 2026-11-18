@@ -3,6 +3,8 @@ extends GutTest
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
+## R2-13 / 2.1-04 ⑤: curve from fixtures (PRM-SYS04-CURVE_W1–W5 / M1–M5). Formal path after Owner csv_import.
+const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const GOODS_FIXTURE_ROOT := "user://sim_loop_goods/"
 const PORTS_FIXTURE_ROOT := "user://sim_loop_ports/"
 
@@ -108,7 +110,7 @@ func test_boot_requires_consumption_provider_2_3_03() -> void:
 	# 2.3-03: 未注入 provider → boot() 回錯誤且不啟動時鐘
 	var fixtures := _prepare_fixtures()
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], MarketPricer.CURVE_PATH
+		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
 	)
 	assert_gt(errors.size(), 0)
 	assert_true(_has_code(errors, SimLoop.ERR_PROVIDER_MISSING))
@@ -127,7 +129,7 @@ func test_boot_collects_all_module_errors_2_2_02() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_goods))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_ports))
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, empty_goods, empty_ports, MarketPricer.CURVE_PATH
+		PARAMS_FIXTURE, empty_goods, empty_ports, CURVE_FIXTURE
 	)
 	assert_gt(errors.size(), 1, "must collect errors from multiple modules")
 	assert_false(SimLoop.is_booted())
@@ -296,7 +298,7 @@ func _boot_ready_provider() -> TestConsumptionProvider:
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], MarketPricer.CURVE_PATH
+		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
 	)
 	assert_eq(errors.size(), 0, "boot must succeed: %s" % str(errors))
 	assert_true(SimLoop.is_booted())
