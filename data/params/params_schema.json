@@ -1,6 +1,7 @@
 {
   "PRM-SYS00-DAYS_PER_SEASON": { "type": "int", "min": 90, "max": 90 },
   "PRM-SYS00-SEASONS_PER_YEAR": { "type": "int", "min": 4, "max": 4 },
+  "PRM-SYS00-TICKS_PER_DAY": { "type": "int", "min": 24, "max": 24 },
   "PRM-SYS05-MIN_CASH_UNIT": { "type": "int", "min": 1, "max": 1 },
   "PRM-SYS01-GOOD_COUNT_MIN": { "type": "int", "min": 20, "max": 30 },
   "PRM-SYS01-GOOD_COUNT_MAX": { "type": "int", "min": 24, "max": 40 },
@@ -18,5 +19,6 @@
   "PRM-SYS04-IND_LO1": { "type": "float", "min": 0.05, "max": 1.0 },
   "PRM-SYS04-IND_LO2": { "type": "float", "min": 0.05, "max": 1.0 },
   "PRM-SYS05-START_CASH": { "type": "int", "min": 0 },
-  "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": { "type": "int", "min": 1 }
+  "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": { "type": "int", "min": 1 },
+  "PRM-SYS04-ROUND_EPS": { "type": "float", "min": 0, "max": 0.000001 }
 }

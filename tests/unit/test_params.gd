@@ -9,8 +9,10 @@ const SCHEMA := "res://data/params/params_schema.json"
 const KEY_START_CASH := "PRM-SYS05-START_CASH"
 const KEY_ARREARS := "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT"
 const KEY_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
+const KEY_TICKS_PER_DAY := "PRM-SYS00-TICKS_PER_DAY"
 const KEY_CONSERVATION := "PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK"
 const KEY_HALF_SPREAD := "PRM-SYS04-HALF_SPREAD"
+const KEY_ROUND_EPS := "PRM-SYS04-ROUND_EPS"
 const KEY_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
 
 
@@ -46,13 +48,16 @@ func test_all_section4_params_json_keys_readable() -> void:
 
 func test_fixture_values_match_techspec_section4() -> void:
 	# Expected values: TechSpec §4 defaults copied into fixture (1-A8 uses 0 / 1).
+	# ROUND_EPS / TICKS_PER_DAY: TechSpec §4 + Owner D-01 / D-07 (2026-11-18).
 	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
 	Params.load_and_validate(FIXTURE_ALL)
 	assert_eq(Params.get_int(KEY_DAYS_PER_SEASON), floori(float(fixture[KEY_DAYS_PER_SEASON])))
+	assert_eq(Params.get_int(KEY_TICKS_PER_DAY), floori(float(fixture[KEY_TICKS_PER_DAY])))
 	assert_eq(Params.get_int(KEY_START_CASH), floori(float(fixture[KEY_START_CASH])))
 	assert_eq(Params.get_int(KEY_ARREARS), floori(float(fixture[KEY_ARREARS])))
 	assert_true(is_equal_approx(Params.get_float(KEY_HALF_SPREAD), float(fixture[KEY_HALF_SPREAD])))
 	assert_true(is_equal_approx(Params.get_float(KEY_RATIO_MIN), float(fixture[KEY_RATIO_MIN])))
+	assert_true(is_equal_approx(Params.get_float(KEY_ROUND_EPS), float(fixture[KEY_ROUND_EPS])))
 	# Conservation: OS.is_debug_build() selects debug/release (2.3-04).
 	var expected_cons: bool = bool(fixture[KEY_CONSERVATION]["debug"]) if OS.is_debug_build() else bool(fixture[KEY_CONSERVATION]["release"])
 	assert_eq(Params.get_bool(KEY_CONSERVATION), expected_cons)
@@ -76,6 +81,54 @@ func test_missing_arrears_rejects() -> void:
 	assert_push_error_count(errors.size())
 	assert_false(Params.is_loaded())
 	assert_true(_has_field_error(errors, KEY_ARREARS, "MISSING_KEY"))
+
+
+func test_missing_ticks_per_day_rejects() -> void:
+	# TechSpec §4 / D-07: PRM-SYS00-TICKS_PER_DAY required in params.json.
+	var path := _write_user_fixture_without(KEY_TICKS_PER_DAY)
+	var errors: Array = Params.load_and_validate(path)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(Params.is_loaded())
+	assert_true(_has_field_error(errors, KEY_TICKS_PER_DAY, "MISSING_KEY"))
+
+
+func test_missing_round_eps_rejects() -> void:
+	# TechSpec §4 / D-01: PRM-SYS04-ROUND_EPS required in params.json.
+	var path := _write_user_fixture_without(KEY_ROUND_EPS)
+	var errors: Array = Params.load_and_validate(path)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(Params.is_loaded())
+	assert_true(_has_field_error(errors, KEY_ROUND_EPS, "MISSING_KEY"))
+
+
+func test_ticks_per_day_out_of_range_rejects() -> void:
+	# Range from schema (TechSpec §4: 24 ~ 24); adjust by 1 (allowed literal).
+	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
+	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
+	var min_v: float = float(schema[KEY_TICKS_PER_DAY]["min"])
+	fixture[KEY_TICKS_PER_DAY] = min_v - 1.0
+	var path := _write_user_dict(fixture, "params_tpd_out_of_range.json")
+	var errors: Array = Params.load_and_validate(path)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(Params.is_loaded())
+	assert_true(_has_field_error(errors, KEY_TICKS_PER_DAY, "RANGE"))
+
+
+func test_round_eps_out_of_range_rejects() -> void:
+	# Range from schema (TechSpec §4: 0 ~ 0.000001); step above max via schema max.
+	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
+	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
+	var max_v: float = float(schema[KEY_ROUND_EPS]["max"])
+	fixture[KEY_ROUND_EPS] = max_v + max_v
+	var path := _write_user_dict(fixture, "params_round_eps_out_of_range.json")
+	var errors: Array = Params.load_and_validate(path)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	assert_false(Params.is_loaded())
+	assert_true(_has_field_error(errors, KEY_ROUND_EPS, "RANGE"))
 
 
 func test_official_params_json_rejects_without_pending_keys() -> void:
