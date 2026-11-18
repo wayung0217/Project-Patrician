@@ -1,29 +1,39 @@
 extends Node
-## Autoload: Clock — SYS-00 (TechSpec §3.1 / 1-A3).
-## Phase 0: advance_one_day only; no _process / timer speed (PRM not registered).
+## Autoload: Clock — SYS-00 (TechSpec §3.1 / 1-A3; Owner D-05 / D-07).
+## Phase 0: advance_one_day only; no _process / Timer (1-A3).
+## D-05: advance_one_day mutates state only — SimLoop step 6 emits signals.
+## D-07: internal _tick; day = floori(_tick / TPD); TPD from Params.
 
 signal day_ticked(day: int)
 signal season_cutoff(season_index: int)
 
 const PRM_DAYS_PER_SEASON := &"PRM-SYS00-DAYS_PER_SEASON"
+const PRM_TICKS_PER_DAY := &"PRM-SYS00-TICKS_PER_DAY"
 
-var _day: int = 1
+var _tick: int = 0
 var _is_paused: bool = false
 var _days_per_season: int = 0
+var _ticks_per_day: int = 0
 var _loaded: bool = false
 
 
 var day: int:
 	get:
-		return _day
+		# D-07: day = floori(_tick ÷ TPD). Boot _tick=0 → day=0.
+		if not _loaded or _ticks_per_day < 1:
+			return 0
+		return floori(float(_tick) / float(_ticks_per_day))
 
 
 var season_index: int:
 	get:
-		# TechSpec §3.1: season_index = floori((day−1)/D)；PRM-SYS00-DAYS_PER_SEASON
+		# §3.1 / D-05(c): season_index = floori((day−1)/D)；首季 0（不得為 −1）。
 		if not _loaded:
 			return 0
-		return floori(float(_day - 1) / float(_days_per_season))
+		var d: int = day
+		if d < 1:
+			return 0
+		return floori(float(d - 1) / float(_days_per_season))
 
 
 var is_paused: bool:
@@ -33,9 +43,10 @@ var is_paused: bool:
 
 func _ready() -> void:
 	# 2.2-01: field init only; do not read Params or emit.
-	_day = 1
+	_tick = 0
 	_is_paused = false
 	_days_per_season = 0
+	_ticks_per_day = 0
 	_loaded = false
 
 
@@ -43,7 +54,8 @@ func load_and_validate() -> Array:
 	var errors: Array = []
 	_loaded = false
 	_days_per_season = 0
-	_day = 1
+	_ticks_per_day = 0
+	_tick = 0
 	_is_paused = false
 	if not Params.is_loaded():
 		errors.append({
@@ -63,6 +75,15 @@ func load_and_validate() -> Array:
 			"value": null,
 			"message": "PRM-SYS00-DAYS_PER_SEASON required",
 		})
+	if not Params.has_prm(PRM_TICKS_PER_DAY):
+		errors.append({
+			"code": "MISSING_PRM",
+			"file": "res://autoload/clock.gd",
+			"field": String(PRM_TICKS_PER_DAY),
+			"value": null,
+			"message": "PRM-SYS00-TICKS_PER_DAY required",
+		})
+	if not errors.is_empty():
 		_emit_errors(errors)
 		return errors
 	# PRM-SYS00-DAYS_PER_SEASON
@@ -75,7 +96,19 @@ func load_and_validate() -> Array:
 			"value": _days_per_season,
 			"message": "DAYS_PER_SEASON must be >= 1",
 		})
+	# D-07: TICKS_PER_DAY from Params as int; Clock must not hardcode the value.
+	_ticks_per_day = Params.get_int(PRM_TICKS_PER_DAY)
+	if _ticks_per_day != floori(float(_ticks_per_day)) or _ticks_per_day < 1:
+		errors.append({
+			"code": "INVALID_TPD",
+			"file": "res://autoload/clock.gd",
+			"field": String(PRM_TICKS_PER_DAY),
+			"value": _ticks_per_day,
+			"message": "TICKS_PER_DAY must be an integer >= 1",
+		})
+	if not errors.is_empty():
 		_days_per_season = 0
+		_ticks_per_day = 0
 		_emit_errors(errors)
 		return errors
 	_loaded = true
@@ -90,13 +123,6 @@ func set_paused(paused: bool) -> void:
 	_is_paused = paused
 
 
-func day_in_season() -> int:
-	# 2.3-01: day_in_season = ((day−1) mod D) + 1
-	if not _loaded:
-		return 0
-	return ((_day - 1) % _days_per_season) + 1
-
-
 func advance_one_day() -> void:
 	# GP-01 / §3.1: paused → push_error, do not advance.
 	if _is_paused:
@@ -105,11 +131,8 @@ func advance_one_day() -> void:
 	if not _loaded:
 		push_error("Clock.advance_one_day called before load_and_validate")
 		return
-	_day += 1
-	day_ticked.emit(_day)
-	# 2.3-05: season cutoff on day_in_season == D
-	if day_in_season() == _days_per_season:
-		season_cutoff.emit(season_index)
+	# D-07: advance_one_day = advance TPD ticks. D-05: mutate only; no emit.
+	_tick += _ticks_per_day
 
 
 func _emit_errors(errors: Array) -> void:

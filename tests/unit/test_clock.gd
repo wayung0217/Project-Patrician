@@ -1,9 +1,10 @@
 extends GutTest
-## WP-02 SYS-00 Clock — TechSpec §3.1 / 1-A3 / GP-01.
+## WP-02 SYS-00 Clock — TechSpec §3.1 / 1-A3 / GP-01; Owner D-05 / D-07.
 
 
 const FIXTURE_ALL := "res://tests/fixtures/params_all_keys.json"
 const PRM_DAYS := &"PRM-SYS00-DAYS_PER_SEASON"
+const PRM_TPD := &"PRM-SYS00-TICKS_PER_DAY"
 
 
 func before_each() -> void:
@@ -14,24 +15,26 @@ func before_each() -> void:
 	Clock.set_paused(false)
 
 
-func test_initial_day_is_one() -> void:
-	# 2.3-01 / §3.1: day 由 1 起算
+func test_boot_day_zero_first_advance_to_one() -> void:
+	# D-05(b) / D-07: boot _tick=0 → day=0; first advance → day=1 (k=0 PRODUCE).
+	assert_eq(Clock._tick, 0)
+	assert_eq(Clock.day, 0)
+	assert_eq(Clock.season_index, 0)
+	assert_false(Clock.is_paused)
+	Clock.advance_one_day()
 	assert_eq(Clock.day, 1)
 	assert_eq(Clock.season_index, 0)
-	assert_eq(Clock.day_in_season(), 1)
-	assert_false(Clock.is_paused)
 
 
 func test_season_index_formula() -> void:
-	# §3.1: season_index = floori((day−1)/D)；D = PRM-SYS00-DAYS_PER_SEASON
+	# §3.1 / D-05(c): season_index = floori((day−1)/D)；首季 0，不得為 −1
 	var d: int = Params.get_int(PRM_DAYS)
-	var ticks: Array = []
-	Clock.day_ticked.connect(func(day: int): ticks.append(day))
 	# Advance to day == D → season_index still 0; then to D+1 → season_index 1
-	for _i in range(d - 1):
+	for _i in range(d):
 		Clock.advance_one_day()
 	assert_eq(Clock.day, d)
 	assert_eq(Clock.season_index, floori(float(d - 1) / float(d)))
+	assert_eq(Clock.season_index, 0)
 	Clock.advance_one_day()
 	assert_eq(Clock.day, d + 1)
 	assert_eq(Clock.season_index, floori(float(d) / float(d)))
@@ -46,19 +49,23 @@ func test_set_paused_updates_is_paused() -> void:
 	assert_false(Clock.is_paused)
 
 
-func test_advance_one_day_emits_day_ticked() -> void:
-	# §3.1 signal day_ticked(day)
-	var seen: Array = []
-	Clock.day_ticked.connect(func(day: int): seen.append(day))
+func test_advance_one_day_does_not_emit_signals() -> void:
+	# D-05(a): Clock mutates only; day_ticked / season_cutoff by SimLoop step 6.
+	var ticked: Array = []
+	var cutoffs: Array = []
+	Clock.day_ticked.connect(func(day: int): ticked.append(day))
+	Clock.season_cutoff.connect(func(s: int): cutoffs.append(s))
 	Clock.advance_one_day()
-	assert_eq(Clock.day, 2)
-	assert_eq(seen, [2])
+	assert_eq(Clock.day, 1)
+	assert_eq(ticked.size(), 0)
+	assert_eq(cutoffs.size(), 0)
 
 
 func test_paused_advance_push_error_and_no_progress() -> void:
-	# §3.1 / GP-01: paused → push_error, day unchanged, no signals
+	# §3.1 / GP-01: paused → push_error, day/_tick unchanged, no signals
 	Clock.set_paused(true)
 	var day_before: int = Clock.day
+	var tick_before: int = Clock._tick
 	var ticked: Array = []
 	var cutoffs: Array = []
 	Clock.day_ticked.connect(func(day: int): ticked.append(day))
@@ -66,39 +73,34 @@ func test_paused_advance_push_error_and_no_progress() -> void:
 	Clock.advance_one_day()
 	assert_push_error_count(1)
 	assert_eq(Clock.day, day_before)
+	assert_eq(Clock._tick, tick_before)
 	assert_eq(ticked.size(), 0)
 	assert_eq(cutoffs.size(), 0)
 
 
-func test_season_cutoff_emitted_on_season_end() -> void:
-	# §3.1 / 2.3-05: season_cutoff(season_index) when day_in_season == D
+func test_advance_one_day_advances_exactly_tpd_ticks() -> void:
+	# D-07 / WP-02: advance_one_day() advances exactly TPD ticks (from Params).
+	var tpd: int = Params.get_int(PRM_TPD)
+	assert_gt(tpd, 0)
+	assert_eq(Clock._tick, 0)
+	Clock.advance_one_day()
+	assert_eq(Clock._tick, tpd)
+	assert_eq(Clock.day, 1)
+	Clock.advance_one_day()
+	assert_eq(Clock._tick, tpd + tpd)
+	assert_eq(Clock.day, 2)
+
+
+func test_no_season_cutoff_from_clock_at_season_end() -> void:
+	# D-05(a): even at day_in_season == D, Clock must not emit season_cutoff.
 	var d: int = Params.get_int(PRM_DAYS)
 	var cutoffs: Array = []
 	Clock.season_cutoff.connect(func(s: int): cutoffs.append(s))
-	for _i in range(d - 1):
-		Clock.advance_one_day()
-	assert_eq(Clock.day, d)
-	assert_eq(Clock.day_in_season(), d)
-	assert_eq(cutoffs, [0])
-	# Next season end
-	cutoffs.clear()
 	for _i in range(d):
 		Clock.advance_one_day()
-	assert_eq(Clock.day, d + d)
-	assert_eq(Clock.day_in_season(), d)
-	assert_eq(cutoffs, [1])
-
-
-func test_no_season_cutoff_mid_season() -> void:
-	var d: int = Params.get_int(PRM_DAYS)
-	var cutoffs: Array = []
-	Clock.season_cutoff.connect(func(s: int): cutoffs.append(s))
-	# Stop one day before season end (avoid bare 2 per C-03).
-	if d > 1:
-		for _i in range(d - 1 - 1):
-			Clock.advance_one_day()
-		assert_eq(Clock.day, d - 1)
-		assert_eq(cutoffs.size(), 0)
+	assert_eq(Clock.day, d)
+	assert_eq(Clock.season_index, 0)
+	assert_eq(cutoffs.size(), 0)
 
 
 func test_load_requires_params() -> void:
@@ -110,3 +112,11 @@ func test_load_requires_params() -> void:
 	assert_gt(cerr.size(), 0)
 	assert_push_error_count(perr.size() + cerr.size())
 	assert_false(Clock.is_loaded())
+
+
+func test_load_requires_ticks_per_day() -> void:
+	# D-07: TPD must come from Params; missing key → Clock not loaded.
+	assert_true(Params.has_prm(PRM_TPD))
+	# Reload Clock after Params ok — already loaded in before_each.
+	assert_true(Clock.is_loaded())
+	assert_eq(Clock._ticks_per_day, Params.get_int(PRM_TPD))
