@@ -214,6 +214,54 @@ func satisfaction(port_id: StringName, clazz: StringName) -> int:
 	return 0
 
 
+const OPENING_POP_DIR := "res://data/opening_population/"
+
+
+func apply_opening_init(opening_pop_dir: String = OPENING_POP_DIR) -> Array:
+	## FRM-SYS07-14: load opening population tres; beggar=0, streak/acc cleared.
+	assert(_loaded, "PopulationModel.apply_opening_init before load")
+	var errors: Array = []
+	var rows: Array = _load_opening_population(opening_pop_dir)
+	if rows.is_empty():
+		return errors
+	for row_v in rows:
+		var row: OpeningPopulation = row_v
+		if row.poor < 0 or row.citizen < 0 or row.rich < 0:
+			errors.append(_err(ERR_SYS07_01, "opening_pop", row.port_id, "negative opening population"))
+			continue
+		set_port_state(row.port_id, row.poor, row.citizen, row.rich, 0)
+		var p: PortPop = _ensure_port(row.port_id)
+		p.streak_up1 = 0
+		p.streak_up2 = 0
+		p.acc = {}
+		p.pending_release_workers = 0
+	if not errors.is_empty():
+		_emit(errors)
+	return errors
+
+
+func _load_opening_population(dir: String) -> Array:
+	var out: Array = []
+	var abs_dir: String = ProjectSettings.globalize_path(dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		return out
+	var d := DirAccess.open(dir)
+	if d == null:
+		return out
+	d.list_dir_begin()
+	while true:
+		var fname: String = d.get_next()
+		if fname == "":
+			break
+		if d.current_is_dir() or not fname.ends_with(".tres"):
+			continue
+		var res: Resource = load(dir.path_join(fname))
+		if res is OpeningPopulation:
+			out.append(res)
+	d.list_dir_end()
+	return out
+
+
 func residence_occupants(res_id: StringName) -> Dictionary:
 	## {poor, citizen, rich} for FRM-13 rent; empty dict if unknown.
 	assert(_loaded, "PopulationModel.residence_occupants before load")

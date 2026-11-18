@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cxugkslu0pd0c"
+
+[deps]
+
+files=["res://tests/fixtures/wp24_opening/opening_workshops.good.translation", "res://tests/fixtures/wp24_opening/opening_workshops.count.translation"]
+
+source_file="res://tests/fixtures/wp24_opening/opening_workshops.csv"
+dest_files=["res://tests/fixtures/wp24_opening/opening_workshops.good.translation", "res://tests/fixtures/wp24_opening/opening_workshops.count.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
