@@ -1,5 +1,6 @@
 extends GutTest
 ## WP-03 GoodCatalog tests. Fixture values from TechSpec §4 / TST-SYS01-01..04 / 3.2 G.
+## D-04: failures are ErrorInfo Dictionaries {code, sys, detail}; no ERR→int.
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
@@ -10,11 +11,12 @@ const PRM_GOOD_COUNT_MAX := "PRM-SYS01-GOOD_COUNT_MAX"
 const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
 
-const ERR_SYS01_01 := "ERR-SYS01-01"
-const ERR_SYS01_02 := "ERR-SYS01-02"
-const ERR_SYS01_03 := "ERR-SYS01-03"
-const ERR_SYS01_04 := "ERR-SYS01-04"
-const ERR_SYS01_05 := "ERR-SYS01-05"
+const SYS_ID := &"SYS-01"
+const ERR_SYS01_01 := &"ERR-SYS01-01"
+const ERR_SYS01_02 := &"ERR-SYS01-02"
+const ERR_SYS01_03 := &"ERR-SYS01-03"
+const ERR_SYS01_04 := &"ERR-SYS01-04"
+const ERR_SYS01_05 := &"ERR-SYS01-05"
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -241,10 +243,43 @@ func _remove_file(path: String) -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 
 
-func _has_code(errors: Array, code: String) -> bool:
+func _has_code(errors: Array, code: StringName) -> bool:
 	for e in errors:
-		if typeof(e) != TYPE_DICTIONARY:
+		if not _is_error_info(e):
 			continue
-		if String(e.get("code", "")) == code:
+		if StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")) == code:
+			assert_eq(StringName(e.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID, "ErrorInfo.sys must be SYS-01")
+			var detail: Variant = e.get(ErrorInfoUtil.KEY_DETAIL, null)
+			assert_eq(typeof(detail), TYPE_DICTIONARY, "ErrorInfo.detail must be Dictionary")
 			return true
 	return false
+
+
+func _is_error_info(e: Variant) -> bool:
+	# D-04 carrier: {code: StringName, sys: StringName, detail: Dictionary}.
+	if typeof(e) != TYPE_DICTIONARY:
+		return false
+	var d: Dictionary = e
+	if not d.has(ErrorInfoUtil.KEY_CODE):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_SYS):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_DETAIL):
+		return false
+	# Reject legacy flat shape and any int-coded errors (D-04 withdraw −1..−5 / ERR→int).
+	if typeof(d[ErrorInfoUtil.KEY_CODE]) == TYPE_INT:
+		return false
+	return typeof(d[ErrorInfoUtil.KEY_DETAIL]) == TYPE_DICTIONARY
+
+
+func test_D04_error_info_shape_not_int_codes() -> void:
+	# D-04: ErrorInfo Dictionary only; no ERR→int / −1..−5.
+	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var dir := _build_valid_catalog(count_min - 1, FIXTURE_ROOT + "d04_shape/")
+	var errors: Array = GoodCatalog.load_and_validate(dir)
+	assert_gt(errors.size(), 0)
+	assert_push_error_count(errors.size())
+	for e in errors:
+		assert_true(_is_error_info(e), "every failure must be D-04 ErrorInfo Dictionary")
+		assert_false(typeof(e) == TYPE_INT, "must not return bare int error codes")
+	assert_true(_has_code(errors, ERR_SYS01_04), "expected ERR-SYS01-04 as StringName code")

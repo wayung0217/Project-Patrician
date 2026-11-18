@@ -1,11 +1,14 @@
 extends Node
 ## Autoload: GoodCatalog — loads res://data/goods/*.tres once, then read-only (TechSpec 3.2 / WP-03).
 ## _ready() only clears fields; load_and_validate() performs I/O and FRM checks (2.2-01).
+## Errors are D-04 ErrorInfo Dictionaries (shared with C-06); no ERR→int.
 
 signal catalog_loaded
 
 const GOODS_DIR := "res://data/goods/"
 const TRES_SUFFIX := ".tres"
+
+const SYS_ID := &"SYS-01"
 
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_GOOD_COUNT_MAX := "PRM-SYS01-GOOD_COUNT_MAX"
@@ -18,11 +21,17 @@ const STAPLE_NAME_SALT := "鹽"
 const STAPLE_NAME_DRIED_FISH := "魚乾"
 const STAPLE_NAME_TIMBER := "木材"
 
-const ERR_SYS01_01 := "ERR-SYS01-01"
-const ERR_SYS01_02 := "ERR-SYS01-02"
-const ERR_SYS01_03 := "ERR-SYS01-03"
-const ERR_SYS01_04 := "ERR-SYS01-04"
-const ERR_SYS01_05 := "ERR-SYS01-05"
+const ERR_SYS01_01 := &"ERR-SYS01-01"
+const ERR_SYS01_02 := &"ERR-SYS01-02"
+const ERR_SYS01_03 := &"ERR-SYS01-03"
+const ERR_SYS01_04 := &"ERR-SYS01-04"
+const ERR_SYS01_05 := &"ERR-SYS01-05"
+
+const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
+const CODE_LOAD_FAIL := &"LOAD_FAIL"
+const CODE_LOAD_TYPE := &"LOAD_TYPE"
+const CODE_NOT_LOADED := &"NOT_LOADED"
+const CODE_DIR_OPEN := &"DIR_OPEN"
 
 const FIELD_GOOD_ID := "good_id"
 const FIELD_TIER := "tier"
@@ -43,12 +52,12 @@ func _ready() -> void:
 
 
 func load_and_validate(goods_dir: String = GOODS_DIR) -> Array:
-	# C-06: collect every error; do not stop at the first.
+	# C-06: collect every ErrorInfo; do not stop at the first.
 	var errors: Array = []
 	_clear_state()
 
 	if not Params.is_loaded():
-		errors.append(_err("PARAMS_NOT_LOADED", goods_dir, FIELD_PARAMS, null, "Params must load_and_validate before GoodCatalog"))
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, goods_dir, FIELD_PARAMS, null, "Params must load_and_validate before GoodCatalog"))
 		_emit_errors(errors)
 		return errors
 
@@ -66,10 +75,10 @@ func load_and_validate(goods_dir: String = GOODS_DIR) -> Array:
 		var path: String = String(path_variant)
 		var res: Resource = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if res == null:
-			errors.append(_err("LOAD_FAIL", path, "", null, "ResourceLoader.load failed"))
+			errors.append(_err(CODE_LOAD_FAIL, path, "", null, "ResourceLoader.load failed"))
 			continue
 		if not (res is GoodDef):
-			errors.append(_err("LOAD_TYPE", path, "", res.get_class(), "expected GoodDef Resource"))
+			errors.append(_err(CODE_LOAD_TYPE, path, "", res.get_class(), "expected GoodDef Resource"))
 			continue
 		loaded.append({"path": path, "def": res as GoodDef})
 
@@ -99,7 +108,7 @@ func load_and_validate(goods_dir: String = GOODS_DIR) -> Array:
 func validate() -> Array:
 	## Re-run FRM-SYS01-01 on the currently held catalog (H observability).
 	if not _loaded:
-		return [_err("NOT_LOADED", GOODS_DIR, "", null, "GoodCatalog.validate called before successful load")]
+		return [_err(CODE_NOT_LOADED, GOODS_DIR, "", null, "GoodCatalog.validate called before successful load")]
 	var loaded: Array = []
 	for id_variant in all_ids():
 		var id: String = String(id_variant)
@@ -109,6 +118,7 @@ func validate() -> Array:
 
 
 func get_good(id: String) -> GoodDef:
+	# 缺口 C-05: unknown-id failure path not specified; keep assert (do not invent).
 	assert(_loaded, "GoodCatalog.get_good before successful load")
 	assert(_by_id.has(id), "GoodCatalog.get_good unknown id: %s" % id)
 	return _by_id[id] as GoodDef
@@ -199,7 +209,7 @@ func _list_tres_paths(dir_path: String, errors: Array) -> Array:
 	var paths: Array = []
 	var dir := DirAccess.open(dir_path)
 	if dir == null:
-		errors.append(_err("DIR_OPEN", dir_path, "", DirAccess.get_open_error(), "cannot open goods directory"))
+		errors.append(_err(CODE_DIR_OPEN, dir_path, "", DirAccess.get_open_error(), "cannot open goods directory"))
 		return paths
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
@@ -218,15 +228,9 @@ func _clear_state() -> void:
 	_loaded = false
 
 
-func _err(code: String, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
-	# C-06 shape: 錯誤碼、檔案、欄位、值 (Params-compatible Dictionary; sheet Array[Error] ≠ Godot Error enum).
-	return {
-		"code": code,
-		"file": file_path,
-		"field": field,
-		"value": value,
-		"message": message,
-	}
+func _err(code: StringName, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
+	# D-04 ErrorInfo = {code, sys, detail}; C-06 file/field/value live in detail.
+	return ErrorInfoUtil.make_validation(code, SYS_ID, file_path, field, value, message)
 
 
 func _emit_errors(errors: Array) -> void:
