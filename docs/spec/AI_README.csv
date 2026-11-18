@@ -6,7 +6,7 @@
 Workbook 名稱,遊戲開發建議書（Game Design & Implementation Proposal）,,,,
 擁有者,Rex Tsoi,,,,
 最後更新日期,2026-11-18,,,,
-版本,v6.78,,,,
+版本,v6.79,,,,
 ,,,,,
 1. AI 的責任（Responsibilities）,,,,,
 編號,責任項目,說明,,,
@@ -261,3 +261,4 @@ N11,docs/spec 一次 commit,Pending,★ 現在可 commit：Round 3 已全部合�
 2026-11-18,v6.76,收件 Cursor Round 4 合併＋Round 5 報告：R4-02（#20 → 5665ce0／153、#19 → e715047／164，與預期相符）；R5-01（WP-25 #21 +5、WP-18 #22 +13，CI 綠、未合併）。05_TechSpec 新增 D-13a（授權 #21 → #22 依序合併，預期 169 → 182）、D-13b（#22 三項缺口：D-11d／e 已追認、opening_public 只匯入、無建築容量 0，皆照現狀）；WP-16、17 改已合併，WP-25、18 改 PR 待審（已授權），WP-19 派工。,05_TechSpec、AI_README,,
 2026-11-18,v6.77,船隊與航程派工前裁決（Owner 全採建議）：D-14a 拆四包——WP-28 時鐘 tick、WP-29 航道圖匯入與尋路（可與 WP-19 平行，合併序 WP-19 → 29 → 28）、WP-30 船與航行（28、29 合併後）、WP-31 造船與賣船（WP-19、30 合併後，派前須裁決 BC-2 共用入口）；D-14b SailorPoolProvider 注入介面；D-14c 定名 SeaLanes、ShipRegistry 與 Autoload 順序；D-14d 時鐘介面變更（advance_one_tick，撤銷 D-07 一句，C-14）；D-14e 航道 CSV 格式。05_TechSpec 第 7 節新增 WP-28 至 31（共 32 包）、第 13 節派工單 Round 7（13-01 至 13-11）、D35／D60／A2 同步。03_Systems §10 定名、SailorPoolProvider、can_trade() 回寫。04_Content 8.3 表頭「說明」改 note、8.4 lane_type 改代碼 SPUR／TRUNK／NEIGHBOR。,05_TechSpec、03_Systems、04_Content、AI_README,,
 2026-11-18,v6.78,收件 Cursor Round 5 合併＋Round 6 報告：R5-02（#21 → f41fc60／169、#22 → f71f676／182，與預期相符；WP-25、18 完成）；R6-01（WP-19 #23 +12 → 194，CI 綠）。審查發現 12-08 ④（倉滿仍可市場買料）無測試、① 僅 sample 測試待確認覆蓋。D-15a：補測後授權合併 #23，之後同時開 WP-29、WP-28、WP-20，合併序 29 → 28 → 20；D-15b：KONTOR_UPGRADE 缺鍵須在 boot 拒絕啟動（依 D-12b），拆商館與 ERR-06 照現狀。,05_TechSpec、AI_README,,
+2026-11-18,v6.79,收件 Cursor Round 7：R7-01（WP-29 #25 +15、WP-28 #24 +5，CI 綠、未合併，內容與第 13 節派工單相符；#25 三項缺口皆合理，追認未知 lane_id → ERR-SYS14-01、未知節點 → ERR-SYS14-03）。發現兩 PR 的 base 為 #23 合併前的 main（83dd719／182），與 D-15a 不符 → D-16a：不退件，合併序維持 #23 → #25 → #24，各自合併前 rebase、測試數重算；★ #23 的補測尚未回報，未完成前三者皆不得合併。,05_TechSpec、AI_README,,
