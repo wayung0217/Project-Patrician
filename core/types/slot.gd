@@ -12,3 +12,5 @@ var ring: int = 0
 var land_owner: StringName = &""
 var building_id: StringName = &""
 var zone_open: bool = false
+## FRM-04／FRM-23: day demolish cleared the slot (−1 = occupied／never vacant).
+var vacancy_start_day: int = -1

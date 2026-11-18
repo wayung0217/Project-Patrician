@@ -174,6 +174,9 @@ func tick_day() -> Array:
 	# 2.3-01: day_in_season = ((day−1) mod D) + 1（公式在 SimLoop；Clock 公開面無此 getter）
 	var day_in_season: int = ((Clock.day - 1) % days_d) + 1
 
+	# D-12h／8.6 F ①: BuildingEconomy.daily_step before PRODUCE (WP-19; only allowed SimLoop hook).
+	day_errors.append_array(BuildingEconomy.daily_step(Clock.day))
+
 	# 2.3-02 步驟 2: GoodsLedger 當日 PRODUCE；k = day_in_season − 1（FRM-SYS03-03）
 	# D-05(b): 首日 day=1 → k=0，不得跳過。
 	var day_index_k: int = day_in_season - 1
@@ -196,6 +199,8 @@ func tick_day() -> Array:
 		GoodsLedger.check_conservation()
 
 	# 2.3-06 步驟 6: 全部寫入完成後才發出信號（D-05(a)）
+	# D-12h: flush BuildingEconomy daily construction signals before clock signals.
+	BuildingEconomy.flush_signals()
 	Clock.day_ticked.emit(Clock.day)
 	if at_cutoff:
 		# D-05(c): season_index = floori((day−1)/D)；首季 0
