@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PriceCurve" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/types/price_curve.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+weeks = PackedFloat64Array(0, 1, 3, 6, 10)
+mults = PackedFloat64Array(2, 1.4, 1, 1, 0.6)
