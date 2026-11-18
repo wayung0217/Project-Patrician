@@ -1,0 +1,24 @@
+; Engine configuration file.
+; Godot 4.7.2-stable — Autoload order 2.2-01: Params → Clock → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger → SimLoop.
+
+config_version=5
+
+[application]
+
+config/name="Project Patrician"
+config/features=PackedStringArray("4.7")
+
+[autoload]
+
+Params="*res://autoload/params.gd"
+Clock="*res://autoload/clock.gd"
+GoodCatalog="*res://autoload/good_catalog.gd"
+PortRegistry="*res://autoload/port_registry.gd"
+GoodsLedger="*res://autoload/goods_ledger.gd"
+MarketPricer="*res://autoload/market_pricer.gd"
+CashLedger="*res://autoload/cash_ledger.gd"
+SimLoop="*res://autoload/sim_loop.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
