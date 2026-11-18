@@ -32,6 +32,9 @@ const DATA_SUBDIRS: Array[String] = [
 	"res://data/buildings",
 	"res://data/opening",
 	"res://data/build_queue",
+	"res://data/sea/nodes",
+	"res://data/sea/regions",
+	"res://data/sea/lanes",
 ]
 
 

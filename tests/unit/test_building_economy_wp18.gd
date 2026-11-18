@@ -15,10 +15,14 @@ const PRM_RING_ALPHA := "PRM-SYS08-RING_ALPHA"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
+const PRM_PORT_COUNT_MAX := "PRM-SYS02-PORT_COUNT_MAX"
 const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
 const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
 const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
 const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
+
+const CsvImport := preload("res://tools/csv_import.gd")
+const SEA_FIXTURE_CSV := "res://tests/fixtures/wp29_sea_ok/"
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -285,8 +289,15 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	SimLoop.set_consumption_provider(_SimCons.new())
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
+	SeaLanes._loaded = false
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
+		PARAMS_FIXTURE,
+		fixtures["goods"],
+		fixtures["ports"],
+		CURVE_FIXTURE,
+		fixtures["sea_nodes"],
+		fixtures["sea_regions"],
+		fixtures["sea_lanes"]
 	)
 	assert_gt(errors.size(), 0)
 	assert_true(_has_code(errors, BuildingEconomy.CODE_POPULATION_PROVIDER_MISSING))
@@ -487,9 +498,27 @@ func _prepare_sim_fixtures() -> Dictionary:
 	Params.load_and_validate(PARAMS_FIXTURE)
 	var goods := _build_valid_goods(ROOT + "sim_goods/")
 	GoodCatalog.load_and_validate(goods)
-	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	# SeaLanes FRM-SYS14-01 needs 16 PORT nodes.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MAX)
 	var ports := _build_valid_ports(port_count, ROOT + "sim_ports/")
-	return {"goods": goods, "ports": ports}
+	var sea_root := ROOT + "sim_sea/"
+	var nodes_dir: String = sea_root + "nodes/"
+	var regions_dir: String = sea_root + "regions/"
+	var lanes_dir: String = sea_root + "lanes/"
+	_wipe_dir(nodes_dir)
+	_wipe_dir(regions_dir)
+	_wipe_dir(lanes_dir)
+	var sea_batch: Dictionary = CsvImport.run_batch_wp29(
+		SEA_FIXTURE_CSV, nodes_dir, regions_dir, lanes_dir
+	)
+	assert_true(sea_batch["ok"], "sea fixture: %s" % str(sea_batch["errors"]))
+	return {
+		"goods": goods,
+		"ports": ports,
+		"sea_nodes": nodes_dir,
+		"sea_regions": regions_dir,
+		"sea_lanes": lanes_dir,
+	}
 
 
 func _has_code(errors: Array, code: String) -> bool:

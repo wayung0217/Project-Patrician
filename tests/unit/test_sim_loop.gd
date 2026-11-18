@@ -12,8 +12,13 @@ const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
+const PRM_PORT_COUNT_MAX := "PRM-SYS02-PORT_COUNT_MAX"
 const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
 const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
+
+const CsvImport := preload("res://tools/csv_import.gd")
+const SEA_FIXTURE_CSV := "res://tests/fixtures/wp29_sea_ok/"
+const SEA_FIXTURE_ROOT := "user://sim_loop_sea/"
 const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
 const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 
@@ -66,6 +71,7 @@ class TestConsumptionProvider extends ConsumptionProvider:
 func before_each() -> void:
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
+	_wipe_dir(SEA_FIXTURE_ROOT)
 	# Reset SimLoop injection between tests (Autoload persists).
 	# D-08j: providers only before boot — clear _booted so setters take effect.
 	SimLoop._booted = false
@@ -74,6 +80,7 @@ func before_each() -> void:
 	SimLoop.set_consumption_provider(null)
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
+	SeaLanes._loaded = false
 
 
 func test_consumption_provider_base_push_error_2_1_03() -> void:
@@ -87,12 +94,13 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_autoload_order_2_2_01() -> void:
-	# 2.2-01: … → CashLedger → BuildingEconomy → SimLoop (D-09a / WP-18)
+	# D-14c: … → PortRegistry → SeaLanes → GoodsLedger → … → BuildingEconomy → SimLoop
 	var expected: Array = [
 		"Params",
 		"Clock",
 		"GoodCatalog",
 		"PortRegistry",
+		"SeaLanes",
 		"GoodsLedger",
 		"MarketPricer",
 		"CashLedger",
@@ -122,9 +130,7 @@ func test_autoload_order_2_2_01() -> void:
 func test_boot_requires_consumption_provider_2_3_03() -> void:
 	# 2.3-03: 未注入 provider → boot() 回錯誤且不啟動時鐘
 	var fixtures := _prepare_fixtures()
-	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
-	)
+	var errors: Array = _boot_with_fixtures(fixtures)
 	assert_gt(errors.size(), 0)
 	assert_true(_has_code(errors, SimLoop.ERR_PROVIDER_MISSING))
 	assert_false(SimLoop.is_booted())
@@ -139,10 +145,20 @@ func test_boot_collects_all_module_errors_2_2_02() -> void:
 	SimLoop.set_consumption_provider(cons)
 	var empty_goods := GOODS_FIXTURE_ROOT + "empty_g/"
 	var empty_ports := PORTS_FIXTURE_ROOT + "empty_p/"
+	var empty_sea := SEA_FIXTURE_ROOT + "empty_sea/"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_goods))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_ports))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "nodes/"))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "regions/"))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "lanes/"))
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, empty_goods, empty_ports, CURVE_FIXTURE
+		PARAMS_FIXTURE,
+		empty_goods,
+		empty_ports,
+		CURVE_FIXTURE,
+		empty_sea + "nodes/",
+		empty_sea + "regions/",
+		empty_sea + "lanes/"
 	)
 	assert_gt(errors.size(), 1, "must collect errors from multiple modules")
 	assert_false(SimLoop.is_booted())
@@ -331,9 +347,7 @@ func test_D08e_register_capacity_provider_before_boot_applies() -> void:
 	var cap := _TestCapProvider.new()
 	cap.set_cap(GoodsLedger.KIND_WAREHOUSE, 10)
 	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, cap)
-	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
-	)
+	var errors: Array = _boot_with_fixtures(fixtures)
 	assert_eq(errors.size(), 0, "boot must succeed: %s" % str(errors))
 	assert_true(SimLoop.is_booted())
 	var wh: Dictionary = GoodsLedger.make_warehouse("ACT-PLAYER", PORT_DEMO)
@@ -385,15 +399,25 @@ func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 	SimLoop.register_capacity_provider(GoodsLedger.KIND_WAREHOUSE, b)
 	assert_push_error_count(1)
 	assert_eq(SimLoop._capacity_by_kind[GoodsLedger.KIND_WAREHOUSE], a)
-	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
-	)
+	var errors: Array = _boot_with_fixtures(fixtures)
 	assert_gt(errors.size(), 0)
 	assert_true(_has_err_code(errors, GoodsLedger.ERR_SYS03_06))
 	assert_false(SimLoop.is_booted())
 
 
 # --- helpers ---
+
+
+func _boot_with_fixtures(fixtures: Dictionary) -> Array:
+	return SimLoop.boot(
+		PARAMS_FIXTURE,
+		fixtures["goods"],
+		fixtures["ports"],
+		CURVE_FIXTURE,
+		fixtures["sea_nodes"],
+		fixtures["sea_regions"],
+		fixtures["sea_lanes"]
+	)
 
 
 class _TestCapProvider extends CapacityProvider:
@@ -421,9 +445,7 @@ func _boot_ready_provider() -> TestConsumptionProvider:
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
-	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
-	)
+	var errors: Array = _boot_with_fixtures(fixtures)
 	assert_eq(errors.size(), 0, "boot must succeed: %s" % str(errors))
 	assert_true(SimLoop.is_booted())
 	Clock.set_paused(false)
@@ -441,9 +463,31 @@ func _prepare_fixtures() -> Dictionary:
 	var goods_dir := _build_valid_goods(GOODS_FIXTURE_ROOT + "base/", ANCHOR_LI)
 	var gerr: Array = GoodCatalog.load_and_validate(goods_dir)
 	assert_eq(gerr.size(), 0)
-	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	# SeaLanes FRM-SYS14-01 requires 16 PORT nodes; use PORT_COUNT_MAX.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MAX)
 	var ports_dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "base/")
-	return {"goods": goods_dir, "ports": ports_dir}
+	var sea := _install_sea_fixture(SEA_FIXTURE_ROOT + "ok/")
+	return {
+		"goods": goods_dir,
+		"ports": ports_dir,
+		"sea_nodes": sea["nodes"],
+		"sea_regions": sea["regions"],
+		"sea_lanes": sea["lanes"],
+	}
+
+
+func _install_sea_fixture(out_root: String) -> Dictionary:
+	var nodes_dir: String = out_root.path_join("nodes/")
+	var regions_dir: String = out_root.path_join("regions/")
+	var lanes_dir: String = out_root.path_join("lanes/")
+	_wipe_dir(nodes_dir)
+	_wipe_dir(regions_dir)
+	_wipe_dir(lanes_dir)
+	var result: Dictionary = CsvImport.run_batch_wp29(
+		SEA_FIXTURE_CSV, nodes_dir, regions_dir, lanes_dir
+	)
+	assert_true(result["ok"], "sea fixture import must succeed: %s" % str(result["errors"]))
+	return {"nodes": nodes_dir, "regions": regions_dir, "lanes": lanes_dir}
 
 
 func _seed_market(port_id: String, good_id: String, stock: int) -> void:
