@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,,,
-狀態：Phase 0＋Round 3 全數合併（main 1e048ec，143 測）｜2026-11-18｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）,,,,,,,,
+狀態：Phase 0＋Round 3 全數合併（main 1e048ec，143 測）｜2026-11-18｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）,,,,,,,,
 ,,,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,,,
@@ -34,7 +34,7 @@ C-14,不得改規格,Cursor 不得修改本工作簿。介面需變更時在 PR 
 1-A10,SimLoop,每日 tick 與商季 cutoff 的唯一排程者（第 2.3 節）。,—,03_Systems r298,可做,,,
 1-X1,CT-OQ-37／38／39,工坊毛利、買入倍率、產能解耦（k／w／n）。,任何工坊、工資、配方代碼都不寫。,04B_CityRules r556–558,禁止碰,,,
 1-X2,地價、地租、圈層開放,04B 第 4 節全部。,不寫槽位、地價、地租相關類別或欄位。,04B 第 4 節,禁止碰,,,
-1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。｜★ 2026-11-18 例外：第 10 節派工單開放的 WP-16、WP-17（只做參數載入與 CSV 匯入，不寫任何 SYS-06／07／08 邏輯）。｜★ Round 5 例外：第 11 節開放 WP-18（SYS-08 資料層，只做版圖、地價、購地與查詢）、WP-25。,03_Systems 系統清單,禁止碰,,,
+1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。｜★ 2026-11-18 例外：第 10 節派工單開放的 WP-16、WP-17（只做參數載入與 CSV 匯入，不寫任何 SYS-06／07／08 邏輯）。｜★ Round 5 例外：第 11 節開放 WP-18（SYS-08 資料層，只做版圖、地價、購地與查詢）、WP-25。｜★ Round 6 例外：第 12 節開放 WP-19（建造）、WP-20（工坊生產與工資累計），依序派工。,03_Systems 系統清單,禁止碰,,,
 1-X4,曲線正式數值,W1..W5、M1..M5、HALF_SPREAD 的調整。,只抄錄現值，不得改。,03_Systems r421,禁止碰,,,
 1-X5,OQ-12 系列未決項,—,遇到即停（C-05）。,03_Systems,禁止碰,,,
 1-X6,04A_Buildings!G111 疑點,—,不得以任何形式引用該值。,04A_Buildings,禁止碰,,,
@@ -273,7 +273,7 @@ N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked,,,
 ,,,,,,,,
 7 工作包總表（WP）— 唯一的工作包清單：新工作包一律接在表尾、編號連續；同一 WP 的後續修改記在 G 欄，不另開表（Owner 追蹤用；Cursor 不得修改）,,,,,,,,
 用法,Cursor 依 WP 編號與依賴開工；一個 PR 只做一個 WP；從最新 main 開分支、不堆疊（Owner 另行核准者除外）；依序搬到 main 後以 merge commit 合併；測試數以「合併前 main ＋ 該 PR 自己新增數」累計，舊測名不得消失。,PR 描述必須回報：WP 編號、新增檔案、測試結果（通過數／總數與新增測名）、遇到的規格缺口（未裁決不得自行補）。,狀態下拉：未開始／進行中／PR 待審／退件／完成；Owner 審後更新。,,,,,
-進度,共 28 個 WP｜完成 16｜進行中 0｜PR 待審 2｜退件 0｜未開始 10　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
+進度,共 28 個 WP｜完成 18｜進行中 0｜PR 待審 2｜退件 0｜未開始 8　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
 WP 編號,內容（對應規格）,依賴,交付物,驗收,狀態,PR／合併紀錄,階段,最後更新
 WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,完成,R1：PR #1｜1/1 ／ R2：無改動｜2026-11-18T03:19:32Z 合併 33018d6（main 1/1）,Phase 0（Round 1–2）,2026-11-18
 WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,完成,R1：PR #2｜9/9 ／ R2：+TICKS_PER_DAY、ROUND_EPS｜13/13｜搬到 main 後合併 57435c7（main 13）,Phase 0（Round 1–2）,2026-11-18
@@ -291,16 +291,16 @@ WP-12,D-08 修正 ── GoodsLedger（WP-05）：D-08d 容器 id 只查 kind �
 WP-13,D-08 修正 ── MarketPricer（WP-06）：D-08g 指示燈具名 enum、D-08h TransitAnchorProvider,WP-06,market_pricer.gd、測試（+4）,D-08g／h 各有測試,完成,R3-4｜PR #14｜merge f3bbe71｜main 134｜乾淨 rebase,Phase 0 修正（Round 3，D-08）,2026-11-18
 WP-14,D-08 修正 ── csv_import（WP-09）：D-08i 固定路徑、全有或全無、寫前清舊檔,WP-09,csv_import.gd、測試（+4）,D-08i 各規則有測試,完成,R3-5｜PR #18｜merge 53e6a03｜main 138｜乾淨 rebase,Phase 0 修正（Round 3，D-08）,2026-11-18
 WP-15,D-08 修正 ── SimLoop（WP-08）：D-08e 由 SimLoop 登錄容量提供者、D-08j 公開入口,WP-08,sim_loop.gd、測試（+5）,D-08e／j 各有測試,完成,"R3-6｜PR #16（8664f15）｜merge 1e048ec｜main 143、CI success｜rebase 衝突（goods_ledger.gd、sim_loop.gd）已解：改呼叫 WP-05 的 GoodsLedger.register_capacity_provider(kind, …)，刪未用的 _KindCapacityRouter → 見 R3-03",Phase 0 修正（Round 3，D-08）,2026-11-18
-WP-16,Params 擴充：登錄 SYS-06／07／08 附錄 A 全部 PRM（03_Systems 6.x、7.8、8.7）；無值者缺鍵拒絕啟動,WP-10 至 15 全部完成（已滿足）,params.gd 更新、測試,每個新 PRM 可讀、型別與範圍驗證；11＋5 項無值 PRM 缺鍵即 ERR（C-06 一次列出）,PR 待審,R4｜PR #20（727e987）｜+10 → 預期 153｜CI 綠｜★ D-10d 已授權合併（#20 先）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-17,csv_import 擴充：新增 zones.csv、buildings.csv、opening_workshops.csv、build_queue.csv 的匯入與驗證（schema 見 D-09d；資料來源 04_Content 第 7 節）,—（與 WP-16 平行開發；合併順序 WP-16 → WP-17）,csv_import.gd、fixtures、測試,表頭逐字、全有或全無、不得手寫正式資料（2.1-04 ⑤）,PR 待審,R4｜PR #19（7549c4c）｜+11 → 預期 164｜CI 綠｜★ D-10d 已授權合併（#20 之後）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-18,SYS-08 資料層：BuildingEconomy Autoload、ST-SLOT 版圖產生（D-09c、D-11a／b）、地價 FRM-01、購地 FRM-02、倉儲容量 FRM-19＋CapacityProvider(WAREHOUSE) 登錄、WorkplaceProvider FRM-20、PopulationProvider 介面（D-11d）；csv_import 補 zones.slots、city_center、opening_public（D-11a、c）,WP-16、WP-17 合併後,building_economy.gd、slot.gd、building.gd、population_provider.gd、city_center_def.gd、opening_public.gd、csv_import.gd、測試,見第 11 節 11-07,未開始,★ 2026-11-18 已派工（第 11 節派工單，Round 5）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-19,SYS-08 建造：下單、BC-2 取料、待料、工期、完工、升級、暫停與拆除（FRM-05、06、07、23）,WP-18,building_economy.gd、測試,TST-SYS08-04、05；FRM-23 測試,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-20,★ SYS-08 工坊生產與工資：FRM-08 至 12；★ SimLoop 每日 PRODUCE 改由工坊驅動（OQ-14b），角色格產量只作驗證,WP-19,building_economy.gd、sim_loop.gd、測試,TST-SYS08-06 至 10、17；舊 PRODUCE 測試依 D-09g 處理,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-21,SYS-07 PopulationModel：四種人口、滿意度、流動、招工、安置抽籤（FRM-SYS07-01 至 15；7.15）,WP-20,population_model.gd、測試,TST-SYS07-01 至 19；滿意度輸入先以介面注入（fixture）,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-16,Params 擴充：登錄 SYS-06／07／08 附錄 A 全部 PRM（03_Systems 6.x、7.8、8.7）；無值者缺鍵拒絕啟動,WP-10 至 15 全部完成（已滿足）,params.gd 更新、測試,每個新 PRM 可讀、型別與範圍驗證；11＋5 項無值 PRM 缺鍵即 ERR（C-06 一次列出）,完成,R4｜PR #20（54b5645）｜merge 5665ce0｜main 153｜乾淨 rebase（R4-02）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-17,csv_import 擴充：新增 zones.csv、buildings.csv、opening_workshops.csv、build_queue.csv 的匯入與驗證（schema 見 D-09d；資料來源 04_Content 第 7 節）,—（與 WP-16 平行開發；合併順序 WP-16 → WP-17）,csv_import.gd、fixtures、測試,表頭逐字、全有或全無、不得手寫正式資料（2.1-04 ⑤）,完成,R4｜PR #19（2693f2d）｜merge e715047｜main 164｜乾淨 rebase（R4-02）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-18,SYS-08 資料層：BuildingEconomy Autoload、ST-SLOT 版圖產生（D-09c、D-11a／b）、地價 FRM-01、購地 FRM-02、倉儲容量 FRM-19＋CapacityProvider(WAREHOUSE) 登錄、WorkplaceProvider FRM-20、PopulationProvider 介面（D-11d）；csv_import 補 zones.slots、city_center、opening_public（D-11a、c）,WP-16、WP-17 合併後,building_economy.gd、slot.gd、building.gd、population_provider.gd、city_center_def.gd、opening_public.gd、csv_import.gd、測試,見第 11 節 11-07,PR 待審,R5｜PR #22（5e22bbf）｜+13 → 預期 182｜CI 綠｜★ D-13a 已授權合併（#21 之後）；缺口處置 D-13b,Phase 1（SYS-06／07／08）,2026-11-18
+WP-19,SYS-08 建造：order_build／order_upgrade、BC-2 取料（D-12e）、待料、工期、完工、暫停與拆除（FRM-05、06、07、23）；daily_step／flush_signals 入口（D-12h）；商館前置（D-12f）、採集帶規則（D-12a）,WP-18 合併後,building_economy.gd、sim_loop.gd、測試,見第 12 節 12-08,未開始,★ 2026-11-18 已派工（第 12 節，Round 6）：#22 合併後從新 main 開分支,Phase 1（SYS-06／07／08）,2026-11-18
+WP-20,★ SYS-08 工坊生產與工資累計：FRM-08 至 11、FRM-12 每日累計（季末扣款屬 WP-23）；WorkforceProvider 介面（D-12c）；★ SimLoop 每日 PRODUCE 換成工坊生產（D-12d）；累加器 ACC_SCALE（D-12g）,WP-19 合併後,building_economy.gd、workforce_provider.gd、sim_loop.gd、測試,見第 12 節 12-12,未開始,★ 派工單已寫好（第 12 節，Round 6）；WP-19 合併後即可派,Phase 1（SYS-06／07／08）,2026-11-18
+WP-21,SYS-07 PopulationModel：四種人口、滿意度、流動、招工、安置抽籤（FRM-SYS07-01 至 15；7.15）；★ 實作 PopulationProvider（D-11d）與 WorkforceProvider（D-12c）,WP-20,population_model.gd、測試,TST-SYS07-01 至 19；滿意度輸入先以介面注入（fixture）,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-22,SYS-06 DemandModel：正式 ConsumptionProvider（FRM-SYS06-01 至 09、商品替代、滿意度輸入）；執行範圍依 D-09b,WP-21,demand_model.gd、測試,TST-SYS06-01 至 10,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-23,SYS-08 城市與季末：店賃、地租、空置稅、城防採購、建設佇列、開區、上級抽調（FRM-03、04、13 至 17）；收購城營建築 18,WP-22,building_economy.gd、測試,TST-SYS08-11 至 16,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
+WP-23,SYS-08 城市與季末：店賃、地租、空置稅、城防採購、建設佇列、開區、上級抽調（FRM-03、04、13 至 17）；收購城營建築 18；★ 含 FRM-12 季末工資強制扣（TST-SYS08-10）,WP-22,building_economy.gd、測試,TST-SYS08-11 至 16,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
 WP-24,開局初始化與整合：FRM-SYS08-21（04_Content 第 4 至 7 節）、SimLoop 新排程全線、守恆整季測試,WP-23,sim_loop.gd、測試,TST-SYS08-18；一季全流程守恆（FRM-SYS03-01）不觸發,未開始,—（等 SYS-08 實作要求補齊後派工）,Phase 1（SYS-06／07／08）,2026-11-18
-WP-25,SYS-00 Rng 派生雜湊：FRM-SYS23-10（UTF-8＋FNV-1a 64＋0x1F 分隔 → SplitMix64），補 1-X7 細則,—（獨立，可隨時派）,res://core/rng.gd（或 Owner 指定）、測試,TST-SYS23-08 測試向量；同輸入同輸出；mod 2^64 環繞只准在此函數（C-10 例外）,未開始,★ 2026-11-18 已派工（第 11 節派工單，Round 5）,工具批 T-1（模擬器）,2026-11-18
+WP-25,SYS-00 Rng 派生雜湊：FRM-SYS23-10（UTF-8＋FNV-1a 64＋0x1F 分隔 → SplitMix64），補 1-X7 細則,—（獨立，可隨時派）,res://core/rng.gd（或 Owner 指定）、測試,TST-SYS23-08 測試向量；同輸入同輸出；mod 2^64 環繞只准在此函數（C-10 例外）,PR 待審,R5｜PR #21（5b5b659）｜+5 → 預期 169｜CI 綠｜★ D-13a 已授權合併（#21 先）,工具批 T-1（模擬器）,2026-11-18
 WP-26,SYS-23 模擬器核心：sim_runner、情境檔驗證（9.6、ERR-SYS23-01 至 07）、參數合併 FRM-01、網格 FRM-02、季末取樣、MET／OBS、五個輸出 CSV（9.9）,WP-24、WP-25,res://sim/ 全部、測試,TST-SYS23-01 至 04、08 至 11,未開始,—（需 Phase 1 代碼完成）,工具批 T-1（模擬器）,2026-11-18
 WP-27,SYS-23 第二層理想運貨者：FRM-SYS23-04、原因碼 SIM_RELOCATE（FRM-05，非模擬模式即 ERR-SYS03-04）,WP-26,res://sim/、goods_ledger.gd（原因碼）、測試,TST-SYS23-05、06、07,未開始,—,工具批 T-1（模擬器）,2026-11-18
 ,,,,,,,,
@@ -338,8 +338,18 @@ D-10d,Round 4 追認三項處理,追認 Cursor 在 #20／#19 的三項處理：�
 D-11a,zones.csv 格數,zones.csv 加 slots 欄，直接取 04_Content 第 3 節 J:N 已算好的各區格數；不由比例自算。,"WP-18 PR 一併把 csv_import 的 zones 表頭加上 slots（int ≥ 0）。註：各區分別四捨五入，全圖合計 6,433，與民用槽 6,430 差 3，以 zones.csv 為準。",WP-18,04_Content F753、AR752:AR831,,,
 D-11b,區內各環格數,每區格數平均分到該區各環，餘數以 FRM-SYS05-12 最大餘數法分配（權重皆 1，同值環號小者先＝內環先拿）；[待審]。,環號全港連續：第 1 區為 1..r1，第 2 區接 r1＋1 起，依此類推。,WP-18,03_Systems FRM-SYS08-01,,,
 D-11c,市中心資料,"新增 city_center.csv（port_id, public_slots）與 opening_public.csv（port_id, cb_id, level）；由 04_Content 7.5、7.6 公式匯出；開局公共建築等級一律 1 [待審]。",WP-18 PR 一併新增兩個 CSV 的匯入（規則同 10-06）；opening_public 的建築在 WP-24 初始化時才建立，WP-18 只匯入不使用。,WP-18、WP-24,04_Content 7.5、7.6,,,
-D-11d,人口來源介面（AI 比照 1-A9 先例）,SYS-07 未上線前，BuildingEconomy 以注入的 PopulationProvider 讀人口：population(port_id) -> int；基底方法 push_error 並回失敗值（2.1-03）。PopulationModel 於 WP-21 實作此介面。,新檔 res://core/interfaces/population_provider.gd；未注入 → boot() 回錯誤；測試只用 fixtures。,WP-18、WP-21,—（待 Owner 追認）,,,
-D-11e,地價的浮點運算（AI 依 C-09 精神）,FRM-SYS08-01 的 SQRT 與次方只在中間值用 float；結果先經 quantize_amount()（D-01）再 ceili 成 int 厘。,不得另寫取整函數（N-04）。,WP-18,—（待 Owner 追認）,,,
+D-11d,人口來源介面,SYS-07 未上線前，BuildingEconomy 以注入的 PopulationProvider 讀人口：population(port_id) -> int；基底方法 push_error 並回失敗值（2.1-03）。PopulationModel 於 WP-21 實作此介面。,新檔 res://core/interfaces/population_provider.gd；未注入 → boot() 回錯誤；測試只用 fixtures。,WP-18、WP-21,—（Owner 2026-11-18 追認）,,,
+D-11e,地價的浮點運算,FRM-SYS08-01 的 SQRT 與次方只在中間值用 float；結果先經 quantize_amount()（D-01）再 ceili 成 int 厘。,不得另寫取整函數（N-04）。,WP-18,—（Owner 2026-11-18 追認）,,,
+D-12a,採集帶的土地,採集帶（已開放區＋1）的地可以購買，但只准建第 1 層工坊（IND1）；IND1 也只准建在採集帶。該區正式開放後即為一般城內區，採集帶外移一區。,FRM-SYS08-02 購地條件改為「所屬區已開放或為採集帶」；建造時依 build_class 驗區域，不符 ERR-SYS08-03。,WP-18、WP-19,03_Systems C1412,,,
+D-12b,商館建造與升級成本,新建比照公共建築基礎級：500 兩＋木 150＋磚 250、84 日 [待審]；升二級、三級成本登記為無值參數 PRM-SYS08-KONTOR_UPGRADE，交 G-02。,BUILD_CASH_LI／BUILD_MAT／BUILD_DAYS 的 KONTOR 鍵照上值；KONTOR_UPGRADE 缺鍵即拒絕啟動。,WP-19,03_Systems E1378:E1380、r1406,,,
+D-12c,工人數來源介面,WorkforceProvider：workers(ws_id) -> int，以注入方式提供（同 D-11d）；PopulationModel 於 WP-21 實作。,新檔 res://core/interfaces/workforce_provider.gd；基底方法 push_error 並回失敗值；未注入 → boot() 錯誤。,WP-20、WP-21,03_Systems C1361,,,
+D-12d,生產換手,WP-20 直接把 SimLoop 每日 PRODUCE 換成工坊生產；角色格產量只作載入驗證，不保留舊路徑。,舊 PRODUCE 測試依 D-09g：可改內容、不改名，PR 描述逐一列出。,WP-20,03_Systems 8.6 F,,,
+D-12e,市場建材直送工地,向市場買的建材：現金照 TRADE 過帳；貨物直接以 CONSTRUCT_USE 自 MARKET 消耗，不經倉庫、不受倉容限制。,每種建材各自原子；現金不足買不齊的部分轉待料（不報錯）。,WP-19,03_Systems C1415,,,
+D-12f,先有商館才能建,在該港有自家已完工商館，才能下單建造其他建築（商館本身除外）；新增 ERR-SYS08-13。,城市（CITY 帳戶）建公共建築不受此限。,WP-19,03_Systems C1360,,,
+D-12g,累加器精度,"零頭以 1／(DAYS_PER_WEEK × ACC_SCALE) 為單位的 int 儲存；新增 PRM-SYS08-ACC_SCALE＝1,000,000；產量、工資、店賃、城防採購共用。",乘積先算 float 中間值再經 quantize_amount() 後 floori（同 D-11e）；不得出現裸數字。,WP-20、WP-23,03_Systems r1405、C1418,,,
+D-12h,每日與信號入口,BuildingEconomy 對 SimLoop 只開兩個入口：daily_step(day) -> Array（依 8.6 F 每日 ①–⑤，回傳當日錯誤清單）與 flush_signals()（SimLoop 第 6 步呼叫，把當日暫存的信號一次發出）。,玩家即時操作（購地、下單）的信號仍於該筆提交後立即發出（GP-02）。,WP-19 起,03_Systems C1361（Owner 2026-11-18 追認）,,,
+D-13a,Round 5 合併授權,授權依序合併 #21（WP-25）→ #22（WP-18）：合併前各自 rebase 到最新 main；預期 164 → 169 → 182（#22 自身 +13）。,合併一律 merge commit；先前 main 測試名不得缺漏或改名；合併後回報 merge SHA 與測試數。,WP-25、WP-18,R5-01,,,
+D-13b,#22 三項缺口的處置,① D-11d／D-11e 已於 2026-11-18 由 Owner 追認（v6.69），不再是缺口；② opening_public 只匯入不使用，符合 D-11c（建築於 WP-24 建立）；③ 本期無建築，倉儲／工作／住處容量為 0 或空清單，符合 11-02、11-06。,三項皆照現狀，不改代碼。,WP-18,R5-01,,,
 ,,,,,,,,
 9 收件審查與合併紀錄（R 系列）— 每份 Cursor 報告的審查結論集中於此，新紀錄接在表尾,,,,,,,,
 註,R2-01 至 R2-12 的原始全文於 2026-11-18 工作簿重整時遺失，下表依 AI_README 更新日誌摘要重建；R2-13 起為完整內容。,,,,,,,
@@ -363,6 +373,8 @@ R3-01,Round 3 報告審查,#13、#15、#17、#14、#18、#16 CI 綠、新增 28 
 R3-02,合併停在 #15（稽核 ②）,#13 已合（669d146，main 116）；①③ 已實作；② D-08c 只做了 get_port。裁決 A：在 #15 補完（見 D-08c），加測試，後續預期數 ＋N。,等 Cursor 回報 N,結清,2026-11-18,,,
 R3-03,Round 3 合併完成,"六個 PR 全數 merge commit；main 1e048ec，143 測，CI success；R3 與 Round 2 殘留遠端分支已刪。#15 依 R3-02 補 4 測（N＝4）。#16 relocate 時改用 WP-05 已實作的 GoodsLedger.register_capacity_provider(kind, …)：此公開方法名尚未寫入 03_Systems（C-14 回寫待 Owner 追認）。",WP-10 至 15 改為完成；方法名已依 D-10c 回寫,結清,2026-11-18,,,
 R4-01,Round 4（D-09h）收件：WP-16 #20、WP-17 #19,兩 PR 皆從 main e23e5f1 開、不堆疊、CI 綠；無新 Autoload、未改 SimLoop、無經濟邏輯。預期 143 → 153 → 164。Cursor 列出的 C-05 缺口：WP-16 ① PF6 兩速率交叉檢查（ERR-SYS07-02）② SYS-06 參數 ③ ZONE_* 陣列長度 ④ good_id 存在性 ⑤ 正式 params 不寫 Phase 1 值；WP-17 ⑥ 複合鍵 .tres 檔名暫用「__」連接 ⑦ 跨表規則 ⑧ 定點數以 float ≥ 0 驗證 ⑨ 四 CSV 與 goods／ports 分批匯入 ⑩ 尚無 Owner 正式 CSV。AI 審查：①–⑤、⑦ 皆照派工單規定延後，非缺陷；⑥⑧⑨ 為合理處理，待 Owner 追認；⑩ 屬 Owner 動作（從 04_Content 第 7 節匯出）。,Owner 授權合併 #20 → #19（D-10d），三項處理追認,有效,2026-11-18,,,
+R4-02,Round 4 合併回報（WP-16 #20、WP-17 #19）,main 41cf129（docs v6.68，6 個 CSV 齊）→ #20 rebase 無衝突 54b5645 → merge 5665ce0（153，143 項舊測試名全在）→ #19 rebase 無衝突 2693f2d → merge e715047（164，153 項全在）；兩個遠端分支已刪。與 R4-01 預期完全相符。,確認合併有效；WP-16、WP-17 結案,有效,2026-11-18,,,
+R5-01,Round 5 收件：WP-25 #21、WP-18 #22,兩 PR 皆從 main e715047 開、不堆疊、CI 綠、未合併。#21 @ 5b5b659：+5（FNV 兩向量、SplitMix64 狀態 0、欄位分隔防碰撞、同輸入同輸出），涵蓋 11-08 全部；中途修 INT64 後重跑。#22 @ 5e22bbf：+13（TST-SYS08-01、02＋11-07 ①–⑨，含 CSV 正反例），先前兩次 CI 失敗（測試現金、push_error、lambda）已修。Cursor 列三項缺口，處置見 D-13b。,授權依序合併 #21 → #22（D-13a），預期 182；合併後派 WP-19（第 12 節）,有效,2026-11-18,,,
 10 Phase 1 派工單 — 本期開放 WP-16、WP-17（2026-11-18；其餘 Phase 1 WP 未開放）,,,,,,,,
 編號,項目,內容,實作要求,依據,狀態,,,
 10-01,共同前提,兩個 WP 各一 PR，都從 main 1e048ec 開分支，不堆疊；合併順序 WP-16 → WP-17，測試數照「合併前 main ＋ 自己新增數」累計。,禁止：不建 BuildingEconomy／PopulationModel／DemandModel、不登錄新 Autoload、不改 SimLoop 排程、不以這些資料做任何經濟邏輯；不得寫入正式 params.json 的 Phase 1 鍵（本期只做載入與驗證，測試只用 fixtures）。,C-01、C-13、D-09h,可做,,,
@@ -385,3 +397,19 @@ R4-01,Round 4（D-09h）收件：WP-16 #20、WP-17 #19,兩 PR 皆從 main e23e5f
 11-07,WP-18 驗收,TST-SYS08-01（校準城地價，fixture 人口與 04B B286 口徑）、TST-SYS08-02；另加：① 各區格數合計＝zones.slots；② 97 格 4 環 → 25／24／24／24；③ slot_id 格式與編號順序；④ PUBLIC、KONTOR 格數；⑤ 環位與稀缺改變地價方向正確；⑥ 購地成功的過帳與地主變更；⑦ ERR-08 未知 slot、ERR-02 已售、ERR-07 現金不足且全無；⑧ 無 PopulationProvider → boot 錯誤；⑨ zones.slots 與兩個新 CSV 的匯入成功與 10-06 規則失敗各一。,測試名含 TST ID 或 11-07 編號；PR 描述回報新增測試數與名單。,C-13,可做,,,
 11-08,WP-25 抽籤雜湊,"靜態工具（非 Autoload）res://core/rng.gd：derive_seed(seed: int, day: int, port_id: String, item: String, purpose: String) -> int 依 03_Systems FRM-SYS23-10；SplitMix64 next(state) 照標準演算法。","測試：TST-SYS23-08 兩個 FNV 向量；SplitMix64 以 0 為狀態的第一個輸出＝0xE220A8397B1DCDAF；欄位分隔防碰撞（""PT-1""+""0"" ≠ ""PT-10""）；同輸入同輸出。mod 2^64 環繞只准在此檔（C-10 例外）。",FRM-SYS23-10；1-X7,可做,,,
 11-09,遇到缺口,本派工單未寫到的事一律不做。,在 PR 描述列「缺口」並停止該項，其餘照常（C-05）。,C-05,可做,,,
+,,,,,,,,
+12 Phase 1 派工單 Round 6 — WP-19（SYS-08 建造）、WP-20（工坊生產）（2026-11-18；依序派，不同時開）,,,,,,,,
+編號,項目,內容,實作要求,依據,狀態,,,
+12-01,共同前提,WP-19 於 WP-18 合併後、從最新 main 開分支；WP-20 於 WP-19 合併後再開。一個 PR 只做一個 WP。,SimLoop 只允許兩處改動：每日在時鐘推進後呼叫 BuildingEconomy.daily_step(day)、第 6 步呼叫 flush_signals()（D-12h）；季末 cutoff 一律不改（屬 WP-23）。,C-13、D-12h,可做,,,
+12-02,WP-19 範圍,"order_build(actor, slot_id, type)、order_upgrade(actor, bld_id)、daily_step 的 ① 建造推進、pause／resume／demolish（FRM-23）、FRM-07 公共升級費計算函數（呼叫者 FRM-15 屬 WP-23）；信號 construction_started／construction_waiting／construction_completed。",不做：生產、工資、店賃、城防、季末、收購、開局初始化。,03_Systems 8.6、FRM-05／06／07／23,可做,,,
+12-03,下單檢查順序（全部錯誤一次收集）,"ERR-08 未知 slot／type → ERR-05 地主不是 actor → ERR-02 槽上已有建築 → ERR-01 區未開放且非採集帶 → ERR-03 類型不可建於此（IND1 只在採集帶、其他民用只在已開放城內區、KONTOR 只在商館地、PUBLIC 只限 CITY 在公共槽、工坊須為該港特產＝PortRegistry.get_role(port, output_good_id) 為 PRODUCER、倉庫須有自家商館）→ ERR-04 商館重複 → ERR-13 無自家已完工商館（D-12f）→ ERR-07 現金不足。",依 C-06 一次列出；ERR-06（商籍）SYS-09 上線前不檢查（Q-08f）。,D-12a、D-12f；CT-R1,可做,,,
+12-04,建材取得（BC-2＋D-12e）,"建材依 good_id 升序逐種處理：① 自家倉庫有多少扣多少（CONSTRUCT_USE 自 WAREHOUSE）；② 不足部分向本港市場買：數量＝MIN(缺額, 市場庫存)，現金 {owner: −B, SINK: +B}（TRADE，B 由 MarketPricer.quote BUY），貨物直接 CONSTRUCT_USE 自 MARKET；③ 仍不足 → 該建材記入 missing、建築為 WAITING_MATERIAL。",每種建材各自原子；買料現金不足不報錯，轉待料。城市建公共建築時無倉庫，全數走 ②。已取建材記入 locked_materials。,FRM-SYS08-05；D-12e,可做,,,
+12-05,建造推進（每日 ①）,WAITING_MATERIAL：對 missing 重跑 12-04 的 ①②，補齊轉 BUILDING、days_left＝BUILD_DAYS[build_class]；BUILDING：days_left −1，歸零轉 ACTIVE。,當日信號暫存，flush_signals() 時發出（D-12h）；取消不退現金與建材（BC-3）。,FRM-SYS08-06,可做,,,
+12-06,升級,本期只開放 KONTOR（成本 PRM-SYS08-KONTOR_UPGRADE）與 PUBLIC（FRM-07：升級下單當下 pop × UPGRADE_PER_CAPITA[級]，城市付款）；住宅不可升級（CT-R6）；工坊升級規格未定 → ERR-03。,流程同 12-04／12-05；level 最高 3，已三級再升 → ERR-03。,D-12b；FRM-SYS08-07,可做,,,
+12-07,暫停與拆除 FRM-23,pause：ACTIVE → PAUSED（本期 workers 視為 0；通知 SYS-07 待 WP-21）；resume：PAUSED → ACTIVE；demolish：刪除建築、slot.building＝null、記錄空置起始日（FRM-04 寬限用）、建材與現金不退。,只有業主可操作（ERR-05）。拆除商館本期不開放（倉內存貨如何處理未定）→ ERR-03，列為缺口。,FRM-SYS08-23,可做,,,
+12-08,WP-19 驗收,TST-SYS08-03、04、05；另加：① 12-03 每個 ERR 各一；② 採集帶可購、只准 IND1；③ 無商館建住宅 → ERR-13；④ 市場買料不受倉容限制（倉庫已滿仍可建）；⑤ 買料現金不足 → 待料不報錯；⑥ 工期倒數與完工信號只在 flush 時發出；⑦ 公共升級費＝pop × 單價；⑧ pause／resume／demolish 狀態與空置起始日；⑨ 拆商館 → ERR-03。,測試名含 TST ID 或 12-08 編號。,C-13,可做,,,
+12-09,WP-20 範圍,daily_step 的 ② 工坊生產與 ④ 工資累計；WorkforceProvider 介面（D-12c）；SimLoop 移除舊 PRODUCE（角色格產量）步驟（D-12d）。,不做：季末工資扣款（WP-23）、店賃、城防、人口。,D-12c、D-12d,可做,,,
+12-10,生產計算（FRM-08 至 11）,每港依 port_id 升序；港內依 tier → output_good_id → bld_id 升序，上游當日產出下游當日可用（Q-08e）。W＝workers × base_output_per_worker（buildings.csv）× K；acc_out ＋＝ floori(quantize(W × ACC_SCALE))；out_pot＝floori(acc_out ÷ (DAYS_PER_WEEK × ACC_SCALE))，acc_out −＝ out_pot × DAYS_PER_WEEK × ACC_SCALE。out_feas＝各投入 MIN floori(quantize(avail ÷ (qty × N)))，無投入＝不限；out_cap＝玩家工坊為倉庫剩餘容量、城營為不限；out＝MIN 三者。,"投入扣量＝ceili(quantize(out × qty × N))，CONSUME（requester SYS-08）自業主倉庫或本港 MARKET；產出 PRODUCE 入業主倉庫或 MARKET。out < out_pot → production_shortfall(bld_id, reason)，差額不補。PAUSED、WAITING、BUILDING 不生產。",FRM-SYS08-08 至 11；D-12g,可做,,,
+12-11,工資累計（FRM-12 每日部分）,玩家工坊 ACTIVE 時：acc_wage ＋＝ floori(quantize(workers × WAGE_BASE_LI × K^W × ACC_SCALE))；停產（原料不足）照計；PAUSED 不計（FRM-23）；城營工坊不計。,季末換算與扣款在 WP-23；本期只驗累加值。,FRM-SYS08-12；D-12g,可做,,,
+12-12,WP-20 驗收,TST-SYS08-06、07、08、09（產出與工資部分）、17（fixture 一季守恆）；另加：① 7 日合計＝FLOOR(週產)；② 上游當日產出下游可用；③ PAUSED 無產出無工資；④ 無 WorkforceProvider → boot 錯誤；⑤ SimLoop 不再依角色格產出（舊測試依 D-09g 改內容不改名並列於 PR）。,測試名含 TST ID 或 12-12 編號。,C-13,可做,,,
+12-13,遇到缺口,本派工單未寫到的事一律不做。,在 PR 描述列「缺口」並停止該項，其餘照常（C-05）。,C-05,可做,,,
