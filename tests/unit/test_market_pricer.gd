@@ -1,5 +1,7 @@
 extends GutTest
-## WP-06 MarketPricer tests. Expectations cite TST-SYS04-01..10 / 03_Systems 4.1 (xlsx B467／B470).
+## WP-06 MarketPricer tests. Expectations cite TST-SYS04-01..10 / 03_Systems 4.1 (xlsx B463／B467／B470).
+## D-01: B463=144000、B470=−13715 exact via AmountQuantize.quantize_amount.
+## D-04: validate ErrorInfo {code,sys,detail}; quote fail → last_error().
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
@@ -7,6 +9,8 @@ const GOODS_FIXTURE_ROOT := "user://market_pricer_goods/"
 const PORTS_FIXTURE_ROOT := "user://market_pricer_ports/"
 const CURVE_FIXTURE_ROOT := "user://market_pricer_curves/"
 const PARAMS_OVERRIDE_ROOT := "user://market_pricer_params/"
+
+const SYS_ID := &"SYS-04"
 
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
@@ -19,6 +23,7 @@ const PRM_IND_HI2 := "PRM-SYS04-IND_HI2"
 const PRM_IND_HI1 := "PRM-SYS04-IND_HI1"
 const PRM_IND_LO1 := "PRM-SYS04-IND_LO1"
 const PRM_IND_LO2 := "PRM-SYS04-IND_LO2"
+const PRM_ROUND_EPS := "PRM-SYS04-ROUND_EPS"
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -170,13 +175,15 @@ func test_TST_SYS04_03_ceiling_and_floor() -> void:
 
 
 func test_TST_SYS04_04_split_vs_batch_extra_in_0_1() -> void:
-	# TST-SYS04-04: 拆單多付 ∈ {0,1}；示範 B467 = 0
+	# TST-SYS04-04／D-01: 拆單多付 ∈ {0,1}；B467 = 0；整批買 B463 = 144000
 	_boot_full(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK)
 	var buy_all: Dictionary = MarketPricer.quote(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, DEMO_Q
 	)
 	assert_false(buy_all.has(MarketPricer.KEY_ERROR))
+	assert_true(MarketPricer.last_error().is_empty())
 	var total_all: int = int(buy_all[MarketPricer.KEY_TOTAL_LI])
+	assert_eq(total_all, DEMO_BUY_TOTAL_LI, "D-01／xlsx B463 exact buy total")
 
 	var buy1: Dictionary = MarketPricer.quote(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, DEMO_Q1
@@ -202,21 +209,17 @@ func test_TST_SYS04_04_split_vs_batch_extra_in_0_1() -> void:
 	assert_lte(extra, SPLIT_EXTRA_MAX)
 	# 示範 4.1 B467 = 0（xlsx）；硬條件 ∈ {0,1}
 	assert_eq(extra, DEMO_SPLIT_EXTRA_LI)
-	# 缺口：xlsx B463=144000；float64 下 Area×(1+h)=144000+≈3e-11，ceili→144001（見 PR 缺口）。
-	assert_true(
-		total_all == DEMO_BUY_TOTAL_LI or total_all == DEMO_BUY_TOTAL_LI + 1,
-		"buy total near B463 (float64/ceili)"
-	)
 
 
 func test_TST_SYS04_05_roundtrip_loss() -> void:
-	# TST-SYS04-05: 買 q 後立即原港賣回 → 損益 < 0；示範 B470 = −13,715
+	# TST-SYS04-05／D-01: 買 q 後立即原港賣回 → 損益 < 0；xlsx B470 = −13,715
 	_boot_full(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK)
 	var buy: Dictionary = MarketPricer.quote(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, DEMO_Q
 	)
 	assert_false(buy.has(MarketPricer.KEY_ERROR))
 	var buy_total: int = int(buy[MarketPricer.KEY_TOTAL_LI])
+	assert_eq(buy_total, DEMO_BUY_TOTAL_LI, "D-01／xlsx B463")
 
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
 	var hold: Dictionary = GoodsLedger.make_hold("SHIP-RT")
@@ -234,11 +237,7 @@ func test_TST_SYS04_05_roundtrip_loss() -> void:
 	var pnl: int = sell_total - buy_total
 	assert_lt(pnl, 0)
 	assert_eq(sell_total, DEMO_SELL_TOTAL_LI)
-	# 缺口：xlsx B470=−13715；若買總額因 ceili 多 1 厘則 pnl=−13716（硬條件仍 < 0）。
-	assert_true(
-		pnl == DEMO_ROUNDTRIP_PNL_LI or pnl == DEMO_ROUNDTRIP_PNL_LI - 1,
-		"roundtrip pnl near B470 (float64/ceili)"
-	)
+	assert_eq(pnl, DEMO_ROUNDTRIP_PNL_LI, "D-01／xlsx B470 exact roundtrip pnl")
 
 
 func test_TST_SYS04_06_min_half_spread_still_loss() -> void:
@@ -320,14 +319,28 @@ func test_TST_SYS04_10_qty_rejects_no_state_change() -> void:
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, TST10_Q_OVER
 	)
 	assert_eq(over[MarketPricer.KEY_ERROR], MarketPricer.ERR_SYS04_06)
+	assert_true(_last_error_is(MarketPricer.ERR_SYS04_06), "D-04: quote fail → last_error ERR-SYS04-06")
 
 	var zero: Dictionary = MarketPricer.quote(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, 0
 	)
 	assert_eq(zero[MarketPricer.KEY_ERROR], MarketPricer.ERR_SYS04_06)
+	assert_true(_last_error_is(MarketPricer.ERR_SYS04_06))
 	assert_push_error_count(1 + 1)
 
 	assert_eq(GoodsLedger.get_qty(market, StringName(GOOD_DEMO)), TST10_STOCK)
+
+
+func test_D01_quantize_amount_snaps_near_integer() -> void:
+	# D-01: |x−round(x)| <= ROUND_EPS×max(1,|x|) → snap；else leave; EPS from Params (no bare 1e-9).
+	_boot_full(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK)
+	var eps: float = Params.get_float(PRM_ROUND_EPS)
+	assert_gt(eps, 0.0)
+	var half: float = 1.0 / (1.0 + 1.0)
+	var near: float = float(DEMO_BUY_TOTAL_LI) + eps * half
+	assert_eq(AmountQuantize.quantize_amount(near), float(DEMO_BUY_TOTAL_LI))
+	var far: float = float(DEMO_BUY_TOTAL_LI) + half
+	assert_eq(AmountQuantize.quantize_amount(far), far)
 
 
 # --- boot helpers ---
@@ -421,11 +434,46 @@ func _write_params_override(overrides: Dictionary) -> void:
 	out.store_string(JSON.stringify(d))
 
 
-func _has_code(errors: Array, code: String) -> bool:
+func _has_code(errors: Array, code: StringName) -> bool:
 	for e in errors:
-		if typeof(e) == TYPE_DICTIONARY and String(e.get("code", "")) == code:
+		if typeof(e) != TYPE_DICTIONARY:
+			continue
+		if not _is_error_info(e):
+			continue
+		if StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")) == code:
+			assert_eq(StringName(e.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID, "ErrorInfo.sys must be SYS-04")
+			var detail: Variant = e.get(ErrorInfoUtil.KEY_DETAIL, null)
+			assert_eq(typeof(detail), TYPE_DICTIONARY, "ErrorInfo.detail must be Dictionary")
 			return true
 	return false
+
+
+func _last_error_is(code: StringName) -> bool:
+	var e: Dictionary = MarketPricer.last_error()
+	if e.is_empty() or not _is_error_info(e):
+		return false
+	if StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")) != code:
+		return false
+	assert_eq(StringName(e.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID, "ErrorInfo.sys must be SYS-04")
+	var detail: Variant = e.get(ErrorInfoUtil.KEY_DETAIL, null)
+	assert_eq(typeof(detail), TYPE_DICTIONARY, "ErrorInfo.detail must be Dictionary")
+	return true
+
+
+func _is_error_info(e: Variant) -> bool:
+	# D-04 carrier: {code: StringName, sys: StringName, detail: Dictionary}.
+	if typeof(e) != TYPE_DICTIONARY:
+		return false
+	var d: Dictionary = e
+	if not d.has(ErrorInfoUtil.KEY_CODE):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_SYS):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_DETAIL):
+		return false
+	if typeof(d[ErrorInfoUtil.KEY_CODE]) == TYPE_INT:
+		return false
+	return typeof(d[ErrorInfoUtil.KEY_DETAIL]) == TYPE_DICTIONARY
 
 
 func _build_valid_goods(dir: String, anchor_li: int) -> String:

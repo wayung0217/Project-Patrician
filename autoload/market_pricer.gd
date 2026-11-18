@@ -2,8 +2,12 @@ extends Node
 ## Autoload: MarketPricer — SYS-04 pure pricing (TechSpec 3.5 / WP-06).
 ## _ready() only clears fields; load_and_validate() loads curve + FRM checks (2.2-01).
 ## No signals; does not write ST-GOOD／ST-CASH. weekly_consumption via ConsumptionProvider (3.7／B2).
+## D-01: money float→int only via AmountQuantize.quantize_amount then ceili／floori.
+## D-04: ErrorInfo {code,sys,detail} for validate Arrays／last_error(); no ERR→int.
 
 const CURVE_PATH := "res://data/market/price_curve.tres"
+const SCRIPT_PATH := "res://autoload/market_pricer.gd"
+const SYS_ID := &"SYS-04"
 
 const PRM_HALF_SPREAD := "PRM-SYS04-HALF_SPREAD"
 const PRM_IND_HI2 := "PRM-SYS04-IND_HI2"
@@ -26,14 +30,20 @@ const BAND_TOO_HIGH := BAND_HIGH + 1
 ## FRM-SYS04-07: 斷點數 ≥ 2 (built from 0／1 only).
 const MIN_BREAKPOINTS := 1 + 1
 
-const ERR_SYS04_01 := "ERR-SYS04-01"
-const ERR_SYS04_02 := "ERR-SYS04-02"
-const ERR_SYS04_03 := "ERR-SYS04-03"
-const ERR_SYS04_04 := "ERR-SYS04-04"
-const ERR_SYS04_05 := "ERR-SYS04-05"
-const ERR_SYS04_06 := "ERR-SYS04-06"
-const ERR_SYS04_07 := "ERR-SYS04-07"
-const ERR_SYS04_08 := "ERR-SYS04-08"
+const ERR_SYS04_01 := &"ERR-SYS04-01"
+const ERR_SYS04_02 := &"ERR-SYS04-02"
+const ERR_SYS04_03 := &"ERR-SYS04-03"
+const ERR_SYS04_04 := &"ERR-SYS04-04"
+const ERR_SYS04_05 := &"ERR-SYS04-05"
+const ERR_SYS04_06 := &"ERR-SYS04-06"
+const ERR_SYS04_07 := &"ERR-SYS04-07"
+const ERR_SYS04_08 := &"ERR-SYS04-08"
+
+const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
+const CODE_CURVE_MISSING := &"CURVE_MISSING"
+const CODE_CURVE_TYPE := &"CURVE_TYPE"
+const CODE_CONSUMPTION := &"ConsumptionProvider"
+const CODE_GOODS_LEDGER := &"GoodsLedger"
 
 const KEY_TOTAL_LI := "total_li"
 const KEY_AVG_LI := "avg_li"
@@ -50,12 +60,15 @@ const FIELD_IND := "IND_*"
 const FIELD_QTY := "qty"
 const FIELD_SIDE := "side"
 const FIELD_CONSUMPTION := "ConsumptionProvider"
+const FIELD_GOODS_LEDGER := "GoodsLedger"
 
 const EQ_MULT := 1.0 ## FRM-SYS04-10／r475: IND_LO1 ≤ 1 ≤ IND_HI1 (結構 1.0)
 
 var _curve: PriceCurve = null
 var _consumption: ConsumptionProvider = null
 var _loaded: bool = false
+## D-04: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
+var _last_error: Dictionary = {}
 
 
 func _ready() -> void:
@@ -68,20 +81,21 @@ func load_and_validate(curve_path: String = CURVE_PATH) -> Array:
 	var errors: Array = []
 	_curve = null
 	_loaded = false
+	_clear_last_error()
 
 	if not Params.is_loaded():
-		errors.append(_err("PARAMS_NOT_LOADED", "res://autoload/market_pricer.gd", FIELD_PARAMS, null, "Params must load_and_validate before MarketPricer"))
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, SCRIPT_PATH, FIELD_PARAMS, null, "Params must load_and_validate before MarketPricer"))
 		_emit_errors(errors)
 		return errors
 
 	if not FileAccess.file_exists(curve_path):
-		errors.append(_err("CURVE_MISSING", curve_path, FIELD_CURVE, null, "price_curve.tres not found"))
+		errors.append(_err(CODE_CURVE_MISSING, curve_path, FIELD_CURVE, null, "price_curve.tres not found"))
 		_emit_errors(errors)
 		return errors
 
 	var res: Resource = ResourceLoader.load(curve_path, "", ResourceLoader.CACHE_MODE_IGNORE)
 	if res == null or not (res is PriceCurve):
-		errors.append(_err("CURVE_TYPE", curve_path, FIELD_CURVE, res, "expected PriceCurve Resource"))
+		errors.append(_err(CODE_CURVE_TYPE, curve_path, FIELD_CURVE, res, "expected PriceCurve Resource"))
 		_emit_errors(errors)
 		return errors
 
@@ -106,6 +120,11 @@ func is_loaded() -> bool:
 	return _loaded
 
 
+func last_error() -> Dictionary:
+	# D-04: single-call failures (quote／mid_price) expose ErrorInfo here.
+	return _last_error.duplicate(true)
+
+
 func set_consumption_provider(provider: ConsumptionProvider) -> void:
 	## 缺口：TechSpec H 未列登錄 API；比照 GoodsLedger.set_capacity_provider（測試／未來 SYS-06）。
 	_consumption = provider
@@ -116,10 +135,10 @@ func validate() -> Array:
 	assert(_curve != null or not _loaded, "validate without curve")
 	var errors: Array = []
 	if not Params.is_loaded():
-		errors.append(_err("PARAMS_NOT_LOADED", "res://autoload/market_pricer.gd", FIELD_PARAMS, null, "Params not loaded"))
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, SCRIPT_PATH, FIELD_PARAMS, null, "Params not loaded"))
 		return errors
 	if _curve == null:
-		errors.append(_err("CURVE_MISSING", CURVE_PATH, FIELD_CURVE, null, "no curve loaded"))
+		errors.append(_err(CODE_CURVE_MISSING, CURVE_PATH, FIELD_CURVE, null, "no curve loaded"))
 		return errors
 	errors.append_array(_validate_curve(_curve, CURVE_PATH))
 	errors.append_array(_validate_indicator_order())
@@ -130,9 +149,10 @@ func validate() -> Array:
 func mid_price(port_id: StringName, good_id: StringName) -> float:
 	# FRM-SYS04-03: mid = anchor × m(w)
 	assert(_loaded, "MarketPricer.mid_price before load_and_validate")
+	_clear_last_error()
 	var ctx: Dictionary = _resolve_context(port_id, good_id)
 	if ctx.has(KEY_ERROR):
-		push_error("MarketPricer.mid_price: %s" % str(ctx[KEY_ERROR]))
+		_fail_from_ctx(ctx)
 		return 0.0
 	var anchor: int = int(ctx[FIELD_ANCHOR])
 	var stock: int = int(ctx["stock"])
@@ -142,8 +162,9 @@ func mid_price(port_id: StringName, good_id: StringName) -> float:
 
 
 func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dictionary:
-	# FRM-SYS04-04／05: batch area + CEIL buy／FLOOR sell. ERR-SYS04-06 on bad qty.
+	# FRM-SYS04-04／05 + D-01: batch area; quantize_amount then CEIL buy／FLOOR sell.
 	assert(_loaded, "MarketPricer.quote before load_and_validate")
+	_clear_last_error()
 	var out: Dictionary = {
 		KEY_TOTAL_LI: 0,
 		KEY_AVG_LI: 0.0,
@@ -153,19 +174,19 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 
 	if side != SIDE_BUY and side != SIDE_SELL:
 		out[KEY_ERROR] = ERR_SYS04_06
-		push_error("MarketPricer.quote: %s invalid side=%s" % [ERR_SYS04_06, side])
+		_record_error(ERR_SYS04_06, FIELD_SIDE, side, "invalid side")
 		return out
 
 	# ERR-SYS04-06 — q ≤ 0 or buy qty > stock
 	if qty <= 0:
 		out[KEY_ERROR] = ERR_SYS04_06
-		push_error("MarketPricer.quote: %s qty<=0" % ERR_SYS04_06)
+		_record_error(ERR_SYS04_06, FIELD_QTY, qty, "qty<=0")
 		return out
 
 	var ctx: Dictionary = _resolve_context(port_id, good_id)
 	if ctx.has(KEY_ERROR):
 		out[KEY_ERROR] = ctx[KEY_ERROR]
-		push_error("MarketPricer.quote: %s" % str(ctx[KEY_ERROR]))
+		_fail_from_ctx(ctx)
 		return out
 
 	var anchor: int = int(ctx[FIELD_ANCHOR])
@@ -174,7 +195,7 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 
 	if side == SIDE_BUY and qty > stock:
 		out[KEY_ERROR] = ERR_SYS04_06
-		push_error("MarketPricer.quote: %s buy qty>%s stock" % [ERR_SYS04_06, stock])
+		_record_error(ERR_SYS04_06, FIELD_QTY, qty, "buy qty>%s stock" % stock)
 		return out
 
 	var stock_after: int = stock - qty if side == SIDE_BUY else stock + qty
@@ -182,11 +203,11 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 	var half: float = Params.get_float(PRM_HALF_SPREAD)
 	var total: int = 0
 	if side == SIDE_BUY:
-		# FRM-SYS04-05: CEIL(Area × (1 + HALF_SPREAD))
-		total = ceili(area * (EQ_MULT + half))
+		# FRM-SYS04-05 + D-01: CEIL(quantize(Area × (1 + HALF_SPREAD)))
+		total = ceili(AmountQuantize.quantize_amount(area * (EQ_MULT + half)))
 	else:
-		# FRM-SYS04-05: FLOOR(Area × (1 − HALF_SPREAD))
-		total = floori(area * (EQ_MULT - half))
+		# FRM-SYS04-05 + D-01: FLOOR(quantize(Area × (1 − HALF_SPREAD)))
+		total = floori(AmountQuantize.quantize_amount(area * (EQ_MULT - half)))
 
 	var mid_after: float = float(anchor) * _multiplier_for_stock(stock_after, c_i)
 	var ratio: float = mid_after / float(anchor) if anchor > 0 else 0.0
@@ -226,14 +247,14 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 	var good_s: String = String(good_id)
 
 	if not GoodCatalog.is_loaded():
-		return {KEY_ERROR: ERR_SYS04_07}
+		return {KEY_ERROR: ERR_SYS04_07, "field": "good_id", "value": good_s, "message": "GoodCatalog not loaded"}
 	var good_found := false
 	for id_variant in GoodCatalog.all_ids():
 		if String(id_variant) == good_s:
 			good_found = true
 			break
 	if not good_found:
-		return {KEY_ERROR: ERR_SYS04_07}
+		return {KEY_ERROR: ERR_SYS04_07, "field": "good_id", "value": good_s, "message": "unknown good_id"}
 
 	var good: GoodDef = GoodCatalog.get_good(good_s)
 	var anchor: int = good.base_price_li
@@ -250,17 +271,37 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 			if port.role_cells.has(good_s):
 				var cell: RoleCell = port.role_cells[good_s]
 				if cell.role == PortRegistry.ROLE_TRANSIT:
-					return {KEY_ERROR: ERR_SYS04_07}
+					return {
+						KEY_ERROR: ERR_SYS04_07,
+						"field": "role",
+						"value": good_s,
+						"message": "TRANSIT anchor requires Q-16 (not implemented)",
+					}
 
 	if _consumption == null:
-		return {KEY_ERROR: FIELD_CONSUMPTION}
+		return {
+			KEY_ERROR: CODE_CONSUMPTION,
+			"field": FIELD_CONSUMPTION,
+			"value": null,
+			"message": "ConsumptionProvider not set",
+		}
 
 	var c_i: int = _consumption.weekly_consumption(port_id, good_id)
 	if c_i < 0:
-		return {KEY_ERROR: FIELD_CONSUMPTION}
+		return {
+			KEY_ERROR: CODE_CONSUMPTION,
+			"field": FIELD_CONSUMPTION,
+			"value": c_i,
+			"message": "weekly_consumption failure",
+		}
 
 	if not GoodsLedger.is_loaded():
-		return {KEY_ERROR: "GoodsLedger"}
+		return {
+			KEY_ERROR: CODE_GOODS_LEDGER,
+			"field": FIELD_GOODS_LEDGER,
+			"value": null,
+			"message": "GoodsLedger not loaded",
+		}
 
 	var market: Dictionary = GoodsLedger.make_market(port_s)
 	var stock: int = GoodsLedger.get_qty(market, good_id)
@@ -399,7 +440,7 @@ func _validate_indicator_order() -> Array:
 
 
 func _validate_floor_anchors() -> Array:
-	# FRM-SYS04-08: FLOOR(anchor × M_n × (1 − HALF_SPREAD)) ≥ MIN_CASH_UNIT (1 厘)
+	# FRM-SYS04-08 + D-01: FLOOR(quantize(anchor × M_n × (1 − HALF_SPREAD))) ≥ MIN_CASH_UNIT
 	var errors: Array = []
 	if not GoodCatalog.is_loaded():
 		# Boot without catalog: skip goods scan (SimLoop order loads catalog first).
@@ -410,7 +451,8 @@ func _validate_floor_anchors() -> Array:
 	for id_variant in GoodCatalog.all_ids():
 		var gid: StringName = StringName(String(id_variant))
 		var def: GoodDef = GoodCatalog.get_good(gid)
-		var floor_sell: int = floori(float(def.base_price_li) * m_n * (EQ_MULT - half))
+		var raw: float = float(def.base_price_li) * m_n * (EQ_MULT - half)
+		var floor_sell: int = floori(AmountQuantize.quantize_amount(raw))
 		if floor_sell < min_li:
 			errors.append(_err(ERR_SYS04_05, "res://data/goods/", FIELD_ANCHOR, def.base_price_li, "floor sell < 1 li"))
 	return errors
@@ -420,16 +462,30 @@ func _clear_state() -> void:
 	_curve = null
 	_consumption = null
 	_loaded = false
+	_clear_last_error()
 
 
-func _err(code: String, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
-	return {
-		"code": code,
-		"file": file_path,
-		"field": field,
-		"value": value,
-		"message": message,
-	}
+func _clear_last_error() -> void:
+	_last_error = {}
+
+
+func _fail_from_ctx(ctx: Dictionary) -> void:
+	var code: StringName = StringName(ctx[KEY_ERROR])
+	var field: String = String(ctx.get("field", KEY_ERROR))
+	var value: Variant = ctx.get("value", null)
+	var message: String = String(ctx.get("message", str(code)))
+	_record_error(code, field, value, message)
+
+
+func _record_error(code: StringName, field: String, value: Variant, message: String) -> void:
+	var info: Dictionary = _err(code, SCRIPT_PATH, field, value, message)
+	_last_error = info
+	push_error("MarketPricer: %s" % str(info))
+
+
+func _err(code: StringName, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
+	# D-04 ErrorInfo = {code, sys, detail}; C-06 file/field/value live in detail.
+	return ErrorInfoUtil.make_validation(code, SYS_ID, file_path, field, value, message)
 
 
 func _emit_errors(errors: Array) -> void:
