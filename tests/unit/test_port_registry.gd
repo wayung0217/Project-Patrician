@@ -1,5 +1,7 @@
 extends GutTest
 ## WP-04 PortRegistry tests. Fixture values from TechSpec §4 / TST-SYS02-01..05 / 3.3.
+## D-04: failures are ErrorInfo Dictionaries {code, sys, detail}; no ERR→int.
+## D-02: queue_role_change payload validated at enqueue.
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
@@ -15,10 +17,12 @@ const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
 const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 
-const ERR_SYS02_01 := "ERR-SYS02-01"
-const ERR_SYS02_02 := "ERR-SYS02-02"
-const ERR_SYS02_05 := "ERR-SYS02-05"
-const ERR_SYS02_06 := "ERR-SYS02-06"
+const SYS_ID := &"SYS-02"
+const ERR_SYS02_01 := &"ERR-SYS02-01"
+const ERR_SYS02_02 := &"ERR-SYS02-02"
+const ERR_SYS02_03 := &"ERR-SYS02-03"
+const ERR_SYS02_05 := &"ERR-SYS02-05"
+const ERR_SYS02_06 := &"ERR-SYS02-06"
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -119,6 +123,7 @@ func test_TST_SYS02_04_transit_downstream_non_terminal_rejects() -> void:
 
 func test_TST_SYS02_05_role_change_queues_until_cutoff() -> void:
 	# TST-SYS02-05: 建造完工於商季第 30 日排隊；第 31..D 日角色不變；cutoff 後生效並發 role_changed
+	# D-02: TERMINAL payload must be empty.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
 	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "queue/", free_count)
@@ -137,7 +142,10 @@ func test_TST_SYS02_05_role_change_queues_until_cutoff() -> void:
 	# Day 30 (TST-SYS02-05): construction completion queues role change.
 	var day_in_season: int = TST_SYS02_05_QUEUE_DAY
 	assert_eq(day_in_season, TST_SYS02_05_QUEUE_DAY)
-	PortRegistry.queue_role_change(port_id, good_id, PortRegistry.ROLE_TERMINAL)
+	var q_errors: Array = PortRegistry.queue_role_change(
+		port_id, good_id, PortRegistry.ROLE_TERMINAL, {}
+	)
+	assert_eq(q_errors.size(), 0, "TERMINAL empty payload must enqueue")
 
 	var days_per_season: int = Params.get_int(PRM_DAYS_PER_SEASON)
 	# Days 31 .. D inclusive: role unchanged (SimLoop not present — observe via get_role).
@@ -150,7 +158,143 @@ func test_TST_SYS02_05_role_change_queues_until_cutoff() -> void:
 	var apply_errors: Array = PortRegistry.apply_queued_role_changes()
 	assert_eq(apply_errors.size(), 0)
 	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TERMINAL)
+	assert_eq(PortRegistry.get_port(port_id).role_cells[good_id].base_output_per_season, 0)
 	assert_signal_emitted(PortRegistry, "role_changed")
+
+
+func test_D02_queue_producer_payload_applies_output() -> void:
+	# D-02: PRODUCER requires base_output_per_season > 0; applied at cutoff.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "q_producer/", free_count)
+	var errors: Array = PortRegistry.load_and_validate(dir)
+	assert_eq(errors.size(), 0)
+
+	var port_id := "PT-03"
+	var good_id: String = GoodCatalog.all_ids()[0]
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TERMINAL)
+
+	var q_errors: Array = PortRegistry.queue_role_change(
+		port_id, good_id, PortRegistry.ROLE_PRODUCER, {"base_output_per_season": 7}
+	)
+	assert_eq(q_errors.size(), 0)
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TERMINAL, "must not apply before cutoff")
+
+	var apply_errors: Array = PortRegistry.apply_queued_role_changes()
+	assert_eq(apply_errors.size(), 0)
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_PRODUCER)
+	assert_eq(PortRegistry.get_port(port_id).role_cells[good_id].base_output_per_season, 7)
+
+
+func test_D02_queue_transit_payload_applies_downstream() -> void:
+	# D-02: TRANSIT requires non-empty downstream_terminals; applied at cutoff; FRM still re-run.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "q_transit/", free_count)
+	var errors: Array = PortRegistry.load_and_validate(dir)
+	assert_eq(errors.size(), 0)
+
+	var port_id := "PT-03"
+	var good_id: String = GoodCatalog.all_ids()[0]
+	var q_errors: Array = PortRegistry.queue_role_change(
+		port_id, good_id, PortRegistry.ROLE_TRANSIT, {"downstream_terminals": PackedStringArray(["PT-02"])}
+	)
+	assert_eq(q_errors.size(), 0)
+
+	var apply_errors: Array = PortRegistry.apply_queued_role_changes()
+	assert_eq(apply_errors.size(), 0)
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TRANSIT)
+	var downs: PackedStringArray = PortRegistry.get_downstream(port_id, good_id)
+	assert_eq(downs.size(), 1)
+	assert_eq(downs[0], "PT-02")
+
+
+func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
+	# D-02: missing / forbidden / wrong-type PRODUCER payload → ERR-SYS02 at enqueue, not cutoff.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "q_bad_prod/", free_count)
+	assert_eq(PortRegistry.load_and_validate(dir).size(), 0)
+
+	var port_id := "PT-03"
+	var good_id: String = GoodCatalog.all_ids()[0]
+
+	var push_total: int = 0
+
+	var missing: Array = PortRegistry.queue_role_change(port_id, good_id, PortRegistry.ROLE_PRODUCER, {})
+	assert_gt(missing.size(), 0)
+	push_total += missing.size()
+	assert_true(_has_code(missing, ERR_SYS02_03), "missing output → ERR-SYS02-03")
+
+	var zero_out: Array = PortRegistry.queue_role_change(
+		port_id, good_id, PortRegistry.ROLE_PRODUCER, {"base_output_per_season": 0}
+	)
+	push_total += zero_out.size()
+	assert_true(_has_code(zero_out, ERR_SYS02_03), "output <= 0 → ERR-SYS02-03")
+
+	var with_down: Array = PortRegistry.queue_role_change(
+		port_id,
+		good_id,
+		PortRegistry.ROLE_PRODUCER,
+		{"base_output_per_season": 1, "downstream_terminals": PackedStringArray(["PT-02"])}
+	)
+	push_total += with_down.size()
+	assert_true(_has_code(with_down, ERR_SYS02_02), "PRODUCER + downstream → ERR-SYS02-02")
+
+	var bad_type: Array = PortRegistry.queue_role_change(
+		port_id, good_id, PortRegistry.ROLE_PRODUCER, {"base_output_per_season": 1.5}
+	)
+	push_total += bad_type.size()
+	assert_true(_has_code(bad_type, ERR_SYS02_03), "non-int output → ERR-SYS02-03")
+
+	assert_push_error_count(push_total)
+
+	# Nothing enqueued → apply is no-op; role unchanged.
+	assert_eq(PortRegistry.apply_queued_role_changes().size(), 0)
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TERMINAL)
+
+
+func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> void:
+	# D-02: TRANSIT / TERMINAL payload schema enforced at enqueue.
+	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
+	var free_count: int = _valid_free_count(port_count)
+	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "q_bad_tt/", free_count)
+	assert_eq(PortRegistry.load_and_validate(dir).size(), 0)
+
+	var port_id := "PT-03"
+	var good_id: String = GoodCatalog.all_ids()[0]
+
+	var push_total: int = 0
+
+	var empty_transit: Array = PortRegistry.queue_role_change(port_id, good_id, PortRegistry.ROLE_TRANSIT, {})
+	push_total += empty_transit.size()
+	assert_true(_has_code(empty_transit, ERR_SYS02_02), "TRANSIT missing downstream → ERR-SYS02-02")
+
+	var empty_list: Array = PortRegistry.queue_role_change(
+		port_id, good_id, PortRegistry.ROLE_TRANSIT, {"downstream_terminals": PackedStringArray()}
+	)
+	push_total += empty_list.size()
+	assert_true(_has_code(empty_list, ERR_SYS02_02), "TRANSIT empty downstream → ERR-SYS02-02")
+
+	var with_output: Array = PortRegistry.queue_role_change(
+		port_id,
+		good_id,
+		PortRegistry.ROLE_TRANSIT,
+		{"downstream_terminals": PackedStringArray(["PT-02"]), "base_output_per_season": 1}
+	)
+	push_total += with_output.size()
+	assert_true(_has_code(with_output, ERR_SYS02_03), "TRANSIT + output → ERR-SYS02-03")
+
+	var terminal_extra: Array = PortRegistry.queue_role_change(
+		port_id, good_id, PortRegistry.ROLE_TERMINAL, {"base_output_per_season": 1}
+	)
+	push_total += terminal_extra.size()
+	assert_true(_has_code(terminal_extra, ERR_SYS02_03), "TERMINAL non-empty → ERR-SYS02-03")
+
+	assert_push_error_count(push_total)
+
+	assert_eq(PortRegistry.apply_queued_role_changes().size(), 0)
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TERMINAL)
 
 
 func test_valid_ports_load_queries_and_warnings() -> void:
@@ -346,10 +490,30 @@ func _wipe_dir(dir: String) -> void:
 	DirAccess.make_dir_recursive_absolute(abs_path)
 
 
-func _has_code(errors: Array, code: String) -> bool:
+func _has_code(errors: Array, code: StringName) -> bool:
 	for e in errors:
-		if typeof(e) != TYPE_DICTIONARY:
+		if not _is_error_info(e):
 			continue
-		if String(e.get("code", "")) == code:
+		if StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")) == code:
+			assert_eq(StringName(e.get(ErrorInfoUtil.KEY_SYS, &"")), SYS_ID, "ErrorInfo.sys must be SYS-02")
+			var detail: Variant = e.get(ErrorInfoUtil.KEY_DETAIL, null)
+			assert_eq(typeof(detail), TYPE_DICTIONARY, "ErrorInfo.detail must be Dictionary")
 			return true
 	return false
+
+
+func _is_error_info(e: Variant) -> bool:
+	# D-04 carrier: {code: StringName, sys: StringName, detail: Dictionary}.
+	if typeof(e) != TYPE_DICTIONARY:
+		return false
+	var d: Dictionary = e
+	if not d.has(ErrorInfoUtil.KEY_CODE):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_SYS):
+		return false
+	if not d.has(ErrorInfoUtil.KEY_DETAIL):
+		return false
+	# Reject legacy flat shape and any int-coded errors (D-04 withdraw −1..−5 / ERR→int).
+	if typeof(d[ErrorInfoUtil.KEY_CODE]) == TYPE_INT:
+		return false
+	return true

@@ -3,11 +3,15 @@ extends Node
 ## _ready() only clears fields; load_and_validate() performs I/O and FRM checks (2.2-01).
 ## draft_limit_class stored on PortDef only — no validation / no logic (Owner B3 / 1-A5).
 ## WAREHOUSE / HOLD capacity are SYS-08 / SYS-13 — out of scope.
+## Errors are D-04 ErrorInfo Dictionaries (shared with C-06); no ERR→int.
+## D-02: queue_role_change(..., payload) rejects bad payload at enqueue.
 
 signal role_changed(port: String, good: String, old_role: int, new_role: int)
 
 const PORTS_DIR := "res://data/ports/"
 const TRES_SUFFIX := ".tres"
+
+const SYS_ID := &"SYS-02"
 
 ## Role enum ints — declaration order PRODUCER／TRANSIT／TERMINAL (03_Systems r261); no NONE.
 ## Numeric mapping not spelled in TechSpec H (unlike MarketPricer BUY=0); Godot enum order 0..n-1.
@@ -26,13 +30,22 @@ const PRM_PORT_COUNT_MAX := "PRM-SYS02-PORT_COUNT_MAX"
 const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
 const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
 
-const ERR_SYS02_01 := "ERR-SYS02-01"
-const ERR_SYS02_02 := "ERR-SYS02-02"
-const ERR_SYS02_03 := "ERR-SYS02-03"
-const ERR_SYS02_04 := "ERR-SYS02-04"
-const ERR_SYS02_05 := "ERR-SYS02-05"
-const ERR_SYS02_06 := "ERR-SYS02-06"
-const WRN_SYS02_01 := "WRN-SYS02-01"
+const ERR_SYS02_01 := &"ERR-SYS02-01"
+const ERR_SYS02_02 := &"ERR-SYS02-02"
+const ERR_SYS02_03 := &"ERR-SYS02-03"
+const ERR_SYS02_04 := &"ERR-SYS02-04"
+const ERR_SYS02_05 := &"ERR-SYS02-05"
+const ERR_SYS02_06 := &"ERR-SYS02-06"
+const WRN_SYS02_01 := &"WRN-SYS02-01"
+
+const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
+const CODE_GOOD_CATALOG_NOT_LOADED := &"GOOD_CATALOG_NOT_LOADED"
+const CODE_LOAD_FAIL := &"LOAD_FAIL"
+const CODE_LOAD_TYPE := &"LOAD_TYPE"
+const CODE_NOT_LOADED := &"NOT_LOADED"
+const CODE_DIR_OPEN := &"DIR_OPEN"
+const CODE_DUPLICATE_PORT_ID := &"DUPLICATE_PORT_ID"
+const CODE_EMPTY_NAME_ZH := &"EMPTY_NAME_ZH"
 
 const FIELD_PORT_ID := "port_id"
 const FIELD_NAME_ZH := "name_zh"
@@ -45,10 +58,12 @@ const FIELD_FREE_PORT_RATIO := "free_port_ratio"
 const FIELD_ROLE_CELLS := "role_cells"
 const FIELD_PARAMS := "Params"
 const FIELD_GOOD_CATALOG := "GoodCatalog"
+const FIELD_PAYLOAD := "payload"
 
 const QUEUE_KEY_PORT := "port"
 const QUEUE_KEY_GOOD := "good"
 const QUEUE_KEY_NEW_ROLE := "new_role"
+const QUEUE_KEY_PAYLOAD := "payload"
 
 var _by_id: Dictionary = {}
 var _ids_sorted: PackedStringArray = PackedStringArray()
@@ -62,17 +77,17 @@ func _ready() -> void:
 
 
 func load_and_validate(ports_dir: String = PORTS_DIR) -> Array:
-	# C-06: collect every error; do not stop at the first.
+	# C-06: collect every ErrorInfo; do not stop at the first.
 	var errors: Array = []
 	_clear_state()
 
 	if not Params.is_loaded():
-		errors.append(_err("PARAMS_NOT_LOADED", ports_dir, FIELD_PARAMS, null, "Params must load_and_validate before PortRegistry"))
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, ports_dir, FIELD_PARAMS, null, "Params must load_and_validate before PortRegistry"))
 		_emit_errors(errors)
 		return errors
 
 	if not GoodCatalog.is_loaded():
-		errors.append(_err("GOOD_CATALOG_NOT_LOADED", ports_dir, FIELD_GOOD_CATALOG, null, "GoodCatalog must load_and_validate before PortRegistry"))
+		errors.append(_err(CODE_GOOD_CATALOG_NOT_LOADED, ports_dir, FIELD_GOOD_CATALOG, null, "GoodCatalog must load_and_validate before PortRegistry"))
 		_emit_errors(errors)
 		return errors
 
@@ -90,10 +105,10 @@ func load_and_validate(ports_dir: String = PORTS_DIR) -> Array:
 		var path: String = String(path_variant)
 		var res: Resource = ResourceLoader.load(path, "", ResourceLoader.CACHE_MODE_IGNORE)
 		if res == null:
-			errors.append(_err("LOAD_FAIL", path, "", null, "ResourceLoader.load failed"))
+			errors.append(_err(CODE_LOAD_FAIL, path, "", null, "ResourceLoader.load failed"))
 			continue
 		if not (res is PortDef):
-			errors.append(_err("LOAD_TYPE", path, "", res.get_class(), "expected PortDef Resource"))
+			errors.append(_err(CODE_LOAD_TYPE, path, "", res.get_class(), "expected PortDef Resource"))
 			continue
 		loaded.append({"path": path, "def": res as PortDef})
 
@@ -119,7 +134,7 @@ func load_and_validate(ports_dir: String = PORTS_DIR) -> Array:
 func validate() -> Array:
 	## Re-run FRM-SYS02-01 on the currently held registry (H observability).
 	if not _loaded:
-		return [_err("NOT_LOADED", PORTS_DIR, "", null, "PortRegistry.validate called before successful load")]
+		return [_err(CODE_NOT_LOADED, PORTS_DIR, "", null, "PortRegistry.validate called before successful load")]
 	var loaded: Array = []
 	for id_variant in all_ids():
 		var id: String = String(id_variant)
@@ -169,21 +184,30 @@ func get_warnings() -> Array:
 	return _warnings.duplicate()
 
 
-func queue_role_change(port: String, good: String, new_role: int) -> void:
-	## EV-SYS02-ROLE_CHANGE — enqueue; applied only via apply_queued_role_changes (2.3-05(a)).
+func queue_role_change(port_id: String, good_id: String, new_role: int, payload: Dictionary) -> Array:
+	## EV-SYS02-ROLE_CHANGE / D-02 — enqueue with role payload; applied only via apply_queued_role_changes (2.3-05(a)).
+	## Bad payload → reject immediately with ERR-SYS02-* ErrorInfo; do not enqueue (must not wait for cutoff).
 	assert(_loaded, "PortRegistry.queue_role_change before successful load")
-	assert(_by_id.has(port), "PortRegistry.queue_role_change unknown port: %s" % port)
-	var def: PortDef = _by_id[port]
-	assert(def.role_cells.has(good), "PortRegistry.queue_role_change unknown good cell: %s @ %s" % [good, port])
+	assert(_by_id.has(port_id), "PortRegistry.queue_role_change unknown port: %s" % port_id)
+	var def: PortDef = _by_id[port_id]
+	assert(def.role_cells.has(good_id), "PortRegistry.queue_role_change unknown good cell: %s @ %s" % [good_id, port_id])
+
+	var errors: Array = _validate_role_change_payload(new_role, payload)
+	if not errors.is_empty():
+		_emit_errors(errors)
+		return errors
+
 	_role_change_queue.append({
-		QUEUE_KEY_PORT: port,
-		QUEUE_KEY_GOOD: good,
+		QUEUE_KEY_PORT: port_id,
+		QUEUE_KEY_GOOD: good_id,
 		QUEUE_KEY_NEW_ROLE: new_role,
+		QUEUE_KEY_PAYLOAD: payload.duplicate(true),
 	})
+	return errors
 
 
 func apply_queued_role_changes() -> Array:
-	## 2.3-05(a): apply queue, re-validate FRM-SYS02-01 before commit; emit role_changed per change.
+	## 2.3-05(a) / D-02: apply queue (payload fields), re-validate FRM-SYS02-01 (1)–(6) before commit; emit role_changed.
 	assert(_loaded, "PortRegistry.apply_queued_role_changes before successful load")
 	if _role_change_queue.is_empty():
 		return []
@@ -200,12 +224,13 @@ func apply_queued_role_changes() -> Array:
 		var port: String = String(item[QUEUE_KEY_PORT])
 		var good: String = String(item[QUEUE_KEY_GOOD])
 		var new_role: int = int(item[QUEUE_KEY_NEW_ROLE])
+		var payload: Dictionary = item[QUEUE_KEY_PAYLOAD]
 		var cell: RoleCell = _require_cell(port, good)
 		var old_role: int = cell.role
+		_apply_role_payload(cell, new_role, payload)
 		if old_role == new_role:
-			continue
-		cell.role = new_role
-		_enforce_role_field_constraints(cell)
+			# Still apply payload field updates even when role int unchanged.
+			pass
 		applied.append({
 			QUEUE_KEY_PORT: port,
 			QUEUE_KEY_GOOD: good,
@@ -222,13 +247,106 @@ func apply_queued_role_changes() -> Array:
 	_warnings = _collect_warnings(_loaded_items_view())
 	for change_variant in applied:
 		var change: Dictionary = change_variant
+		var old_role_emit: int = int(change["old_role"])
+		var new_role_emit: int = int(change[QUEUE_KEY_NEW_ROLE])
+		if old_role_emit == new_role_emit:
+			continue
 		role_changed.emit(
 			String(change[QUEUE_KEY_PORT]),
 			String(change[QUEUE_KEY_GOOD]),
-			int(change["old_role"]),
-			int(change[QUEUE_KEY_NEW_ROLE])
+			old_role_emit,
+			new_role_emit
 		)
 	return errors
+
+
+func _validate_role_change_payload(new_role: int, payload: Dictionary) -> Array:
+	# D-02: missing / extra / wrong-type keys → ERR-SYS02 corresponding codes at enqueue.
+	var errors: Array = []
+	if not _is_valid_role(new_role):
+		errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_ROLE, new_role, "role must be PRODUCER／TRANSIT／TERMINAL"))
+		return errors
+
+	var keys: Array = payload.keys()
+	keys.sort()
+
+	if new_role == ROLE_PRODUCER:
+		for key_variant in keys:
+			var key: String = String(key_variant)
+			if key == FIELD_DOWNSTREAM:
+				errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, payload[key], "PRODUCER payload must not contain downstream_terminals"))
+			elif key != FIELD_OUTPUT:
+				errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "PRODUCER payload unknown key"))
+		if not payload.has(FIELD_OUTPUT):
+			errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, null, "PRODUCER payload requires base_output_per_season > 0"))
+		else:
+			var output_variant: Variant = payload[FIELD_OUTPUT]
+			if typeof(output_variant) != TYPE_INT:
+				errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, output_variant, "PRODUCER base_output_per_season must be int > 0"))
+			elif int(output_variant) <= 0:
+				errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, output_variant, "PRODUCER base_output_per_season must be > 0"))
+		return errors
+
+	if new_role == ROLE_TRANSIT:
+		for key_variant in keys:
+			var key: String = String(key_variant)
+			if key == FIELD_OUTPUT:
+				errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, payload[key], "TRANSIT payload must not contain base_output_per_season"))
+			elif key != FIELD_DOWNSTREAM:
+				errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "TRANSIT payload unknown key"))
+		if not payload.has(FIELD_DOWNSTREAM):
+			errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, null, "TRANSIT payload requires non-empty downstream_terminals"))
+		else:
+			var down_variant: Variant = payload[FIELD_DOWNSTREAM]
+			var downs: PackedStringArray = PackedStringArray()
+			var type_ok: bool = false
+			if typeof(down_variant) == TYPE_PACKED_STRING_ARRAY:
+				downs = down_variant
+				type_ok = true
+			elif typeof(down_variant) == TYPE_ARRAY:
+				type_ok = true
+				for item in down_variant:
+					if typeof(item) != TYPE_STRING:
+						type_ok = false
+						break
+					downs.append(String(item))
+			if not type_ok:
+				errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, down_variant, "TRANSIT downstream_terminals must be string array"))
+			elif downs.is_empty():
+				errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, downs, "TRANSIT downstream_terminals must be non-empty"))
+		return errors
+
+	# TERMINAL: payload must be empty.
+	for key_variant in keys:
+		var key: String = String(key_variant)
+		if key == FIELD_OUTPUT:
+			errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, payload[key], "TERMINAL payload must be empty (no base_output_per_season)"))
+		elif key == FIELD_DOWNSTREAM:
+			errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, payload[key], "TERMINAL payload must be empty (no downstream_terminals)"))
+		else:
+			errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "TERMINAL payload must be empty"))
+	return errors
+
+
+func _apply_role_payload(cell: RoleCell, new_role: int, payload: Dictionary) -> void:
+	# D-02: payload supplies required fields; clear non-applicable role fields (not a substitute for payload).
+	cell.role = new_role
+	if new_role == ROLE_PRODUCER:
+		cell.base_output_per_season = int(payload[FIELD_OUTPUT])
+		cell.downstream_terminals = PackedStringArray()
+	elif new_role == ROLE_TRANSIT:
+		cell.base_output_per_season = 0
+		var down_variant: Variant = payload[FIELD_DOWNSTREAM]
+		if typeof(down_variant) == TYPE_PACKED_STRING_ARRAY:
+			cell.downstream_terminals = (down_variant as PackedStringArray).duplicate()
+		else:
+			var downs := PackedStringArray()
+			for item in down_variant:
+				downs.append(String(item))
+			cell.downstream_terminals = downs
+	else:
+		cell.base_output_per_season = 0
+		cell.downstream_terminals = PackedStringArray()
 
 
 func _validate_loaded(loaded: Array) -> Array:
@@ -264,13 +382,13 @@ func _validate_loaded(loaded: Array) -> Array:
 		var def: PortDef = item["def"]
 
 		if seen_ids.has(def.port_id):
-			errors.append(_err("DUPLICATE_PORT_ID", path, FIELD_PORT_ID, def.port_id, "duplicate port_id"))
+			errors.append(_err(CODE_DUPLICATE_PORT_ID, path, FIELD_PORT_ID, def.port_id, "duplicate port_id"))
 		else:
 			seen_ids[def.port_id] = path
 			by_port[def.port_id] = def
 
 		if def.name_zh.is_empty():
-			errors.append(_err("EMPTY_NAME_ZH", path, FIELD_NAME_ZH, def.name_zh, "name_zh must be non-empty"))
+			errors.append(_err(CODE_EMPTY_NAME_ZH, path, FIELD_NAME_ZH, def.name_zh, "name_zh must be non-empty"))
 
 		if def.is_free_port:
 			free_count += 1
@@ -437,15 +555,6 @@ func _collect_warnings(loaded: Array) -> Array:
 	return warnings
 
 
-func _enforce_role_field_constraints(cell: RoleCell) -> void:
-	# Field invariants from 03_Systems r262–r263: downstream only TRANSIT; output >0 only PRODUCER.
-	# 缺口：queue_role_change(port,good,new_role) 未帶 base_output／downstream；轉入 PRODUCER／TRANSIT 無法補值。
-	if cell.role != ROLE_PRODUCER:
-		cell.base_output_per_season = 0
-	if cell.role != ROLE_TRANSIT:
-		cell.downstream_terminals = PackedStringArray()
-
-
 func _snapshot_role_fields() -> Dictionary:
 	var snap: Dictionary = {}
 	for id_variant in all_ids():
@@ -521,7 +630,7 @@ func _list_tres_paths(dir_path: String, errors: Array) -> Array:
 	var paths: Array = []
 	var dir := DirAccess.open(dir_path)
 	if dir == null:
-		errors.append(_err("DIR_OPEN", dir_path, "", DirAccess.get_open_error(), "cannot open ports directory"))
+		errors.append(_err(CODE_DIR_OPEN, dir_path, "", DirAccess.get_open_error(), "cannot open ports directory"))
 		return paths
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
@@ -542,15 +651,9 @@ func _clear_state() -> void:
 	_role_change_queue = []
 
 
-func _err(code: String, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
-	# C-06 shape: 錯誤碼、檔案、欄位、值 (Params-compatible Dictionary; sheet Array[Error] ≠ Godot Error enum).
-	return {
-		"code": code,
-		"file": file_path,
-		"field": field,
-		"value": value,
-		"message": message,
-	}
+func _err(code: StringName, file_path: String, field: String, value: Variant, message: String) -> Dictionary:
+	# D-04 ErrorInfo = {code, sys, detail}; C-06 file/field/value live in detail.
+	return ErrorInfoUtil.make_validation(code, SYS_ID, file_path, field, value, message)
 
 
 func _emit_errors(errors: Array) -> void:
