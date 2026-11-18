@@ -112,6 +112,7 @@ func test_TST_SYS08_02_closed_zone_buy_land() -> void:
 	assert_eq(StringName(err.get(ErrorInfoUtil.KEY_CODE, &"")), BuildingEconomy.ERR_SYS08_01)
 	assert_eq(CashLedger.balance(ACTOR), cash_before)
 	assert_eq(BuildingEconomy.get_slot(slot_id).land_owner, CashLedger.make_city_id(PORT_PT01))
+	assert_push_error_count(1)
 
 
 func test_WP18_11_07_1_zone_slot_totals() -> void:
@@ -209,18 +210,22 @@ func test_WP18_11_07_6_buy_land_post_and_owner() -> void:
 	_load_be(ROOT + "zones/", ROOT + "city_center/")
 	var slot_id: StringName = _first_civil_slot()
 	var price: int = BuildingEconomy.land_price(slot_id)
+	_top_up_actor(ACTOR, price + 1000)
+	var cash_before: int = CashLedger.balance(ACTOR)
 	var city: StringName = CashLedger.make_city_id(PORT_PT01)
-	var city_before: int = 0
-	if CashLedger.has_method("balance"):
-		CashLedger.create_account(city, Account.Kind.CITY)
-		city_before = CashLedger.balance(city)
-	var got_seq := 0
-	BuildingEconomy.land_bought.connect(func(_a, _s, seq: int): got_seq = seq)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	var city_before: int = CashLedger.balance(city)
+	# Dictionary capture — GDScript lambdas do not assign outer int locals reliably.
+	var got := {"seq": 0}
+	var cb := func(_a: StringName, _s: StringName, land_seq: int) -> void:
+		got["seq"] = land_seq
+	BuildingEconomy.land_bought.connect(cb)
 	var seq: int = BuildingEconomy.buy_land(ACTOR, slot_id)
+	BuildingEconomy.land_bought.disconnect(cb)
 	assert_gt(seq, 0)
-	assert_eq(seq, got_seq)
+	assert_eq(seq, int(got["seq"]))
 	assert_eq(BuildingEconomy.get_slot(slot_id).land_owner, ACTOR)
-	assert_eq(CashLedger.balance(ACTOR), Params.get_int(CashLedger.PRM_START_CASH) - price)
+	assert_eq(CashLedger.balance(ACTOR), cash_before - price)
 	assert_eq(CashLedger.balance(city), city_before + price)
 
 
@@ -240,6 +245,8 @@ func test_WP18_11_07_7_err08_err02_err07() -> void:
 	)
 
 	var slot_id: StringName = _first_civil_slot()
+	var price: int = BuildingEconomy.land_price(slot_id)
+	_top_up_actor(ACTOR, price + 1000)
 	assert_gt(BuildingEconomy.buy_land(ACTOR, slot_id), 0)
 	var seq2: int = BuildingEconomy.buy_land(ACTOR, slot_id)
 	assert_eq(seq2, 0)
@@ -262,18 +269,25 @@ func test_WP18_11_07_7_err08_err02_err07() -> void:
 		StringName(BuildingEconomy.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
 		BuildingEconomy.ERR_SYS08_07
 	)
+	# ERR-08; ERR-02; CashLedger + ERR-07 for broke actor
+	assert_push_error_count(1 + 1 + 2)
 
 
 func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	var fixtures := _prepare_sim_fixtures()
 	SimLoop._booted = false
+	SimLoop._capacity_by_kind.clear()
+	SimLoop._capacity_reg_errors.clear()
 	SimLoop.set_consumption_provider(_SimCons.new())
+	BuildingEconomy._loaded = false
+	BuildingEconomy._population = null
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE, fixtures["goods"], fixtures["ports"], CURVE_FIXTURE
 	)
 	assert_gt(errors.size(), 0)
 	assert_true(_has_code(errors, BuildingEconomy.CODE_POPULATION_PROVIDER_MISSING))
 	assert_false(SimLoop.is_booted())
+	assert_push_error_count(errors.size())
 
 
 func test_WP18_11_07_9_warehouse_capacity_empty() -> void:
@@ -304,6 +318,23 @@ func _setup_core(pop: TestPop) -> void:
 	assert_eq(cl.size(), 0)
 	assert_eq(CashLedger.genesis_grant(), OK)
 	BuildingEconomy.set_population_provider(pop)
+
+
+## Fixture top-up so land_price (often > START_CASH) can succeed in buy tests.
+func _top_up_actor(actor: StringName, need: int) -> void:
+	var bal: int = CashLedger.balance(actor)
+	if bal >= need:
+		return
+	var delta: int = need - bal
+	var rc: Error = CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - delta),
+			CashLedger.make_entry(actor, delta),
+		],
+		&"TEST_TOP_UP",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	assert_eq(rc, OK, "top-up post: %s" % str(CashLedger.last_error()))
 
 
 func _load_be(zones_dir: String, city_dir: String) -> void:
