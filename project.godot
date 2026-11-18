@@ -1,5 +1,5 @@
 ; Engine configuration file.
-; Godot 4.7.2-stable — Autoload order 2.2-01: Params → Clock → GoodCatalog → PortRegistry.
+; Godot 4.7.2-stable — Autoload order 2.2-01: Params → Clock → GoodCatalog → PortRegistry → GoodsLedger.
 
 config_version=5
 
@@ -14,6 +14,7 @@ Params="*res://autoload/params.gd"
 Clock="*res://autoload/clock.gd"
 GoodCatalog="*res://autoload/good_catalog.gd"
 PortRegistry="*res://autoload/port_registry.gd"
+GoodsLedger="*res://autoload/goods_ledger.gd"
 
 [editor_plugins]
 
