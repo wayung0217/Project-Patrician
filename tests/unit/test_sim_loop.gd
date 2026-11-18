@@ -9,6 +9,7 @@ const GOODS_FIXTURE_ROOT := "user://sim_loop_goods/"
 const PORTS_FIXTURE_ROOT := "user://sim_loop_ports/"
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
+const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
 const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
@@ -456,7 +457,8 @@ func _make_good(
 	def.is_build_material = is_build_material
 	def.is_strategic = is_strategic
 	def.base_price_li = base_price_li
-	def.season_mask = 0
+	# D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
+	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
 	return def
 
 

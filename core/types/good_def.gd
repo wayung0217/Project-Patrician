@@ -10,7 +10,7 @@ extends Resource
 @export var is_build_material: bool = false
 @export var is_strategic: bool = false
 @export var base_price_li: int = 0
-## Bitmask; MVP year-round — field present, no extra validation (TechSpec 3.2 D season_mask).
+## Bitmask; D-08a MVP must be year-full = 2^PRM-SYS00-SEASONS_PER_YEAR − 1 (validated by GoodCatalog).
 @export var season_mask: int = 0
 
 ## FRM-SYS01-02 derived: (tier > FREE_PORT_TIER_MAX) OR is_strategic.
