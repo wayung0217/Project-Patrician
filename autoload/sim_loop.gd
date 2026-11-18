@@ -100,6 +100,13 @@ func boot(
 	errors.append_array(GoodsLedger.load_and_validate())
 	errors.append_array(MarketPricer.load_and_validate(curve_path))
 	errors.append_array(CashLedger.load_and_validate())
+	# D-17d: PopulationModel after CashLedger／before BuildingEconomy; inject providers if unset.
+	errors.append_array(PopulationModel.load_and_validate())
+	if PopulationModel.is_loaded():
+		if not BuildingEconomy.has_population_provider():
+			BuildingEconomy.set_population_provider(PopulationModel.get_population_provider())
+		if not BuildingEconomy.has_workforce_provider():
+			BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
 	errors.append_array(BuildingEconomy.load_and_validate())
 
 	# 2.3-03: 未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。
@@ -188,6 +195,10 @@ func tick_day() -> Array:
 	# Role-cell PRODUCE path removed (WP-20); GoodsLedger.run_daily_produce kept for SYS-03 tests only.
 	day_errors.append_array(BuildingEconomy.daily_step(Clock.day))
 
+	# 14-03: PopulationModel after workshop produce (WP-21).
+	if PopulationModel.is_loaded():
+		day_errors.append_array(PopulationModel.daily_step(Clock.day))
+
 	# 2.3-03 步驟 3: 注入的 ConsumptionProvider 執行 CONSUME，依 (port_id, good_id) 升序
 	day_errors.append_array(_run_daily_consume(Clock.day))
 
@@ -205,8 +216,10 @@ func tick_day() -> Array:
 		GoodsLedger.check_conservation()
 
 	# 2.3-06 步驟 6: 全部寫入完成後才發出信號（D-05(a)）
-	# D-12h: flush BuildingEconomy daily construction signals before clock signals.
+	# D-12h／14-03 ⑧: flush BuildingEconomy + PopulationModel signals before clock signals.
 	BuildingEconomy.flush_signals()
+	if PopulationModel.is_loaded():
+		PopulationModel.flush_signals()
 	Clock.day_ticked.emit(Clock.day)
 	if at_cutoff:
 		# D-05(c): season_index = floori((day−1)/D)；首季 0

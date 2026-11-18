@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://uculya2yf5pq"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_bad_qty_neg/build_queue.step.translation", "res://tests/fixtures/wp21_bad_qty_neg/build_queue.cb.translation", "res://tests/fixtures/wp21_bad_qty_neg/build_queue.target.translation"]
+
+source_file="res://tests/fixtures/wp21_bad_qty_neg/build_queue.csv"
+dest_files=["res://tests/fixtures/wp21_bad_qty_neg/build_queue.step.translation", "res://tests/fixtures/wp21_bad_qty_neg/build_queue.cb.translation", "res://tests/fixtures/wp21_bad_qty_neg/build_queue.target.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

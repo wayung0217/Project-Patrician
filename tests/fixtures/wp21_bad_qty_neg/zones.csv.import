@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bspcas8vuxw6g"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_bad_qty_neg/zones.zone.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.slot.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.rings.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.slots.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.open.translation"]
+
+source_file="res://tests/fixtures/wp21_bad_qty_neg/zones.csv"
+dest_files=["res://tests/fixtures/wp21_bad_qty_neg/zones.zone.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.slot.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.rings.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.slots.translation", "res://tests/fixtures/wp21_bad_qty_neg/zones.open.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://48hle2d0xpej"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_bad_qty_neg/buildings.tier.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.max.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.base.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.output.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.input1.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.input2.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.build.translation"]
+
+source_file="res://tests/fixtures/wp21_bad_qty_neg/buildings.csv"
+dest_files=["res://tests/fixtures/wp21_bad_qty_neg/buildings.tier.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.max.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.base.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.output.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.input1.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.input2.translation", "res://tests/fixtures/wp21_bad_qty_neg/buildings.build.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

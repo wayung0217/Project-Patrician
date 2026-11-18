@@ -191,7 +191,7 @@ const ZONE_DEF_FIELDS: Array[Dictionary] = [
 ]
 
 ## BuildingDef fields — TechSpec 10-05 buildings.csv headers.
-## base_output_per_worker is 定點數 → float; input*_qty is int (10-06).
+## base_output_per_worker + input*_qty are 定點數 → float (10-06／D-18a).
 const BUILDING_DEF_FIELDS: Array[Dictionary] = [
 	{"name": "type", "type": COL_TYPE_STRING},
 	{"name": "tier", "type": COL_TYPE_INT},
@@ -199,9 +199,9 @@ const BUILDING_DEF_FIELDS: Array[Dictionary] = [
 	{"name": "base_output_per_worker", "type": COL_TYPE_FLOAT},
 	{"name": "output_good_id", "type": COL_TYPE_STRING},
 	{"name": "input1_good_id", "type": COL_TYPE_STRING},
-	{"name": "input1_qty", "type": COL_TYPE_INT},
+	{"name": "input1_qty", "type": COL_TYPE_FLOAT},
 	{"name": "input2_good_id", "type": COL_TYPE_STRING},
-	{"name": "input2_qty", "type": COL_TYPE_INT},
+	{"name": "input2_qty", "type": COL_TYPE_FLOAT},
 	{"name": "build_class", "type": COL_TYPE_STRING},
 ]
 
@@ -704,8 +704,8 @@ static func _collect_wp17_building_errors(
 		var type_id: String = String(row["type"])
 		var tier: int = int(row["tier"])
 		var max_workers: int = int(row["max_workers"])
-		var input1_qty: int = int(row["input1_qty"])
-		var input2_qty: int = int(row["input2_qty"])
+		var input1_qty: float = float(row["input1_qty"])
+		var input2_qty: float = float(row["input2_qty"])
 		var build_class: String = String(row["build_class"])
 		## 10-06 ① non-empty *_good_id ∈ goods
 		_check_optional_good_id(
@@ -723,7 +723,7 @@ static func _collect_wp17_building_errors(
 				"%s: 10-06 ② build_class row %s value '%s'"
 				% [FILE_BUILDINGS, str(row_index), build_class]
 			)
-		## 10-06 ⑤ int ≥ 0
+		## 10-06 ⑤ int ≥ 0；D-18a input*_qty float ≥ 0
 		if tier < 0:
 			errors.append(
 				"%s: 10-06 ⑤ int below zero row %s field tier value %s"
@@ -734,14 +734,14 @@ static func _collect_wp17_building_errors(
 				"%s: 10-06 ⑤ int below zero row %s field max_workers value %s"
 				% [FILE_BUILDINGS, str(row_index), str(max_workers)]
 			)
-		if input1_qty < 0:
+		if input1_qty < 0.0:
 			errors.append(
-				"%s: 10-06 ⑤ int below zero row %s field input1_qty value %s"
+				"%s: D-18a float below zero row %s field input1_qty value %s"
 				% [FILE_BUILDINGS, str(row_index), str(input1_qty)]
 			)
-		if input2_qty < 0:
+		if input2_qty < 0.0:
 			errors.append(
-				"%s: 10-06 ⑤ int below zero row %s field input2_qty value %s"
+				"%s: D-18a float below zero row %s field input2_qty value %s"
 				% [FILE_BUILDINGS, str(row_index), str(input2_qty)]
 			)
 		## 10-06 ⑥ unique type
@@ -1345,9 +1345,9 @@ static func _write_building_tres(
 		def.base_output_per_worker = float(row["base_output_per_worker"])
 		def.output_good_id = String(row["output_good_id"])
 		def.input1_good_id = String(row["input1_good_id"])
-		def.input1_qty = int(row["input1_qty"])
+		def.input1_qty = float(row["input1_qty"])
 		def.input2_good_id = String(row["input2_good_id"])
-		def.input2_qty = int(row["input2_qty"])
+		def.input2_qty = float(row["input2_qty"])
 		def.build_class = String(row["build_class"])
 		var path: String = buildings_dir.path_join("%s%s" % [def.type, TRES_SUFFIX])
 		var err: Error = ResourceSaver.save(def, path)

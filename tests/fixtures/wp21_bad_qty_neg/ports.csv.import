@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cpwghblykfsxt"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_bad_qty_neg/ports.name.translation", "res://tests/fixtures/wp21_bad_qty_neg/ports.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/ports.draft.translation", "res://tests/fixtures/wp21_bad_qty_neg/ports.regime.translation"]
+
+source_file="res://tests/fixtures/wp21_bad_qty_neg/ports.csv"
+dest_files=["res://tests/fixtures/wp21_bad_qty_neg/ports.name.translation", "res://tests/fixtures/wp21_bad_qty_neg/ports.is.translation", "res://tests/fixtures/wp21_bad_qty_neg/ports.draft.translation", "res://tests/fixtures/wp21_bad_qty_neg/ports.regime.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
