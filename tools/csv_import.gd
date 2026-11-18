@@ -1,9 +1,10 @@
 @tool
 extends EditorScript
-## CSV → Resource converter framework (05_TechSpec 2.1-04 + D-08i).
-## Validates CSV against 03_Systems data-structure field names/types.
+## CSV → Resource converter framework (05_TechSpec 2.1-04 + D-08i + WP-17 / 10-05／10-06).
+## Validates CSV against 03_Systems／04_Content data-structure field names/types.
 ## Public API is static so headless GUT can call without instantiating EditorScript.
 ## D-08i: fixed in/out paths; validate all four CSVs then write all-or-nothing; clear old outputs first.
+## WP-17: second all-or-nothing batch for zones／buildings／opening_workshops／build_queue.
 
 const FIXTURES_PREFIX := "res://tests/fixtures/"
 const DATA_PREFIX := "res://data/"
@@ -14,18 +15,32 @@ const IMPORT_GOODS_CSV := IMPORT_DIR + "goods.csv"
 const IMPORT_PORTS_CSV := IMPORT_DIR + "ports.csv"
 const IMPORT_ROLE_CELLS_CSV := IMPORT_DIR + "role_cells.csv"
 const IMPORT_PRICE_CURVE_CSV := IMPORT_DIR + "price_curve.csv"
+## WP-17 / 10-05 fixed import filenames (same IMPORT_DIR).
+const IMPORT_ZONES_CSV := IMPORT_DIR + "zones.csv"
+const IMPORT_BUILDINGS_CSV := IMPORT_DIR + "buildings.csv"
+const IMPORT_OPENING_WORKSHOPS_CSV := IMPORT_DIR + "opening_workshops.csv"
+const IMPORT_BUILD_QUEUE_CSV := IMPORT_DIR + "build_queue.csv"
 
 ## D-08i fixed output roots.
 const GOODS_OUT_DIR := "res://data/goods/"
 const PORTS_OUT_DIR := "res://data/ports/"
 const MARKET_OUT_DIR := "res://data/market/"
 const PRICE_CURVE_OUT_PATH := MARKET_OUT_DIR + "price_curve.tres"
+## WP-17 / 10-05 fixed output roots (allowed directories).
+const ZONES_OUT_DIR := "res://data/zones/"
+const BUILDINGS_OUT_DIR := "res://data/buildings/"
+const OPENING_OUT_DIR := "res://data/opening/"
+const BUILD_QUEUE_OUT_DIR := "res://data/build_queue/"
 
 ## Resource kinds — one kind per CSV (2.1-04 ①).
 const KIND_GOOD_DEF := "GoodDef"
 const KIND_PORT_DEF := "PortDef"
 const KIND_ROLE_CELL := "RoleCell"
 const KIND_PRICE_CURVE := "PriceCurve"
+const KIND_ZONE_DEF := "ZoneDef"
+const KIND_BUILDING_DEF := "BuildingDef"
+const KIND_OPENING_WORKSHOP := "OpeningWorkshop"
+const KIND_BUILD_STEP := "BuildStep"
 
 ## Column type tags — wording mirrors 03_Systems type column.
 const COL_TYPE_STRING := "String"
@@ -54,11 +69,39 @@ const ARRAY_CELL_SEPARATOR := ";"
 const TRES_SUFFIX := ".tres"
 const CSV_SUFFIX := ".csv"
 
-## Filenames inside IMPORT_DIR (D-08i).
+## Filenames inside IMPORT_DIR (D-08i + WP-17).
 const FILE_GOODS := "goods.csv"
 const FILE_PORTS := "ports.csv"
 const FILE_ROLE_CELLS := "role_cells.csv"
 const FILE_PRICE_CURVE := "price_curve.csv"
+const FILE_ZONES := "zones.csv"
+const FILE_BUILDINGS := "buildings.csv"
+const FILE_OPENING_WORKSHOPS := "opening_workshops.csv"
+const FILE_BUILD_QUEUE := "build_queue.csv"
+
+## WP-17 / 10-06 ② build_class allowlist.
+const BUILD_CLASS_RESIDENCE := "RESIDENCE"
+const BUILD_CLASS_WAREHOUSE := "WAREHOUSE"
+const BUILD_CLASS_IND1 := "IND1"
+const BUILD_CLASS_IND2 := "IND2"
+const BUILD_CLASS_IND3 := "IND3"
+const BUILD_CLASS_PUBLIC := "PUBLIC"
+const BUILD_CLASS_KONTOR := "KONTOR"
+const BUILD_CLASS_ALLOWED: PackedStringArray = [
+	BUILD_CLASS_RESIDENCE,
+	BUILD_CLASS_WAREHOUSE,
+	BUILD_CLASS_IND1,
+	BUILD_CLASS_IND2,
+	BUILD_CLASS_IND3,
+	BUILD_CLASS_PUBLIC,
+	BUILD_CLASS_KONTOR,
+]
+
+## WP-17 / 10-06 ③ cb_id format (TechSpec literal).
+const CB_ID_FORMAT_PATTERN := "^CB-[0-9]{2}$"
+
+## Composite-key .tres filename joiner (C-05 gap: 10-05 lists dirs only, not filenames).
+const COMPOSITE_TRES_JOINER := "__"
 
 ## GoodDef fields — 03_Systems r234–r241 / 05_TechSpec §3.2 D 欄位.
 const GOOD_DEF_FIELDS: Array[Dictionary] = [
@@ -99,6 +142,46 @@ const PRICE_CURVE_FIELDS: Array[Dictionary] = [
 	{"name": "mult", "type": COL_TYPE_FLOAT},
 ]
 
+## ZoneDef fields — TechSpec 10-05 zones.csv headers (04_Content §7).
+## slot_share is 定點數 → float (10-06); open_at_start is int 0／1 (not bool).
+const ZONE_DEF_FIELDS: Array[Dictionary] = [
+	{"name": "port_id", "type": COL_TYPE_STRING},
+	{"name": "zone", "type": COL_TYPE_INT},
+	{"name": "slot_share", "type": COL_TYPE_FLOAT},
+	{"name": "rings", "type": COL_TYPE_INT},
+	{"name": "open_at_start", "type": COL_TYPE_INT},
+]
+
+## BuildingDef fields — TechSpec 10-05 buildings.csv headers.
+## base_output_per_worker is 定點數 → float; input*_qty is int (10-06).
+const BUILDING_DEF_FIELDS: Array[Dictionary] = [
+	{"name": "type", "type": COL_TYPE_STRING},
+	{"name": "tier", "type": COL_TYPE_INT},
+	{"name": "max_workers", "type": COL_TYPE_INT},
+	{"name": "base_output_per_worker", "type": COL_TYPE_FLOAT},
+	{"name": "output_good_id", "type": COL_TYPE_STRING},
+	{"name": "input1_good_id", "type": COL_TYPE_STRING},
+	{"name": "input1_qty", "type": COL_TYPE_INT},
+	{"name": "input2_good_id", "type": COL_TYPE_STRING},
+	{"name": "input2_qty", "type": COL_TYPE_INT},
+	{"name": "build_class", "type": COL_TYPE_STRING},
+]
+
+## OpeningWorkshop fields — TechSpec 10-05 opening_workshops.csv headers.
+const OPENING_WORKSHOP_FIELDS: Array[Dictionary] = [
+	{"name": "port_id", "type": COL_TYPE_STRING},
+	{"name": "good_id", "type": COL_TYPE_STRING},
+	{"name": "count", "type": COL_TYPE_INT},
+]
+
+## BuildStep fields — TechSpec 10-05 build_queue.csv headers.
+const BUILD_STEP_FIELDS: Array[Dictionary] = [
+	{"name": "port_id", "type": COL_TYPE_STRING},
+	{"name": "step", "type": COL_TYPE_INT},
+	{"name": "cb_id", "type": COL_TYPE_STRING},
+	{"name": "target_level", "type": COL_TYPE_INT},
+]
+
 
 func _run() -> void:
 	## D-08i: EditorScript entry uses fixed in/out paths only.
@@ -107,6 +190,12 @@ func _run() -> void:
 		print("csv_import D-08i: wrote %s resources" % str((result["written"] as Array).size()))
 	else:
 		push_error("csv_import D-08i: aborted with %s error(s)" % str((result["errors"] as PackedStringArray).size()))
+	## WP-17: second independent all-or-nothing batch (10-05).
+	var wp17: Dictionary = run_batch_wp17()
+	if wp17["ok"]:
+		print("csv_import WP-17: wrote %s resources" % str((wp17["written"] as Array).size()))
+	else:
+		push_error("csv_import WP-17: aborted with %s error(s)" % str((wp17["errors"] as PackedStringArray).size()))
 
 
 ## Returns schema field list for a resource kind, or empty if unknown.
@@ -119,6 +208,14 @@ static func schema_for(resource_kind: String) -> Array[Dictionary]:
 		return ROLE_CELL_FIELDS
 	if resource_kind == KIND_PRICE_CURVE:
 		return PRICE_CURVE_FIELDS
+	if resource_kind == KIND_ZONE_DEF:
+		return ZONE_DEF_FIELDS
+	if resource_kind == KIND_BUILDING_DEF:
+		return BUILDING_DEF_FIELDS
+	if resource_kind == KIND_OPENING_WORKSHOP:
+		return OPENING_WORKSHOP_FIELDS
+	if resource_kind == KIND_BUILD_STEP:
+		return BUILD_STEP_FIELDS
 	return []
 
 
@@ -304,6 +401,462 @@ static func clear_output_tres(
 				"D-08i: failed to clear old output %s (err=%s)" % [price_curve_out, str(err)]
 			)
 	return errors
+
+
+## WP-17 / 10-05: validate zones／buildings／opening_workshops／build_queue, then clear＋write all-or-nothing.
+## goods.csv／ports.csv in import_dir are reference-only for 10-06 ① (not written by this batch).
+## Result keys: ok (bool), errors (PackedStringArray), written (PackedStringArray).
+static func run_batch_wp17(
+	import_dir: String = IMPORT_DIR,
+	zones_dir: String = ZONES_OUT_DIR,
+	buildings_dir: String = BUILDINGS_OUT_DIR,
+	opening_dir: String = OPENING_OUT_DIR,
+	build_queue_dir: String = BUILD_QUEUE_OUT_DIR
+) -> Dictionary:
+	var result: Dictionary = {
+		"ok": false,
+		"errors": PackedStringArray(),
+		"written": PackedStringArray(),
+	}
+	var errors: PackedStringArray = PackedStringArray()
+
+	var zones_path: String = import_dir.path_join(FILE_ZONES)
+	var buildings_path: String = import_dir.path_join(FILE_BUILDINGS)
+	var opening_path: String = import_dir.path_join(FILE_OPENING_WORKSHOPS)
+	var queue_path: String = import_dir.path_join(FILE_BUILD_QUEUE)
+	var goods_path: String = import_dir.path_join(FILE_GOODS)
+	var ports_path: String = import_dir.path_join(FILE_PORTS)
+
+	var zones_result: Dictionary = import_csv(zones_path, KIND_ZONE_DEF, false)
+	var buildings_result: Dictionary = import_csv(buildings_path, KIND_BUILDING_DEF, false)
+	var opening_result: Dictionary = import_csv(opening_path, KIND_OPENING_WORKSHOP, false)
+	var queue_result: Dictionary = import_csv(queue_path, KIND_BUILD_STEP, false)
+	## Reference catalogs for 10-06 ① — parse only; not part of WP-17 write set.
+	var goods_result: Dictionary = import_csv(goods_path, KIND_GOOD_DEF, false)
+	var ports_result: Dictionary = import_csv(ports_path, KIND_PORT_DEF, false)
+
+	_merge_prefixed_errors(errors, FILE_ZONES, zones_result)
+	_merge_prefixed_errors(errors, FILE_BUILDINGS, buildings_result)
+	_merge_prefixed_errors(errors, FILE_OPENING_WORKSHOPS, opening_result)
+	_merge_prefixed_errors(errors, FILE_BUILD_QUEUE, queue_result)
+	_merge_prefixed_errors(errors, FILE_GOODS, goods_result)
+	_merge_prefixed_errors(errors, FILE_PORTS, ports_result)
+
+	if (
+		zones_result["ok"]
+		and buildings_result["ok"]
+		and opening_result["ok"]
+		and queue_result["ok"]
+		and goods_result["ok"]
+		and ports_result["ok"]
+	):
+		_collect_wp17_rule_errors(
+			zones_result["rows"] as Array,
+			buildings_result["rows"] as Array,
+			opening_result["rows"] as Array,
+			queue_result["rows"] as Array,
+			goods_result["rows"] as Array,
+			ports_result["rows"] as Array,
+			errors
+		)
+
+	if not errors.is_empty():
+		return _abort_batch(result, errors)
+
+	var clear_errors: PackedStringArray = clear_output_tres_wp17(
+		zones_dir, buildings_dir, opening_dir, build_queue_dir
+	)
+	if not clear_errors.is_empty():
+		for message in clear_errors:
+			errors.append(message)
+		return _abort_batch(result, errors)
+
+	var written: PackedStringArray = PackedStringArray()
+	var write_errors: PackedStringArray = PackedStringArray()
+	_write_zone_tres(zones_result["rows"] as Array, zones_dir, written, write_errors)
+	_write_building_tres(buildings_result["rows"] as Array, buildings_dir, written, write_errors)
+	_write_opening_workshop_tres(opening_result["rows"] as Array, opening_dir, written, write_errors)
+	_write_build_step_tres(queue_result["rows"] as Array, build_queue_dir, written, write_errors)
+
+	if not write_errors.is_empty():
+		for message in write_errors:
+			errors.append(message)
+		return _abort_batch(result, errors)
+
+	result["ok"] = true
+	result["errors"] = PackedStringArray()
+	result["written"] = written
+	return result
+
+
+## Remove existing .tres under WP-17 output dirs (10-05／D-08i clear-before-write).
+static func clear_output_tres_wp17(
+	zones_dir: String,
+	buildings_dir: String,
+	opening_dir: String,
+	build_queue_dir: String
+) -> PackedStringArray:
+	var errors: PackedStringArray = PackedStringArray()
+	_clear_tres_in_dir(zones_dir, errors)
+	_clear_tres_in_dir(buildings_dir, errors)
+	_clear_tres_in_dir(opening_dir, errors)
+	_clear_tres_in_dir(build_queue_dir, errors)
+	return errors
+
+
+## TechSpec 10-06 ①–⑥ — collect every violation (C-06); no extra cross-table rules.
+static func _collect_wp17_rule_errors(
+	zones: Array,
+	buildings: Array,
+	openings: Array,
+	queue: Array,
+	goods: Array,
+	ports: Array,
+	errors: PackedStringArray
+) -> void:
+	var port_ids: Dictionary = {}
+	for row_variant in ports:
+		var port_row: Dictionary = row_variant
+		port_ids[String(port_row["port_id"])] = true
+	var good_ids: Dictionary = {}
+	for row_variant in goods:
+		var good_row: Dictionary = row_variant
+		good_ids[String(good_row["good_id"])] = true
+
+	_collect_wp17_zone_errors(zones, port_ids, errors)
+	_collect_wp17_building_errors(buildings, good_ids, errors)
+	_collect_wp17_opening_errors(openings, port_ids, good_ids, errors)
+	_collect_wp17_queue_errors(queue, port_ids, errors)
+
+
+static func _collect_wp17_zone_errors(
+	zones: Array,
+	port_ids: Dictionary,
+	errors: PackedStringArray
+) -> void:
+	var seen: Dictionary = {}
+	var row_index: int = 0
+	for row_variant in zones:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var port_id: String = String(row["port_id"])
+		var zone: int = int(row["zone"])
+		var rings: int = int(row["rings"])
+		var open_at_start: int = int(row["open_at_start"])
+		## 10-06 ① port_id ∈ ports
+		if not port_ids.has(port_id):
+			errors.append(
+				"%s: 10-06 ① unknown port_id row %s value '%s'"
+				% [FILE_ZONES, str(row_index), port_id]
+			)
+		## 10-06 ⑤ int ≥ 0
+		if zone < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field zone value %s"
+				% [FILE_ZONES, str(row_index), str(zone)]
+			)
+		if rings < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field rings value %s"
+				% [FILE_ZONES, str(row_index), str(rings)]
+			)
+		if open_at_start < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field open_at_start value %s"
+				% [FILE_ZONES, str(row_index), str(open_at_start)]
+			)
+		## 10-06 ④ open_at_start ∈ {0, 1}
+		if open_at_start != 0 and open_at_start != 1:
+			errors.append(
+				"%s: 10-06 ④ open_at_start row %s value %s (expect 0／1)"
+				% [FILE_ZONES, str(row_index), str(open_at_start)]
+			)
+		## 10-06 ⑥ unique (port_id, zone)
+		var key: String = "%s%s%s" % [port_id, COMPOSITE_TRES_JOINER, str(zone)]
+		if seen.has(key):
+			errors.append(
+				"%s: 10-06 ⑥ duplicate key row %s (port_id, zone)=(%s, %s)"
+				% [FILE_ZONES, str(row_index), port_id, str(zone)]
+			)
+		else:
+			seen[key] = true
+
+
+static func _collect_wp17_building_errors(
+	buildings: Array,
+	good_ids: Dictionary,
+	errors: PackedStringArray
+) -> void:
+	var seen: Dictionary = {}
+	var allowed: Dictionary = {}
+	for name in BUILD_CLASS_ALLOWED:
+		allowed[name] = true
+	var row_index: int = 0
+	for row_variant in buildings:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var type_id: String = String(row["type"])
+		var tier: int = int(row["tier"])
+		var max_workers: int = int(row["max_workers"])
+		var input1_qty: int = int(row["input1_qty"])
+		var input2_qty: int = int(row["input2_qty"])
+		var build_class: String = String(row["build_class"])
+		## 10-06 ① non-empty *_good_id ∈ goods
+		_check_optional_good_id(
+			FILE_BUILDINGS, row_index, "output_good_id", String(row["output_good_id"]), good_ids, errors
+		)
+		_check_optional_good_id(
+			FILE_BUILDINGS, row_index, "input1_good_id", String(row["input1_good_id"]), good_ids, errors
+		)
+		_check_optional_good_id(
+			FILE_BUILDINGS, row_index, "input2_good_id", String(row["input2_good_id"]), good_ids, errors
+		)
+		## 10-06 ② build_class allowlist
+		if not allowed.has(build_class):
+			errors.append(
+				"%s: 10-06 ② build_class row %s value '%s'"
+				% [FILE_BUILDINGS, str(row_index), build_class]
+			)
+		## 10-06 ⑤ int ≥ 0
+		if tier < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field tier value %s"
+				% [FILE_BUILDINGS, str(row_index), str(tier)]
+			)
+		if max_workers < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field max_workers value %s"
+				% [FILE_BUILDINGS, str(row_index), str(max_workers)]
+			)
+		if input1_qty < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field input1_qty value %s"
+				% [FILE_BUILDINGS, str(row_index), str(input1_qty)]
+			)
+		if input2_qty < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field input2_qty value %s"
+				% [FILE_BUILDINGS, str(row_index), str(input2_qty)]
+			)
+		## 10-06 ⑥ unique type
+		if seen.has(type_id):
+			errors.append(
+				"%s: 10-06 ⑥ duplicate key row %s type='%s'"
+				% [FILE_BUILDINGS, str(row_index), type_id]
+			)
+		else:
+			seen[type_id] = true
+
+
+static func _collect_wp17_opening_errors(
+	openings: Array,
+	port_ids: Dictionary,
+	good_ids: Dictionary,
+	errors: PackedStringArray
+) -> void:
+	var seen: Dictionary = {}
+	var row_index: int = 0
+	for row_variant in openings:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var port_id: String = String(row["port_id"])
+		var good_id: String = String(row["good_id"])
+		var count: int = int(row["count"])
+		## 10-06 ①
+		if not port_ids.has(port_id):
+			errors.append(
+				"%s: 10-06 ① unknown port_id row %s value '%s'"
+				% [FILE_OPENING_WORKSHOPS, str(row_index), port_id]
+			)
+		if not good_ids.has(good_id):
+			errors.append(
+				"%s: 10-06 ① unknown good_id row %s value '%s'"
+				% [FILE_OPENING_WORKSHOPS, str(row_index), good_id]
+			)
+		## 10-06 ⑤
+		if count < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field count value %s"
+				% [FILE_OPENING_WORKSHOPS, str(row_index), str(count)]
+			)
+		## 10-06 ⑥ unique (port_id, good_id)
+		var key: String = "%s%s%s" % [port_id, COMPOSITE_TRES_JOINER, good_id]
+		if seen.has(key):
+			errors.append(
+				"%s: 10-06 ⑥ duplicate key row %s (port_id, good_id)=(%s, %s)"
+				% [FILE_OPENING_WORKSHOPS, str(row_index), port_id, good_id]
+			)
+		else:
+			seen[key] = true
+
+
+static func _collect_wp17_queue_errors(
+	queue: Array,
+	port_ids: Dictionary,
+	errors: PackedStringArray
+) -> void:
+	var cb_regex := RegEx.new()
+	var compile_err: int = cb_regex.compile(CB_ID_FORMAT_PATTERN)
+	assert(compile_err == OK, "CB_ID_FORMAT_PATTERN must compile")
+	var seen: Dictionary = {}
+	var row_index: int = 0
+	for row_variant in queue:
+		row_index += 1
+		var row: Dictionary = row_variant
+		var port_id: String = String(row["port_id"])
+		var step: int = int(row["step"])
+		var cb_id: String = String(row["cb_id"])
+		var target_level: int = int(row["target_level"])
+		## 10-06 ①
+		if not port_ids.has(port_id):
+			errors.append(
+				"%s: 10-06 ① unknown port_id row %s value '%s'"
+				% [FILE_BUILD_QUEUE, str(row_index), port_id]
+			)
+		## 10-06 ③ cb_id format
+		var match: RegExMatch = cb_regex.search(cb_id)
+		var full_match := match != null and match.get_string() == cb_id
+		if not full_match:
+			errors.append(
+				"%s: 10-06 ③ cb_id format row %s value '%s' (expect %s)"
+				% [FILE_BUILD_QUEUE, str(row_index), cb_id, CB_ID_FORMAT_PATTERN]
+			)
+		## 10-06 ⑤
+		if step < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field step value %s"
+				% [FILE_BUILD_QUEUE, str(row_index), str(step)]
+			)
+		if target_level < 0:
+			errors.append(
+				"%s: 10-06 ⑤ int below zero row %s field target_level value %s"
+				% [FILE_BUILD_QUEUE, str(row_index), str(target_level)]
+			)
+		## 10-06 ⑥ unique (port_id, step)
+		var key: String = "%s%s%s" % [port_id, COMPOSITE_TRES_JOINER, str(step)]
+		if seen.has(key):
+			errors.append(
+				"%s: 10-06 ⑥ duplicate key row %s (port_id, step)=(%s, %s)"
+				% [FILE_BUILD_QUEUE, str(row_index), port_id, str(step)]
+			)
+		else:
+			seen[key] = true
+
+
+static func _check_optional_good_id(
+	file_label: String,
+	row_index: int,
+	field_name: String,
+	good_id: String,
+	good_ids: Dictionary,
+	errors: PackedStringArray
+) -> void:
+	if good_id == "":
+		return
+	if not good_ids.has(good_id):
+		errors.append(
+			"%s: 10-06 ① unknown %s row %s value '%s'"
+			% [file_label, field_name, str(row_index), good_id]
+		)
+
+
+static func _write_zone_tres(
+	rows: Array,
+	zones_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := ZoneDef.new()
+		def.port_id = String(row["port_id"])
+		def.zone = int(row["zone"])
+		def.slot_share = float(row["slot_share"])
+		def.rings = int(row["rings"])
+		def.open_at_start = int(row["open_at_start"])
+		var file_name: String = "%s%s%s%s" % [
+			def.port_id, COMPOSITE_TRES_JOINER, str(def.zone), TRES_SUFFIX
+		]
+		var path: String = zones_dir.path_join(file_name)
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-17: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
+
+
+static func _write_building_tres(
+	rows: Array,
+	buildings_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := BuildingDef.new()
+		def.type = String(row["type"])
+		def.tier = int(row["tier"])
+		def.max_workers = int(row["max_workers"])
+		def.base_output_per_worker = float(row["base_output_per_worker"])
+		def.output_good_id = String(row["output_good_id"])
+		def.input1_good_id = String(row["input1_good_id"])
+		def.input1_qty = int(row["input1_qty"])
+		def.input2_good_id = String(row["input2_good_id"])
+		def.input2_qty = int(row["input2_qty"])
+		def.build_class = String(row["build_class"])
+		var path: String = buildings_dir.path_join("%s%s" % [def.type, TRES_SUFFIX])
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-17: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
+
+
+static func _write_opening_workshop_tres(
+	rows: Array,
+	opening_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := OpeningWorkshop.new()
+		def.port_id = String(row["port_id"])
+		def.good_id = String(row["good_id"])
+		def.count = int(row["count"])
+		var file_name: String = "%s%s%s%s" % [
+			def.port_id, COMPOSITE_TRES_JOINER, def.good_id, TRES_SUFFIX
+		]
+		var path: String = opening_dir.path_join(file_name)
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-17: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
+
+
+static func _write_build_step_tres(
+	rows: Array,
+	build_queue_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := BuildStep.new()
+		def.port_id = String(row["port_id"])
+		def.step = int(row["step"])
+		def.cb_id = String(row["cb_id"])
+		def.target_level = int(row["target_level"])
+		var file_name: String = "%s%s%s%s" % [
+			def.port_id, COMPOSITE_TRES_JOINER, str(def.step), TRES_SUFFIX
+		]
+		var path: String = build_queue_dir.path_join(file_name)
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("WP-17: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
 
 
 static func _abort_with_errors(
