@@ -126,7 +126,7 @@ func last_error() -> Dictionary:
 
 
 func set_consumption_provider(provider: ConsumptionProvider) -> void:
-	## 缺口：TechSpec H 未列登錄 API；比照 GoodsLedger.set_capacity_provider（測試／未來 SYS-06）。
+	## 缺口：TechSpec H 未列登錄 API；比照 GoodsLedger.register_capacity_provider（測試／未來 SYS-06）。
 	_consumption = provider
 
 

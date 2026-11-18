@@ -198,7 +198,10 @@ func test_TST_SYS04_04_split_vs_batch_extra_in_0_1() -> void:
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
 	var hold: Dictionary = GoodsLedger.make_hold("SHIP-DEMO")
 	var provider := _cap_provider_unlimited(hold)
-	GoodsLedger.set_capacity_provider(provider)
+	assert_eq(
+		GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_HOLD), provider),
+		GoodsLedger.CODE_OK
+	)
 	var seq1: int = GoodsLedger.transfer(
 		market, hold, StringName(GOOD_DEMO), DEMO_Q1, GoodsLedger.REASON_TRADE, &"TEST"
 	)
@@ -228,7 +231,12 @@ func test_TST_SYS04_05_roundtrip_loss() -> void:
 
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
 	var hold: Dictionary = GoodsLedger.make_hold("SHIP-RT")
-	GoodsLedger.set_capacity_provider(_cap_provider_unlimited(hold))
+	assert_eq(
+		GoodsLedger.register_capacity_provider(
+			StringName(GoodsLedger.KIND_HOLD), _cap_provider_unlimited(hold)
+		),
+		GoodsLedger.CODE_OK
+	)
 	var seq: int = GoodsLedger.transfer(
 		market, hold, StringName(GOOD_DEMO), DEMO_Q, GoodsLedger.REASON_TRADE, &"TEST"
 	)
@@ -263,7 +271,12 @@ func test_TST_SYS04_06_min_half_spread_still_loss() -> void:
 	)
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
 	var hold: Dictionary = GoodsLedger.make_hold("SHIP-HS")
-	GoodsLedger.set_capacity_provider(_cap_provider_unlimited(hold))
+	assert_eq(
+		GoodsLedger.register_capacity_provider(
+			StringName(GoodsLedger.KIND_HOLD), _cap_provider_unlimited(hold)
+		),
+		GoodsLedger.CODE_OK
+	)
 	assert_gt(
 		GoodsLedger.transfer(market, hold, StringName(GOOD_DEMO), DEMO_Q, GoodsLedger.REASON_TRADE, &"TEST"),
 		0

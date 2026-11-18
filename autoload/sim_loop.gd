@@ -26,7 +26,7 @@ func _ready() -> void:
 
 func set_consumption_provider(provider: ConsumptionProvider) -> void:
 	## 2.3-03: inject before boot. Also wires MarketPricer (SYS-04 weekly_consumption).
-	## 缺口：TechSpec H 未列本登錄 API 名稱；比照 GoodsLedger.set_capacity_provider。
+	## 缺口：D-08j SimLoop.register_capacity_provider before boot — WP-08；GoodsLedger 側見 register_capacity_provider。
 	_consumption = provider
 	MarketPricer.set_consumption_provider(provider)
 
