@@ -107,7 +107,7 @@ const BLD_ID_FMT := "BLD:%s:%04d"
 
 var _slots: Dictionary = {} ## slot_id:String → Slot
 var _slots_by_port: Dictionary = {} ## port_id:String → Array[Slot]
-var _r_by_port: Dictionary = {} ## port_id:String → int open-zone ring sum
+var _r_by_port: Dictionary = {} ## port_id:String → int R = max ring among open CIVIL slots
 var _max_open_zone: Dictionary = {} ## port_id:String → int (no open → -1)
 var _buildings: Dictionary = {} ## bld_id:String → Building
 var _buildings_by_port: Dictionary = {} ## port_id:String → Array[Building]
@@ -1297,7 +1297,6 @@ func _build_port_slots(
 	var seq: int = 1
 	var port_slots: Array = []
 	var ring_global: int = 0
-	var r_open: int = 0
 	var max_open: int = -1
 
 	var zone_rows: Array = zones_by_port.get(port_id, [])
@@ -1305,10 +1304,8 @@ func _build_port_slots(
 
 	for zd_variant in zone_rows:
 		var zd: ZoneDef = zd_variant
-		if zd.open_at_start == 1:
-			r_open = r_open + zd.rings
-			if zd.zone > max_open:
-				max_open = zd.zone
+		if zd.open_at_start == 1 and zd.zone > max_open:
+			max_open = zd.zone
 		var per_ring: Array = _split_slots_even(zd.slots, zd.rings)
 		for local_ring in range(zd.rings):
 			var global_ring: int = ring_global + local_ring + 1
@@ -1327,7 +1324,6 @@ func _build_port_slots(
 				_register_slot(s, port_slots)
 		ring_global = ring_global + zd.rings
 
-	_r_by_port[port_id] = r_open
 	_max_open_zone[port_id] = max_open
 
 	var public_slots: int = 0
@@ -1362,6 +1358,7 @@ func _build_port_slots(
 		_register_slot(ks, port_slots)
 
 	_slots_by_port[port_id] = port_slots
+	_recompute_r(port_id)
 
 
 func _split_slots_even(total_slots: int, rings: int) -> Array:
@@ -1913,7 +1910,22 @@ func _public_upgrade_cash(port_id: String, to_level: int) -> int:
 	var idx: int = mini(to_level - 1, arr.size() - 1)
 	if idx < 0:
 		return 0
-	return ceili(AmountQuantize.quantize_amount(float(pop) * float(arr[idx])))
+	var row: Dictionary = arr[idx] as Dictionary
+	var cash_per: int = int(row.get("CASH_LI", 0))
+	return ceili(AmountQuantize.quantize_amount(float(pop) * float(cash_per)))
+
+
+func _recompute_r(port_id: String) -> int:
+	## FRM-SYS08-01／16: R = max ring among open CIVIL slots (boot + zone-open).
+	var r_max := 0
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind != Slot.Kind.CIVIL or not s.zone_open:
+			continue
+		if s.ring > r_max:
+			r_max = s.ring
+	_r_by_port[port_id] = r_max
+	return r_max
 
 
 func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
@@ -1999,16 +2011,7 @@ func _season_zone_open(port_id: String) -> void:
 			opened = true
 	if opened:
 		_max_open_zone[port_id] = next_zone
-		# Recompute R
-		var r := 0
-		# Approximate: sum rings of open zones from zone defs via slots
-		var rings_seen: Dictionary = {}
-		for s2 in _slots_by_port.get(port_id, []):
-			var sl: Slot = s2
-			if sl.kind == Slot.Kind.CIVIL and sl.zone_open:
-				rings_seen[sl.ring] = true
-		r = rings_seen.size()
-		_r_by_port[port_id] = r
+		_recompute_r(port_id)
 		_zone_streak[port_id] = 0
 
 

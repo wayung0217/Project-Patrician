@@ -127,8 +127,35 @@ func test_TST_SYS08_12_vacancy_after_grace() -> void:
 	Clock._tick = 100 * tpd
 	var city := CashLedger.make_city_id(PORT)
 	var city0: int = CashLedger.balance(city)
+	var rent0: int = _sum_posted_to(city, BuildingEconomy.REASON_LAND_RENT)
+	var vac0: int = _sum_posted_to(city, BuildingEconomy.REASON_VACANCY_TAX)
 	BuildingEconomy.season_step()
 	assert_gt(CashLedger.balance(city), city0)
+	var rent1: int = _sum_posted_to(city, BuildingEconomy.REASON_LAND_RENT)
+	var vac1: int = _sum_posted_to(city, BuildingEconomy.REASON_VACANCY_TAX)
+	assert_gt(rent1 - rent0, 0)
+	assert_gt(vac1 - vac0, 0)
+	assert_ne(rent1 - rent0, vac1 - vac0)
+
+
+func test_TST_SYS08_12b_vacancy_within_grace_no_tax() -> void:
+	## D-19c: within-grace negative control — LAND_RENT may post; VACANCY_TAX must not.
+	_boot_world()
+	var tpd: int = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
+	var grace: int = Params.get_int("PRM-SYS08-VACANCY_GRACE_DAYS")
+	Clock._tick = 1 * tpd
+	var slot: StringName = _first_open_civil()
+	assert_gt(BuildingEconomy.buy_land(ACTOR, slot), 0)
+	var mid: int = mini(50, grace)
+	assert_lte(mid, grace)
+	BuildingEconomy._land_held_days[String(slot)] = mid
+	Clock._tick = mid * tpd
+	var city := CashLedger.make_city_id(PORT)
+	var vac0: int = _sum_posted_to(city, BuildingEconomy.REASON_VACANCY_TAX)
+	var rent0: int = _sum_posted_to(city, BuildingEconomy.REASON_LAND_RENT)
+	BuildingEconomy.season_step()
+	assert_eq(_sum_posted_to(city, BuildingEconomy.REASON_VACANCY_TAX), vac0)
+	assert_gt(_sum_posted_to(city, BuildingEconomy.REASON_LAND_RENT), rent0)
 
 
 func test_TST_SYS08_13_garrison_no_stock_no_debt() -> void:
@@ -176,6 +203,74 @@ func test_TST_SYS08_14_city_queue_no_skip() -> void:
 	)
 	BuildingEconomy.season_step()
 	assert_eq(int(BuildingEconomy._queue_pos[PORT]), 0)
+
+
+func test_TST_SYS08_14b_city_queue_asymmetric_no_skip() -> void:
+	## D-19c: item1 unaffordable (L2 upgrade cash), item2 affordable (PUBLIC L1) → no skip.
+	## Uses existing UPGRADE_PER_CAPITA vs BUILD_CASH_LI PUBLIC — no invented per-cb_id prices.
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	var s0 := BuildStep.new()
+	s0.port_id = PORT
+	s0.step = 0
+	s0.cb_id = "CB-01"
+	s0.target_level = 2
+	var s1 := BuildStep.new()
+	s1.port_id = PORT
+	s1.step = 1
+	s1.cb_id = "CB-02"
+	s1.target_level = 1
+	BuildingEconomy.set_build_queue(PORT, [s0, s1])
+	var public_cost: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["PUBLIC"])
+	var upgrade_cost: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
+	assert_gt(upgrade_cost, public_cost)
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - public_cost),
+			CashLedger.make_entry(city, public_cost),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	assert_lt(CashLedger.balance(city), upgrade_cost)
+	assert_gte(CashLedger.balance(city), public_cost)
+	BuildingEconomy.season_step()
+	assert_eq(int(BuildingEconomy._queue_pos[PORT]), 0)
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-02"), 0)
+
+
+func test_TST_SYS08_R_boot_and_zone_open_max_ring() -> void:
+	## D-19c: R = max ring among open CIVIL slots at boot and after zone-open.
+	_boot_world()
+	assert_eq(BuildingEconomy.ring_count_open(PORT), 1)
+	# Manually open zone 2 slots (same path as season zone-open recompute).
+	for s_v in BuildingEconomy.slots_for_port(PORT):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.CIVIL and s.zone == 2:
+			s.zone_open = true
+	BuildingEconomy._max_open_zone[PORT] = 2
+	assert_eq(BuildingEconomy._recompute_r(PORT), 2)
+	assert_eq(BuildingEconomy.ring_count_open(PORT), 2)
+	# Boundary: hole at ring 2 — max stays 3, not unique-count 2.
+	for s2 in BuildingEconomy.slots_for_port(PORT):
+		var sl: Slot = s2
+		if sl.kind == Slot.Kind.CIVIL and sl.ring == 2:
+			sl.zone_open = false
+		if sl.kind == Slot.Kind.CIVIL and sl.ring == 1:
+			sl.zone_open = true
+	# Fabricate a ring-3 open civil for the hole case.
+	var hole := Slot.new()
+	hole.kind = Slot.Kind.CIVIL
+	hole.port_id = PORT
+	hole.zone = 3
+	hole.ring = 3
+	hole.land_owner = CashLedger.make_city_id(PORT)
+	hole.building_id = &""
+	hole.zone_open = true
+	hole.slot_id = StringName("SLOT:%s:HOLE3" % PORT)
+	BuildingEconomy._register_slot(hole, BuildingEconomy._slots_by_port[PORT])
+	assert_eq(BuildingEconomy._recompute_r(PORT), 3)
+	assert_eq(BuildingEconomy.ring_count_open(PORT), 3)
 
 
 func test_TST_SYS08_15_missing_levy_prm_boot_error() -> void:
@@ -374,6 +469,19 @@ func _first_open_civil() -> StringName:
 		if s.kind == Slot.Kind.CIVIL and s.zone_open and s.building_id == &"":
 			return s.slot_id
 	return &""
+
+
+func _sum_posted_to(account: StringName, reason: StringName) -> int:
+	var total := 0
+	for p_v in CashLedger._postings:
+		var p: Posting = p_v
+		if p.reason != reason:
+			continue
+		for e_v in p.entries:
+			var e: PostingEntry = e_v
+			if e.account_id == account and e.amount > 0:
+				total = total + e.amount
+	return total
 
 
 func _top_up(actor: StringName, need: int) -> void:
