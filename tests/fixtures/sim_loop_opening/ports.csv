@@ -1,0 +1,17 @@
+port_id,name_zh,is_free_port,draft_limit_class,regime_id
+PT-01,港1,true,0,RG-TEST
+PT-02,港2,true,0,RG-TEST
+PT-03,港3,true,0,RG-TEST
+PT-04,港4,true,0,RG-TEST
+PT-05,港5,true,0,RG-TEST
+PT-06,港6,true,0,RG-TEST
+PT-07,港7,true,0,RG-TEST
+PT-08,港8,true,0,RG-TEST
+PT-09,港9,false,0,RG-TEST
+PT-10,港10,false,0,RG-TEST
+PT-11,港11,false,0,RG-TEST
+PT-12,港12,false,0,RG-TEST
+PT-13,港13,false,0,RG-TEST
+PT-14,港14,false,0,RG-TEST
+PT-15,港15,false,0,RG-TEST
+PT-16,港16,false,0,RG-TEST

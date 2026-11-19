@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://baeye4uj8u1lc"
+
+[deps]
+
+files=["res://tests/fixtures/sim_loop_opening/opening_public.cb.translation", "res://tests/fixtures/sim_loop_opening/opening_public.level.translation"]
+
+source_file="res://tests/fixtures/sim_loop_opening/opening_public.csv"
+dest_files=["res://tests/fixtures/sim_loop_opening/opening_public.cb.translation", "res://tests/fixtures/sim_loop_opening/opening_public.level.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

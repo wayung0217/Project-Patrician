@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://4ya40lxm8ivh"
+
+[deps]
+
+files=["res://tests/fixtures/wp29_csv_bad_missing/lanes.node.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.node.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.region.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.length.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.waypoints.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.lane.translation"]
+
+source_file="res://tests/fixtures/wp29_csv_bad_missing/lanes.csv"
+dest_files=["res://tests/fixtures/wp29_csv_bad_missing/lanes.node.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.node.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.region.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.length.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.waypoints.translation", "res://tests/fixtures/wp29_csv_bad_missing/lanes.lane.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

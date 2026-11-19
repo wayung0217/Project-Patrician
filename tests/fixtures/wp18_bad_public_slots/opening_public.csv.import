@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://d223trwia768s"
+
+[deps]
+
+files=["res://tests/fixtures/wp18_bad_public_slots/opening_public.cb.translation", "res://tests/fixtures/wp18_bad_public_slots/opening_public.level.translation"]
+
+source_file="res://tests/fixtures/wp18_bad_public_slots/opening_public.csv"
+dest_files=["res://tests/fixtures/wp18_bad_public_slots/opening_public.cb.translation", "res://tests/fixtures/wp18_bad_public_slots/opening_public.level.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

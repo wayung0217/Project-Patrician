@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://ch0loibeuxob7"
+
+[deps]
+
+files=["res://tests/fixtures/sim_loop_opening/ports.name.translation", "res://tests/fixtures/sim_loop_opening/ports.is.translation", "res://tests/fixtures/sim_loop_opening/ports.draft.translation", "res://tests/fixtures/sim_loop_opening/ports.regime.translation"]
+
+source_file="res://tests/fixtures/sim_loop_opening/ports.csv"
+dest_files=["res://tests/fixtures/sim_loop_opening/ports.name.translation", "res://tests/fixtures/sim_loop_opening/ports.is.translation", "res://tests/fixtures/sim_loop_opening/ports.draft.translation", "res://tests/fixtures/sim_loop_opening/ports.regime.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://ddlyxguh6ikca"
+
+[deps]
+
+files=["res://tests/fixtures/wp24_opening/opening_public.cb.translation", "res://tests/fixtures/wp24_opening/opening_public.level.translation"]
+
+source_file="res://tests/fixtures/wp24_opening/opening_public.csv"
+dest_files=["res://tests/fixtures/wp24_opening/opening_public.cb.translation", "res://tests/fixtures/wp24_opening/opening_public.level.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

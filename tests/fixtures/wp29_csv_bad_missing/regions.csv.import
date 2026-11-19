@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cd5gs5oy4s27m"
+
+[deps]
+
+files=["res://tests/fixtures/wp29_csv_bad_missing/regions.name.translation", "res://tests/fixtures/wp29_csv_bad_missing/regions.note.translation"]
+
+source_file="res://tests/fixtures/wp29_csv_bad_missing/regions.csv"
+dest_files=["res://tests/fixtures/wp29_csv_bad_missing/regions.name.translation", "res://tests/fixtures/wp29_csv_bad_missing/regions.note.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

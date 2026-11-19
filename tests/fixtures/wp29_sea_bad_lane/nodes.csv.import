@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://x81n8b5eqb3s"
+
+[deps]
+
+files=["res://tests/fixtures/wp29_sea_bad_lane/nodes.kind.translation", "res://tests/fixtures/wp29_sea_bad_lane/nodes.name.translation", "res://tests/fixtures/wp29_sea_bad_lane/nodes.x.translation", "res://tests/fixtures/wp29_sea_bad_lane/nodes.y.translation"]
+
+source_file="res://tests/fixtures/wp29_sea_bad_lane/nodes.csv"
+dest_files=["res://tests/fixtures/wp29_sea_bad_lane/nodes.kind.translation", "res://tests/fixtures/wp29_sea_bad_lane/nodes.name.translation", "res://tests/fixtures/wp29_sea_bad_lane/nodes.x.translation", "res://tests/fixtures/wp29_sea_bad_lane/nodes.y.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

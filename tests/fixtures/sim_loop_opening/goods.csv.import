@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://qm6rqkyqhit7"
+
+[deps]
+
+files=["res://tests/fixtures/sim_loop_opening/goods.name.translation", "res://tests/fixtures/sim_loop_opening/goods.tier.translation", "res://tests/fixtures/sim_loop_opening/goods.is.translation", "res://tests/fixtures/sim_loop_opening/goods.is.translation", "res://tests/fixtures/sim_loop_opening/goods.is.translation", "res://tests/fixtures/sim_loop_opening/goods.base.translation", "res://tests/fixtures/sim_loop_opening/goods.season.translation"]
+
+source_file="res://tests/fixtures/sim_loop_opening/goods.csv"
+dest_files=["res://tests/fixtures/sim_loop_opening/goods.name.translation", "res://tests/fixtures/sim_loop_opening/goods.tier.translation", "res://tests/fixtures/sim_loop_opening/goods.is.translation", "res://tests/fixtures/sim_loop_opening/goods.is.translation", "res://tests/fixtures/sim_loop_opening/goods.is.translation", "res://tests/fixtures/sim_loop_opening/goods.base.translation", "res://tests/fixtures/sim_loop_opening/goods.season.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

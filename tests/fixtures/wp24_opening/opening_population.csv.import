@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://y5yjb1r5m06k"
+
+[deps]
+
+files=["res://tests/fixtures/wp24_opening/opening_population.poor.translation", "res://tests/fixtures/wp24_opening/opening_population.citizen.translation", "res://tests/fixtures/wp24_opening/opening_population.rich.translation"]
+
+source_file="res://tests/fixtures/wp24_opening/opening_population.csv"
+dest_files=["res://tests/fixtures/wp24_opening/opening_population.poor.translation", "res://tests/fixtures/wp24_opening/opening_population.citizen.translation", "res://tests/fixtures/wp24_opening/opening_population.rich.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

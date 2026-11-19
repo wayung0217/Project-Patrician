@@ -108,6 +108,11 @@ func boot(
 		if not BuildingEconomy.has_workforce_provider():
 			BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
 	errors.append_array(BuildingEconomy.load_and_validate())
+	# WP-24／FRM-SYS07-14／FRM-SYS08-21: opening from CSV tres (no-op if dirs empty).
+	if PopulationModel.is_loaded() and errors.is_empty():
+		errors.append_array(PopulationModel.apply_opening_init())
+	if BuildingEconomy.is_loaded() and errors.is_empty():
+		errors.append_array(BuildingEconomy.apply_opening_init())
 
 	# 2.3-03: 未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。
 	if _consumption == null:

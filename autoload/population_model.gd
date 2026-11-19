@@ -18,6 +18,7 @@ const ERR_SYS07_05 := &"ERR-SYS07-05"
 const ERR_SYS07_06 := &"ERR-SYS07-06"
 const ERR_SYS07_07 := &"ERR-SYS07-07"
 const ERR_SYS07_08 := &"ERR-SYS07-08"
+const ERR_SYS07_09 := &"ERR-SYS07-09"
 
 const CODE_SAT_PROVIDER_MISSING := &"SATISFACTION_INPUT_PROVIDER_MISSING"
 
@@ -212,6 +213,67 @@ func satisfaction(port_id: StringName, clazz: StringName) -> int:
 		return p.sat_rich
 	_record(ERR_SYS07_08, "class", clazz, "unknown class")
 	return 0
+
+
+const OPENING_POP_DIR := "res://data/opening_population/"
+
+
+func apply_opening_init(opening_pop_dir: String = OPENING_POP_DIR) -> Array:
+	## FRM-SYS07-14／D-19e: load opening population; empty／missing／duplicate → ERR-SYS07-09.
+	assert(_loaded, "PopulationModel.apply_opening_init before load")
+	var errors: Array = []
+	var rows: Array = _load_opening_population(opening_pop_dir)
+	var seen: Dictionary = {} ## port_id → true
+	if rows.is_empty():
+		errors.append(
+			_err(ERR_SYS07_09, "opening_population", opening_pop_dir, "opening population dir empty or missing")
+		)
+	for row_v in rows:
+		var row: OpeningPopulation = row_v
+		var pid: String = String(row.port_id)
+		if seen.has(pid):
+			errors.append(_err(ERR_SYS07_09, "port_id", pid, "duplicate opening population port"))
+			continue
+		seen[pid] = true
+		if row.poor < 0 or row.citizen < 0 or row.rich < 0:
+			errors.append(_err(ERR_SYS07_01, "opening_pop", pid, "negative opening population"))
+			continue
+		set_port_state(pid, row.poor, row.citizen, row.rich, 0)
+		var p: PortPop = _ensure_port(pid)
+		p.streak_up1 = 0
+		p.streak_up2 = 0
+		p.acc = {}
+		p.pending_release_workers = 0
+	if PortRegistry.is_loaded():
+		for pid_v in PortRegistry.all_ids():
+			var want: String = String(pid_v)
+			if not seen.has(want):
+				errors.append(_err(ERR_SYS07_09, "port_id", want, "missing opening population for port"))
+	if not errors.is_empty():
+		_emit(errors)
+	return errors
+
+
+func _load_opening_population(dir: String) -> Array:
+	var out: Array = []
+	var abs_dir: String = ProjectSettings.globalize_path(dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		return out
+	var d := DirAccess.open(dir)
+	if d == null:
+		return out
+	d.list_dir_begin()
+	while true:
+		var fname: String = d.get_next()
+		if fname == "":
+			break
+		if d.current_is_dir() or not fname.ends_with(".tres"):
+			continue
+		var res: Resource = load(dir.path_join(fname))
+		if res is OpeningPopulation:
+			out.append(res)
+	d.list_dir_end()
+	return out
 
 
 func residence_occupants(res_id: StringName) -> Dictionary:

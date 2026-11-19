@@ -92,6 +92,10 @@ const PRM_ZONE_OPEN_COST := "PRM-SYS08-ZONE_OPEN_COST_LI"
 const PRM_TRANSFER_PREMIUM := "PRM-SYS08-TRANSFER_PREMIUM"
 const PRM_COMPENSATION_WEEKS := "PRM-SYS08-COMPENSATION_WEEKS"
 const BUILD_QUEUE_DIR := "res://data/build_queue/"
+const OPENING_DIR := "res://data/opening/"
+const OPENING_PUBLIC_DIR := "res://data/opening_public/"
+const PLAYER_ACTOR := &"ACT-PLAYER"
+const PLAYER_HOME_PORT := "PT-10" ## 魍港 (FRM-SYS13-06／FRM-SYS08-21)
 
 const CLASS_RESIDENCE := &"RESIDENCE"
 const CLASS_WAREHOUSE := &"WAREHOUSE"
@@ -1489,6 +1493,313 @@ func _load_building_defs(buildings_dir: String, errors: Array) -> Dictionary:
 		by_type[bd.type] = bd
 	dir.list_dir_end()
 	return by_type
+
+
+func apply_opening_init(
+	opening_dir: String = OPENING_DIR,
+	opening_public_dir: String = OPENING_PUBLIC_DIR,
+	player_port: String = PLAYER_HOME_PORT,
+	player_actor: StringName = PLAYER_ACTOR
+) -> Array:
+	## FRM-SYS08-21: city workshops／residences／public／player kontor from CSV tres.
+	assert(_loaded, "BuildingEconomy.apply_opening_init before load")
+	var errors: Array = []
+	var openings: Array = _load_opening_workshops(opening_dir)
+	var publics: Array = _load_opening_public(opening_public_dir)
+	# D-19e: empty opening_workshops／opening_public → ERR-SYS08-10; residences＋kontor still apply.
+	if openings.is_empty():
+		errors.append(
+			_err(ERR_SYS08_10, "opening_workshops", opening_dir, "opening workshops dir empty or missing")
+		)
+	if publics.is_empty():
+		errors.append(
+			_err(ERR_SYS08_10, "opening_public", opening_public_dir, "opening public dir empty or missing")
+		)
+	var ws_ports: Dictionary = {}
+	for row_chk in openings:
+		ws_ports[String((row_chk as OpeningWorkshop).port_id)] = true
+	var pub_ports: Dictionary = {}
+	for pub_chk in publics:
+		pub_ports[String((pub_chk as OpeningPublic).port_id)] = true
+	if PortRegistry.is_loaded():
+		for pid_v in PortRegistry.all_ids():
+			var want: String = String(pid_v)
+			if not openings.is_empty() and not ws_ports.has(want):
+				errors.append(
+					_err(ERR_SYS08_10, "opening_workshops", want, "missing opening workshop for port")
+				)
+			if not publics.is_empty() and not pub_ports.has(want):
+				errors.append(
+					_err(ERR_SYS08_10, "opening_public", want, "missing opening public for port")
+				)
+	# 1) City workshops ACTIVE from opening_workshops (by output good → BuildingDef).
+	var created_by_good: Dictionary = {} ## good_id → count
+	for row_v in openings:
+		var row: OpeningWorkshop = row_v
+		var def: BuildingDef = _def_for_output_good(row.good_id)
+		if def == null:
+			errors.append(
+				_err(ERR_SYS08_10, "good_id", row.good_id, "no BuildingDef for opening good")
+			)
+			continue
+		var city: StringName = CashLedger.make_city_id(row.port_id)
+		CashLedger.create_account(city, Account.Kind.CITY)
+		for _i in range(row.count):
+			var slot_id: StringName = _find_slot_for_workshop(row.port_id, def)
+			if slot_id == &"":
+				errors.append(
+					_err(ERR_SYS08_10, "slot", row.port_id, "no slot for opening workshop")
+				)
+				break
+			var bld := _spawn_active_building(
+				city, row.port_id, slot_id, StringName(def.type), StringName(def.build_class), 1
+			)
+			created_by_good[row.good_id] = int(created_by_good.get(row.good_id, 0)) + 1
+			var _b: Building = bld
+		# Hire full workers for city workshops at this port
+		_opening_staff_port(row.port_id)
+	# 2) Residences = CEIL(pop / HOUSE_CAPACITY) city-owned
+	var house_cap: int = Params.get_int(PopulationModel.PRM_HOUSE_CAP)
+	if house_cap < 1:
+		house_cap = 100
+	for pid_v in PortRegistry.all_ids():
+		var port_id: String = String(pid_v)
+		var pop_n: int = 0
+		if PopulationModel.is_loaded():
+			pop_n = (
+				PopulationModel.population(StringName(port_id), &"POOR")
+				+ PopulationModel.population(StringName(port_id), &"CITIZEN")
+				+ PopulationModel.population(StringName(port_id), &"RICH")
+			)
+		elif _population != null:
+			pop_n = _population.population(StringName(port_id))
+		if pop_n <= 0:
+			continue
+		var need_h: int = int(ceil(float(pop_n) / float(house_cap)))
+		var city2: StringName = CashLedger.make_city_id(port_id)
+		CashLedger.create_account(city2, Account.Kind.CITY)
+		# Ensure RESIDENCE def
+		if not _building_defs.has("RB-01"):
+			var rd := BuildingDef.new()
+			rd.type = "RB-01"
+			rd.build_class = "RESIDENCE"
+			_building_defs["RB-01"] = rd
+		for _h in range(need_h):
+			var rslot: StringName = _find_open_civil_slot(port_id)
+			if rslot == &"":
+				errors.append(_err(ERR_SYS08_10, "residence", port_id, "no civil slot for residence"))
+				break
+			_spawn_active_building(city2, port_id, rslot, &"RB-01", CLASS_RESIDENCE, 1)
+	# 3) opening_public buildings level 1 (D-11c)
+	for pub_v in publics:
+		var pub: OpeningPublic = pub_v
+		var city3: StringName = CashLedger.make_city_id(pub.port_id)
+		CashLedger.create_account(city3, Account.Kind.CITY)
+		var pslot: StringName = _find_public_slot(pub.port_id)
+		if pslot == &"":
+			errors.append(_err(ERR_SYS08_10, "public", pub.port_id, "no public slot"))
+			continue
+		if not _building_defs.has(pub.cb_id):
+			var pd := BuildingDef.new()
+			pd.type = pub.cb_id
+			pd.build_class = "PUBLIC"
+			_building_defs[pub.cb_id] = pd
+		var pb: Building = _spawn_active_building(
+			city3, pub.port_id, pslot, StringName(pub.cb_id), CLASS_PUBLIC, maxi(1, pub.level)
+		)
+		pb.cb_id = StringName(pub.cb_id)
+	# 4) Player kontor at 魍港
+	var port_ids: PackedStringArray = PortRegistry.all_ids() if PortRegistry.is_loaded() else PackedStringArray()
+	var has_player_port := false
+	for pid_chk in port_ids:
+		if String(pid_chk) == player_port:
+			has_player_port = true
+			break
+	if has_player_port:
+		var kslot: StringName = _find_kontor_slot(player_port)
+		if kslot == &"":
+			errors.append(_err(ERR_SYS08_10, "kontor", player_port, "no kontor slot for player"))
+		else:
+			if not _building_defs.has("KT-01"):
+				var kd := BuildingDef.new()
+				kd.type = "KT-01"
+				kd.build_class = "KONTOR"
+				_building_defs["KT-01"] = kd
+			CashLedger.create_account(player_actor, Account.Kind.ACTOR)
+			var slot: Slot = _slot(kslot)
+			slot.land_owner = player_actor
+			_spawn_active_building(
+				player_actor, player_port, kslot, &"KT-01", CLASS_KONTOR, 1
+			)
+	# 5) Validate created counts vs opening rows (TST-18)
+	for row_v2 in openings:
+		var row2: OpeningWorkshop = row_v2
+		var got: int = int(created_by_good.get(row2.good_id, 0))
+		# Count may aggregate across ports; check per-port
+		var port_got := 0
+		for bld_v in _buildings_by_port.get(row2.port_id, []):
+			var b: Building = bld_v
+			if not _is_city_owner(b.owner) or b.state != Building.State.ACTIVE:
+				continue
+			var d2: BuildingDef = _building_defs.get(String(b.type), null) as BuildingDef
+			if d2 != null and d2.output_good_id == row2.good_id:
+				port_got = port_got + 1
+		if port_got < row2.count:
+			errors.append(
+				_err(
+					ERR_SYS08_10,
+					"opening_count",
+					[row2.port_id, row2.good_id, port_got, row2.count],
+					"opening workshop count mismatch"
+				)
+			)
+	if not errors.is_empty():
+		_emit_errors(errors)
+	return errors
+
+
+func _spawn_active_building(
+	owner: StringName,
+	port_id: String,
+	slot_id: StringName,
+	type_id: StringName,
+	build_class: StringName,
+	level: int
+) -> Building:
+	var bld := Building.new()
+	bld.building_id = _next_bld_id(port_id)
+	bld.type = type_id
+	bld.build_class = build_class
+	bld.owner = owner
+	bld.port_id = port_id
+	bld.slot_id = slot_id
+	bld.level = level
+	bld.state = Building.State.ACTIVE
+	bld.days_left = 0
+	if build_class == CLASS_PUBLIC:
+		bld.cb_id = type_id
+	var slot: Slot = _slot(slot_id)
+	if slot != null:
+		slot.building_id = bld.building_id
+		slot.vacancy_start_day = -1
+		if not _is_city_owner(owner):
+			slot.land_owner = owner
+	_register_building(bld)
+	return bld
+
+
+func _def_for_output_good(good_id: String) -> BuildingDef:
+	var best: BuildingDef = null
+	for k in _building_defs.keys():
+		var d: BuildingDef = _building_defs[k] as BuildingDef
+		if d.output_good_id != good_id:
+			continue
+		if (
+			d.build_class == "IND1"
+			or d.build_class == "IND2"
+			or d.build_class == "IND3"
+		):
+			best = d
+			break
+	return best
+
+
+func _find_slot_for_workshop(port_id: String, def: BuildingDef) -> StringName:
+	# Gathering belt for IND1; open civil for IND2/3.
+	if def.build_class == "IND1":
+		for s_v in _slots_by_port.get(port_id, []):
+			var s: Slot = s_v
+			if s.building_id != &"":
+				continue
+			if _is_gathering_belt(s):
+				return s.slot_id
+	return _find_open_civil_slot(port_id)
+
+
+func _find_open_civil_slot(port_id: String) -> StringName:
+	var best: StringName = &""
+	var best_ring := 999999
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind != Slot.Kind.CIVIL or not s.zone_open or s.building_id != &"":
+			continue
+		if s.ring < best_ring:
+			best_ring = s.ring
+			best = s.slot_id
+	return best
+
+
+func _find_public_slot(port_id: String) -> StringName:
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
+			return s.slot_id
+	return &""
+
+
+func _find_kontor_slot(port_id: String) -> StringName:
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.KONTOR and s.building_id == &"":
+			return s.slot_id
+	return &""
+
+
+func _opening_staff_port(port_id: String) -> void:
+	if not PopulationModel.is_loaded():
+		return
+	for bld_v in workplaces(StringName(port_id)):
+		var bld: Building = bld_v
+		if not _is_city_owner(bld.owner):
+			continue
+		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
+		if def == null:
+			continue
+		PopulationModel.set_workers(bld.building_id, def.max_workers)
+
+
+func _load_opening_workshops(dir: String) -> Array:
+	var out: Array = []
+	var abs_dir: String = ProjectSettings.globalize_path(dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		return out
+	var d := DirAccess.open(dir)
+	if d == null:
+		return out
+	d.list_dir_begin()
+	while true:
+		var fname: String = d.get_next()
+		if fname == "":
+			break
+		if d.current_is_dir() or not fname.ends_with(TRES_SUFFIX):
+			continue
+		var res: Resource = load(dir.path_join(fname))
+		if res is OpeningWorkshop:
+			out.append(res)
+	d.list_dir_end()
+	return out
+
+
+func _load_opening_public(dir: String) -> Array:
+	var out: Array = []
+	var abs_dir: String = ProjectSettings.globalize_path(dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		return out
+	var d := DirAccess.open(dir)
+	if d == null:
+		return out
+	d.list_dir_begin()
+	while true:
+		var fname: String = d.get_next()
+		if fname == "":
+			break
+		if d.current_is_dir() or not fname.ends_with(TRES_SUFFIX):
+			continue
+		var res: Resource = load(dir.path_join(fname))
+		if res is OpeningPublic:
+			out.append(res)
+	d.list_dir_end()
+	return out
 
 
 func quote_city_building(bld_key: StringName) -> int:
