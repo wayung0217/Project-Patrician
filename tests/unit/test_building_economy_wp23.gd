@@ -241,17 +241,15 @@ func test_TST_SYS08_14b_city_queue_asymmetric_no_skip() -> void:
 
 func test_D21b_public_upgrade_fee_scales_with_pop() -> void:
 	## D-21b: FRM-SYS08-07 — different pop → different upgrade fee; queue helper matches fee API.
+	## Mutate injected TestPop (D-11d forbids set_population_provider after load).
 	_boot_world()
-	var pop_a := TestPop.new()
-	pop_a.set_pop(PORT, 500)
-	BuildingEconomy.set_population_provider(pop_a)
+	var pop: TestPop = BuildingEconomy._population as TestPop
+	pop.set_pop(PORT, 500)
 	var fee_a: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)
 	var cash_a: int = int(fee_a["CASH_LI"])
 	var helper_a: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
 	assert_eq(helper_a, cash_a)
-	var pop_b := TestPop.new()
-	pop_b.set_pop(PORT, 1500)
-	BuildingEconomy.set_population_provider(pop_b)
+	pop.set_pop(PORT, 1500)
 	var fee_b: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)
 	var cash_b: int = int(fee_b["CASH_LI"])
 	var helper_b: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
