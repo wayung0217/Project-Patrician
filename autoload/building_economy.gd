@@ -364,7 +364,7 @@ func order_build(actor: StringName, slot_key: StringName, type_id: StringName) -
 	if build_class == CLASS_PUBLIC:
 		bld.cb_id = type_id
 
-	var missing: Dictionary = _acquire_materials(actor, slot.port_id, mat_need, bld.locked_materials)
+	var missing: Dictionary = _apply_acquire(actor, slot.port_id, mat_need, bld.locked_materials)
 	bld.missing_materials = missing
 	if missing.is_empty():
 		bld.state = Building.State.BUILDING
@@ -449,7 +449,7 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 	bld.missing_materials = {}
 	bld.days_left = build_days
 	bld.level = to_level
-	var missing: Dictionary = _acquire_materials(actor, bld.port_id, mat_need, bld.locked_materials)
+	var missing: Dictionary = _apply_acquire(actor, bld.port_id, mat_need, bld.locked_materials)
 	bld.missing_materials = missing
 	if missing.is_empty():
 		bld.state = Building.State.BUILDING
@@ -530,6 +530,10 @@ func demolish(actor: StringName, bld_key: StringName) -> int:
 		slot.building_id = &""
 		slot.vacancy_start_day = Clock.day if Clock != null else 0
 
+	# WP-21／OQ-13w: queue workforce release for PopulationModel next daily_step.
+	if PopulationModel != null and PopulationModel.is_loaded():
+		PopulationModel.release_workshop_workers(StringName(bld.port_id), bld.building_id)
+
 	var key := String(bld.building_id)
 	_buildings.erase(key)
 	var port_arr: Array = _buildings_by_port.get(bld.port_id, [])
@@ -589,7 +593,7 @@ func _step_construction(_errors: Array) -> void:
 						need.erase(gs)
 			else:
 				need = bld.missing_materials.duplicate(true)
-			var still: Dictionary = _acquire_materials(
+			var still: Dictionary = _apply_acquire(
 				bld.owner, bld.port_id, need, bld.locked_materials
 			)
 			bld.missing_materials = still
@@ -1067,7 +1071,31 @@ func _is_gathering_belt(slot: Slot) -> bool:
 	return slot.zone == max_open + 1
 
 
-func _acquire_materials(
+func _apply_acquire(actor: StringName, port_id: String, need: Dictionary, locked: Dictionary) -> Dictionary:
+	## Call public acquire_materials (D-17b); fold acquired amounts into locked.
+	var result: Dictionary = acquire_materials(actor, StringName(port_id), need)
+	var missing: Dictionary = result["missing"] as Dictionary
+	for g_variant in need.keys():
+		var g: String = String(g_variant)
+		var want: int = int(need[g])
+		var rem: int = int(missing.get(g, 0))
+		var got: int = want - rem
+		if got > 0:
+			locked[g] = int(locked.get(g, 0)) + got
+	return missing
+
+
+func acquire_materials(actor: StringName, port_id: StringName, needs: Dictionary) -> Dictionary:
+	## D-17b public BC-2 entry: {acquired: bool, missing: Dictionary}.
+	## Materials are CONSTRUCT_USE'd; caller tracks locked = need − missing.
+	var locked: Dictionary = {}
+	var missing: Dictionary = _acquire_materials_into(
+		actor, String(port_id), needs.duplicate(true), locked
+	)
+	return {"acquired": missing.is_empty(), "missing": missing.duplicate(true)}
+
+
+func _acquire_materials_into(
 	actor: StringName, port_id: String, need: Dictionary, locked: Dictionary
 ) -> Dictionary:
 	## BC-2 + D-12e: per good ascending; warehouse then market CONSTRUCT_USE; missing → WAITING.

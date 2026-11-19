@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://ddowoen1o5bka"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_d18a_recipe/build_queue.step.translation", "res://tests/fixtures/wp21_d18a_recipe/build_queue.cb.translation", "res://tests/fixtures/wp21_d18a_recipe/build_queue.target.translation"]
+
+source_file="res://tests/fixtures/wp21_d18a_recipe/build_queue.csv"
+dest_files=["res://tests/fixtures/wp21_d18a_recipe/build_queue.step.translation", "res://tests/fixtures/wp21_d18a_recipe/build_queue.cb.translation", "res://tests/fixtures/wp21_d18a_recipe/build_queue.target.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

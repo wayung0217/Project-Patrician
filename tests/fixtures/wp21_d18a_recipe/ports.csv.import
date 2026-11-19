@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://4dfvgrx1sjbo"
+
+[deps]
+
+files=["res://tests/fixtures/wp21_d18a_recipe/ports.name.translation", "res://tests/fixtures/wp21_d18a_recipe/ports.is.translation", "res://tests/fixtures/wp21_d18a_recipe/ports.draft.translation", "res://tests/fixtures/wp21_d18a_recipe/ports.regime.translation"]
+
+source_file="res://tests/fixtures/wp21_d18a_recipe/ports.csv"
+dest_files=["res://tests/fixtures/wp21_d18a_recipe/ports.name.translation", "res://tests/fixtures/wp21_d18a_recipe/ports.is.translation", "res://tests/fixtures/wp21_d18a_recipe/ports.draft.translation", "res://tests/fixtures/wp21_d18a_recipe/ports.regime.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

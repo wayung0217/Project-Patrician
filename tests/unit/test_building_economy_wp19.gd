@@ -67,6 +67,8 @@ func before_each() -> void:
 	BuildingEconomy._building_defs = {}
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null
+	PopulationModel._loaded = false
+	PopulationModel._sat_input = null
 	BuildingEconomy._pending_started = []
 	BuildingEconomy._pending_waiting = []
 	BuildingEconomy._pending_completed = []
