@@ -494,6 +494,6 @@ R8-04,Round 8 D-19 補件回報,"Step 0 通過（main d0a3851、v6.92、opening_
 15-05,ConsumptionProvider 清理,刪除介面方法 weekly_consumption()（基底類與測試 fixture）；consume_qty() 不變。,WP-22 不實作此方法；若尚有呼叫者，列缺口停止該項（C-05）。,03_Systems 15.1 附錄 F,待派,,,
 15-06,Params 登錄,登錄 PRM-SYS03-OFFTAKE_WINDOW_DAYS（int、≥ 1、無值）。,缺鍵即拒絕啟動，與其他錯誤一次列出（C-06）；正式 params.json 不寫值；測試只用 fixture。PRM-SYS00-WARMUP_DAYS 本包不登錄（D-20d）。,03_Systems 15.1 附錄 A,待派,,,
 15-07,SimLoop 排程,每日日結：守恆檢查之後、發信號之前呼叫 GoodsLedger.roll_offtake_snapshot(day)。,寫成 SimLoop 內明確步驟，不得用 signal 連線或 call_deferred（C-04）；boot 不加空跑。,03_Systems 15.1 F,待派,,,
-15-08,驗收,TST-SYS03-07 至 16、TST-SYS04-11 至 13；另加：① OFFTAKE_WINDOW_DAYS 缺鍵 → boot 錯誤；② MarketPricer 既有測試改用去化快照 fixture；③ ERR-SYS03-07、08、09 各一。,TST-SYS03-10、14 以測試內登記的 HOLD 容器＋set_container_port／container_departed 模擬船（WP-30 未上線）；既有測試改內容不改名（D-09g）；停用功能的測試依 D-20b 刪除並逐一列名。,C-13；D-20b,待派,,,
+15-08,驗收,TST-SYS03-07 至 16、TST-SYS04-11 至 13；另加：① OFFTAKE_WINDOW_DAYS 缺鍵 → boot 錯誤；② MarketPricer 既有測試改用去化快照 fixture；③ ERR-SYS03-07、08、09 各一。｜④ 跨日回售（紅隊-60）：以整批報價測同一商人買入、實際離港、經合法航程於次日或其後最早可行日返原港賣回。,TST-SYS03-10、14 以測試內登記的 HOLD 容器＋set_container_port／container_departed 模擬船（WP-30 未上線）；既有測試改內容不改名（D-09g）；停用功能的測試依 D-20b 刪除並逐一列名。｜④ 分別記錄回售當下的快照、日結沖回結果、含買賣價差的交易損益、再扣航程與持有成本的淨損益；同條件跑多輪，區分單次獲利與可重複獲利。航程或成本未定時以明示測試假設驗證，不當作正式平衡結論。若可重複淨獲利，列為待裁決，不自行改規格；屆時再評估是否延後確認出港去化。本輪不改每日快照、不加逐批貨物追蹤。,C-13；D-20b,待派,,,
 15-09,回報,PR 描述回報：新增、刪除、改內容三份測試名單；測試數＝合併前 main ＋ 新增 − 刪除；CI 結果、head SHA；缺口。,刪除名單以外的舊測名不得消失。,R2-11；D-20b,待派,,,
 15-10,遇到缺口,本派工單未寫到的事一律不做。,在 PR 描述列「缺口」並停止該項，其餘照常（C-05）。,C-05,待派,,,
