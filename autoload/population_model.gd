@@ -334,6 +334,8 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 	_clamp_nonneg(p)
 	# FRM-03／OQ-13w: release workers whose workshops vanished (e.g. demolish).
 	_apply_lost_workshop_workers(port_id, p)
+	# FRM-03／Q-07a: residents over job_cap → citizen via PF-5 → beggar (gradual).
+	_apply_job_cap_overflow(port_id, p, s0_cit)
 	# ⑥ hire
 	_hire_workers(port_id, p)
 	# ⑦ lottery placement (best-effort redistribute into residences)
@@ -538,7 +540,8 @@ func release_workshop_workers(port_id: StringName, ws_id: StringName) -> void:
 
 
 func _apply_lost_workshop_workers(port_id: String, p: PortPop) -> void:
-	## OQ-13w／TST-SYS07-08: queued demolish releases → poor／citizen become beggars.
+	## OQ-13w／TST-SYS07-08: queued demolish releases → poor become beggars.
+	## Citizen shortfall is gradual via PF-5 (FRM-03／Q-07a), not instant.
 	var hh: int = Params.get_int(PRM_HH)
 	if hh <= 0 or p.pending_release_workers <= 0:
 		return
@@ -547,11 +550,26 @@ func _apply_lost_workshop_workers(port_id: String, p: PortPop) -> void:
 	var take: int = mini(people, p.poor)
 	p.poor = p.poor - take
 	p.beggar = p.beggar + take
-	people = people - take
-	if people > 0:
-		take = mini(people, p.citizen)
-		p.citizen = p.citizen - take
-		p.beggar = p.beggar + take
+
+
+func _apply_job_cap_overflow(port_id: String, p: PortPop, s0_cit: int) -> void:
+	## FRM-03／Q-07a／TST-SYS07-18: residents > job_cap → citizen @ PF-5 → beggar.
+	var job_cap: int = job_capacity(StringName(port_id))
+	var residents: int = p.poor + p.citizen + p.rich
+	var excess: int = residents - job_cap
+	if excess <= 0 or p.citizen <= 0:
+		return
+	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
+	var rate_scale: int = Params.get_int(PRM_RATE_SCALE)
+	var denom: int = rate_scale * days_pw
+	var base_cit: int = mini(s0_cit, p.citizen)
+	var flow: int = _moved(p, "acc_job_overflow", base_cit, Params.get_int(PRM_PF5), denom)
+	flow = mini(flow, excess)
+	flow = mini(flow, p.citizen)
+	if flow <= 0:
+		return
+	p.citizen = p.citizen - flow
+	p.beggar = p.beggar + flow
 
 
 func _hire_workers(port_id: String, p: PortPop) -> void:
