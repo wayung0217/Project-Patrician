@@ -113,6 +113,14 @@ func boot(
 	if BuildingEconomy.is_loaded() and errors.is_empty():
 		errors.append_array(BuildingEconomy.apply_opening_init())
 
+	# D-14b／D-19f: ShipRegistry after PopulationModel／BuildingEconomy opening; inject SailorPool.
+	if not ShipRegistry.has_sailor_pool_provider() and PopulationModel.is_loaded():
+		ShipRegistry.set_sailor_pool_provider(PopulationModel.get_sailor_pool_provider())
+	errors.append_array(ShipRegistry.load_and_validate())
+	# FRM-SYS13-06／D-19f (d): opening SH-01 after WP-24 opening init.
+	if ShipRegistry.is_loaded() and errors.is_empty():
+		errors.append_array(ShipRegistry.apply_opening_init())
+
 	# 2.3-03: 未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。
 	if _consumption == null:
 		var missing := {
@@ -135,6 +143,9 @@ func boot(
 		_capacity_by_kind[GoodsLedger.KIND_WAREHOUSE] = (
 			BuildingEconomy.get_warehouse_capacity_provider()
 		)
+	# D-14c／D-10c: HOLD CapacityProvider from ShipRegistry unless tests pre-register.
+	if not _capacity_by_kind.has(GoodsLedger.KIND_HOLD) and ShipRegistry.is_loaded():
+		_capacity_by_kind[GoodsLedger.KIND_HOLD] = ShipRegistry.get_hold_capacity_provider()
 
 	# D-08e: GoodsLedger.load_and_validate clears providers; apply SimLoop registrations after.
 	_apply_capacity_providers()
@@ -203,6 +214,10 @@ func tick_day() -> Array:
 	if PopulationModel.is_loaded():
 		day_errors.append_array(PopulationModel.daily_step(Clock.day))
 
+	# D-19f (b)／13-07: ShipRegistry crew wage accrual after BE + PopulationModel.
+	if ShipRegistry.is_loaded():
+		day_errors.append_array(ShipRegistry.daily_step(Clock.day))
+
 	# 2.3-03 步驟 3: 注入的 ConsumptionProvider 執行 CONSUME，依 (port_id, good_id) 升序
 	day_errors.append_array(_run_daily_consume(Clock.day))
 
@@ -217,6 +232,9 @@ func tick_day() -> Array:
 		# 14-05: BuildingEconomy season six-step before close_season.
 		if BuildingEconomy.is_loaded():
 			day_errors.append_array(BuildingEconomy.season_step())
+		# D-19f (c)／13-07: ShipRegistry (1) wage (2) repair before close_season.
+		if ShipRegistry.is_loaded():
+			day_errors.append_array(ShipRegistry.cutoff_step(Clock.season_index))
 		# (b) CashLedger.close_season()
 		CashLedger.close_season()
 		# (c) 守恆檢查（release 亦必檢）
@@ -230,6 +248,8 @@ func tick_day() -> Array:
 	BuildingEconomy.flush_signals()
 	if PopulationModel.is_loaded():
 		PopulationModel.flush_signals()
+	if ShipRegistry.is_loaded():
+		ShipRegistry.flush_signals()
 	Clock.day_ticked.emit(Clock.day)
 	if at_cutoff:
 		# D-05(c): season_index = floori((day−1)/D)；首季 0
@@ -238,9 +258,11 @@ func tick_day() -> Array:
 	return day_errors
 
 
-func _run_tick_steps(_current_tick: int) -> void:
+func _run_tick_steps(current_tick: int) -> void:
 	# 13-02／C-04: explicit tick-step list in SimLoop (no signal / call_deferred).
-	# WP-28: empty. WP-30: ShipRegistry.tick_step(tick).
+	# WP-30: ShipRegistry.tick_step(tick).
+	if ShipRegistry.is_loaded():
+		ShipRegistry.tick_step(current_tick)
 	# 15-02／FRM-SYS03-10: debug pending invariant each tick.
 	if OS.is_debug_build() and GoodsLedger.is_loaded():
 		GoodsLedger.debug_check_offtake_invariants()

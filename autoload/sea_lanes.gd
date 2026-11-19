@@ -158,6 +158,20 @@ func waypoints(lane_id: Variant) -> int:
 	return (_lanes[key] as SeaLane).waypoints
 
 
+func lane_endpoints(lane_id: Variant) -> PackedStringArray:
+	## Returns [node_a, node_b] for a known lane; empty if unknown (WP-30 reroute).
+	_clear_last_error()
+	if not _loaded:
+		_record_fail(CODE_NOT_LOADED, FIELD_LANE_ID, lane_id, "SeaLanes.lane_endpoints before load")
+		return PackedStringArray()
+	var key := String(lane_id)
+	if not _lanes.has(key):
+		_record_fail(ERR_SYS14_01, FIELD_LANE_ID, key, "unknown lane_id")
+		return PackedStringArray()
+	var lane: SeaLane = _lanes[key] as SeaLane
+	return PackedStringArray([lane.node_a, lane.node_b])
+
+
 func region(lane_id: Variant) -> StringName:
 	_clear_last_error()
 	if not _loaded:

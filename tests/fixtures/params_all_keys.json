@@ -198,5 +198,65 @@
       "GD-003": 2
     }
   ],
-  "PRM-SYS08-ACC_SCALE": 1000000
+  "PRM-SYS08-ACC_SCALE": 1000000,
+  "PRM-SYS13-CAPACITY": {
+    "SH-01": 200,
+    "SH-02": 150,
+    "SH-03": 180,
+    "SH-04": 300
+  },
+  "PRM-SYS13-TICKS_PER_WAYPOINT": {
+    "SH-01": 12,
+    "SH-02": 10,
+    "SH-03": 11,
+    "SH-04": 14
+  },
+  "PRM-SYS13-CREW": {
+    "SH-01": 20,
+    "SH-02": 18,
+    "SH-03": 15,
+    "SH-04": 30
+  },
+  "PRM-SYS13-PRICE_CASH": {
+    "SH-01": 100000,
+    "SH-02": 120000,
+    "SH-03": 110000,
+    "SH-04": 200000
+  },
+  "PRM-SYS13-BUILD_MATERIALS": {
+    "SH-01": {
+      "GD-003": 10,
+      "GD-017": 5,
+      "GD-021": 3
+    },
+    "SH-02": {
+      "GD-003": 10,
+      "GD-017": 5,
+      "GD-021": 3
+    },
+    "SH-03": {
+      "GD-003": 10,
+      "GD-017": 5,
+      "GD-021": 3
+    },
+    "SH-04": {
+      "GD-003": 10,
+      "GD-017": 5,
+      "GD-021": 3
+    }
+  },
+  "PRM-SYS13-BUILD_DAYS": {
+    "SH-01": 30,
+    "SH-02": 35,
+    "SH-03": 40,
+    "SH-04": 50
+  },
+  "PRM-SYS13-CREW_WAGE_WK": 70,
+  "PRM-SYS13-REPAIR_RATE_SEASON": 0.05,
+  "PRM-SYS13-YARD_CONCURRENT": [
+    1,
+    2,
+    3
+  ],
+  "PRM-SYS13-SALVAGE_RATE": 0.5
 }

@@ -1,80 +1,331 @@
 {
-  "PRM-SYS00-DAYS_PER_SEASON": { "type": "int", "min": 90, "max": 90 },
-  "PRM-SYS00-SEASONS_PER_YEAR": { "type": "int", "min": 4, "max": 4 },
-  "PRM-SYS00-TICKS_PER_DAY": { "type": "int", "min": 24, "max": 24 },
-  "PRM-SYS05-MIN_CASH_UNIT": { "type": "int", "min": 1, "max": 1 },
-  "PRM-SYS01-GOOD_COUNT_MIN": { "type": "int", "min": 20, "max": 30 },
-  "PRM-SYS01-GOOD_COUNT_MAX": { "type": "int", "min": 24, "max": 40 },
-  "PRM-SYS01-TIER_MAX": { "type": "int", "min": 3, "max": 4 },
-  "PRM-SYS01-FREE_PORT_TIER_MAX": { "type": "int", "min": 1, "max": 4 },
-  "PRM-SYS02-PORT_COUNT_MIN": { "type": "int", "min": 14, "max": 14 },
-  "PRM-SYS02-PORT_COUNT_MAX": { "type": "int", "min": 16, "max": 16 },
-  "PRM-SYS02-FREE_PORT_RATIO_MIN": { "type": "float", "min": 0.3, "max": 0.5 },
-  "PRM-SYS02-FREE_PORT_RATIO_MAX": { "type": "float", "min": 0.5, "max": 0.7 },
-  "PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK": { "type": "bool_debug_release" },
-  "PRM-SYS03-OFFTAKE_WINDOW_DAYS": { "type": "int", "min": 1 },
-  "PRM-SYS04-DAYS_PER_WEEK": { "type": "int", "min": 1, "max": 90 },
-  "PRM-SYS04-HALF_SPREAD": { "type": "float", "min": 0.01, "max": 0.25 },
-  "PRM-SYS04-IND_HI2": { "type": "float", "min": 1.0, "max": 10.0 },
-  "PRM-SYS04-IND_HI1": { "type": "float", "min": 1.0, "max": 10.0 },
-  "PRM-SYS04-IND_LO1": { "type": "float", "min": 0.05, "max": 1.0 },
-  "PRM-SYS04-IND_LO2": { "type": "float", "min": 0.05, "max": 1.0 },
-  "PRM-SYS05-START_CASH": { "type": "int", "min": 0 },
-  "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": { "type": "int", "min": 1 },
-  "PRM-SYS04-ROUND_EPS": { "type": "float", "min": 0, "max": 0.000001 },
-
-  "PRM-SYS07-SAT_SCALE": { "type": "int", "min": 1000, "max": 1000 },
-  "PRM-SYS07-SAT_MAX_STEP": { "type": "int", "min": 1 },
-  "PRM-SYS07-SAT_IN_MIN": { "type": "int", "min": 0, "max": 1000 },
-  "PRM-SYS07-SAT_UP1_MIN": { "type": "int", "min": 0, "max": 1000 },
-  "PRM-SYS07-SAT_UP2_MIN": { "type": "int", "min": 0, "max": 1000 },
-  "PRM-SYS07-SAT_DOWN_MAX": { "type": "int", "min": 0, "max": 1000 },
-  "PRM-SYS07-SAT_OUT_MAX": { "type": "int", "min": 0, "max": 1000 },
-  "PRM-SYS07-UP1_STREAK_DAYS": { "type": "int", "min": 1, "max": 360 },
-  "PRM-SYS07-UP2_STREAK_DAYS": { "type": "int", "min": 1, "max": 360 },
-  "PRM-SYS07-RATE_SCALE": { "type": "int", "min": 1000000, "max": 1000000 },
-  "PRM-SYS07-PF1_RATE_WK": { "type": "int", "min": 0, "max": 1000000 },
-  "PRM-SYS07-PF2_RATE_WK": { "type": "int", "min": 0, "max": 1000000 },
-  "PRM-SYS07-PF3_RATE_WK": { "type": "int", "min": 0, "max": 1000000 },
-  "PRM-SYS07-PF4_RATE_WK": { "type": "int", "min": 0, "max": 1000000 },
-  "PRM-SYS07-PF5_RATE_WK": { "type": "int", "min": 0, "max": 1000000 },
-  "PRM-SYS07-PF6_RATE_WK": { "type": "int", "min": 0, "max": 1000000 },
-  "PRM-SYS07-UNEMPLOYED_CAP_PPM": { "type": "int", "min": 0, "max": 1000000 },
-  "PRM-SYS07-HOUSEHOLD_SIZE": { "type": "int", "min": 1, "max": 10 },
-  "PRM-SYS07-HOUSE_CAPACITY": { "type": "int", "min": 1, "max": 1000 },
-  "PRM-SYS07-TIER2_MIN_ACTIVE": { "type": "int", "min": 1, "max": 10 },
-  "PRM-SYS07-TIER3_MIN_ACTIVE": { "type": "int", "min": 1, "max": 10 },
-  "PRM-SYS07-LAMBDA_RING": { "type": "float", "min": 0.01, "max": 5 },
-  "PRM-SYS07-TEMPLE_BONUS": { "type": "int_array", "length": 3, "min": 0, "max": 1000 },
-  "PRM-SYS07-ALMS_FLOOR": { "type": "int_array", "length": 3, "min": 0, "max": 1000 },
-  "PRM-SYS07-ACADEMY_MULT": { "type": "int_array", "length": 3, "min": 1000, "max": 5000 },
-  "PRM-SYS07-LOOK_MANSION_RICH": { "type": "int", "min": 0, "max": 1000 },
-  "PRM-SYS07-LOOK_TILE_MID": { "type": "int", "min": 0, "max": 1000 },
-  "PRM-SYS07-PF6_BEGGAR_RATE_WK": { "type": "int", "min": 0, "max": 1000000 },
-
-  "PRM-SYS08-BASE_LAND_LI": { "type": "int", "min": 0 },
-  "PRM-SYS08-POP_UNIT": { "type": "int", "min": 1 },
-  "PRM-SYS08-SCARCITY_FLOOR": { "type": "float", "min": 0 },
-  "PRM-SYS08-RING_ALPHA": { "type": "float", "min": 0 },
-  "PRM-SYS08-LAND_RENT_RATE_YEAR": { "type": "float", "min": 0 },
-  "PRM-SYS08-VACANCY_GRACE_DAYS": { "type": "int", "min": 1 },
-  "PRM-SYS08-VACANCY_RATE": { "type": "float_array", "length": 3, "min": 0 },
-  "PRM-SYS08-TRANSFER_PREMIUM": { "type": "float", "min": 0 },
-  "PRM-SYS08-COMPENSATION_WEEKS": { "type": "int", "min": 0 },
+  "PRM-SYS00-DAYS_PER_SEASON": {
+    "type": "int",
+    "min": 90,
+    "max": 90
+  },
+  "PRM-SYS00-SEASONS_PER_YEAR": {
+    "type": "int",
+    "min": 4,
+    "max": 4
+  },
+  "PRM-SYS00-TICKS_PER_DAY": {
+    "type": "int",
+    "min": 24,
+    "max": 24
+  },
+  "PRM-SYS05-MIN_CASH_UNIT": {
+    "type": "int",
+    "min": 1,
+    "max": 1
+  },
+  "PRM-SYS01-GOOD_COUNT_MIN": {
+    "type": "int",
+    "min": 20,
+    "max": 30
+  },
+  "PRM-SYS01-GOOD_COUNT_MAX": {
+    "type": "int",
+    "min": 24,
+    "max": 40
+  },
+  "PRM-SYS01-TIER_MAX": {
+    "type": "int",
+    "min": 3,
+    "max": 4
+  },
+  "PRM-SYS01-FREE_PORT_TIER_MAX": {
+    "type": "int",
+    "min": 1,
+    "max": 4
+  },
+  "PRM-SYS02-PORT_COUNT_MIN": {
+    "type": "int",
+    "min": 14,
+    "max": 14
+  },
+  "PRM-SYS02-PORT_COUNT_MAX": {
+    "type": "int",
+    "min": 16,
+    "max": 16
+  },
+  "PRM-SYS02-FREE_PORT_RATIO_MIN": {
+    "type": "float",
+    "min": 0.3,
+    "max": 0.5
+  },
+  "PRM-SYS02-FREE_PORT_RATIO_MAX": {
+    "type": "float",
+    "min": 0.5,
+    "max": 0.7
+  },
+  "PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK": {
+    "type": "bool_debug_release"
+  },
+  "PRM-SYS03-OFFTAKE_WINDOW_DAYS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS04-DAYS_PER_WEEK": {
+    "type": "int",
+    "min": 1,
+    "max": 90
+  },
+  "PRM-SYS04-HALF_SPREAD": {
+    "type": "float",
+    "min": 0.01,
+    "max": 0.25
+  },
+  "PRM-SYS04-IND_HI2": {
+    "type": "float",
+    "min": 1.0,
+    "max": 10.0
+  },
+  "PRM-SYS04-IND_HI1": {
+    "type": "float",
+    "min": 1.0,
+    "max": 10.0
+  },
+  "PRM-SYS04-IND_LO1": {
+    "type": "float",
+    "min": 0.05,
+    "max": 1.0
+  },
+  "PRM-SYS04-IND_LO2": {
+    "type": "float",
+    "min": 0.05,
+    "max": 1.0
+  },
+  "PRM-SYS05-START_CASH": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS04-ROUND_EPS": {
+    "type": "float",
+    "min": 0,
+    "max": 1e-06
+  },
+  "PRM-SYS07-SAT_SCALE": {
+    "type": "int",
+    "min": 1000,
+    "max": 1000
+  },
+  "PRM-SYS07-SAT_MAX_STEP": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS07-SAT_IN_MIN": {
+    "type": "int",
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-SAT_UP1_MIN": {
+    "type": "int",
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-SAT_UP2_MIN": {
+    "type": "int",
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-SAT_DOWN_MAX": {
+    "type": "int",
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-SAT_OUT_MAX": {
+    "type": "int",
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-UP1_STREAK_DAYS": {
+    "type": "int",
+    "min": 1,
+    "max": 360
+  },
+  "PRM-SYS07-UP2_STREAK_DAYS": {
+    "type": "int",
+    "min": 1,
+    "max": 360
+  },
+  "PRM-SYS07-RATE_SCALE": {
+    "type": "int",
+    "min": 1000000,
+    "max": 1000000
+  },
+  "PRM-SYS07-PF1_RATE_WK": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-PF2_RATE_WK": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-PF3_RATE_WK": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-PF4_RATE_WK": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-PF5_RATE_WK": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-PF6_RATE_WK": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-UNEMPLOYED_CAP_PPM": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-HOUSEHOLD_SIZE": {
+    "type": "int",
+    "min": 1,
+    "max": 10
+  },
+  "PRM-SYS07-HOUSE_CAPACITY": {
+    "type": "int",
+    "min": 1,
+    "max": 1000
+  },
+  "PRM-SYS07-TIER2_MIN_ACTIVE": {
+    "type": "int",
+    "min": 1,
+    "max": 10
+  },
+  "PRM-SYS07-TIER3_MIN_ACTIVE": {
+    "type": "int",
+    "min": 1,
+    "max": 10
+  },
+  "PRM-SYS07-LAMBDA_RING": {
+    "type": "float",
+    "min": 0.01,
+    "max": 5
+  },
+  "PRM-SYS07-TEMPLE_BONUS": {
+    "type": "int_array",
+    "length": 3,
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-ALMS_FLOOR": {
+    "type": "int_array",
+    "length": 3,
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-ACADEMY_MULT": {
+    "type": "int_array",
+    "length": 3,
+    "min": 1000,
+    "max": 5000
+  },
+  "PRM-SYS07-LOOK_MANSION_RICH": {
+    "type": "int",
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-LOOK_TILE_MID": {
+    "type": "int",
+    "min": 0,
+    "max": 1000
+  },
+  "PRM-SYS07-PF6_BEGGAR_RATE_WK": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS08-BASE_LAND_LI": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS08-POP_UNIT": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-SCARCITY_FLOOR": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-RING_ALPHA": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-LAND_RENT_RATE_YEAR": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-VACANCY_GRACE_DAYS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-VACANCY_RATE": {
+    "type": "float_array",
+    "length": 3,
+    "min": 0
+  },
+  "PRM-SYS08-TRANSFER_PREMIUM": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-COMPENSATION_WEEKS": {
+    "type": "int",
+    "min": 0
+  },
   "PRM-SYS08-BUILD_CASH_LI": {
     "type": "int_object",
-    "keys": ["RESIDENCE", "WAREHOUSE", "IND1", "IND2", "IND3", "PUBLIC", "KONTOR"],
+    "keys": [
+      "RESIDENCE",
+      "WAREHOUSE",
+      "IND1",
+      "IND2",
+      "IND3",
+      "PUBLIC",
+      "KONTOR"
+    ],
     "min": 0
   },
   "PRM-SYS08-BUILD_MAT": {
     "type": "build_mat_object",
-    "keys": ["RESIDENCE", "WAREHOUSE", "IND1", "IND2", "IND3", "PUBLIC", "KONTOR"],
+    "keys": [
+      "RESIDENCE",
+      "WAREHOUSE",
+      "IND1",
+      "IND2",
+      "IND3",
+      "PUBLIC",
+      "KONTOR"
+    ],
     "min": 0,
     "good_id_pattern": "^GD-[0-9]{3}$"
   },
   "PRM-SYS08-BUILD_DAYS": {
     "type": "int_object",
-    "keys": ["RESIDENCE", "WAREHOUSE", "IND1", "IND2", "IND3", "PUBLIC", "KONTOR"],
+    "keys": [
+      "RESIDENCE",
+      "WAREHOUSE",
+      "IND1",
+      "IND2",
+      "IND3",
+      "PUBLIC",
+      "KONTOR"
+    ],
     "min": 1
   },
   "PRM-SYS08-UPGRADE_PER_CAPITA": {
@@ -93,30 +344,181 @@
     "days_min": 1,
     "good_id_pattern": "^GD-[0-9]{3}$"
   },
-  "PRM-SYS08-ACC_SCALE": { "type": "int", "min": 1 },
-  "PRM-SYS08-OUTPUT_PER_WORKER_K": { "type": "float", "min_exclusive": 0 },
-  "PRM-SYS08-RECIPE_KEEP_N": { "type": "float", "min_exclusive": 0 },
-  "PRM-SYS08-WAGE_SHARE_W": { "type": "float", "min": 0 },
-  "PRM-SYS08-WAGE_BASE_LI": { "type": "int", "min": 0 },
-  "PRM-SYS08-HOUSING_SHARE": { "type": "float", "min": 0 },
-  "PRM-SYS08-MGMT_FEE": { "type": "float", "min": 0 },
-  "PRM-SYS08-CLASS_SPEND_LI": {
-    "type": "int_object",
-    "keys": ["POOR", "CITIZEN", "RICH"],
+  "PRM-SYS08-ACC_SCALE": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-OUTPUT_PER_WORKER_K": {
+    "type": "float",
+    "min_exclusive": 0
+  },
+  "PRM-SYS08-RECIPE_KEEP_N": {
+    "type": "float",
+    "min_exclusive": 0
+  },
+  "PRM-SYS08-WAGE_SHARE_W": {
+    "type": "float",
     "min": 0
   },
-  "PRM-SYS08-KONTOR_CAP": { "type": "int_array", "length": 3, "min": 1 },
-  "PRM-SYS08-WAREHOUSE_CAP": { "type": "int", "min": 1 },
-  "PRM-SYS08-KONTOR_PLOTS": { "type": "int", "min": 1 },
-  "PRM-SYS08-GARRISON": { "type": "int_array", "length": 3, "min": 0 },
-  "PRM-SYS08-ARMS_PER_SOLDIER_WK": { "type": "float", "min": 0 },
-  "PRM-SYS08-POWDER_PER_SOLDIER_WK": { "type": "float", "min": 0 },
-  "PRM-SYS08-LEVY_THRESHOLD_SEASONS": { "type": "int", "min": 1 },
-  "PRM-SYS08-LEVY_RATE": { "type": "float", "min": 0 },
-  "PRM-SYS08-ZONE_POP_MIN": { "type": "int_array", "min": 0 },
-  "PRM-SYS08-ZONE_SAT_MIN": { "type": "int", "min": 0 },
-  "PRM-SYS08-ZONE_SAT_DAYS": { "type": "int", "min": 1 },
-  "PRM-SYS08-ZONE_OPEN_COST_LI": { "type": "int_array", "min": 0 },
-  "PRM-SYS08-OPENING_MIN_WORKSHOPS": { "type": "int", "min": 0 },
-  "PRM-SYS08-DEMAND_BASIS": { "type": "int_enum", "values": [1, 2] }
+  "PRM-SYS08-WAGE_BASE_LI": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS08-HOUSING_SHARE": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-MGMT_FEE": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-CLASS_SPEND_LI": {
+    "type": "int_object",
+    "keys": [
+      "POOR",
+      "CITIZEN",
+      "RICH"
+    ],
+    "min": 0
+  },
+  "PRM-SYS08-KONTOR_CAP": {
+    "type": "int_array",
+    "length": 3,
+    "min": 1
+  },
+  "PRM-SYS08-WAREHOUSE_CAP": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-KONTOR_PLOTS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-GARRISON": {
+    "type": "int_array",
+    "length": 3,
+    "min": 0
+  },
+  "PRM-SYS08-ARMS_PER_SOLDIER_WK": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-POWDER_PER_SOLDIER_WK": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-LEVY_THRESHOLD_SEASONS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-LEVY_RATE": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS08-ZONE_POP_MIN": {
+    "type": "int_array",
+    "min": 0
+  },
+  "PRM-SYS08-ZONE_SAT_MIN": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS08-ZONE_SAT_DAYS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-ZONE_OPEN_COST_LI": {
+    "type": "int_array",
+    "min": 0
+  },
+  "PRM-SYS08-OPENING_MIN_WORKSHOPS": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS08-DEMAND_BASIS": {
+    "type": "int_enum",
+    "values": [
+      1,
+      2
+    ]
+  },
+  "PRM-SYS13-CAPACITY": {
+    "type": "int_object",
+    "keys": [
+      "SH-01",
+      "SH-02",
+      "SH-03",
+      "SH-04"
+    ],
+    "min": 1
+  },
+  "PRM-SYS13-TICKS_PER_WAYPOINT": {
+    "type": "int_object",
+    "keys": [
+      "SH-01",
+      "SH-02",
+      "SH-03",
+      "SH-04"
+    ],
+    "min": 1
+  },
+  "PRM-SYS13-CREW": {
+    "type": "int_object",
+    "keys": [
+      "SH-01",
+      "SH-02",
+      "SH-03",
+      "SH-04"
+    ],
+    "min": 1
+  },
+  "PRM-SYS13-PRICE_CASH": {
+    "type": "int_object",
+    "keys": [
+      "SH-01",
+      "SH-02",
+      "SH-03",
+      "SH-04"
+    ],
+    "min": 0
+  },
+  "PRM-SYS13-BUILD_MATERIALS": {
+    "type": "build_mat_object",
+    "keys": [
+      "SH-01",
+      "SH-02",
+      "SH-03",
+      "SH-04"
+    ],
+    "min": 0,
+    "good_id_pattern": "^GD-[0-9]{3}$"
+  },
+  "PRM-SYS13-BUILD_DAYS": {
+    "type": "int_object",
+    "keys": [
+      "SH-01",
+      "SH-02",
+      "SH-03",
+      "SH-04"
+    ],
+    "min": 1
+  },
+  "PRM-SYS13-CREW_WAGE_WK": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS13-REPAIR_RATE_SEASON": {
+    "type": "float",
+    "min": 0
+  },
+  "PRM-SYS13-YARD_CONCURRENT": {
+    "type": "int_array",
+    "length": 3,
+    "min": 1
+  },
+  "PRM-SYS13-SALVAGE_RATE": {
+    "type": "float",
+    "min": 0,
+    "max": 1
+  }
 }
