@@ -19,6 +19,15 @@ const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
 const CsvImport := preload("res://tools/csv_import.gd")
 const SEA_FIXTURE_CSV := "res://tests/fixtures/wp29_sea_ok/"
 const SEA_FIXTURE_ROOT := "user://sim_loop_sea/"
+## D-21a / D-08j: minimal opening CSV for all ports; imported via csv_import into formal dirs.
+const OPENING_FIXTURE_CSV := "res://tests/fixtures/sim_loop_opening/"
+const FORMAL_ZONES_DIR := "res://data/zones/"
+const FORMAL_BUILDINGS_DIR := "res://data/buildings/"
+const FORMAL_OPENING_DIR := "res://data/opening/"
+const FORMAL_BUILD_QUEUE_DIR := "res://data/build_queue/"
+const FORMAL_CITY_CENTER_DIR := "res://data/city_center/"
+const FORMAL_OPENING_PUBLIC_DIR := "res://data/opening_public/"
+const FORMAL_OPENING_POP_DIR := "res://data/opening_population/"
 const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
 const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 
@@ -82,6 +91,7 @@ func before_each() -> void:
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
 	_wipe_dir(SEA_FIXTURE_ROOT)
+	_wipe_formal_opening_layout()
 	# Reset SimLoop injection between tests (Autoload persists).
 	# D-08j: providers only before boot — clear _booted so setters take effect.
 	SimLoop._booted = false
@@ -94,6 +104,11 @@ func before_each() -> void:
 	PopulationModel._loaded = false
 	PopulationModel._sat_input = null
 	SeaLanes._loaded = false
+
+
+func after_each() -> void:
+	## 2.1-04 ⑤: leave formal data dirs without test-generated .tres.
+	_wipe_formal_opening_layout()
 
 
 func test_consumption_provider_base_push_error_2_1_03() -> void:
@@ -460,6 +475,8 @@ func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 
 
 func _boot_with_fixtures(fixtures: Dictionary) -> Array:
+	## D-21a: every boot path runs opening validation; seed formal dirs from CSV fixtures.
+	_install_opening_fixtures()
 	return SimLoop.boot(
 		PARAMS_FIXTURE,
 		fixtures["goods"],
@@ -469,6 +486,57 @@ func _boot_with_fixtures(fixtures: Dictionary) -> Array:
 		fixtures["sea_regions"],
 		fixtures["sea_lanes"]
 	)
+
+
+func _install_opening_fixtures() -> void:
+	## Per-port rows via csv_import (D-21a／2.1-04 ⑤) — not hand-written formal tres.
+	var wp17: Dictionary = CsvImport.run_batch_wp17(
+		OPENING_FIXTURE_CSV,
+		FORMAL_ZONES_DIR,
+		FORMAL_BUILDINGS_DIR,
+		FORMAL_OPENING_DIR,
+		FORMAL_BUILD_QUEUE_DIR
+	)
+	assert_true(wp17["ok"], "opening wp17 import: %s" % str(wp17.get("errors", [])))
+	var wp18: Dictionary = CsvImport.run_batch_wp18(
+		OPENING_FIXTURE_CSV, FORMAL_CITY_CENTER_DIR, FORMAL_OPENING_PUBLIC_DIR
+	)
+	assert_true(wp18["ok"], "opening wp18 import: %s" % str(wp18.get("errors", [])))
+	var pop: Dictionary = CsvImport.run_batch_opening_population(
+		OPENING_FIXTURE_CSV,
+		FORMAL_OPENING_POP_DIR,
+		OPENING_FIXTURE_CSV.path_join("ports.csv")
+	)
+	assert_true(pop["ok"], "opening population import: %s" % str(pop.get("errors", [])))
+
+
+func _wipe_formal_opening_layout() -> void:
+	## Remove only .tres; keep .gitkeep so 2.1-04 ⑤／repo placeholders stay intact.
+	for dir_path in [
+		FORMAL_ZONES_DIR,
+		FORMAL_BUILDINGS_DIR,
+		FORMAL_OPENING_DIR,
+		FORMAL_BUILD_QUEUE_DIR,
+		FORMAL_CITY_CENTER_DIR,
+		FORMAL_OPENING_PUBLIC_DIR,
+		FORMAL_OPENING_POP_DIR,
+	]:
+		_wipe_tres_only(dir_path)
+
+
+func _wipe_tres_only(dir: String) -> void:
+	var abs_path := ProjectSettings.globalize_path(dir)
+	DirAccess.make_dir_recursive_absolute(abs_path)
+	var d := DirAccess.open(dir)
+	if d == null:
+		return
+	d.list_dir_begin()
+	var fn := d.get_next()
+	while fn != "":
+		if not d.current_is_dir() and fn.ends_with(".tres"):
+			d.remove(fn)
+		fn = d.get_next()
+	d.list_dir_end()
 
 
 class _TestCapProvider extends CapacityProvider:
@@ -495,6 +563,7 @@ func _reset_simloop_for_reboot() -> void:
 	# Mirror before_each so a test may boot more than once without D-08j／D-11d errors.
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
+	_wipe_formal_opening_layout()
 	SimLoop._booted = false
 	SimLoop._capacity_by_kind.clear()
 	SimLoop._capacity_reg_errors.clear()

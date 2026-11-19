@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cpvvk4hnjyhwb"
+
+[deps]
+
+files=["res://tests/fixtures/sim_loop_opening/buildings.tier.translation", "res://tests/fixtures/sim_loop_opening/buildings.max.translation", "res://tests/fixtures/sim_loop_opening/buildings.base.translation", "res://tests/fixtures/sim_loop_opening/buildings.output.translation", "res://tests/fixtures/sim_loop_opening/buildings.input1.translation", "res://tests/fixtures/sim_loop_opening/buildings.input2.translation", "res://tests/fixtures/sim_loop_opening/buildings.build.translation"]
+
+source_file="res://tests/fixtures/sim_loop_opening/buildings.csv"
+dest_files=["res://tests/fixtures/sim_loop_opening/buildings.tier.translation", "res://tests/fixtures/sim_loop_opening/buildings.max.translation", "res://tests/fixtures/sim_loop_opening/buildings.base.translation", "res://tests/fixtures/sim_loop_opening/buildings.output.translation", "res://tests/fixtures/sim_loop_opening/buildings.input1.translation", "res://tests/fixtures/sim_loop_opening/buildings.input2.translation", "res://tests/fixtures/sim_loop_opening/buildings.build.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

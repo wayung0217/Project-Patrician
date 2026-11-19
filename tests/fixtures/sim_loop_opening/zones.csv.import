@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://barcgsxe5nn6m"
+
+[deps]
+
+files=["res://tests/fixtures/sim_loop_opening/zones.zone.translation", "res://tests/fixtures/sim_loop_opening/zones.slot.translation", "res://tests/fixtures/sim_loop_opening/zones.rings.translation", "res://tests/fixtures/sim_loop_opening/zones.slots.translation", "res://tests/fixtures/sim_loop_opening/zones.open.translation"]
+
+source_file="res://tests/fixtures/sim_loop_opening/zones.csv"
+dest_files=["res://tests/fixtures/sim_loop_opening/zones.zone.translation", "res://tests/fixtures/sim_loop_opening/zones.slot.translation", "res://tests/fixtures/sim_loop_opening/zones.rings.translation", "res://tests/fixtures/sim_loop_opening/zones.slots.translation", "res://tests/fixtures/sim_loop_opening/zones.open.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
