@@ -95,7 +95,7 @@ func test_next_seq_starts_at_1_and_increments() -> void:
 func test_capacity_provider_base_push_error() -> void:
 	# 2.1-03: 基底方法一律 push_error 並回失敗值
 	var base := CapacityProvider.new()
-	var cap: int = base.capacity(GoodsLedger.make_hold("SHIP-1"))
+	var cap: int = base.capacity(GoodsLedger.make_hold("SHIP-1", "ACTOR-1"))
 	assert_eq(cap, CapacityProvider.CAPACITY_FAILURE)
 	assert_push_error_count(1)
 
@@ -128,7 +128,7 @@ func test_TST_SYS03_01_conservation_violated_on_manual_mutate() -> void:
 func test_TST_SYS03_02_insufficient_balance_unchanged() -> void:
 	# TST-SYS03-02: 船艙餘 5 擔，transfer 卸 6 擔 → ERR-SYS03-02，雙方數量不變
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
-	var hold: Dictionary = GoodsLedger.make_hold("SHIP-A")
+	var hold: Dictionary = GoodsLedger.make_hold("SHIP-A", "ACTOR-A")
 	var market: Dictionary = GoodsLedger.make_market("PT-01")
 	var provider := TestCapacityProvider.new()
 	# Cap large enough to accept the GENESIS load into HOLD.
@@ -159,7 +159,7 @@ func test_TST_SYS03_03_insufficient_capacity_all_or_nothing() -> void:
 	# TST-SYS03-03: 目的容器剩餘容量 3，transfer 4 → ERR-SYS03-03，全無
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	var market: Dictionary = GoodsLedger.make_market("PT-01")
-	var hold: Dictionary = GoodsLedger.make_hold("SHIP-B")
+	var hold: Dictionary = GoodsLedger.make_hold("SHIP-B", "ACTOR-B")
 	var provider := TestCapacityProvider.new()
 	provider.set_cap(hold, TST_SYS03_03_REMAINING_CAP)
 	assert_eq(
@@ -188,7 +188,7 @@ func test_TST_SYS03_03_no_provider_is_capacity_error() -> void:
 	# TechSpec 3.4 D: 無 CapacityProvider → ERR-SYS03-03，不得視為無限
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	var market: Dictionary = GoodsLedger.make_market("PT-01")
-	var hold: Dictionary = GoodsLedger.make_hold("SHIP-C")
+	var hold: Dictionary = GoodsLedger.make_hold("SHIP-C", "ACTOR-C")
 	GoodsLedger.transfer(
 		GoodsLedger.make_external(), market, good, 1, GoodsLedger.REASON_GENESIS, &"TEST"
 	)

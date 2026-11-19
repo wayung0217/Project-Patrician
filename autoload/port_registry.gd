@@ -321,10 +321,11 @@ func _validate_role_change_payload(new_role: int, payload: Dictionary) -> Array:
 	keys.sort()
 
 	if new_role == ROLE_PRODUCER:
+		# WP-32／15-04: downstream_terminals field ignored (not validated; ERR-SYS02-02 retired).
 		for key_variant in keys:
 			var key: String = String(key_variant)
 			if key == FIELD_DOWNSTREAM:
-				errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, payload[key], "PRODUCER payload must not contain downstream_terminals"))
+				continue
 			elif key != FIELD_OUTPUT:
 				errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "PRODUCER payload unknown key"))
 		if not payload.has(FIELD_OUTPUT):
@@ -338,41 +339,23 @@ func _validate_role_change_payload(new_role: int, payload: Dictionary) -> Array:
 		return errors
 
 	if new_role == ROLE_TRANSIT:
+		# WP-32／15-04: downstream_terminals kept but not validated (ERR-SYS02-02 retired).
 		for key_variant in keys:
 			var key: String = String(key_variant)
 			if key == FIELD_OUTPUT:
 				errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, payload[key], "TRANSIT payload must not contain base_output_per_season"))
 			elif key != FIELD_DOWNSTREAM:
 				errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "TRANSIT payload unknown key"))
-		if not payload.has(FIELD_DOWNSTREAM):
-			errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, null, "TRANSIT payload requires non-empty downstream_terminals"))
-		else:
-			var down_variant: Variant = payload[FIELD_DOWNSTREAM]
-			var downs: PackedStringArray = PackedStringArray()
-			var type_ok: bool = false
-			if typeof(down_variant) == TYPE_PACKED_STRING_ARRAY:
-				downs = down_variant
-				type_ok = true
-			elif typeof(down_variant) == TYPE_ARRAY:
-				type_ok = true
-				for item in down_variant:
-					if typeof(item) != TYPE_STRING:
-						type_ok = false
-						break
-					downs.append(String(item))
-			if not type_ok:
-				errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, down_variant, "TRANSIT downstream_terminals must be string array"))
-			elif downs.is_empty():
-				errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, downs, "TRANSIT downstream_terminals must be non-empty"))
 		return errors
 
-	# TERMINAL: payload must be empty.
+	# TERMINAL: payload must be empty (downstream field ignored, not validated — 15-04).
 	for key_variant in keys:
 		var key: String = String(key_variant)
 		if key == FIELD_OUTPUT:
 			errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, payload[key], "TERMINAL payload must be empty (no base_output_per_season)"))
 		elif key == FIELD_DOWNSTREAM:
-			errors.append(_err(ERR_SYS02_02, PORTS_DIR, FIELD_DOWNSTREAM, payload[key], "TERMINAL payload must be empty (no downstream_terminals)"))
+			# WP-32: do not trigger ERR-SYS02-02; ignore stray downstream on TERMINAL.
+			continue
 		else:
 			errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "TERMINAL payload must be empty"))
 	return errors
@@ -380,20 +363,26 @@ func _validate_role_change_payload(new_role: int, payload: Dictionary) -> Array:
 
 func _apply_role_payload(cell: RoleCell, new_role: int, payload: Dictionary) -> void:
 	# D-02: payload supplies required fields; clear non-applicable role fields (not a substitute for payload).
+	# WP-32／15-04: downstream_terminals stored if present, never validated.
 	cell.role = new_role
 	if new_role == ROLE_PRODUCER:
 		cell.base_output_per_season = int(payload[FIELD_OUTPUT])
 		cell.downstream_terminals = PackedStringArray()
 	elif new_role == ROLE_TRANSIT:
 		cell.base_output_per_season = 0
-		var down_variant: Variant = payload[FIELD_DOWNSTREAM]
-		if typeof(down_variant) == TYPE_PACKED_STRING_ARRAY:
-			cell.downstream_terminals = (down_variant as PackedStringArray).duplicate()
+		if payload.has(FIELD_DOWNSTREAM):
+			var down_variant: Variant = payload[FIELD_DOWNSTREAM]
+			if typeof(down_variant) == TYPE_PACKED_STRING_ARRAY:
+				cell.downstream_terminals = (down_variant as PackedStringArray).duplicate()
+			elif typeof(down_variant) == TYPE_ARRAY:
+				var downs := PackedStringArray()
+				for item in down_variant:
+					downs.append(String(item))
+				cell.downstream_terminals = downs
+			else:
+				cell.downstream_terminals = PackedStringArray()
 		else:
-			var downs := PackedStringArray()
-			for item in down_variant:
-				downs.append(String(item))
-			cell.downstream_terminals = downs
+			cell.downstream_terminals = PackedStringArray()
 	else:
 		cell.base_output_per_season = 0
 		cell.downstream_terminals = PackedStringArray()
@@ -456,8 +445,7 @@ func _validate_loaded(loaded: Array) -> Array:
 		if ratio < free_ratio_min or ratio > free_ratio_max:
 			errors.append(_err(ERR_SYS02_06, PORTS_DIR, FIELD_FREE_PORT_RATIO, ratio, "free port ratio out of PRM-SYS02 range"))
 
-	# FRM-SYS02-01 (2) downstream TERMINAL checks need cross-port lookup.
-	errors.append_array(_validate_transit_downstreams(ordered, by_port))
+	# WP-32／15-04: FRM-SYS02-01 (2) transit-downstream validation removed (ERR-SYS02-02 retired).
 
 	# FRM-SYS02-01 (4) each good ≥1 PRODUCER and ≥1 TERMINAL.
 	errors.append_array(_validate_good_role_coverage(ordered, good_ids))
@@ -491,14 +479,7 @@ func _validate_role_cells_for_port(def: PortDef, path: String, good_ids: PackedS
 			if cell.base_output_per_season != 0:
 				errors.append(_err(ERR_SYS02_03, path, FIELD_OUTPUT, cell.base_output_per_season, "non-PRODUCER base_output_per_season must be 0"))
 
-		# TRANSIT must have ≥1 downstream (existence); target role checked in cross-port pass.
-		if cell.role == ROLE_TRANSIT:
-			if cell.downstream_terminals.is_empty():
-				errors.append(_err(ERR_SYS02_02, path, FIELD_DOWNSTREAM, good_id, "TRANSIT requires ≥1 downstream_terminals"))
-		else:
-			if not cell.downstream_terminals.is_empty():
-				# Spec: downstream only for TRANSIT; treat stray list as ERR-SYS02-02 family.
-				errors.append(_err(ERR_SYS02_02, path, FIELD_DOWNSTREAM, good_id, "downstream_terminals only allowed on TRANSIT"))
+		# WP-32／15-04: downstream_terminals stored as-is; not read or validated.
 
 	# Extra goods not in catalog → reject (exactly one per catalog good implies no extras).
 	var cell_keys: Array = cells.keys()

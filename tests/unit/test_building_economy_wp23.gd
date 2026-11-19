@@ -38,8 +38,6 @@ class TestWorkforce extends WorkforceProvider:
 
 
 class TestCons extends ConsumptionProvider:
-	func weekly_consumption(_p: StringName, _g: StringName) -> int:
-		return 100
 
 	func consume_qty(_p: StringName, _g: StringName, _d: int) -> int:
 		return 0
@@ -413,7 +411,6 @@ func _setup_core_without_be(pop: TestPop) -> void:
 	var ports_dir := _build_valid_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")
 	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
-	MarketPricer.set_consumption_provider(TestCons.new())
 	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.genesis_grant(), OK)
