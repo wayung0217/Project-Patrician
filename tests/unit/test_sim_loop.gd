@@ -93,6 +93,7 @@ func before_each() -> void:
 	BuildingEconomy._workforce = null
 	PopulationModel._loaded = false
 	PopulationModel._sat_input = null
+	DemandModel._clear_state()
 	SeaLanes._loaded = false
 
 
@@ -111,7 +112,7 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_autoload_order_2_2_01() -> void:
-	# D-14c: … → PortRegistry → SeaLanes → GoodsLedger → … → BuildingEconomy → SimLoop
+	# D-14c／D-09a: … → BuildingEconomy → PopulationModel → DemandModel → ShipRegistry → SimLoop
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -123,6 +124,8 @@ func test_autoload_order_2_2_01() -> void:
 		"CashLedger",
 		"BuildingEconomy",
 		"PopulationModel",
+		"DemandModel",
+		"ShipRegistry",
 		"SimLoop",
 	]
 	for name_variant in expected:
@@ -142,6 +145,10 @@ func test_autoload_order_2_2_01() -> void:
 	assert_eq(
 		String(ProjectSettings.get_setting("autoload/Clock")),
 		"*res://autoload/clock.gd"
+	)
+	assert_eq(
+		String(ProjectSettings.get_setting("autoload/DemandModel")),
+		"*res://core/demand_model.gd"
 	)
 
 
@@ -565,6 +572,7 @@ func _reset_simloop_for_reboot() -> void:
 	BuildingEconomy._workforce = null
 	PopulationModel._loaded = false
 	PopulationModel._sat_input = null
+	DemandModel._clear_state()
 
 
 func _boot_ready_provider() -> TestConsumptionProvider:

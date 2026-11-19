@@ -1,5 +1,6 @@
 ; Engine configuration file.
-; Godot 4.7.2-stable — Autoload order D-14c／D-17d: … → BuildingEconomy → PopulationModel → ShipRegistry → SimLoop.
+; Godot 4.7.2-stable — Autoload order D-14c／D-17d／D-09a:
+; … → BuildingEconomy → PopulationModel → DemandModel → ShipRegistry → SimLoop.
 
 config_version=5
 
@@ -20,6 +21,7 @@ MarketPricer="*res://autoload/market_pricer.gd"
 CashLedger="*res://autoload/cash_ledger.gd"
 BuildingEconomy="*res://autoload/building_economy.gd"
 PopulationModel="*res://autoload/population_model.gd"
+DemandModel="*res://core/demand_model.gd"
 ShipRegistry="*res://autoload/ship_registry.gd"
 SimLoop="*res://autoload/sim_loop.gd"
 

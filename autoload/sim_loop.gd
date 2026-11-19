@@ -1,13 +1,14 @@
 extends Node
 ## Autoload: SimLoop — daily tick & season cutoff scheduler (TechSpec 2.2／2.3 / WP-08).
 ## _ready() only clears fields; boot() loads modules in 2.2-01 order (2.2-01).
-## ConsumptionProvider is injected (2.3-03); formal SYS-06 is out of Phase 0 (1-A9).
+## ConsumptionProvider is injected (2.3-03); WP-22 DemandModel is formal SYS-06 Autoload (D-09a).
 ## D-05: Clock mutates only; day_ticked／season_cutoff emitted here at step 6.
 ## D-03: boot() calls CashLedger.genesis_grant() once after validation.
 ## D-14d／WP-28: step 1 advances tick-by-tick; empty tick-step list until WP-30.
 ## D-08e／D-08j: register_capacity_provider／set_consumption_provider only before boot().
 ## WP-18: boot loads BuildingEconomy and registers WAREHOUSE CapacityProvider when not pre-registered.
 ## WP-29 / D-14c: SeaLanes loads after PortRegistry (before GoodsLedger).
+## WP-22: DemandModel loads after opening init; auto-wires sat／consume providers when unset.
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_TICKS_PER_DAY := "PRM-SYS00-TICKS_PER_DAY"
@@ -81,7 +82,8 @@ func boot(
 	curve_path: String = MarketPricer.CURVE_PATH,
 	sea_nodes_dir: String = SeaLanes.NODES_DIR,
 	sea_regions_dir: String = SeaLanes.REGIONS_DIR,
-	sea_lanes_dir: String = SeaLanes.LANES_DIR
+	sea_lanes_dir: String = SeaLanes.LANES_DIR,
+	demand_tables_path: String = DemandModel.TABLES_PATH
 ) -> Array:
 	# 2.2-02: call load_and_validate in D-14c order; collect every error; do not stop early.
 	# 任一錯誤 → 回傳完整清單且不啟動時鐘（_booted 維持 false）。
@@ -99,7 +101,10 @@ func boot(
 	errors.append_array(GoodsLedger.load_and_validate())
 	errors.append_array(MarketPricer.load_and_validate(curve_path))
 	errors.append_array(CashLedger.load_and_validate())
-	# D-17d: PopulationModel after CashLedger／before BuildingEconomy; inject providers if unset.
+	# D-17d／D-17c: PopulationModel after CashLedger／before BuildingEconomy.
+	# WP-22: inject DemandModel sat only when formal／fixture tables exist (else keep SAT_PROVIDER_MISSING).
+	if PopulationModel._sat_input == null and FileAccess.file_exists(demand_tables_path):
+		PopulationModel.set_satisfaction_input_provider(DemandModel.get_satisfaction_input_provider())
 	errors.append_array(PopulationModel.load_and_validate())
 	if PopulationModel.is_loaded():
 		if not BuildingEconomy.has_population_provider():
@@ -113,6 +118,13 @@ func boot(
 	if BuildingEconomy.is_loaded() and errors.is_empty():
 		errors.append_array(BuildingEconomy.apply_opening_init())
 
+	# D-09a／WP-22: DemandModel after opening init when no ConsumptionProvider was pre-injected.
+	# Phase tests that inject a fixture provider skip DemandModel load (formal tables may be absent).
+	if _consumption == null:
+		errors.append_array(DemandModel.load_and_validate(demand_tables_path))
+		if DemandModel.is_loaded():
+			_consumption = DemandModel.get_consumption_provider()
+
 	# D-14b／D-19f: ShipRegistry after PopulationModel／BuildingEconomy opening; inject SailorPool.
 	if not ShipRegistry.has_sailor_pool_provider() and PopulationModel.is_loaded():
 		ShipRegistry.set_sailor_pool_provider(PopulationModel.get_sailor_pool_provider())
@@ -121,7 +133,7 @@ func boot(
 	if ShipRegistry.is_loaded() and errors.is_empty():
 		errors.append_array(ShipRegistry.apply_opening_init())
 
-	# 2.3-03: 未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。
+	# 2.3-03: 未注入 provider（且 DemandModel 未載入）→ boot() 回錯誤。
 	if _consumption == null:
 		var missing := {
 			"code": ERR_PROVIDER_MISSING,
