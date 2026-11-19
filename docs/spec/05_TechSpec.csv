@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,,,
-狀態：Round 8 已結案：#27 → #31（替代 #28）→ #32（替代 #30）；main b441979／GUT 284／284；WP-32／WP-30 未派｜2026-11-19｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，待派）,,,,,,,,
+狀態：Round 8 已結案：#27 → #31（替代 #28）→ #32（替代 #30）；main b441979／GUT 284／284；WP-32 已合併 63bfe37（main 297／297）；跨日回售待裁決；WP-30 未派｜2026-11-19｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，待派）,,,,,,,,
 ,,,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,,,
@@ -274,7 +274,7 @@ N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked,,,
 ,,,,,,,,
 7 工作包總表（WP）— 唯一的工作包清單：新工作包一律接在表尾、編號連續；同一 WP 的後續修改記在 G 欄，不另開表（Owner 追蹤用；Cursor 不得修改）,,,,,,,,
 用法,Cursor 依 WP 編號與依賴開工；一個 PR 只做一個 WP；從最新 main 開分支、不堆疊（Owner 另行核准者除外）；依序搬到 main 後以 merge commit 合併；測試數以「合併前 main ＋ 該 PR 自己新增數」累計，舊測名不得消失。,PR 描述必須回報：WP 編號、新增檔案、測試結果（通過數／總數與新增測名）、遇到的規格缺口（未裁決不得自行補）。,狀態下拉：未開始／進行中／PR 待審／退件／完成；Owner 審後更新。,,,,,
-進度,共 33 個 WP｜完成 27｜進行中 0｜PR 待審 0｜退件 0｜未開始 6　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
+進度,共 33 個 WP｜完成 28｜進行中 0｜PR 待審 0｜退件 0｜未開始 5　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
 WP 編號,內容（對應規格）,依賴,交付物,驗收,狀態,PR／合併紀錄,階段,最後更新
 WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,完成,R1：PR #1｜1/1 ／ R2：無改動｜2026-11-18T03:19:32Z 合併 33018d6（main 1/1）,Phase 0（Round 1–2）,2026-11-18
 WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,完成,R1：PR #2｜9/9 ／ R2：+TICKS_PER_DAY、ROUND_EPS｜13/13｜搬到 main 後合併 57435c7（main 13）,Phase 0（Round 1–2）,2026-11-18
@@ -308,7 +308,7 @@ WP-28,SYS-00 時鐘 tick（D-14d）：Clock.advance_one_tick()、唯讀 tick；a
 WP-29,SYS-14 航道圖：SeaLanes Autoload、FRM-SYS14-01 載入驗證、FRM-SYS14-02 尋路；csv_import 新增 nodes／regions／lanes.csv（D-14e）,WP-18 合併後（可與 WP-19 平行；合併在 WP-19 之後）,sea_lanes.gd、sea_node.gd、sea_region.gd、sea_lane.gd、csv_import.gd、fixtures、測試,見第 13 節 13-06,完成,R7｜PR #25（d43c0f5）｜merge c9722d8｜main 216｜乾淨 rebase（R8-01）,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
 WP-30,SYS-13／14 船與航行：ShipRegistry、開局船、聘解（SailorPoolProvider，D-14b）、出航、改道、位置、抵港、港口吃水、HOLD 容量、工資與維修；Params 登錄 §10 PRM,WP-28、WP-29 合併後；WP-32 合併後（D-20a）,ship_registry.gd、ship.gd、sailor_pool_provider.gd、params.gd、sim_loop.gd、測試,見第 13 節 13-08,未開始,未派／未開分支（Cursor 回報）；D-19f 已記錄。Round 8 全合後先派 WP-32，本包等 WP-32 合併再從最新 main 開工，並接出港／抵港介面（D-20a）。,Phase 2（SYS-13／14，Batch 2.4）,2026-11-19
 WP-31,SYS-13 船廠造船與賣船：order_ship、排隊與開工（BC-2 共用入口）、工期、sell_ship,WP-19、WP-30 合併後,ship_registry.gd、sim_loop.gd、測試,見第 13 節 13-10,未開始,派工單已寫（第 13 節 13-09、10）；派工前須先裁決 BC-2 共用入口,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
-WP-32,SYS-03／04 有效去化與舊中轉結構清理：GoodsLedger ST-OFFTAKE（FRM-SYS03-05 至 10）、MarketPricer 分母改讀去化、錨定價一律基準價、移除 TransitAnchorProvider、刪中轉下游驗證、刪 weekly_consumption 介面（03_Systems 15.1、附錄 F）,Round 8 三包合併後；WP-30、WP-22 之前（D-20a）,goods_ledger.gd、market_pricer.gd、port_registry.gd、consumption_provider.gd、params.gd、sim_loop.gd、測試,見第 15 節 15-08,未開始,Owner 2026-11-19 核准開工；尚無已轉發／開分支證據。先核對 main 基線與已匯出規格；僅 WP-32，不授權合併。,Phase 1 收尾（SYS-15 轉口定價）,2026-11-19
+WP-32,SYS-03／04 有效去化與舊中轉結構清理：GoodsLedger ST-OFFTAKE（FRM-SYS03-05 至 10）、MarketPricer 分母改讀去化、錨定價一律基準價、移除 TransitAnchorProvider、刪中轉下游驗證、刪 weekly_consumption 介面（03_Systems 15.1、附錄 F）,Round 8 三包合併後；WP-30、WP-22 之前（D-20a）,goods_ledger.gd、market_pricer.gd、port_registry.gd、consumption_provider.gd、params.gd、sim_loop.gd、測試,見第 15 節 15-08,完成,"PR #33 已 merge commit 合入 main：63bfe378fdf2e781bba8fadc1832d0f3795bd103；合併後 main 297／297；R2-11 通過（僅刪 D-20b 列名 5 項）。15-08 ④ 待 Owner 裁決：測試用 PT-01／GD-001、貨量 100、錨 1000 厘；離港後窗口 1 日，報告單次 +51,642 厘、多輪 +69,547 厘，航程與持有成本假設 0；規格未改。",Phase 1 收尾（SYS-15 轉口定價）,2026-11-19
 ,,,,,,,,
 8 Owner 裁決總表（D 系列）— 所有實作裁決集中於此，新裁決接在表尾；優先於第 3 節同主題的 D 欄註記,,,,,,,,
 編號,主題,裁決,實作要求,影響 WP,回寫來源 Sheet,,,
