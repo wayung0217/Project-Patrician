@@ -31,8 +31,6 @@ class TestCons extends ConsumptionProvider:
 	func set_qty(port_id: String, good_id: String, qty: int) -> void:
 		_qty["%s|%s" % [port_id, good_id]] = qty
 
-	func weekly_consumption(_p: StringName, _g: StringName) -> int:
-		return 100
 
 	func consume_qty(port_id: StringName, good_id: StringName, _d: int) -> int:
 		return int(_qty.get("%s|%s" % [String(port_id), String(good_id)], 0))
@@ -315,7 +313,6 @@ func _boot_with_opening() -> void:
 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")
 	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
-	MarketPricer.set_consumption_provider(TestCons.new())
 	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.genesis_grant(), OK)
@@ -414,7 +411,6 @@ func _boot_modules_only() -> void:
 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")
 	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
-	MarketPricer.set_consumption_provider(TestCons.new())
 	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.genesis_grant(), OK)

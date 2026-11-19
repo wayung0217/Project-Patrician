@@ -60,22 +60,12 @@ class _TestSatProvider extends SatisfactionInputProvider:
 
 
 class TestConsumptionProvider extends ConsumptionProvider:
-	## Fixture double — weekly + consume tables only (1-A9／res://tests/).
-	var _weekly: Dictionary = {} ## "port|good" -> int
+	## Fixture double — consume tables only (1-A9／res://tests/). WP-32: weekly_consumption removed.
 	var _daily: Dictionary = {} ## "port|good" -> int
 	var consume_calls: Array = [] ## ordered {port, good, day}
 
-	func set_weekly(port_id: String, good_id: String, c: int) -> void:
-		_weekly["%s|%s" % [port_id, good_id]] = c
-
 	func set_daily(port_id: String, good_id: String, c: int) -> void:
 		_daily["%s|%s" % [port_id, good_id]] = c
-
-	func weekly_consumption(port_id: StringName, good_id: StringName) -> int:
-		var key := "%s|%s" % [String(port_id), String(good_id)]
-		if not _weekly.has(key):
-			return 0
-		return int(_weekly[key])
 
 	func consume_qty(port_id: StringName, good_id: StringName, day: int) -> int:
 		var port_s := String(port_id)
@@ -113,12 +103,11 @@ func after_each() -> void:
 
 func test_consumption_provider_base_push_error_2_1_03() -> void:
 	# 2.1-03／3.7: 基底方法一律 push_error 並回失敗值（不得回 0）
+	# WP-32／15-05: weekly_consumption removed; only consume_qty remains on base.
 	var base := ConsumptionProvider.new()
-	var w: int = base.weekly_consumption(&"PT-01", &"GD-001")
-	assert_eq(w, ConsumptionProvider.CONSUMPTION_FAILURE)
 	var c: int = base.consume_qty(&"PT-01", &"GD-001", 1)
 	assert_eq(c, ConsumptionProvider.CONSUMPTION_FAILURE)
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(1)
 
 
 func test_autoload_order_2_2_01() -> void:

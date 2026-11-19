@@ -2,7 +2,8 @@ extends GutTest
 ## WP-06 MarketPricer tests. Expectations cite TST-SYS04-01..10 / 03_Systems 4.1 (xlsx B463／B467／B470).
 ## D-01: B463=144000、B470=−13715 exact via AmountQuantize.quantize_amount.
 ## D-04: validate ErrorInfo {code,sys,detail}; quote fail → last_error().
-## D-08g: named Band enum BAND_VERY_LOW…BAND_VERY_HIGH；D-08h: TransitAnchorProvider／ERR-SYS04-07.
+## D-08g: named Band enum BAND_VERY_LOW…BAND_VERY_HIGH.
+## WP-32: offtake snapshot fixture；TransitAnchorProvider／ERR-SYS04-07 removed (D-20b).
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
@@ -40,9 +41,6 @@ const PORT_DEMO := "PT-01"
 const PORT_TERMINAL := "PT-02"
 const PORT_TRANSIT := "PT-03"
 const GOOD_DEMO := "GD-001"
-## D-08h test provider returns a fixed positive anchor (not invented freight／ratio).
-const TRANSIT_ANCHOR_LI := 1100
-
 ## 03_Systems 4.1 demo inputs (xlsx B447–B452)
 const DEMO_ANCHOR_LI := 1000 ## B447
 const DEMO_WEEKLY_C := 105 ## B449 = 15 × DAYS_PER_WEEK
@@ -98,48 +96,7 @@ const TST01_BAD_W1 := 0.5
 const SPLIT_EXTRA_MAX := 1
 
 
-class TestConsumptionProvider extends ConsumptionProvider:
-	var _weekly: Dictionary = {} ## "port|good" -> int
-
-	func set_weekly(port_id: String, good_id: String, c: int) -> void:
-		_weekly["%s|%s" % [port_id, good_id]] = c
-
-	func weekly_consumption(port_id: StringName, good_id: StringName) -> int:
-		var key := "%s|%s" % [String(port_id), String(good_id)]
-		if not _weekly.has(key):
-			push_error("TestConsumptionProvider: missing weekly for %s" % key)
-			return CONSUMPTION_FAILURE
-		return int(_weekly[key])
-
-	func consume_qty(_port_id: StringName, _good_id: StringName, _day: int) -> int:
-		push_error("TestConsumptionProvider.consume_qty not used in WP-06")
-		return CONSUMPTION_FAILURE
-
-
-class TestTransitAnchorProvider extends TransitAnchorProvider:
-	var _anchors: Dictionary = {} ## "port|good" -> int
-	var _fail_all: bool = false
-
-	func set_anchor(port_id: String, good_id: String, li: int) -> void:
-		_anchors["%s|%s" % [port_id, good_id]] = li
-
-	func fail_all() -> void:
-		_fail_all = true
-
-	func anchor_price_li(port_id: StringName, good_id: StringName) -> int:
-		if _fail_all:
-			_last_error = ErrorInfoUtil.make(
-				&"TEST_TRANSIT_FAIL", SYS_ID, {ErrorInfoUtil.DETAIL_MESSAGE: "forced fail"}
-			)
-			return ANCHOR_FAILURE
-		var key := "%s|%s" % [String(port_id), String(good_id)]
-		if not _anchors.has(key):
-			_last_error = ErrorInfoUtil.make(
-				&"TEST_TRANSIT_MISS", SYS_ID, {ErrorInfoUtil.DETAIL_MESSAGE: "missing %s" % key}
-			)
-			return ANCHOR_FAILURE
-		_last_error = {}
-		return int(_anchors[key])
+## WP-32: pricing tests inject previous-day offtake snapshot on GoodsLedger (fixture).
 
 
 func before_each() -> void:
@@ -153,12 +110,11 @@ func before_each() -> void:
 
 func test_consumption_provider_base_push_error() -> void:
 	# 2.1-03／TechSpec 3.7: 基底方法一律 push_error 並回失敗值
+	# WP-32／15-05: weekly_consumption removed from interface.
 	var base := ConsumptionProvider.new()
-	var w: int = base.weekly_consumption(&"PT-01", &"GD-001")
-	assert_eq(w, ConsumptionProvider.CONSUMPTION_FAILURE)
 	var c: int = base.consume_qty(&"PT-01", &"GD-001", 0)
 	assert_eq(c, ConsumptionProvider.CONSUMPTION_FAILURE)
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(1)
 
 
 func test_D08g_named_band_enum_order() -> void:
@@ -177,48 +133,9 @@ func test_D08g_named_band_enum_order() -> void:
 	assert_eq(MarketPricer.indicator_band(TST09_R_TOO_HIGH), MarketPricer.BAND_VERY_HIGH)
 
 
-func test_D08h_transit_anchor_provider_base_fails() -> void:
-	# D-08h／2.1-03: 基底 anchor_price_li → 0 + last_error()；不得回假正價。
-	var base := TransitAnchorProvider.new()
-	var li: int = base.anchor_price_li(StringName(PORT_TRANSIT), StringName(GOOD_DEMO))
-	assert_eq(li, TransitAnchorProvider.ANCHOR_FAILURE)
-	assert_false(base.last_error().is_empty())
-	assert_push_error_count(1)
-
-
-func test_D08h_transit_without_provider_returns_err_sys04_07() -> void:
-	# D-08h Phase 0: 無 TransitAnchorProvider → 中轉格 quote／mid_price 一律 ERR-SYS04-07。
-	_boot_full_with_transit(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK, false)
-	var mid: float = MarketPricer.mid_price(StringName(PORT_TRANSIT), StringName(GOOD_DEMO))
-	assert_eq(mid, 0.0)
-	assert_true(_last_error_is(MarketPricer.ERR_SYS04_07), "mid_price TRANSIT → ERR-SYS04-07")
-	var q: Dictionary = MarketPricer.quote(
-		StringName(PORT_TRANSIT), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, 1
-	)
-	assert_eq(q[MarketPricer.KEY_ERROR], MarketPricer.ERR_SYS04_07)
-	assert_true(_last_error_is(MarketPricer.ERR_SYS04_07), "quote TRANSIT → ERR-SYS04-07")
-	assert_push_error_count(1 + 1)
-
-
-func test_D08h_transit_with_provider_uses_anchor() -> void:
-	# D-08h: 注入 TransitAnchorProvider 後中轉格用其錨定價；失敗仍 ERR-SYS04-07。
-	_boot_full_with_transit(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK, true)
-	var mid: float = MarketPricer.mid_price(StringName(PORT_TRANSIT), StringName(GOOD_DEMO))
-	assert_gt(mid, 0.0)
-	assert_true(MarketPricer.last_error().is_empty())
-	var q: Dictionary = MarketPricer.quote(
-		StringName(PORT_TRANSIT), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, 1
-	)
-	assert_false(q.has(MarketPricer.KEY_ERROR))
-	assert_gt(int(q[MarketPricer.KEY_TOTAL_LI]), 0)
-
-	var fail_prov := TestTransitAnchorProvider.new()
-	fail_prov.fail_all()
-	MarketPricer.set_transit_anchor_provider(fail_prov)
-	var mid_fail: float = MarketPricer.mid_price(StringName(PORT_TRANSIT), StringName(GOOD_DEMO))
-	assert_eq(mid_fail, 0.0)
-	assert_true(_last_error_is(MarketPricer.ERR_SYS04_07))
-	assert_push_error_count(1)
+# DELETED (D-20b): test_D08h_transit_anchor_provider_base_fails
+# DELETED (D-20b): test_D08h_transit_without_provider_returns_err_sys04_07
+# DELETED (D-20b): test_D08h_transit_with_provider_uses_anchor
 
 
 func test_TST_SYS04_01_curve_validation_errors() -> void:
@@ -287,7 +204,7 @@ func test_TST_SYS04_04_split_vs_batch_extra_in_0_1() -> void:
 	assert_false(buy1.has(MarketPricer.KEY_ERROR))
 	# Apply first fill to stock so second quote sees s−q1 (SYS-04 itself does not write).
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
-	var hold: Dictionary = GoodsLedger.make_hold("SHIP-DEMO")
+	var hold: Dictionary = GoodsLedger.make_hold("SHIP-DEMO", "ACTOR-DEMO")
 	var provider := _cap_provider_unlimited(hold)
 	assert_eq(
 		GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_HOLD), provider),
@@ -321,7 +238,7 @@ func test_TST_SYS04_05_roundtrip_loss() -> void:
 	assert_eq(buy_total, DEMO_BUY_TOTAL_LI, "D-01／xlsx B463")
 
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
-	var hold: Dictionary = GoodsLedger.make_hold("SHIP-RT")
+	var hold: Dictionary = GoodsLedger.make_hold("SHIP-RT", "ACTOR-RT")
 	assert_eq(
 		GoodsLedger.register_capacity_provider(
 			StringName(GoodsLedger.KIND_HOLD), _cap_provider_unlimited(hold)
@@ -353,15 +270,13 @@ func test_TST_SYS04_06_min_half_spread_still_loss() -> void:
 	_seed_market(PORT_DEMO, DEMO_STOCK)
 	var merr: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_eq(merr.size(), 0)
-	var cons := TestConsumptionProvider.new()
-	cons.set_weekly(PORT_DEMO, GOOD_DEMO, DEMO_WEEKLY_C)
-	MarketPricer.set_consumption_provider(cons)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, DEMO_WEEKLY_C)
 
 	var buy: Dictionary = MarketPricer.quote(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, DEMO_Q
 	)
 	var market: Dictionary = GoodsLedger.make_market(PORT_DEMO)
-	var hold: Dictionary = GoodsLedger.make_hold("SHIP-HS")
+	var hold: Dictionary = GoodsLedger.make_hold("SHIP-HS", "ACTOR-HS")
 	assert_eq(
 		GoodsLedger.register_capacity_provider(
 			StringName(GoodsLedger.KIND_HOLD), _cap_provider_unlimited(hold)
@@ -452,39 +367,83 @@ func test_D01_quantize_amount_snaps_near_integer() -> void:
 	assert_eq(AmountQuantize.quantize_amount(far), far)
 
 
+func test_TST_SYS04_11_zero_window_qty_floor() -> void:
+	# TST-SYS04-11: window_qty＝0 → m＝M_n；買 10 總額同 TST-SYS04-07
+	_boot_full(DEMO_ANCHOR_LI, 0, DEMO_STOCK)
+	var buy: Dictionary = MarketPricer.quote(
+		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, TST07_Q
+	)
+	assert_false(buy.has(MarketPricer.KEY_ERROR))
+	assert_eq(int(buy[MarketPricer.KEY_TOTAL_LI]), TST07_BUY_TOTAL)
+
+
+func test_TST_SYS04_12_transit_uses_base_price_li() -> void:
+	# TST-SYS04-12: 原 TRANSIT 角色格 → anchor＝base_price_li；無 TransitAnchor／ERR-SYS04-07
+	_boot_catalog_ports_ledger_transit(DEMO_ANCHOR_LI)
+	_seed_market(PORT_TRANSIT, DEMO_STOCK)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	_inject_offtake_weekly(PORT_TRANSIT, GOOD_DEMO, DEMO_WEEKLY_C)
+	var mid: float = MarketPricer.mid_price(StringName(PORT_TRANSIT), StringName(GOOD_DEMO))
+	assert_gt(mid, 0.0)
+	assert_true(MarketPricer.last_error().is_empty())
+	# mid = anchor × m；anchor must be base_price_li (1000), not a transit-derived price.
+	var stock: int = GoodsLedger.get_qty(GoodsLedger.make_market(PORT_TRANSIT), StringName(GOOD_DEMO))
+	var w: float = float(stock) / float(DEMO_WEEKLY_C)
+	var expected: float = float(DEMO_ANCHOR_LI) * MarketPricer.multiplier_at_weeks(w)
+	assert_eq(mid, expected)
+
+
+func test_TST_SYS04_13_offtake_weeks_fixture() -> void:
+	# TST-SYS04-13: window_qty 70、window_days 7、DAYS_PER_WEEK 7、stock 210 → weekly_offtake＝70、w＝3、m＝M3
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	_seed_market(PORT_DEMO, 210)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	if not GoodsLedger._offtake_snapshot.has(PORT_DEMO):
+		GoodsLedger._offtake_snapshot[PORT_DEMO] = {}
+	GoodsLedger._offtake_snapshot[PORT_DEMO][GOOD_DEMO] = {
+		"window_qty": 70,
+		"local_qty": 70,
+		"window_days": 7,
+		"day": 0,
+	}
+	var mid: float = MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))
+	# w=3 → m=M3=1.0 on fixture curve; mid = 1000 × 1.0
+	assert_eq(mid, float(DEMO_ANCHOR_LI) * 1.0)
+
+
 # --- boot helpers ---
 
 func _boot_full(anchor_li: int, weekly_c: int, stock: int) -> void:
+	# WP-32／15-08 ②: inject offtake snapshot fixture (weekly_offtake ≡ former weekly_c).
 	_boot_catalog_ports_ledger(anchor_li)
 	_seed_market(PORT_DEMO, stock)
 	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_eq(errors.size(), 0, "MarketPricer must load: %s" % str(errors))
-	var cons := TestConsumptionProvider.new()
-	cons.set_weekly(PORT_DEMO, GOOD_DEMO, weekly_c)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, weekly_c)
 	for gid_variant in GoodCatalog.all_ids():
 		var gid: String = String(gid_variant)
 		if gid != GOOD_DEMO:
-			cons.set_weekly(PORT_DEMO, gid, weekly_c)
-	MarketPricer.set_consumption_provider(cons)
-	# D-08h: default Phase 0 — no transit provider between tests.
-	MarketPricer.set_transit_anchor_provider(null)
+			_inject_offtake_weekly(PORT_DEMO, gid, weekly_c)
 
 
-func _boot_full_with_transit(anchor_li: int, weekly_c: int, stock: int, with_provider: bool) -> void:
-	# PT-01 PRODUCER／PT-02 TERMINAL／PT-03 TRANSIT→PT-02 for GOOD_DEMO (FRM-SYS02-01).
-	_boot_catalog_ports_ledger_transit(anchor_li)
-	_seed_market(PORT_TRANSIT, stock)
-	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
-	assert_eq(errors.size(), 0, "MarketPricer must load: %s" % str(errors))
-	var cons := TestConsumptionProvider.new()
-	for port_id in [PORT_DEMO, PORT_TERMINAL, PORT_TRANSIT]:
-		for gid_variant in GoodCatalog.all_ids():
-			cons.set_weekly(port_id, String(gid_variant), weekly_c)
-	MarketPricer.set_consumption_provider(cons)
-	if with_provider:
-		var prov := TestTransitAnchorProvider.new()
-		prov.set_anchor(PORT_TRANSIT, GOOD_DEMO, TRANSIT_ANCHOR_LI)
-		MarketPricer.set_transit_anchor_provider(prov)
+func _inject_offtake_weekly(port_id: String, good_id: String, weekly_offtake: int) -> void:
+	# weekly_offtake = window_qty × DAYS_PER_WEEK ÷ window_days; use window_days=7.
+	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	var window_days: int = days_pw if days_pw > 0 else 1
+	var window_qty: int = weekly_offtake
+	# With window_days == DAYS_PER_WEEK, weekly_offtake == window_qty.
+	if not GoodsLedger._offtake_snapshot.has(port_id):
+		GoodsLedger._offtake_snapshot[port_id] = {}
+	var by_good: Dictionary = GoodsLedger._offtake_snapshot[port_id]
+	by_good[good_id] = {
+		"window_qty": window_qty,
+		"local_qty": window_qty,
+		"window_days": window_days,
+		"day": 0,
+	}
+	GoodsLedger._offtake_snapshot[port_id] = by_good
 
 
 func _boot_catalog_ports_ledger(anchor_li: int) -> void:
@@ -500,6 +459,7 @@ func _boot_catalog_ports_ledger(anchor_li: int) -> void:
 
 
 func _boot_catalog_ports_ledger_transit(anchor_li: int) -> void:
+	# WP-32: TRANSIT loads without downstream validation; used by TST-SYS04-12.
 	var goods_dir := _build_valid_goods(GOODS_FIXTURE_ROOT + "transit/", anchor_li)
 	var gerr: Array = GoodCatalog.load_and_validate(goods_dir)
 	assert_eq(gerr.size(), 0, "goods must load")

@@ -106,31 +106,9 @@ func test_TST_SYS02_03_missing_role_cell_rejects() -> void:
 	assert_true(_has_code(errors, ERR_SYS02_01), "expected ERR-SYS02-01")
 
 
-func test_TST_SYS02_04_transit_downstream_self_rejects() -> void:
-	# TST-SYS02-04: 中轉格下游指向自身 → ERR-SYS02-02
-	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
-	var free_count: int = _valid_free_count(port_count)
-	var dir_self := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "transit_self/", free_count)
-	_set_transit(dir_self, "PT-03", GoodCatalog.all_ids()[0], PackedStringArray(["PT-03"]))
-	var errors_self: Array = PortRegistry.load_and_validate(dir_self)
-	assert_gt(errors_self.size(), 0)
-	assert_push_error_count(errors_self.size())
-	assert_true(_has_code(errors_self, ERR_SYS02_02), "expected ERR-SYS02-02 for self downstream")
-	assert_false(PortRegistry.is_loaded())
-
-
-func test_TST_SYS02_04_transit_downstream_non_terminal_rejects() -> void:
-	# TST-SYS02-04: 中轉格下游指向非終端港 → ERR-SYS02-02
-	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
-	var free_count: int = _valid_free_count(port_count)
-	var dir_non_term := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "transit_non_term/", free_count)
-	# PT-01 is PRODUCER for every good in the valid fixture — point TRANSIT at it.
-	_set_transit(dir_non_term, "PT-03", GoodCatalog.all_ids()[0], PackedStringArray(["PT-01"]))
-	var errors_non: Array = PortRegistry.load_and_validate(dir_non_term)
-	assert_gt(errors_non.size(), 0)
-	assert_push_error_count(errors_non.size())
-	assert_true(_has_code(errors_non, ERR_SYS02_02), "expected ERR-SYS02-02 for non-TERMINAL downstream")
-	assert_false(PortRegistry.is_loaded())
+# DELETED (D-20b／15-04／TST-SYS02-04 停用):
+# test_TST_SYS02_04_transit_downstream_self_rejects
+# test_TST_SYS02_04_transit_downstream_non_terminal_rejects
 
 
 func test_TST_SYS02_05_role_change_queues_until_cutoff() -> void:
@@ -199,7 +177,7 @@ func test_D02_queue_producer_payload_applies_output() -> void:
 
 
 func test_D02_queue_transit_payload_applies_downstream() -> void:
-	# D-02: TRANSIT requires non-empty downstream_terminals; applied at cutoff; FRM still re-run.
+	# WP-32／15-04: TRANSIT may carry downstream_terminals (stored, not validated); applied at cutoff.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
 	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "q_transit/", free_count)
@@ -244,14 +222,14 @@ func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
 	push_total += zero_out.size()
 	assert_true(_has_code(zero_out, ERR_SYS02_03), "output <= 0 → ERR-SYS02-03")
 
+	# WP-32／15-04: PRODUCER + downstream_terminals ignored (ERR-SYS02-02 retired); still enqueues.
 	var with_down: Array = PortRegistry.queue_role_change(
 		port_id,
 		good_id,
 		PortRegistry.ROLE_PRODUCER,
 		{"base_output_per_season": 1, "downstream_terminals": PackedStringArray(["PT-02"])}
 	)
-	push_total += with_down.size()
-	assert_true(_has_code(with_down, ERR_SYS02_02), "PRODUCER + downstream → ERR-SYS02-02")
+	assert_eq(with_down.size(), 0, "PRODUCER + downstream ignored, not ERR-SYS02-02")
 
 	var bad_type: Array = PortRegistry.queue_role_change(
 		port_id, good_id, PortRegistry.ROLE_PRODUCER, {"base_output_per_season": 1.5}
@@ -261,13 +239,14 @@ func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
 
 	assert_push_error_count(push_total)
 
-	# Nothing enqueued → apply is no-op; role unchanged.
+	# with_down enqueued; apply succeeds; bad payloads rejected.
 	assert_eq(PortRegistry.apply_queued_role_changes().size(), 0)
-	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TERMINAL)
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_PRODUCER)
 
 
 func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> void:
-	# D-02: TRANSIT / TERMINAL payload schema enforced at enqueue.
+	# WP-32／15-04: TRANSIT empty／missing downstream allowed (ERR-SYS02-02 retired);
+	# TRANSIT + output and TERMINAL non-empty still reject.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
 	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "q_bad_tt/", free_count)
@@ -279,14 +258,16 @@ func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> voi
 	var push_total: int = 0
 
 	var empty_transit: Array = PortRegistry.queue_role_change(port_id, good_id, PortRegistry.ROLE_TRANSIT, {})
-	push_total += empty_transit.size()
-	assert_true(_has_code(empty_transit, ERR_SYS02_02), "TRANSIT missing downstream → ERR-SYS02-02")
+	assert_eq(empty_transit.size(), 0, "TRANSIT missing downstream allowed")
+
+	# Clear queue so next cases are isolated.
+	PortRegistry.apply_queued_role_changes()
 
 	var empty_list: Array = PortRegistry.queue_role_change(
 		port_id, good_id, PortRegistry.ROLE_TRANSIT, {"downstream_terminals": PackedStringArray()}
 	)
-	push_total += empty_list.size()
-	assert_true(_has_code(empty_list, ERR_SYS02_02), "TRANSIT empty downstream → ERR-SYS02-02")
+	assert_eq(empty_list.size(), 0, "TRANSIT empty downstream allowed")
+	PortRegistry.apply_queued_role_changes()
 
 	var with_output: Array = PortRegistry.queue_role_change(
 		port_id,
@@ -306,7 +287,7 @@ func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> voi
 	assert_push_error_count(push_total)
 
 	assert_eq(PortRegistry.apply_queued_role_changes().size(), 0)
-	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TERMINAL)
+	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TRANSIT)
 
 
 func test_valid_ports_load_queries_and_warnings() -> void:

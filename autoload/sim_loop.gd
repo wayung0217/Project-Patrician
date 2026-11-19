@@ -41,12 +41,11 @@ func _ready() -> void:
 
 func set_consumption_provider(provider: ConsumptionProvider) -> void:
 	## D-08j: inject before boot only; after boot → push_error, no effect.
-	## Also wires MarketPricer (SYS-04 weekly_consumption).
+	## WP-32: MarketPricer no longer uses ConsumptionProvider (offtake snapshot).
 	if _booted:
 		push_error("SimLoop.set_consumption_provider called after boot (D-08j); ignored")
 		return
 	_consumption = provider
-	MarketPricer.set_consumption_provider(provider)
 
 
 func register_capacity_provider(kind: Variant, provider: CapacityProvider) -> void:
@@ -223,6 +222,9 @@ func tick_day() -> Array:
 		# (c) 守恆檢查（release 亦必檢）
 		GoodsLedger.check_conservation()
 
+	# 15-07／15.1 F: after conservation, before signals — roll offtake snapshot (C-04 explicit call).
+	GoodsLedger.roll_offtake_snapshot(Clock.day)
+
 	# 2.3-06 步驟 6: 全部寫入完成後才發出信號（D-05(a)）
 	# D-12h／14-03 ⑧: flush BuildingEconomy + PopulationModel signals before clock signals.
 	BuildingEconomy.flush_signals()
@@ -239,7 +241,10 @@ func tick_day() -> Array:
 func _run_tick_steps(_current_tick: int) -> void:
 	# 13-02／C-04: explicit tick-step list in SimLoop (no signal / call_deferred).
 	# WP-28: empty. WP-30: ShipRegistry.tick_step(tick).
-	pass
+	# 15-02／FRM-SYS03-10: debug pending invariant each tick.
+	if OS.is_debug_build() and GoodsLedger.is_loaded():
+		GoodsLedger.debug_check_offtake_invariants()
+
 
 
 func _apply_capacity_providers() -> void:

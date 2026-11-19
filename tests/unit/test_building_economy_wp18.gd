@@ -545,8 +545,6 @@ func _has_code(errors: Array, code: String) -> bool:
 
 
 class _SimCons extends ConsumptionProvider:
-	func weekly_consumption(_port_id: StringName, _good_id: StringName) -> int:
-		return 0
 
 	func consume_qty(_port_id: StringName, _good_id: StringName, _day: int) -> int:
 		return 0

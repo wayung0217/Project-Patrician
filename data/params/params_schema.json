@@ -12,6 +12,7 @@
   "PRM-SYS02-FREE_PORT_RATIO_MIN": { "type": "float", "min": 0.3, "max": 0.5 },
   "PRM-SYS02-FREE_PORT_RATIO_MAX": { "type": "float", "min": 0.5, "max": 0.7 },
   "PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK": { "type": "bool_debug_release" },
+  "PRM-SYS03-OFFTAKE_WINDOW_DAYS": { "type": "int", "min": 1 },
   "PRM-SYS04-DAYS_PER_WEEK": { "type": "int", "min": 1, "max": 90 },
   "PRM-SYS04-HALF_SPREAD": { "type": "float", "min": 0.01, "max": 0.25 },
   "PRM-SYS04-IND_HI2": { "type": "float", "min": 1.0, "max": 10.0 },

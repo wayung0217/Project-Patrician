@@ -1,7 +1,8 @@
 extends Node
-## Autoload: MarketPricer — SYS-04 pure pricing (TechSpec 3.5 / WP-06).
+## Autoload: MarketPricer — SYS-04 pure pricing (TechSpec 3.5 / WP-06／WP-32).
 ## _ready() only clears fields; load_and_validate() loads curve + FRM checks (2.2-01).
-## No signals; does not write ST-GOOD／ST-CASH. weekly_consumption via ConsumptionProvider (3.7／B2).
+## No signals; does not write ST-GOOD／ST-CASH.
+## WP-32／15.1: denominator from GoodsLedger.offtake_snapshot (previous-day); anchor = base_price_li.
 ## D-01: money float→int only via AmountQuantize.quantize_amount then ceili／floori.
 ## D-04: ErrorInfo {code,sys,detail} for validate Arrays／last_error(); no ERR→int.
 
@@ -45,14 +46,18 @@ const ERR_SYS04_03 := &"ERR-SYS04-03"
 const ERR_SYS04_04 := &"ERR-SYS04-04"
 const ERR_SYS04_05 := &"ERR-SYS04-05"
 const ERR_SYS04_06 := &"ERR-SYS04-06"
-const ERR_SYS04_07 := &"ERR-SYS04-07"
+## ERR-SYS04-07 retired (WP-32／15.1 附錄 F — transit anchor removed).
 const ERR_SYS04_08 := &"ERR-SYS04-08"
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
 const CODE_CURVE_MISSING := &"CURVE_MISSING"
 const CODE_CURVE_TYPE := &"CURVE_TYPE"
-const CODE_CONSUMPTION := &"ConsumptionProvider"
 const CODE_GOODS_LEDGER := &"GoodsLedger"
+const CODE_UNKNOWN_GOOD := &"UNKNOWN_GOOD"
+
+const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
+const FIELD_WINDOW_QTY := "window_qty"
+const FIELD_WINDOW_DAYS := "window_days"
 
 const KEY_TOTAL_LI := "total_li"
 const KEY_AVG_LI := "avg_li"
@@ -68,15 +73,12 @@ const FIELD_ANCHOR := "anchor_price_li"
 const FIELD_IND := "IND_*"
 const FIELD_QTY := "qty"
 const FIELD_SIDE := "side"
-const FIELD_CONSUMPTION := "ConsumptionProvider"
 const FIELD_GOODS_LEDGER := "GoodsLedger"
+const FIELD_OFFTAKE := "offtake_snapshot"
 
 const EQ_MULT := 1.0 ## FRM-SYS04-10／r475: IND_LO1 ≤ 1 ≤ IND_HI1 (結構 1.0)
 
 var _curve: PriceCurve = null
-var _consumption: ConsumptionProvider = null
-## D-08h: optional TransitAnchorProvider (SYS-15). Phase 0 null → TRANSIT always ERR-SYS04-07.
-var _transit_anchor: TransitAnchorProvider = null
 var _loaded: bool = false
 ## D-04: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
 var _last_error: Dictionary = {}
@@ -88,7 +90,6 @@ func _ready() -> void:
 
 func load_and_validate(curve_path: String = CURVE_PATH) -> Array:
 	# 2.2-01／2.2-02: load curve + FRM-SYS04-07／08／10; no quotes; no writes.
-	# ConsumptionProvider is injected separately (like CapacityProvider); not cleared here.
 	var errors: Array = []
 	_curve = null
 	_loaded = false
@@ -115,9 +116,6 @@ func load_and_validate(curve_path: String = CURVE_PATH) -> Array:
 	errors.append_array(_validate_indicator_order())
 	errors.append_array(_validate_floor_anchors())
 
-	# D-08h／ERR-SYS04-07：validate 不掃 TRANSIT（Phase 0 無 TransitAnchorProvider，掃則無法啟動）。
-	# quote／mid_price 經 TransitAnchorProvider；無提供者或回 0 → ERR-SYS04-07（不得自填運費／比例）。
-
 	if errors.is_empty():
 		_loaded = true
 	else:
@@ -134,16 +132,6 @@ func is_loaded() -> bool:
 func last_error() -> Dictionary:
 	# D-04: single-call failures (quote／mid_price) expose ErrorInfo here.
 	return _last_error.duplicate(true)
-
-
-func set_consumption_provider(provider: ConsumptionProvider) -> void:
-	## 缺口：TechSpec H 未列登錄 API；比照 GoodsLedger.register_capacity_provider（測試／未來 SYS-06）。
-	_consumption = provider
-
-
-func set_transit_anchor_provider(provider: TransitAnchorProvider) -> void:
-	## D-08h：中轉格錨定價由 SYS-15 實作；Phase 0 不注入 → TRANSIT 一律 ERR-SYS04-07。
-	_transit_anchor = provider
 
 
 func validate() -> Array:
@@ -172,8 +160,8 @@ func mid_price(port_id: StringName, good_id: StringName) -> float:
 		return 0.0
 	var anchor: int = int(ctx[FIELD_ANCHOR])
 	var stock: int = int(ctx["stock"])
-	var c_i: int = int(ctx["weekly_consumption"])
-	var m: float = _multiplier_for_stock(stock, c_i)
+	var weekly_offtake: float = float(ctx["weekly_offtake"])
+	var m: float = _multiplier_for_stock(stock, weekly_offtake)
 	return float(anchor) * m
 
 
@@ -207,7 +195,7 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 
 	var anchor: int = int(ctx[FIELD_ANCHOR])
 	var stock: int = int(ctx["stock"])
-	var c_i: int = int(ctx["weekly_consumption"])
+	var weekly_offtake: float = float(ctx["weekly_offtake"])
 
 	if side == SIDE_BUY and qty > stock:
 		out[KEY_ERROR] = ERR_SYS04_06
@@ -215,7 +203,7 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 		return out
 
 	var stock_after: int = stock - qty if side == SIDE_BUY else stock + qty
-	var area: float = _batch_area(anchor, c_i, stock, stock_after)
+	var area: float = _batch_area(anchor, weekly_offtake, stock, stock_after)
 	var half: float = Params.get_float(PRM_HALF_SPREAD)
 	var total: int = 0
 	if side == SIDE_BUY:
@@ -225,7 +213,7 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 		# FRM-SYS04-05 + D-01: FLOOR(quantize(Area × (1 − HALF_SPREAD)))
 		total = floori(AmountQuantize.quantize_amount(area * (EQ_MULT - half)))
 
-	var mid_after: float = float(anchor) * _multiplier_for_stock(stock_after, c_i)
+	var mid_after: float = float(anchor) * _multiplier_for_stock(stock_after, weekly_offtake)
 	var ratio: float = mid_after / float(anchor) if anchor > 0 else 0.0
 	out[KEY_TOTAL_LI] = total
 	out[KEY_AVG_LI] = float(total) / float(qty)
@@ -263,56 +251,18 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 	var good_s: String = String(good_id)
 
 	if not GoodCatalog.is_loaded():
-		return {KEY_ERROR: ERR_SYS04_07, "field": "good_id", "value": good_s, "message": "GoodCatalog not loaded"}
+		return {KEY_ERROR: CODE_UNKNOWN_GOOD, "field": "good_id", "value": good_s, "message": "GoodCatalog not loaded"}
 	var good_found := false
 	for id_variant in GoodCatalog.all_ids():
 		if String(id_variant) == good_s:
 			good_found = true
 			break
 	if not good_found:
-		return {KEY_ERROR: ERR_SYS04_07, "field": "good_id", "value": good_s, "message": "unknown good_id"}
+		return {KEY_ERROR: CODE_UNKNOWN_GOOD, "field": "good_id", "value": good_s, "message": "unknown good_id"}
 
 	var good: GoodDef = GoodCatalog.get_good(good_s)
+	# FRM-SYS04-11: anchor always GoodDef.base_price_li (all ports／goods).
 	var anchor: int = good.base_price_li
-
-	# D-08h: PRODUCER／TERMINAL = GoodDef.base_price_li；TRANSIT via TransitAnchorProvider.
-	if PortRegistry.is_loaded():
-		var port_found := false
-		for pid_variant in PortRegistry.all_ids():
-			if String(pid_variant) == port_s:
-				port_found = true
-				break
-		if port_found:
-			var port: PortDef = PortRegistry.get_port(port_s)
-			if port.role_cells.has(good_s):
-				var cell: RoleCell = port.role_cells[good_s]
-				if cell.role == PortRegistry.ROLE_TRANSIT:
-					var transit_anchor: int = _transit_anchor_price(port_id, good_id)
-					if transit_anchor <= TransitAnchorProvider.ANCHOR_FAILURE:
-						return {
-							KEY_ERROR: ERR_SYS04_07,
-							"field": FIELD_ANCHOR,
-							"value": good_s,
-							"message": "TRANSIT anchor missing (TransitAnchorProvider unset or failed)",
-						}
-					anchor = transit_anchor
-
-	if _consumption == null:
-		return {
-			KEY_ERROR: CODE_CONSUMPTION,
-			"field": FIELD_CONSUMPTION,
-			"value": null,
-			"message": "ConsumptionProvider not set",
-		}
-
-	var c_i: int = _consumption.weekly_consumption(port_id, good_id)
-	if c_i < 0:
-		return {
-			KEY_ERROR: CODE_CONSUMPTION,
-			"field": FIELD_CONSUMPTION,
-			"value": c_i,
-			"message": "weekly_consumption failure",
-		}
 
 	if not GoodsLedger.is_loaded():
 		return {
@@ -322,21 +272,37 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 			"message": "GoodsLedger not loaded",
 		}
 
+	# FRM-SYS04-01（改）: previous-day offtake snapshot; empty／missing → window_qty 0 (floor).
+	var snap: Dictionary = GoodsLedger.offtake_snapshot(port_id, good_id)
+	var window_qty: int = 0
+	var window_days: int = 1
+	if not snap.is_empty():
+		window_qty = int(snap.get(FIELD_WINDOW_QTY, 0))
+		window_days = int(snap.get(FIELD_WINDOW_DAYS, 1))
+		if window_days < 1:
+			window_days = 1
+
+	var weekly_offtake: float = 0.0
+	if window_qty > 0:
+		# Cast to float only when computing weekly_offtake／w (15-03).
+		var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
+		weekly_offtake = float(window_qty) * float(days_pw) / float(window_days)
+
 	var market: Dictionary = GoodsLedger.make_market(port_s)
 	var stock: int = GoodsLedger.get_qty(market, good_id)
 	return {
 		FIELD_ANCHOR: anchor,
 		"stock": stock,
-		"weekly_consumption": c_i,
+		"weekly_offtake": weekly_offtake,
+		FIELD_OFFTAKE: snap,
 	}
 
 
-func _multiplier_for_stock(stock: int, weekly_consumption_i: int) -> float:
-	# FRM-SYS04-01／09: w = stock ÷ C；C=0 → m = M_n
-	if weekly_consumption_i == 0:
+func _multiplier_for_stock(stock: int, weekly_offtake: float) -> float:
+	# FRM-SYS04-01／09（改）: w = stock ÷ weekly_offtake；window_qty=0 → m = M_n
+	if weekly_offtake <= 0.0:
 		return _floor_mult()
-	# B2: cast int → float only when computing w
-	var w: float = float(stock) / float(weekly_consumption_i)
+	var w: float = float(stock) / weekly_offtake
 	return _m_of_w(w)
 
 
@@ -363,15 +329,15 @@ func _floor_mult() -> float:
 	return _curve.mults[last_i]
 
 
-func _batch_area(anchor: int, weekly_consumption_i: int, stock_before: int, stock_after: int) -> float:
-	# FRM-SYS04-04／09: Area = |anchor × C × (G(w_after) − G(w_before))|；C=0 → anchor × M_n × q
+func _batch_area(anchor: int, weekly_offtake: float, stock_before: int, stock_after: int) -> float:
+	# FRM-SYS04-04／09（改）: Area uses weekly_offtake; window_qty=0 → anchor × M_n × q
 	var q: int = stock_after - stock_before
 	if q < 0:
 		q = 0 - q
-	if weekly_consumption_i == 0:
-		# FRM-SYS04-09
+	if weekly_offtake <= 0.0:
+		# FRM-SYS04-09（改）
 		return float(anchor) * _floor_mult() * float(q)
-	var c_f: float = float(weekly_consumption_i)
+	var c_f: float = weekly_offtake
 	var w_before: float = float(stock_before) / c_f
 	var w_after: float = float(stock_after) / c_f
 	var delta_g: float = _G(w_after) - _G(w_before)
@@ -477,17 +443,8 @@ func _validate_floor_anchors() -> Array:
 	return errors
 
 
-func _transit_anchor_price(port_id: StringName, good_id: StringName) -> int:
-	# D-08h: Phase 0 no provider → failure；provider fail (≤0) → failure. Never invent freight／ratios.
-	if _transit_anchor == null:
-		return TransitAnchorProvider.ANCHOR_FAILURE
-	return _transit_anchor.anchor_price_li(port_id, good_id)
-
-
 func _clear_state() -> void:
 	_curve = null
-	_consumption = null
-	_transit_anchor = null
 	_loaded = false
 	_clear_last_error()
 
