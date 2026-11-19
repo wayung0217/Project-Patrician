@@ -239,6 +239,32 @@ func test_TST_SYS08_14b_city_queue_asymmetric_no_skip() -> void:
 	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-02"), 0)
 
 
+func test_D21b_public_upgrade_fee_scales_with_pop() -> void:
+	## D-21b: FRM-SYS08-07 — different pop → different upgrade fee; queue helper matches fee API.
+	_boot_world()
+	var pop_a := TestPop.new()
+	pop_a.set_pop(PORT, 500)
+	BuildingEconomy.set_population_provider(pop_a)
+	var fee_a: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)
+	var cash_a: int = int(fee_a["CASH_LI"])
+	var helper_a: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
+	assert_eq(helper_a, cash_a)
+	var pop_b := TestPop.new()
+	pop_b.set_pop(PORT, 1500)
+	BuildingEconomy.set_population_provider(pop_b)
+	var fee_b: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)
+	var cash_b: int = int(fee_b["CASH_LI"])
+	var helper_b: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
+	assert_eq(helper_b, cash_b)
+	assert_ne(cash_a, cash_b)
+	assert_gt(cash_b, cash_a)
+	# L2 uses arr[0], not arr[1] (三級).
+	var arr: Array = Params.get_value("PRM-SYS08-UPGRADE_PER_CAPITA")
+	var l2: int = int((arr[0] as Dictionary).get("CASH_LI", 0))
+	var expect_b: int = ceili(AmountQuantize.quantize_amount(1500.0 * float(l2)))
+	assert_eq(cash_b, expect_b)
+
+
 func test_TST_SYS08_R_boot_and_zone_open_max_ring() -> void:
 	## D-19c: R = max ring among open CIVIL slots at boot and after zone-open.
 	_boot_world()

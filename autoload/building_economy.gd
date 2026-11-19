@@ -1903,12 +1903,13 @@ func _season_city_build_queue(port_id: String) -> void:
 
 
 func _public_upgrade_cash(port_id: String, to_level: int) -> int:
+	## FRM-SYS08-07: pop × UPGRADE_PER_CAPITA[級].CASH_LI; idx = to_level - 2 ([0]=L2,[1]=L3).
 	var pop: int = 0
 	if _population != null:
 		pop = _population.population(StringName(port_id))
 	var arr: Array = Params.get_value(PRM_UPGRADE_PER_CAPITA)
-	var idx: int = mini(to_level - 1, arr.size() - 1)
-	if idx < 0:
+	var idx: int = to_level - 2
+	if idx < 0 or idx >= arr.size():
 		return 0
 	var row: Dictionary = arr[idx] as Dictionary
 	var cash_per: int = int(row.get("CASH_LI", 0))
