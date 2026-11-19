@@ -69,6 +69,7 @@ var _loaded: bool = false
 var _last_error: Dictionary = {}
 var _pop_adapter: _PopAdapter = null
 var _work_adapter: _WorkAdapter = null
+var _sailor_adapter: _SailorAdapter = null
 var _pending_pop_ports: Array = []
 var _pending_sat_ports: Array = []
 
@@ -106,6 +107,13 @@ func get_workforce_provider() -> WorkforceProvider:
 	if _work_adapter == null:
 		_work_adapter = _WorkAdapter.new(self)
 	return _work_adapter
+
+
+func get_sailor_pool_provider() -> SailorPoolProvider:
+	## D-19f (c)／D-14b: WP-30 adapter only — does not change hire／release logic.
+	if _sailor_adapter == null:
+		_sailor_adapter = _SailorAdapter.new(self)
+	return _sailor_adapter
 
 
 func load_and_validate() -> Array:
@@ -922,3 +930,26 @@ class _WorkAdapter extends WorkforceProvider:
 		if _model == null or not _model.is_loaded():
 			return WORKERS_FAILURE
 		return _model.workers(ws_id)
+
+
+class _SailorAdapter extends SailorPoolProvider:
+	## D-19f (c): thin wrap; hire_sailors／release_sailors logic unchanged.
+	var _model: Node
+
+	func _init(model: Node) -> void:
+		_model = model
+
+	func beggars(port_id: StringName) -> int:
+		if _model == null or not _model.is_loaded():
+			return BEGGARS_FAILURE
+		return _model.beggars(port_id)
+
+	func hire_sailors(port_id: StringName, n: int) -> int:
+		if _model == null or not _model.is_loaded():
+			return 0
+		return _model.hire_sailors(port_id, n)
+
+	func release_sailors(port_id: StringName, n: int) -> int:
+		if _model == null or not _model.is_loaded():
+			return 0
+		return _model.release_sailors(port_id, n)

@@ -1,6 +1,5 @@
 ; Engine configuration file.
-; Godot 4.7.2-stable — Autoload order D-14c／D-17d: … → BuildingEconomy → PopulationModel → SimLoop.
-; ShipRegistry (D-14c) is WP-30 — not registered in this WP.
+; Godot 4.7.2-stable — Autoload order D-14c／D-17d: … → BuildingEconomy → PopulationModel → ShipRegistry → SimLoop.
 
 config_version=5
 
@@ -21,6 +20,7 @@ MarketPricer="*res://autoload/market_pricer.gd"
 CashLedger="*res://autoload/cash_ledger.gd"
 BuildingEconomy="*res://autoload/building_economy.gd"
 PopulationModel="*res://autoload/population_model.gd"
+ShipRegistry="*res://autoload/ship_registry.gd"
 SimLoop="*res://autoload/sim_loop.gd"
 
 [editor_plugins]

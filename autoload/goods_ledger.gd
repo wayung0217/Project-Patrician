@@ -206,6 +206,12 @@ func transfer(from: Variant, to: Variant, good: StringName, qty: Variant, reason
 		if from_before < qty_i:
 			return _fail(ERR_SYS03_02, FIELD_QTY, qty_i, "insufficient balance")
 
+	# FRM-SYS13-10／TST-SYS13-13: TRADE／LOAD／UNLOAD involving HOLD while SAILING → ERR-SYS13-03.
+	if (
+		reason == REASON_TRADE or reason == REASON_LOAD or reason == REASON_UNLOAD
+	) and _hold_sailing_blocked(from, from_key, to, to_key):
+		return 0
+
 	# ERR-SYS03-03 — to 容量不足
 	if not _has_capacity_for(to, to_key, qty_i):
 		return _fail(ERR_SYS03_03, FIELD_QTY, qty_i, "insufficient capacity")
@@ -414,6 +420,21 @@ func make_hold(ship_id: String, owner_id: String = "") -> Dictionary:
 	return d
 
 
+func ensure_hold_registered(container: Dictionary, port_id: StringName = &"") -> int:
+	## WP-30: register empty HOLD meta so set_container_port／capacity work before first transfer.
+	assert(_loaded, "GoodsLedger.ensure_hold_registered before load_and_validate")
+	_clear_last_error()
+	var d: Dictionary = container.duplicate()
+	if not port_id.is_empty():
+		d[KEY_PORT] = String(port_id)
+	var key: String = _container_key(d)
+	if key.is_empty():
+		return CODE_FAIL
+	if not port_id.is_empty():
+		return set_container_port(StringName(key), port_id)
+	return CODE_OK
+
+
 func offtake_snapshot(port_id: StringName, good_id: StringName) -> Dictionary:
 	# 15.1 H／ERR-SYS03-07: unknown port／good → empty Dictionary + last_error (D-08c).
 	assert(_loaded, "GoodsLedger.offtake_snapshot before load_and_validate")
@@ -569,6 +590,38 @@ func make_confiscated() -> Dictionary:
 
 func make_external() -> Dictionary:
 	return {KEY_KIND: KIND_EXTERNAL}
+
+
+func _hold_sailing_blocked(from: Variant, from_key: String, to: Variant, to_key: String) -> bool:
+	## WP-30: consult ShipRegistry when HOLD is a TRADE／LOAD／UNLOAD endpoint.
+	if not _is_hold_key(from_key) and not _is_hold_key(to_key):
+		return false
+	if ShipRegistry == null or not ShipRegistry.is_loaded():
+		return false
+	var targets: Array = []
+	if _is_hold_key(from_key):
+		targets.append(from)
+	if _is_hold_key(to_key):
+		targets.append(to)
+	for c in targets:
+		if not ShipRegistry.hold_transfer_allowed(c):
+			var err: Dictionary = ShipRegistry.last_error()
+			if err.is_empty():
+				_record_error(
+					StringName("ERR-SYS13-03"),
+					FIELD_KIND,
+					c,
+					"HOLD transfer while not DOCKED (FRM-SYS13-10)"
+				)
+			else:
+				# ShipRegistry already push_error'd; copy ErrorInfo only (TST-SYS13-13).
+				_last_error = err
+			return true
+	return false
+
+
+func _is_hold_key(container_key: String) -> bool:
+	return String(_kind_by_id.get(container_key, "")) == KIND_HOLD
 
 
 func _has_capacity_for(container: Variant, container_key: String, qty_i: int) -> bool:

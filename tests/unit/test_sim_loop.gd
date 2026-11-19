@@ -428,14 +428,17 @@ func test_D08e_register_capacity_provider_before_boot_applies() -> void:
 
 func test_D08e_register_capacity_provider_ignored_after_boot() -> void:
 	# D-08e／D-08j／TST: register after boot → push_error, no effect
+	# WP-30: HOLD may already be registered from ShipRegistry at boot; use a fresh kind.
 	_boot_ready_provider()
 	var before_keys: Array = SimLoop._capacity_by_kind.keys()
+	var before_hold: Variant = SimLoop._capacity_by_kind.get(GoodsLedger.KIND_HOLD, null)
 	var cap := _TestCapProvider.new()
 	cap.set_cap(GoodsLedger.KIND_HOLD, 99)
 	SimLoop.register_capacity_provider(GoodsLedger.KIND_HOLD, cap)
 	assert_push_error_count(1)
 	assert_eq(SimLoop._capacity_by_kind.keys(), before_keys)
-	assert_false(SimLoop._capacity_by_kind.has(GoodsLedger.KIND_HOLD))
+	assert_eq(SimLoop._capacity_by_kind.get(GoodsLedger.KIND_HOLD, null), before_hold)
+	assert_ne(SimLoop._capacity_by_kind.get(GoodsLedger.KIND_HOLD, null), cap)
 
 
 func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
