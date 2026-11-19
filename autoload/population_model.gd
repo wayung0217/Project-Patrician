@@ -18,6 +18,7 @@ const ERR_SYS07_05 := &"ERR-SYS07-05"
 const ERR_SYS07_06 := &"ERR-SYS07-06"
 const ERR_SYS07_07 := &"ERR-SYS07-07"
 const ERR_SYS07_08 := &"ERR-SYS07-08"
+const ERR_SYS07_09 := &"ERR-SYS07-09"
 
 const CODE_SAT_PROVIDER_MISSING := &"SATISFACTION_INPUT_PROVIDER_MISSING"
 
@@ -218,23 +219,36 @@ const OPENING_POP_DIR := "res://data/opening_population/"
 
 
 func apply_opening_init(opening_pop_dir: String = OPENING_POP_DIR) -> Array:
-	## FRM-SYS07-14: load opening population tres; beggar=0, streak/acc cleared.
+	## FRM-SYS07-14／D-19e: load opening population; empty／missing／duplicate → ERR-SYS07-09.
 	assert(_loaded, "PopulationModel.apply_opening_init before load")
 	var errors: Array = []
 	var rows: Array = _load_opening_population(opening_pop_dir)
+	var seen: Dictionary = {} ## port_id → true
 	if rows.is_empty():
-		return errors
+		errors.append(
+			_err(ERR_SYS07_09, "opening_population", opening_pop_dir, "opening population dir empty or missing")
+		)
 	for row_v in rows:
 		var row: OpeningPopulation = row_v
-		if row.poor < 0 or row.citizen < 0 or row.rich < 0:
-			errors.append(_err(ERR_SYS07_01, "opening_pop", row.port_id, "negative opening population"))
+		var pid: String = String(row.port_id)
+		if seen.has(pid):
+			errors.append(_err(ERR_SYS07_09, "port_id", pid, "duplicate opening population port"))
 			continue
-		set_port_state(row.port_id, row.poor, row.citizen, row.rich, 0)
-		var p: PortPop = _ensure_port(row.port_id)
+		seen[pid] = true
+		if row.poor < 0 or row.citizen < 0 or row.rich < 0:
+			errors.append(_err(ERR_SYS07_01, "opening_pop", pid, "negative opening population"))
+			continue
+		set_port_state(pid, row.poor, row.citizen, row.rich, 0)
+		var p: PortPop = _ensure_port(pid)
 		p.streak_up1 = 0
 		p.streak_up2 = 0
 		p.acc = {}
 		p.pending_release_workers = 0
+	if PortRegistry.is_loaded():
+		for pid_v in PortRegistry.all_ids():
+			var want: String = String(pid_v)
+			if not seen.has(want):
+				errors.append(_err(ERR_SYS07_09, "port_id", want, "missing opening population for port"))
 	if not errors.is_empty():
 		_emit(errors)
 	return errors

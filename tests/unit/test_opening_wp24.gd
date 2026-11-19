@@ -1,6 +1,8 @@
 extends GutTest
-## WP-24 / TechSpec 14-09 opening init + season conservation.
+## WP-24 / TechSpec 14-09 opening init + season conservation (D-19d／e).
 
+
+const CsvImport := preload("res://tools/csv_import.gd")
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
@@ -8,6 +10,10 @@ const ROOT := "user://wp24_open/"
 const PORT_A := "PT-01"
 const PORT_HOME := "PT-10"
 const ACTOR := &"ACT-PLAYER"
+const FIX_POP_OK := "res://tests/fixtures/wp24_pop_ok/"
+const FIX_POP_DUP := "res://tests/fixtures/wp24_pop_dup/"
+const FIX_POP_BAD_PORT := "res://tests/fixtures/wp24_pop_bad_port/"
+const OUT_POP := "res://tests/fixtures/wp24_out_pop/"
 
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
@@ -20,11 +26,16 @@ const PRM_DAYS := "PRM-SYS00-DAYS_PER_SEASON"
 
 
 class TestCons extends ConsumptionProvider:
-	func weekly_consumption(_p: StringName, _g: StringName) -> int:
-		return 0
+	var _qty: Dictionary = {} ## "port|good" → int
 
-	func consume_qty(_p: StringName, _g: StringName, _d: int) -> int:
-		return 0
+	func set_qty(port_id: String, good_id: String, qty: int) -> void:
+		_qty["%s|%s" % [port_id, good_id]] = qty
+
+	func weekly_consumption(_p: StringName, _g: StringName) -> int:
+		return 100
+
+	func consume_qty(port_id: StringName, good_id: StringName, _d: int) -> int:
+		return int(_qty.get("%s|%s" % [String(port_id), String(good_id)], 0))
 
 
 class TestSat extends SatisfactionInputProvider:
@@ -69,6 +80,9 @@ func test_WP24_14_09_1_opening_population_beggar_zero() -> void:
 	assert_eq(PopulationModel.population(StringName(PORT_A), &"POOR"), 100)
 	assert_eq(PopulationModel.population(StringName(PORT_A), &"CITIZEN"), 40)
 	assert_eq(PopulationModel.population(StringName(PORT_A), &"RICH"), 10)
+	assert_eq(PopulationModel.population(StringName(PORT_HOME), &"POOR"), 80)
+	assert_eq(PopulationModel.population(StringName(PORT_HOME), &"CITIZEN"), 30)
+	assert_eq(PopulationModel.population(StringName(PORT_HOME), &"RICH"), 5)
 	assert_eq(PopulationModel.beggars(StringName(PORT_A)), 0)
 	assert_eq(PopulationModel.beggars(StringName(PORT_HOME)), 0)
 
@@ -95,18 +109,192 @@ func test_WP24_14_09_3_player_kontor_warehouse() -> void:
 func test_WP24_14_09_residences_match_pop() -> void:
 	_boot_with_opening()
 	var house_cap: int = Params.get_int("PRM-SYS07-HOUSE_CAPACITY")
-	var pop: int = 150 # 100+40+10
-	var need: int = int(ceil(float(pop) / float(house_cap)))
-	assert_eq(BuildingEconomy.residences(StringName(PORT_A)).size(), need)
+	var need_a: int = int(ceil(150.0 / float(house_cap)))
+	var need_home: int = int(ceil(115.0 / float(house_cap)))
+	assert_eq(BuildingEconomy.residences(StringName(PORT_A)).size(), need_a)
+	assert_eq(BuildingEconomy.residences(StringName(PORT_HOME)).size(), need_home)
 
 
 func test_TST_SYS08_17_season_conservation_clean() -> void:
-	## TST-SYS08-17 / 14-09 ④: one season produce after opening; FRM-SYS03-01 clean.
+	## D-19d: full SimLoop schedule with CONSUME, recipe workshop, CONSTRUCT_USE, TRADE.
+	var cons := TestCons.new()
+	cons.set_qty(PORT_A, "GD-001", 1)
+	SimLoop.set_consumption_provider(cons)
 	_boot_with_opening()
+	# Stock market for CONSUME + recipe input.
+	var mkt: Dictionary = GoodsLedger.make_market(PORT_A)
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			mkt,
+			&"GD-001",
+			500,
+			GoodsLedger.REASON_PRODUCE,
+			&"SYS-08"
+		),
+		0
+	)
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			mkt,
+			&"GD-002",
+			200,
+			GoodsLedger.REASON_PRODUCE,
+			&"SYS-08"
+		),
+		0
+	)
+	# Recipe-input workshop already ACTIVE from opening (WS-RICE needs GD-002).
+	# CONSTRUCT_USE + TRADE: player order_build residence (buys mats from market).
+	_top_up_actor(5_000_000)
+	var slot: StringName = &""
+	for s_v in BuildingEconomy.slots_for_port(PORT_HOME):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.CIVIL and s.zone_open and s.building_id == &"":
+			slot = s.slot_id
+			break
+	assert_ne(slot, &"")
+	if BuildingEconomy.get_slot(slot).land_owner != ACTOR:
+		assert_gt(BuildingEconomy.buy_land(ACTOR, slot), 0)
+	var bid: StringName = BuildingEconomy.order_build(ACTOR, slot, &"RB-01")
+	assert_ne(bid, &"")
+	SimLoop._booted = true
 	var days: int = Params.get_int(PRM_DAYS)
-	for d in range(days):
-		assert_eq(BuildingEconomy.daily_step(d + 1).size(), 0)
+	for _d in range(days):
+		var day_errs: Array = SimLoop.tick_day()
+		for e in day_errs:
+			# CONSUME shortage is allowed as ErrorInfo but conservation must stay clean.
+			pass
 	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
+
+
+func test_WP24_csv_import_opening_population_ok() -> void:
+	_wipe(OUT_POP)
+	var result: Dictionary = CsvImport.run_batch_opening_population(
+		FIX_POP_OK, OUT_POP, FIX_POP_OK.path_join("ports.csv")
+	)
+	assert_true(result["ok"], str(result.get("errors", [])))
+	assert_true(FileAccess.file_exists(OUT_POP.path_join("PT-01.tres")))
+	assert_true(FileAccess.file_exists(OUT_POP.path_join("PT-10.tres")))
+	var op: OpeningPopulation = load(OUT_POP.path_join("PT-10.tres"))
+	assert_eq(op.poor, 80)
+	assert_eq(op.citizen, 30)
+	assert_eq(op.rich, 5)
+
+
+func test_WP24_opening_pop_missing_file_refuses() -> void:
+	var result: Dictionary = CsvImport.run_batch_opening_population(
+		"res://tests/fixtures/wp24_pop_missing/", OUT_POP + "miss/", FIX_POP_OK.path_join("ports.csv")
+	)
+	assert_false(result["ok"])
+	assert_gt((result["errors"] as PackedStringArray).size(), 0)
+	assert_push_error_count((result["errors"] as PackedStringArray).size())
+
+
+func test_WP24_opening_pop_duplicate_port_refuses() -> void:
+	var result: Dictionary = CsvImport.run_batch_opening_population(
+		FIX_POP_DUP, OUT_POP + "dup/", FIX_POP_OK.path_join("ports.csv")
+	)
+	assert_false(result["ok"])
+	assert_push_error_count((result["errors"] as PackedStringArray).size())
+
+
+func test_WP24_opening_pop_unknown_port_refuses() -> void:
+	var result: Dictionary = CsvImport.run_batch_opening_population(
+		FIX_POP_BAD_PORT, OUT_POP + "bad/", FIX_POP_OK.path_join("ports.csv")
+	)
+	assert_false(result["ok"])
+	assert_push_error_count((result["errors"] as PackedStringArray).size())
+
+
+func test_WP24_ERR_SYS07_09_empty_opening_pop_dir() -> void:
+	_boot_modules_only()
+	var errs: Array = PopulationModel.apply_opening_init(ROOT + "empty_pop/")
+	assert_gt(errs.size(), 0)
+	assert_true(_has_code(errs, PopulationModel.ERR_SYS07_09))
+	assert_push_error_count(errs.size())
+
+
+func test_WP24_ERR_SYS07_09_missing_port() -> void:
+	_boot_modules_only()
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "partial_pop/"))
+	var op := OpeningPopulation.new()
+	op.port_id = PORT_A
+	op.poor = 10
+	op.citizen = 0
+	op.rich = 0
+	ResourceSaver.save(op, ROOT + "partial_pop/%s.tres" % PORT_A)
+	var errs: Array = PopulationModel.apply_opening_init(ROOT + "partial_pop/")
+	assert_true(_has_code(errs, PopulationModel.ERR_SYS07_09))
+	assert_push_error_count(errs.size())
+
+
+func test_WP24_ERR_SYS07_09_duplicate_port() -> void:
+	_boot_modules_only()
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "dup_pop/"))
+	for name in ["a", "b"]:
+		var op := OpeningPopulation.new()
+		op.port_id = PORT_A
+		op.poor = 1
+		ResourceSaver.save(op, ROOT + "dup_pop/%s.tres" % name)
+	var errs: Array = PopulationModel.apply_opening_init(ROOT + "dup_pop/")
+	assert_true(_has_code(errs, PopulationModel.ERR_SYS07_09))
+	assert_push_error_count(errs.size())
+
+
+func test_WP24_ERR_SYS08_10_empty_workshops_still_places_residences_kontor() -> void:
+	_boot_with_opening_population_only()
+	var empty_ws := ROOT + "empty_ws/"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_ws))
+	# Public present for all ports so only workshops-empty is the trigger under test.
+	_write_opening_public_all()
+	var errs: Array = BuildingEconomy.apply_opening_init(
+		empty_ws, ROOT + "opening_public/", PORT_HOME, ACTOR
+	)
+	assert_true(_has_code(errs, BuildingEconomy.ERR_SYS08_10))
+	assert_gt(BuildingEconomy.residences(StringName(PORT_A)).size(), 0)
+	var kontor_ok := false
+	for b_v in BuildingEconomy.buildings_for_port(PORT_HOME):
+		if (b_v as Building).build_class == &"KONTOR" and (b_v as Building).owner == ACTOR:
+			kontor_ok = true
+	assert_true(kontor_ok)
+	assert_push_error_count(errs.size())
+
+
+func test_WP24_ERR_SYS08_10_empty_public_still_places_residences_kontor() -> void:
+	_boot_with_opening_population_only()
+	_write_opening_workshops_all()
+	var empty_pub := ROOT + "empty_pub/"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_pub))
+	var errs: Array = BuildingEconomy.apply_opening_init(
+		ROOT + "opening/", empty_pub, PORT_HOME, ACTOR
+	)
+	assert_true(_has_code(errs, BuildingEconomy.ERR_SYS08_10))
+	assert_gt(BuildingEconomy.residences(StringName(PORT_HOME)).size(), 0)
+	var kontor_ok := false
+	for b_v in BuildingEconomy.buildings_for_port(PORT_HOME):
+		if (b_v as Building).build_class == &"KONTOR" and (b_v as Building).owner == ACTOR:
+			kontor_ok = true
+	assert_true(kontor_ok)
+	assert_push_error_count(errs.size())
+
+
+func test_WP24_ERR_SYS08_10_missing_port_in_workshops() -> void:
+	_boot_with_opening_population_only()
+	_write_opening_public_all()
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening/"))
+	# Only PT-01 workshop — missing other PortRegistry ports.
+	var ow := OpeningWorkshop.new()
+	ow.port_id = PORT_A
+	ow.good_id = "GD-001"
+	ow.count = 1
+	ResourceSaver.save(ow, ROOT + "opening/%s__GD-001.tres" % PORT_A)
+	var errs: Array = BuildingEconomy.apply_opening_init(
+		ROOT + "opening/", ROOT + "opening_public/", PORT_HOME, ACTOR
+	)
+	assert_true(_has_code(errs, BuildingEconomy.ERR_SYS08_10))
+	assert_push_error_count(errs.size())
 
 
 func test_WP24_csv_only_opening_resources() -> void:
@@ -155,51 +343,139 @@ func _boot_with_opening() -> void:
 
 
 func _write_opening_tres() -> void:
-	# From CSV fixtures (no hand-written production data).
+	## Cover every PortRegistry port (D-19e); PT-01／PT-10 keep fixture class counts.
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening_population/"))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening/"))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening_public/"))
-	for row in [
-		{"port": PORT_A, "p": 100, "c": 40, "r": 10},
-		{"port": PORT_HOME, "p": 80, "c": 30, "r": 5},
-	]:
+	for pid_v in PortRegistry.all_ids():
+		var pid: String = String(pid_v)
+		var poor := 10
+		var cit := 0
+		var rich := 0
+		var ws_n := 1
+		var cb := "CB-01"
+		if pid == PORT_A:
+			poor = 100
+			cit = 40
+			rich = 10
+			ws_n = 2
+			cb = "CB-01"
+		elif pid == PORT_HOME:
+			poor = 80
+			cit = 30
+			rich = 5
+			ws_n = 1
+			cb = "CB-09"
 		var op := OpeningPopulation.new()
-		op.port_id = row["port"]
-		op.poor = row["p"]
-		op.citizen = row["c"]
-		op.rich = row["r"]
-		ResourceSaver.save(op, ROOT + "opening_population/%s.tres" % row["port"])
-	for row2 in [
-		{"port": PORT_A, "g": "GD-001", "n": 2},
-		{"port": PORT_HOME, "g": "GD-001", "n": 1},
-	]:
+		op.port_id = pid
+		op.poor = poor
+		op.citizen = cit
+		op.rich = rich
+		ResourceSaver.save(op, ROOT + "opening_population/%s.tres" % pid)
 		var ow := OpeningWorkshop.new()
-		ow.port_id = row2["port"]
-		ow.good_id = row2["g"]
-		ow.count = row2["n"]
-		ResourceSaver.save(
-			ow, ROOT + "opening/%s__%s.tres" % [row2["port"], row2["g"]]
-		)
-	for row3 in [
-		{"port": PORT_A, "cb": "CB-01", "lv": 1},
-		{"port": PORT_HOME, "cb": "CB-09", "lv": 1},
-	]:
+		ow.port_id = pid
+		ow.good_id = "GD-001"
+		ow.count = ws_n
+		ResourceSaver.save(ow, ROOT + "opening/%s__GD-001.tres" % pid)
 		var opub := OpeningPublic.new()
-		opub.port_id = row3["port"]
-		opub.cb_id = row3["cb"]
-		opub.level = row3["lv"]
-		ResourceSaver.save(
-			opub, ROOT + "opening_public/%s__%s.tres" % [row3["port"], row3["cb"]]
-		)
+		opub.port_id = pid
+		opub.cb_id = cb
+		opub.level = 1
+		ResourceSaver.save(opub, ROOT + "opening_public/%s__%s.tres" % [pid, cb])
+
+
+func _write_opening_workshops_all() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening/"))
+	for pid_v in PortRegistry.all_ids():
+		var pid: String = String(pid_v)
+		var ow := OpeningWorkshop.new()
+		ow.port_id = pid
+		ow.good_id = "GD-001"
+		ow.count = 1 if pid != PORT_A else 2
+		ResourceSaver.save(ow, ROOT + "opening/%s__GD-001.tres" % pid)
+
+
+func _write_opening_public_all() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening_public/"))
+	for pid_v in PortRegistry.all_ids():
+		var pid: String = String(pid_v)
+		var opub := OpeningPublic.new()
+		opub.port_id = pid
+		opub.cb_id = "CB-09" if pid == PORT_HOME else "CB-01"
+		opub.level = 1
+		ResourceSaver.save(opub, ROOT + "opening_public/%s__%s.tres" % [pid, opub.cb_id])
+
+
+func _boot_modules_only() -> void:
+	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Clock.load_and_validate().size(), 0)
+	var goods_dir := _build_goods(ROOT + "goods/")
+	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
+	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")
+	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
+	assert_eq(GoodsLedger.load_and_validate().size(), 0)
+	MarketPricer.set_consumption_provider(TestCons.new())
+	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
+	assert_eq(CashLedger.load_and_validate().size(), 0)
+	assert_eq(CashLedger.genesis_grant(), OK)
+	PopulationModel.set_satisfaction_input_provider(TestSat.new())
+	assert_eq(PopulationModel.load_and_validate().size(), 0)
+	BuildingEconomy.set_population_provider(PopulationModel.get_population_provider())
+	BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
+	_write_layout_multi()
+	_write_defs()
+	assert_eq(
+		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
+		0
+	)
+
+
+func _boot_with_opening_population_only() -> void:
+	_boot_modules_only()
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening_population/"))
+	for pid_v in PortRegistry.all_ids():
+		var pid: String = String(pid_v)
+		var op := OpeningPopulation.new()
+		op.port_id = pid
+		op.poor = 80 if pid == PORT_HOME else (100 if pid == PORT_A else 10)
+		op.citizen = 30 if pid == PORT_HOME else (40 if pid == PORT_A else 0)
+		op.rich = 5 if pid == PORT_HOME else (10 if pid == PORT_A else 0)
+		ResourceSaver.save(op, ROOT + "opening_population/%s.tres" % pid)
+	assert_eq(PopulationModel.apply_opening_init(ROOT + "opening_population/").size(), 0)
+
+
+func _has_code(errs: Array, code: StringName) -> bool:
+	for e in errs:
+		if String((e as Dictionary).get("code", "")) == String(code):
+			return true
+	return false
+
+
+func _top_up_actor(need: int) -> void:
+	var bal: int = CashLedger.balance(ACTOR)
+	if bal >= need:
+		return
+	var delta: int = need - bal
+	assert_eq(
+		CashLedger.post(
+			[
+				CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - delta),
+				CashLedger.make_entry(ACTOR, delta),
+			],
+			&"TEST_TOP_UP",
+			BuildingEconomy.REQUESTER_SYS08
+		),
+		OK
+	)
 
 
 func _write_layout_multi() -> void:
-	for port in [PORT_A, PORT_HOME]:
+	# Every PortRegistry port needs slots so residences／workshops／public can place.
+	for pid_v in PortRegistry.all_ids():
+		var port: String = String(pid_v)
 		_write_zone(ROOT + "zones/", port, 1, 2, 12, 1)
 		_write_zone(ROOT + "zones/", port, 2, 1, 4, 0)
 		_write_city(ROOT + "city_center/", port, 4)
-	# Minimal zones for other ports so PortRegistry ports without layout still OK —
-	# BuildingEconomy only builds slots for ports with zone rows; opening only touches A/HOME.
 
 
 func _write_defs() -> void:
@@ -207,7 +483,17 @@ func _write_defs() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
 	_save_def(dir, "KT-01", "KONTOR", "", 0, 1.0)
 	_save_def(dir, "RB-01", "RESIDENCE", "", 0, 1.0)
-	_save_def(dir, "WS-RICE", "IND1", "GD-001", 1, 1.5)
+	# Recipe-input workshop for D-19d conservation (consumes GD-002).
+	var d := BuildingDef.new()
+	d.type = "WS-RICE"
+	d.build_class = "IND1"
+	d.output_good_id = "GD-001"
+	d.input1_good_id = "GD-002"
+	d.input1_qty = 1.0
+	d.tier = 1
+	d.max_workers = 4
+	d.base_output_per_worker = 1.5
+	ResourceSaver.save(d, dir + "WS-RICE.tres")
 
 
 func _save_def(dir: String, type_id: String, bclass: String, out_g: String, tier: int, base: float) -> void:

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="OpeningPopulation" format=3]
+
+[ext_resource type="Script" path="res://core/types/opening_population.gd" id="1_47oww"]
+
+[resource]
+script = ExtResource("1_47oww")
+port_id = "PT-01"
+poor = 100
+citizen = 40
+rich = 10

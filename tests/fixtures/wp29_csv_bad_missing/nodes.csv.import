@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bnw52doy725ic"
+
+[deps]
+
+files=["res://tests/fixtures/wp29_csv_bad_missing/nodes.kind.translation", "res://tests/fixtures/wp29_csv_bad_missing/nodes.name.translation", "res://tests/fixtures/wp29_csv_bad_missing/nodes.x.translation"]
+
+source_file="res://tests/fixtures/wp29_csv_bad_missing/nodes.csv"
+dest_files=["res://tests/fixtures/wp29_csv_bad_missing/nodes.kind.translation", "res://tests/fixtures/wp29_csv_bad_missing/nodes.name.translation", "res://tests/fixtures/wp29_csv_bad_missing/nodes.x.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

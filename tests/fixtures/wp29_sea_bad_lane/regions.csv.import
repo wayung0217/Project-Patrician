@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://dp2g271hx4kup"
+
+[deps]
+
+files=["res://tests/fixtures/wp29_sea_bad_lane/regions.name.translation", "res://tests/fixtures/wp29_sea_bad_lane/regions.note.translation"]
+
+source_file="res://tests/fixtures/wp29_sea_bad_lane/regions.csv"
+dest_files=["res://tests/fixtures/wp29_sea_bad_lane/regions.name.translation", "res://tests/fixtures/wp29_sea_bad_lane/regions.note.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

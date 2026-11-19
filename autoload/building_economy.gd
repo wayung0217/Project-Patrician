@@ -1506,10 +1506,32 @@ func apply_opening_init(
 	var errors: Array = []
 	var openings: Array = _load_opening_workshops(opening_dir)
 	var publics: Array = _load_opening_public(opening_public_dir)
-	# Formal dirs empty → no-op (CSV export pending). Residences／kontor still run
-	# when workshops or public rows exist (FRM-SYS08-21).
-	if openings.is_empty() and publics.is_empty():
-		return errors
+	# D-19e: empty opening_workshops／opening_public → ERR-SYS08-10; residences＋kontor still apply.
+	if openings.is_empty():
+		errors.append(
+			_err(ERR_SYS08_10, "opening_workshops", opening_dir, "opening workshops dir empty or missing")
+		)
+	if publics.is_empty():
+		errors.append(
+			_err(ERR_SYS08_10, "opening_public", opening_public_dir, "opening public dir empty or missing")
+		)
+	var ws_ports: Dictionary = {}
+	for row_chk in openings:
+		ws_ports[String((row_chk as OpeningWorkshop).port_id)] = true
+	var pub_ports: Dictionary = {}
+	for pub_chk in publics:
+		pub_ports[String((pub_chk as OpeningPublic).port_id)] = true
+	if PortRegistry.is_loaded():
+		for pid_v in PortRegistry.all_ids():
+			var want: String = String(pid_v)
+			if not openings.is_empty() and not ws_ports.has(want):
+				errors.append(
+					_err(ERR_SYS08_10, "opening_workshops", want, "missing opening workshop for port")
+				)
+			if not publics.is_empty() and not pub_ports.has(want):
+				errors.append(
+					_err(ERR_SYS08_10, "opening_public", want, "missing opening public for port")
+				)
 	# 1) City workshops ACTIVE from opening_workshops (by output good → BuildingDef).
 	var created_by_good: Dictionary = {} ## good_id → count
 	for row_v in openings:

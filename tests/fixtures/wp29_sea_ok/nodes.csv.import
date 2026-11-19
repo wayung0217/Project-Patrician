@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://0i7iiklqxsl5"
+
+[deps]
+
+files=["res://tests/fixtures/wp29_sea_ok/nodes.kind.translation", "res://tests/fixtures/wp29_sea_ok/nodes.name.translation", "res://tests/fixtures/wp29_sea_ok/nodes.x.translation", "res://tests/fixtures/wp29_sea_ok/nodes.y.translation"]
+
+source_file="res://tests/fixtures/wp29_sea_ok/nodes.csv"
+dest_files=["res://tests/fixtures/wp29_sea_ok/nodes.kind.translation", "res://tests/fixtures/wp29_sea_ok/nodes.name.translation", "res://tests/fixtures/wp29_sea_ok/nodes.x.translation", "res://tests/fixtures/wp29_sea_ok/nodes.y.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

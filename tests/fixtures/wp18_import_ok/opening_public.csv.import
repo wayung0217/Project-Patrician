@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bsedf75fan04i"
+
+[deps]
+
+files=["res://tests/fixtures/wp18_import_ok/opening_public.cb.translation", "res://tests/fixtures/wp18_import_ok/opening_public.level.translation"]
+
+source_file="res://tests/fixtures/wp18_import_ok/opening_public.csv"
+dest_files=["res://tests/fixtures/wp18_import_ok/opening_public.cb.translation", "res://tests/fixtures/wp18_import_ok/opening_public.level.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

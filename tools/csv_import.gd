@@ -23,6 +23,7 @@ const IMPORT_OPENING_WORKSHOPS_CSV := IMPORT_DIR + "opening_workshops.csv"
 const IMPORT_BUILD_QUEUE_CSV := IMPORT_DIR + "build_queue.csv"
 const IMPORT_CITY_CENTER_CSV := IMPORT_DIR + "city_center.csv"
 const IMPORT_OPENING_PUBLIC_CSV := IMPORT_DIR + "opening_public.csv"
+const IMPORT_OPENING_POPULATION_CSV := IMPORT_DIR + "opening_population.csv"
 ## WP-29 / D-14e fixed import filenames (same IMPORT_DIR).
 const IMPORT_NODES_CSV := IMPORT_DIR + "nodes.csv"
 const IMPORT_REGIONS_CSV := IMPORT_DIR + "regions.csv"
@@ -40,6 +41,7 @@ const OPENING_OUT_DIR := "res://data/opening/"
 const BUILD_QUEUE_OUT_DIR := "res://data/build_queue/"
 const CITY_CENTER_OUT_DIR := "res://data/city_center/"
 const OPENING_PUBLIC_OUT_DIR := "res://data/opening_public/"
+const OPENING_POPULATION_OUT_DIR := "res://data/opening_population/"
 ## WP-29 / D-14e fixed output roots under res://data/sea/.
 const SEA_OUT_DIR := "res://data/sea/"
 const SEA_NODES_OUT_DIR := SEA_OUT_DIR + "nodes/"
@@ -57,6 +59,7 @@ const KIND_OPENING_WORKSHOP := "OpeningWorkshop"
 const KIND_BUILD_STEP := "BuildStep"
 const KIND_CITY_CENTER_DEF := "CityCenterDef"
 const KIND_OPENING_PUBLIC := "OpeningPublic"
+const KIND_OPENING_POPULATION := "OpeningPopulation"
 const KIND_SEA_NODE := "SeaNode"
 const KIND_SEA_REGION := "SeaRegion"
 const KIND_SEA_LANE := "SeaLane"
@@ -99,6 +102,7 @@ const FILE_OPENING_WORKSHOPS := "opening_workshops.csv"
 const FILE_BUILD_QUEUE := "build_queue.csv"
 const FILE_CITY_CENTER := "city_center.csv"
 const FILE_OPENING_PUBLIC := "opening_public.csv"
+const FILE_OPENING_POPULATION := "opening_population.csv"
 const FILE_NODES := "nodes.csv"
 const FILE_REGIONS := "regions.csv"
 const FILE_LANES := "lanes.csv"
@@ -233,6 +237,14 @@ const OPENING_PUBLIC_FIELDS: Array[Dictionary] = [
 	{"name": "level", "type": COL_TYPE_INT},
 ]
 
+## OpeningPopulation — D-19e headers (exact).
+const OPENING_POPULATION_FIELDS: Array[Dictionary] = [
+	{"name": "port_id", "type": COL_TYPE_STRING},
+	{"name": "poor", "type": COL_TYPE_INT},
+	{"name": "citizen", "type": COL_TYPE_INT},
+	{"name": "rich", "type": COL_TYPE_INT},
+]
+
 ## SeaNode — D-14e / 04_Content 8.2 headers.
 const SEA_NODE_FIELDS: Array[Dictionary] = [
 	{"name": "node_id", "type": COL_TYPE_STRING},
@@ -280,6 +292,18 @@ func _run() -> void:
 		print("csv_import WP-18: wrote %s resources" % str((wp18["written"] as Array).size()))
 	else:
 		push_error("csv_import WP-18: aborted with %s error(s)" % str((wp18["errors"] as PackedStringArray).size()))
+	## WP-24 / D-19e: opening_population batch.
+	var wp24_pop: Dictionary = run_batch_opening_population()
+	if wp24_pop["ok"]:
+		print(
+			"csv_import opening_population: wrote %s resources"
+			% str((wp24_pop["written"] as Array).size())
+		)
+	else:
+		push_error(
+			"csv_import opening_population: aborted with %s error(s)"
+			% str((wp24_pop["errors"] as PackedStringArray).size())
+		)
 	## WP-29: nodes／regions／lanes batch (D-14e).
 	var wp29: Dictionary = run_batch_wp29()
 	if wp29["ok"]:
@@ -310,6 +334,8 @@ static func schema_for(resource_kind: String) -> Array[Dictionary]:
 		return CITY_CENTER_FIELDS
 	if resource_kind == KIND_OPENING_PUBLIC:
 		return OPENING_PUBLIC_FIELDS
+	if resource_kind == KIND_OPENING_POPULATION:
+		return OPENING_POPULATION_FIELDS
 	if resource_kind == KIND_SEA_NODE:
 		return SEA_NODE_FIELDS
 	if resource_kind == KIND_SEA_REGION:
@@ -955,6 +981,103 @@ static func clear_output_tres_wp18(city_center_dir: String, opening_public_dir: 
 	_clear_tres_in_dir(city_center_dir, errors)
 	_clear_tres_in_dir(opening_public_dir, errors)
 	return errors
+
+
+## WP-24 / D-19e: validate opening_population.csv, clear + write all-or-nothing.
+static func run_batch_opening_population(
+	import_dir: String = IMPORT_DIR,
+	opening_population_dir: String = OPENING_POPULATION_OUT_DIR,
+	ports_csv_path: String = ""
+) -> Dictionary:
+	var result: Dictionary = {
+		"ok": false,
+		"errors": PackedStringArray(),
+		"written": PackedStringArray(),
+	}
+	var errors: PackedStringArray = PackedStringArray()
+	var pop_path: String = import_dir.path_join(FILE_OPENING_POPULATION)
+	var ports_path: String = ports_csv_path
+	if ports_path == "":
+		ports_path = import_dir.path_join(FILE_PORTS)
+	var pop_result: Dictionary = import_csv(pop_path, KIND_OPENING_POPULATION, false)
+	_merge_prefixed_errors(errors, FILE_OPENING_POPULATION, pop_result)
+	var port_ids: Dictionary = {}
+	if FileAccess.file_exists(ports_path):
+		var ports_result: Dictionary = import_csv(ports_path, KIND_PORT_DEF, false)
+		_merge_prefixed_errors(errors, FILE_PORTS, ports_result)
+		if ports_result["ok"]:
+			for prow in ports_result["rows"] as Array:
+				port_ids[String((prow as Dictionary)["port_id"])] = true
+	if pop_result["ok"]:
+		_collect_opening_population_errors(pop_result["rows"] as Array, port_ids, errors)
+	if not errors.is_empty():
+		return _abort_batch(result, errors)
+	var clear_errors: PackedStringArray = PackedStringArray()
+	_clear_tres_in_dir(opening_population_dir, clear_errors)
+	if not clear_errors.is_empty():
+		for message in clear_errors:
+			errors.append(message)
+		return _abort_batch(result, errors)
+	var written: PackedStringArray = PackedStringArray()
+	var write_errors: PackedStringArray = PackedStringArray()
+	_write_opening_population_tres(
+		pop_result["rows"] as Array, opening_population_dir, written, write_errors
+	)
+	if not write_errors.is_empty():
+		for message2 in write_errors:
+			errors.append(message2)
+		return _abort_batch(result, errors)
+	result["ok"] = true
+	result["errors"] = PackedStringArray()
+	result["written"] = written
+	return result
+
+
+static func _collect_opening_population_errors(
+	rows: Array, port_ids: Dictionary, errors: PackedStringArray
+) -> void:
+	var seen: Dictionary = {}
+	for i in range(rows.size()):
+		var row: Dictionary = rows[i]
+		var pid: String = String(row.get("port_id", ""))
+		var poor: int = int(row.get("poor", -1))
+		var citizen: int = int(row.get("citizen", -1))
+		var rich: int = int(row.get("rich", -1))
+		if poor < 0 or citizen < 0 or rich < 0:
+			errors.append(
+				"%s: row %s population ints must be >= 0" % [FILE_OPENING_POPULATION, str(i + 1)]
+			)
+		if seen.has(pid):
+			errors.append(
+				"%s: duplicate port_id %s row %s" % [FILE_OPENING_POPULATION, pid, str(i + 1)]
+			)
+		seen[pid] = true
+		if not port_ids.is_empty() and not port_ids.has(pid):
+			errors.append(
+				"%s: unknown port_id %s row %s" % [FILE_OPENING_POPULATION, pid, str(i + 1)]
+			)
+
+
+static func _write_opening_population_tres(
+	rows: Array,
+	opening_population_dir: String,
+	written: PackedStringArray,
+	errors: PackedStringArray
+) -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(opening_population_dir))
+	for row_variant in rows:
+		var row: Dictionary = row_variant
+		var def := OpeningPopulation.new()
+		def.port_id = String(row["port_id"])
+		def.poor = int(row["poor"])
+		def.citizen = int(row["citizen"])
+		def.rich = int(row["rich"])
+		var path: String = opening_population_dir.path_join("%s%s" % [def.port_id, TRES_SUFFIX])
+		var err: Error = ResourceSaver.save(def, path)
+		if err != OK:
+			errors.append("opening_population: failed to write %s (err=%s)" % [path, str(err)])
+		else:
+			written.append(path)
 
 
 ## WP-29 / D-14e: validate nodes／regions／lanes, clear + write all-or-nothing under sea/.
