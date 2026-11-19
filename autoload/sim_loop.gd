@@ -210,6 +210,9 @@ func tick_day() -> Array:
 	if at_cutoff:
 		# (a) PortRegistry 套用排隊中的角色變更
 		PortRegistry.apply_queued_role_changes()
+		# 14-05: BuildingEconomy season six-step before close_season.
+		if BuildingEconomy.is_loaded():
+			day_errors.append_array(BuildingEconomy.season_step())
 		# (b) CashLedger.close_season()
 		CashLedger.close_season()
 		# (c) 守恆檢查（release 亦必檢）

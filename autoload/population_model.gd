@@ -214,6 +214,30 @@ func satisfaction(port_id: StringName, clazz: StringName) -> int:
 	return 0
 
 
+func residence_occupants(res_id: StringName) -> Dictionary:
+	## {poor, citizen, rich} for FRM-13 rent; empty dict if unknown.
+	assert(_loaded, "PopulationModel.residence_occupants before load")
+	var raw: Variant = _residents.get(String(res_id), null)
+	if raw == null:
+		return {"poor": 0, "citizen": 0, "rich": 0}
+	var r: Dictionary = raw
+	return {
+		"poor": int(r.get("poor", 0)),
+		"citizen": int(r.get("citizen", 0)),
+		"rich": int(r.get("rich", 0)),
+	}
+
+
+## Test helper: set residence occupants for rent accrual tests.
+func set_residence_occupants(
+	res_id: StringName, poor: int, citizen: int, rich: int, ring: int = 1
+) -> void:
+	assert(_loaded, "PopulationModel.set_residence_occupants before load")
+	_residents[String(res_id)] = {
+		"poor": poor, "citizen": citizen, "rich": rich, "ring": ring, "cap": 100
+	}
+
+
 func housing_capacity(port_id: StringName) -> int:
 	assert(_loaded, "PopulationModel.housing_capacity before load")
 	if not BuildingEconomy.is_loaded():
