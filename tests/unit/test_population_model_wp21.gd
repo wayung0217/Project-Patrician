@@ -343,6 +343,158 @@ func test_TST_SYS07_14_hire_sailors_all_or_nothing() -> void:
 	assert_push_error_count(1)
 
 
+func test_TST_SYS07_15_hire_capped_by_free_beds() -> void:
+	## TST-SYS07-15: beggars 9, free beds 8, need 5 → hire 2 (8÷4); beggar 1; poor +8.
+	var sat := TestSat.new()
+	_boot_pop(sat)
+	BuildingEconomy.set_population_provider(PopulationModel.get_population_provider())
+	BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
+	_setup_core_ledgers()
+	_write_min_layout()
+	var dir := ROOT + "buildings/"
+	_save_def(dir, "KT-01", "KONTOR", "", 0, 1.0)
+	_save_def(dir, "IB-A", "IND2", "GD-001", 2, 1.0)
+	_save_def(dir, "RB-01", "RESIDENCE", "", 0, 1.0)
+	assert_eq(
+		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
+		0
+	)
+	Params._values["PRM-SYS07-HOUSE_CAPACITY"] = 8
+	_force_workshop("IB-A", "IND2")
+	_force_residences(1)
+	assert_eq(PopulationModel.housing_capacity(StringName(PORT)), 8)
+	var bid: StringName = StringName("BLD:%s:IB-A" % PORT)
+	PopulationModel.set_workers(bid, 0)
+	var def: BuildingDef = BuildingEconomy._building_defs["IB-A"]
+	def.max_workers = 5
+	PopulationModel.set_port_state(PORT, 0, 0, 0, 9, 500, 500, 500)
+	PopulationModel.daily_step(1)
+	assert_eq(PopulationModel.workers(bid), 2)
+	assert_eq(PopulationModel.beggars(StringName(PORT)), 1)
+	assert_eq(PopulationModel.population(StringName(PORT), &"POOR"), 8)
+
+
+func test_TST_SYS07_17_temple_bonus_caps_at_sat_scale() -> void:
+	## TST-SYS07-17: citizen supply 98% + temple L3 → T = SAT_SCALE, never above (Q-07b).
+	var sat := TestSat.new()
+	sat.set_input(PORT, "CITIZEN", 0.98)
+	_boot_pop(sat)
+	_setup_be_layout()
+	var temple := Building.new()
+	temple.building_id = StringName("BLD:%s:TEMPLE" % PORT)
+	temple.type = &"CB-04"
+	temple.build_class = &"PUBLIC"
+	temple.cb_id = &"CB-04"
+	temple.level = 3
+	temple.owner = ACTOR
+	temple.port_id = PORT
+	temple.state = Building.State.ACTIVE
+	BuildingEconomy._register_building(temple)
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-04"), 3)
+	var scale: int = Params.get_int("PRM-SYS07-SAT_SCALE")
+	var t: int = PopulationModel._target_sat(PORT, &"CITIZEN", false)
+	assert_eq(t, scale)
+	assert_lte(t, scale)
+	# Uncapped would be quantize(980)+70 = 1050; must clamp.
+	var temple_bonus: Array = Params.get_value("PRM-SYS07-TEMPLE_BONUS")
+	var raw: int = (
+		floori(AmountQuantize.quantize_amount(0.98 * float(scale))) + int(temple_bonus[2])
+	)
+	assert_gt(raw, scale)
+
+
+func test_TST_SYS07_18_job_cap_overflow_gradual_citizen() -> void:
+	## TST-SYS07-18: shrink to 50 workers; 600 poor→beggar; citizens via PF-5; no instant wipe.
+	var sat := TestSat.new()
+	sat.set_input(PORT, "POOR", 0.9)
+	sat.set_input(PORT, "CITIZEN", 0.9)
+	sat.set_input(PORT, "RICH", 0.9)
+	_boot_pop(sat)
+	_setup_be_with_workshops(2)
+	Params._values["PRM-SYS07-PF1_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF4_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF5_RATE_WK"] = 500000
+	Params._values["PRM-SYS07-PF6_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF6_BEGGAR_RATE_WK"] = 0
+	var ids: Array = []
+	for b in BuildingEconomy.workplaces(StringName(PORT)):
+		var bid: StringName = (b as Building).building_id
+		ids.append(bid)
+		var def: BuildingDef = BuildingEconomy._building_defs[String((b as Building).type)]
+		def.max_workers = 125
+		PopulationModel.set_workers(bid, 125)
+	PopulationModel.set_port_state(PORT, 600, 300, 100, 0, 900, 900, 900)
+	var total0: int = PopulationModel.population(StringName(PORT))
+	assert_eq(total0, 1000)
+	# Shrink to 50 workers / job_cap 200; queue release of 200 workers (800 people).
+	for bid2 in ids:
+		var def2: BuildingDef = BuildingEconomy._building_defs[
+			String((BuildingEconomy.get_building(bid2) as Building).type)
+		]
+		def2.max_workers = 25
+		PopulationModel.set_workers(bid2, 25)
+	PopulationModel._ports[PORT].pending_release_workers = 200
+	PopulationModel.daily_step(1)
+	# All 600 poor → beggar; same-day PF-5 may move a few citizens, but not the full excess.
+	assert_eq(PopulationModel.population(StringName(PORT), &"POOR"), 0)
+	assert_gte(PopulationModel.beggars(StringName(PORT)), 600)
+	var residents1: int = (
+		PopulationModel.population(StringName(PORT), &"POOR")
+		+ PopulationModel.population(StringName(PORT), &"CITIZEN")
+		+ PopulationModel.population(StringName(PORT), &"RICH")
+	)
+	assert_eq(PopulationModel.job_capacity(StringName(PORT)), 200)
+	assert_gt(residents1, PopulationModel.job_capacity(StringName(PORT)))
+	assert_gt(PopulationModel.population(StringName(PORT), &"CITIZEN"), 100) # excess not wiped day-1
+	assert_eq(PopulationModel.population(StringName(PORT)), total0) # no instant collapse
+	var day := 2
+	var residents: int = residents1
+	while residents > 200 and day < 400:
+		var before_cit: int = PopulationModel.population(StringName(PORT), &"CITIZEN")
+		var before_total: int = PopulationModel.population(StringName(PORT))
+		PopulationModel.daily_step(day)
+		assert_eq(PopulationModel.population(StringName(PORT)), before_total)
+		var after_cit: int = PopulationModel.population(StringName(PORT), &"CITIZEN")
+		# Citizens demote gradually (PF-5), not a single-day wipe of the excess.
+		if before_cit > 100:
+			assert_gt(after_cit, 0)
+		residents = (
+			PopulationModel.population(StringName(PORT), &"POOR")
+			+ PopulationModel.population(StringName(PORT), &"CITIZEN")
+			+ PopulationModel.population(StringName(PORT), &"RICH")
+		)
+		day += 1
+	assert_lte(residents, 200)
+	assert_eq(PopulationModel.population(StringName(PORT)), total0)
+
+
+func test_TST_SYS07_19_poor_leave_only_after_beggars_gone() -> void:
+	## TST-SYS07-19: beggars leave first; poor leave only from the day after beggars hit 0.
+	var sat := TestSat.new()
+	sat.set_input(PORT, "POOR", 0.1)
+	_boot_pop(sat)
+	_setup_be_layout()
+	Params._values["PRM-SYS07-PF6_BEGGAR_RATE_WK"] = 1000000
+	Params._values["PRM-SYS07-PF6_RATE_WK"] = 1000000
+	Params._values["PRM-SYS07-PF1_RATE_WK"] = 0
+	# Plenty of beds so housing overflow does not drive poor out.
+	_force_residences(5)
+	PopulationModel.set_port_state(PORT, 40, 0, 0, 50, 100, 500, 500)
+	var poor0: int = PopulationModel.population(StringName(PORT), &"POOR")
+	var day := 1
+	var beggars: int = 50
+	while beggars > 0 and day < 200:
+		PopulationModel.daily_step(day)
+		beggars = PopulationModel.beggars(StringName(PORT))
+		assert_eq(PopulationModel.population(StringName(PORT), &"POOR"), poor0)
+		day += 1
+	assert_eq(beggars, 0)
+	assert_eq(PopulationModel.population(StringName(PORT), &"POOR"), poor0)
+	# Next day after beggars hit 0: employed poor may leave (PF6_RATE_WK).
+	PopulationModel.daily_step(day)
+	assert_lt(PopulationModel.population(StringName(PORT), &"POOR"), poor0)
+
+
 func test_WP21_D17b_acquire_materials_public() -> void:
 	## D-17b: public acquire_materials; existing WP-19 names unchanged.
 	var sat := TestSat.new()
