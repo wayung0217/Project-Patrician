@@ -8,6 +8,8 @@ const TABLES_OK := "res://tests/fixtures/demand/demand_tables.json"
 const TABLES_RATE_NEG := "res://tests/fixtures/demand/bad_rate_neg.json"
 const TABLES_WEIGHT := "res://tests/fixtures/demand/bad_weight_sum.json"
 const TABLES_SUBST := "res://tests/fixtures/demand/bad_subst_cap.json"
+const PARAMS_MISSING_WEIGHT := "res://tests/fixtures/params_sys06_missing_weight.json"
+const PARAMS_MISSING_DPW := "res://tests/fixtures/params_sys06_missing_days_per_week.json"
 
 const ROOT := "user://wp22_demand/"
 const PORT := "PT-01"
@@ -173,8 +175,14 @@ func test_TST_SYS06_02_market_size_target() -> void:
 
 
 func test_TST_SYS06_03_daily_share_sums_to_week() -> void:
+	## FRM-SYS06-10: 7-day accumulator sum vs theory week within <1 dan; max−min ≤1;
+	## N weeks vs N×theory within <1 dan.
 	_boot_demand_world(2100, 600, 300, 0)
-	var w: int = DemandModel.weekly_demand(StringName(PORT), &"GD-001")
+	var w_num: int = (
+		2100 * 594 + 600 * 594 + 300 * 594
+	)
+	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
+	var theory: float = float(w_num) / float(s)
 	var sum := 0
 	var lo := 0x7fffffff
 	var hi := 0
@@ -185,8 +193,16 @@ func test_TST_SYS06_03_daily_share_sums_to_week() -> void:
 			lo = d
 		if d > hi:
 			hi = d
-	assert_eq(sum, w)
+	assert_lt(abs(float(sum) - theory), 1.0)
 	assert_lte(hi - lo, 1)
+	# N=4 weeks continued on same accumulators
+	var n := 4
+	var sum_n := sum
+	for week in range(1, n):
+		for day_i in range(1, 8):
+			var day2: int = week * 7 + day_i
+			sum_n = sum_n + DemandModel.daily_demand(StringName(PORT), &"GD-001", day2)
+	assert_lt(abs(float(sum_n) - float(n) * theory), 1.0)
 
 
 func test_TST_SYS06_04_sat_weights_sum_100() -> void:
@@ -196,7 +212,7 @@ func test_TST_SYS06_04_sat_weights_sum_100() -> void:
 		var s := 0
 		for g in DemandModel._sat_ppt[cls].keys():
 			s = s + int(DemandModel._sat_ppt[cls][g])
-		assert_eq(s, 1000, cls)
+		assert_eq(s, Params.get_int("PRM-SYS06-WEIGHT_SUM"), cls)
 
 
 func test_TST_SYS06_05_rice_shortage_triggers_fish_subst() -> void:
@@ -239,8 +255,8 @@ func test_TST_SYS06_06_paused_workshops_zero_input_consume() -> void:
 		"GD-008": _wh_qty("GD-008"),
 		"GD-009": _wh_qty("GD-009"),
 	}
-	# Pause every workshop at port.
-	for bld_v in BuildingEconomy._buildings_by_port.get(PORT, []):
+	# Pause every workshop at port (public API only — C-07).
+	for bld_v in BuildingEconomy.buildings_for_port(PORT):
 		var bld: Building = bld_v as Building
 		if String(bld.build_class).begins_with("IND"):
 			assert_eq(BuildingEconomy.pause(ACTOR, bld.building_id), 1)
@@ -258,7 +274,7 @@ func test_TST_SYS06_07_double_pop_doubles_citizen_demand() -> void:
 	_boot_demand_world(700, 200, 100, 0)
 	var tea1: int = DemandModel.weekly_demand(StringName(PORT), &"GD-011")
 	PopulationModel.set_port_state(PORT, 1400, 400, 200, 0)
-	DemandModel._plan_day = -1
+	# weekly_demand is display-only (no plan invalidate); pop change visible immediately.
 	var tea2: int = DemandModel.weekly_demand(StringName(PORT), &"GD-011")
 	# Integer floor (C-09): doubling pop need not yield exact 2× when remainders exist.
 	assert_eq(tea1, 7)
@@ -267,7 +283,7 @@ func test_TST_SYS06_07_double_pop_doubles_citizen_demand() -> void:
 	before_each()
 	var wf := TestWorkforce.new()
 	_boot_be_with_input_workshops(wf)
-	for bld_v in BuildingEconomy._buildings_by_port.get(PORT, []):
+	for bld_v in BuildingEconomy.buildings_for_port(PORT):
 		var bld: Building = bld_v as Building
 		if String(bld.build_class).begins_with("IND"):
 			BuildingEconomy.pause(ACTOR, bld.building_id)
@@ -292,7 +308,7 @@ func test_TST_SYS06_08_cotton_zero_poor_sat_unchanged_cloth_subst() -> void:
 	var cloth_qty: int = GoodsLedger.get_qty(m, &"GD-022")
 	if cloth_qty > 0:
 		GoodsLedger.transfer(m, GoodsLedger.make_external(), &"GD-022", cloth_qty, GoodsLedger.REASON_CONSUME, &"TEST")
-	DemandModel._plan_day = -1
+	# Force replan via different day if needed — first consume on day 1 after seed.
 	var day := 1
 	var _take_c: int = DemandModel.consume_qty(StringName(PORT), &"GD-022", day)
 	var subst_cotton: int = DemandModel.substitution_applied(StringName(PORT), &"GD-010")
@@ -321,7 +337,6 @@ func test_TST_SYS06_09_brocade_zero_only_rich_sat_drops() -> void:
 		if String(g) == "GD-028":
 			continue
 		_seed_market(String(g), 8000)
-	DemandModel._plan_day = -1
 	for g in GoodCatalog.all_ids():
 		DemandModel.consume_qty(StringName(PORT), StringName(String(g)), 1)
 	var sat_p: float = DemandModel.satisfaction_input(StringName(PORT), &"POOR")
@@ -333,14 +348,20 @@ func test_TST_SYS06_09_brocade_zero_only_rich_sat_drops() -> void:
 
 
 func test_TST_SYS06_10_consume_equals_min_demand_stock() -> void:
+	## Seed before first plan for the day (FRM-SYS06-10 locks stock at plan time).
 	_boot_demand_world(2100, 600, 300, 0)
+	var w_num: int = 2100 * 594 + 600 * 594 + 300 * 594
+	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
+	var d_period: int = s * Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	var need: int = floori(float(w_num) / float(d_period)) # day-1 q from empty acc
+	assert_gt(need, 1)
+	_seed_market("GD-001", need - 1)
 	var day := 1
-	var need: int = DemandModel.daily_demand(StringName(PORT), &"GD-001", day)
-	_seed_market("GD-001", need - 1 if need > 1 else 0)
 	var stock: int = GoodsLedger.get_qty(GoodsLedger.make_market(PORT), &"GD-001")
 	var take: int = DemandModel.consume_qty(StringName(PORT), &"GD-001", day)
 	var expect: int = need if need < stock else stock
 	assert_eq(take, expect)
+	assert_eq(take, stock)
 
 
 func test_TST_SYS07_16_beggar_sat_necessities_only() -> void:
@@ -349,7 +370,6 @@ func test_TST_SYS07_16_beggar_sat_necessities_only() -> void:
 	_boot_demand_world(0, 0, 0, 2000)
 	for g in ["GD-001", "GD-002", "GD-013", "GD-014"]:
 		_seed_market(g, 5000)
-	DemandModel._plan_day = -1
 	for g in GoodCatalog.all_ids():
 		DemandModel.consume_qty(StringName(PORT), StringName(String(g)), 1)
 	var sat_ok: float = DemandModel.satisfaction_input(StringName(PORT), &"BEGGAR")
@@ -361,14 +381,114 @@ func test_TST_SYS07_16_beggar_sat_necessities_only() -> void:
 	_boot_demand_world(0, 0, 0, 2000)
 	for g in ["GD-002", "GD-013", "GD-014", "GD-015", "GD-018"]:
 		_seed_market(g, 5000)
-	DemandModel._plan_day = -1
 	for g in GoodCatalog.all_ids():
 		DemandModel.consume_qty(StringName(PORT), StringName(String(g)), 1)
 	var sat_bad: float = DemandModel.satisfaction_input(StringName(PORT), &"BEGGAR")
 	assert_lt(sat_bad, sat_ok)
 
 
+func test_TST_SYS06_11_small_port_low_volume_averages() -> void:
+	## 1000-person port; brocade week demand <1 dan; N seasons total ≈ N×theory, ≠0.
+	_boot_demand_world(700, 200, 100, 0)
+	var w_disp: int = DemandModel.weekly_demand(StringName(PORT), &"GD-028")
+	assert_eq(w_disp, 0) # floor display <1
+	var w_num: int = 100 * 27 # rich only
+	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
+	var theory_week: float = float(w_num) / float(s)
+	assert_lt(theory_week, 1.0)
+	assert_gt(theory_week, 0.0)
+	var days_season: int = Params.get_int("PRM-SYS00-DAYS_PER_SEASON")
+	var n_seasons := 2
+	var total_days: int = n_seasons * days_season
+	var total := 0
+	for day in range(1, total_days + 1):
+		total = total + DemandModel.daily_demand(StringName(PORT), &"GD-028", day)
+	var weeks: float = float(total_days) / float(Params.get_int("PRM-SYS04-DAYS_PER_WEEK"))
+	var theory_total: float = weeks * theory_week
+	assert_ne(total, 0)
+	assert_lt(abs(float(total) - theory_total), 1.0)
+
+
+func test_TST_SYS06_12_deterministic_replay() -> void:
+	## Same inputs twice → daily demand identical day-by-day (implies identical acc path).
+	var seq_a: Array = _daily_seq_rice(2100, 600, 300, 14)
+	before_each()
+	var seq_b: Array = _daily_seq_rice(2100, 600, 300, 14)
+	assert_eq(seq_a.size(), seq_b.size())
+	for i in range(seq_a.size()):
+		assert_eq(seq_a[i], seq_b[i], "day %s mismatch" % str(i + 1))
+
+
+func test_TST_SYS06_13_unmet_only_after_flush() -> void:
+	## Shortage day: no demand_unmet during CONSUME/plan; after flush_signals each once ascending.
+	_boot_demand_world(2100, 600, 300, 0)
+	# Leave markets empty → many unmet.
+	var seen: Array = []
+	var cb := func(port_id: StringName, good_id: StringName, shortfall: int) -> void:
+		seen.append({"port": String(port_id), "good": String(good_id), "shortfall": shortfall})
+	DemandModel.demand_unmet.connect(cb)
+	var goods: Array = []
+	for g in GoodCatalog.all_ids():
+		goods.append(String(g))
+	goods.sort()
+	for g in goods:
+		DemandModel.consume_qty(StringName(PORT), StringName(g), 1)
+	assert_eq(seen.size(), 0, "no emit during plan/CONSUME")
+	DemandModel.flush_signals()
+	assert_gt(seen.size(), 0)
+	# Ascending (port_id, good_id); each pair once.
+	var prev_port := ""
+	var prev_good := ""
+	var keys: Dictionary = {}
+	for row_v in seen:
+		var row: Dictionary = row_v
+		var p: String = String(row["port"])
+		var g: String = String(row["good"])
+		var key := "%s|%s" % [p, g]
+		assert_false(keys.has(key), "duplicate unmet %s" % key)
+		keys[key] = true
+		if prev_port != "":
+			assert_true(p > prev_port or (p == prev_port and g >= prev_good))
+			if p == prev_port:
+				assert_gt(g, prev_good)
+		prev_port = p
+		prev_good = g
+	DemandModel.demand_unmet.disconnect(cb)
+
+
+func test_TST_SYS06_14_missing_prm_refuses_boot() -> void:
+	## Missing PRM-SYS04-DAYS_PER_WEEK or PRM-SYS06-* → ERR-SYS06-06; no defaults.
+	var perr: Array = Params.load_and_validate(PARAMS_MISSING_WEIGHT)
+	assert_gt(perr.size(), 0)
+	assert_false(Params.is_loaded())
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
+	assert_gt(errs.size(), 0)
+	assert_true(_has_code(errs, DemandModel.ERR_SYS06_06))
+	assert_false(DemandModel.is_loaded())
+	before_each()
+	var perr2: Array = Params.load_and_validate(PARAMS_MISSING_DPW)
+	assert_gt(perr2.size(), 0)
+	assert_false(Params.is_loaded())
+	var errs2: Array = DemandModel.load_and_validate(TABLES_OK)
+	assert_gt(errs2.size(), 0)
+	assert_true(_has_code(errs2, DemandModel.ERR_SYS06_06))
+	assert_false(DemandModel.is_loaded())
+	# GUT error tracker accumulates across before_each within one test.
+	assert_push_error_count(perr.size() + errs.size() + perr2.size() + errs2.size())
+
+
+# TST-SYS07-20 lives in test_sim_loop.gd (real SimLoop.boot injected vs auto-wire).
+
+
 # --- helpers ---
+
+
+func _daily_seq_rice(poor: int, cit: int, rich: int, days: int) -> Array:
+	_boot_demand_world(poor, cit, rich, 0)
+	var out: Array = []
+	for day in range(1, days + 1):
+		out.append(DemandModel.daily_demand(StringName(PORT), &"GD-001", day))
+	return out
 
 
 func _boot_demand_world(poor: int, cit: int, rich: int, beg: int) -> void:

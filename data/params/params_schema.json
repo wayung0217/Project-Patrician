@@ -520,5 +520,25 @@
     "type": "float",
     "min": 0,
     "max": 1
+  },
+  "PRM-SYS06-JIN_PER_DAN": {
+    "type": "int",
+    "min": 100,
+    "max": 100
+  },
+  "PRM-SYS06-RATE_SCALE": {
+    "type": "int",
+    "min": 100,
+    "max": 100
+  },
+  "PRM-SYS06-PPM_SCALE": {
+    "type": "int",
+    "min": 1000000,
+    "max": 1000000
+  },
+  "PRM-SYS06-WEIGHT_SUM": {
+    "type": "int",
+    "min": 100,
+    "max": 100
   }
 }

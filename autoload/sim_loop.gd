@@ -103,7 +103,10 @@ func boot(
 	errors.append_array(CashLedger.load_and_validate())
 	# D-17d／D-17c: PopulationModel after CashLedger／before BuildingEconomy.
 	# WP-22: inject DemandModel sat only when formal／fixture tables exist (else keep SAT_PROVIDER_MISSING).
-	if PopulationModel._sat_input == null and FileAccess.file_exists(demand_tables_path):
+	if (
+		not PopulationModel.has_satisfaction_input_provider()
+		and FileAccess.file_exists(demand_tables_path)
+	):
 		PopulationModel.set_satisfaction_input_provider(DemandModel.get_satisfaction_input_provider())
 	errors.append_array(PopulationModel.load_and_validate())
 	if PopulationModel.is_loaded():
@@ -257,7 +260,10 @@ func tick_day() -> Array:
 
 	# 2.3-06 步驟 6: 全部寫入完成後才發出信號（D-05(a)）
 	# D-12h／14-03 ⑧: flush BuildingEconomy + PopulationModel signals before clock signals.
+	# WP-22／D-05: DemandModel.flush_signals once after all same-day writes.
 	BuildingEconomy.flush_signals()
+	if DemandModel.is_loaded():
+		DemandModel.flush_signals()
 	if PopulationModel.is_loaded():
 		PopulationModel.flush_signals()
 	if ShipRegistry.is_loaded():
