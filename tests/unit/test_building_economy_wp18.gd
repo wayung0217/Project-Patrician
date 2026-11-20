@@ -289,7 +289,8 @@ func test_WP18_11_07_7_err08_err02_err07() -> void:
 
 func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	## D-17d／D-30a: SimLoop auto-wires DemandModel sat; without injected consumption
-	## missing formal demand refuses boot (ERR-SYS06-01). Name kept (D-09g).
+	## missing demand path refuses boot (ERR-SYS06-01). Name kept (D-09g).
+	## Pass a non-existent demand_tables_path so formal data/demand/ does not satisfy this test.
 	var fixtures := _prepare_sim_fixtures()
 	SimLoop._booted = false
 	SimLoop._capacity_by_kind.clear()
@@ -302,6 +303,7 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	PopulationModel._sat_input = null
 	DemandModel._clear_state()
 	SeaLanes._loaded = false
+	var missing_demand := ROOT + "no_demand_dir_wp18/"
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
 		fixtures["goods"],
@@ -309,14 +311,11 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 		CURVE_FIXTURE,
 		fixtures["sea_nodes"],
 		fixtures["sea_regions"],
-		fixtures["sea_lanes"]
+		fixtures["sea_lanes"],
+		missing_demand
 	)
 	assert_gt(errors.size(), 0)
-	assert_true(
-		_has_code(errors, DemandModel.ERR_SYS06_01)
-		or _has_code(errors, BuildingEconomy.CODE_POPULATION_PROVIDER_MISSING)
-		or _has_code(errors, PopulationModel.CODE_SAT_PROVIDER_MISSING)
-	)
+	assert_true(_has_code(errors, DemandModel.ERR_SYS06_01))
 	assert_false(SimLoop.is_booted())
 	assert_push_error_count(errors.size())
 
