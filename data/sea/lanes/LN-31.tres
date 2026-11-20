@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SeaLane" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_lane.gd" id="1_mlk8m"]
+
+[resource]
+script = ExtResource("1_mlk8m")
+lane_id = "LN-31"
+node_a = "JN-01"
+node_b = "JN-04"
+region_id = "RG-02"
+length = 241.7
+waypoints = 9
+lane_type = "TRUNK"

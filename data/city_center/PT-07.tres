@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="CityCenterDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/city_center_def.gd" id="1_y68h3"]
+
+[resource]
+script = ExtResource("1_y68h3")
+port_id = "PT-07"
+public_slots = 10

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SeaNode" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_node.gd" id="1_h74d5"]
+
+[resource]
+script = ExtResource("1_h74d5")
+node_id = "JN-01"
+kind = "JUNCTION"
+name_zh = "台灣海峽北口"
+x = 270
+y = 600

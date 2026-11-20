@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SeaLane" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_lane.gd" id="1_imbrm"]
+
+[resource]
+script = ExtResource("1_imbrm")
+lane_id = "LN-50"
+node_a = "PT-08"
+node_b = "PT-09"
+region_id = "RG-07"
+length = 20.0
+waypoints = 1
+lane_type = "NEIGHBOR"

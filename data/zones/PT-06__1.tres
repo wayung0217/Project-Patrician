@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ZoneDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/zone_def.gd" id="1_do5jr"]
+
+[resource]
+script = ExtResource("1_do5jr")
+port_id = "PT-06"
+zone = 1
+slot_share = 0.15
+rings = 3
+slots = 27
+open_at_start = 1

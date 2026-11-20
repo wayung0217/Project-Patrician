@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GoodDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/good_def.gd" id="1_ud5ao"]
+
+[resource]
+script = ExtResource("1_ud5ao")
+good_id = "GD-001"
+name_zh = "米"
+tier = 1
+is_staple = true
+base_price_li = 1000
+season_mask = 15

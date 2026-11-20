@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/building_def.gd" id="1_i1b4y"]
+
+[resource]
+script = ExtResource("1_i1b4y")
+type = "CB-11"
+build_class = "PUBLIC"

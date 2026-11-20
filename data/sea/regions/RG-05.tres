@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SeaRegion" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_region.gd" id="1_5g1bb"]
+
+[resource]
+script = ExtResource("1_5g1bb")
+region_id = "RG-05"
+name_zh = "九州西南"
+note = "長崎、平戶、鹿兒島、吐噶喇、五島"

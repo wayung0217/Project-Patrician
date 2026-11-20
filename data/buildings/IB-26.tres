@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/building_def.gd" id="1_7l67t"]
+
+[resource]
+script = ExtResource("1_7l67t")
+type = "IB-26"
+tier = 3
+max_workers = 30
+base_output_per_worker = 0.29
+output_good_id = "GD-026"
+input1_good_id = "GD-021"
+input1_qty = 1.5
+input2_good_id = "GD-003"
+input2_qty = 0.5
+build_class = "IND3"

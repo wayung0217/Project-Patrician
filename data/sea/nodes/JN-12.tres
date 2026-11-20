@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SeaNode" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_node.gd" id="1_xbuf8"]
+
+[resource]
+script = ExtResource("1_xbuf8")
+node_id = "JN-12"
+kind = "JUNCTION"
+name_zh = "澎湖水道"
+x = 240
+y = 705
