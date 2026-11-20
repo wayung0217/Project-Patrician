@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SubstitutionRule" format=3]
+
+[ext_resource type="Script" path="res://core/types/substitution_rule.gd" id="1_mbuaa"]
+
+[resource]
+script = ExtResource("1_mbuaa")
+good_id = "GD-025"
+substitute_id = "GD-022"
+cap_ppm = 250000
+util_ppm = 400000

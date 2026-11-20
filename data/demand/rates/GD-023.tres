@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="DemandRate" format=3]
+
+[ext_resource type="Script" path="res://core/types/demand_rate.gd" id="1_cwa6b"]
+
+[resource]
+script = ExtResource("1_cwa6b")
+good_id = "GD-023"
