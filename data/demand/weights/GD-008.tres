@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SatisfactionWeight" format=3]
+
+[ext_resource type="Script" path="res://core/types/satisfaction_weight.gd" id="1_f4grx"]
+
+[resource]
+script = ExtResource("1_f4grx")
+good_id = "GD-008"
