@@ -1,0 +1,8 @@
+﻿good_id,substitute_id,cap,utility_discount
+GD-001,GD-014,0.3,0.7
+GD-014,GD-007,0.5,0.9
+GD-014,GD-020,0.5,0.9
+GD-018,GD-013,0.2,0.5
+GD-015,GD-024,0.4,1
+GD-022,GD-010,0.5,0.6
+GD-025,GD-022,0.25,0.4

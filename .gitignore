@@ -1,3 +1,5 @@
 godot
 .godot/
 tests/fixtures/wp21_out_*/
+tests/fixtures/demand/out/
+tests/fixtures/demand/**/*.translation

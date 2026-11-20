@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://k7ejc4beb0ir"
+
+[deps]
+
+files=["res://tests/fixtures/demand/bad_weight_nonint/substitutions.substitute.translation", "res://tests/fixtures/demand/bad_weight_nonint/substitutions.cap.translation", "res://tests/fixtures/demand/bad_weight_nonint/substitutions.utility.translation"]
+
+source_file="res://tests/fixtures/demand/bad_weight_nonint/substitutions.csv"
+dest_files=["res://tests/fixtures/demand/bad_weight_nonint/substitutions.substitute.translation", "res://tests/fixtures/demand/bad_weight_nonint/substitutions.cap.translation", "res://tests/fixtures/demand/bad_weight_nonint/substitutions.utility.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

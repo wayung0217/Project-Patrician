@@ -1,13 +1,14 @@
 extends GutTest
-## WP-22 / TechSpec §16 — DemandModel SYS-06 + D-22a／b／c／D-19b.
+## WP-22／WP-34 — DemandModel SYS-06 + CSV import fixtures (D-36a／b／c／D-30a).
 
+
+const CsvImport := preload("res://tools/csv_import.gd")
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
-const TABLES_OK := "res://tests/fixtures/demand/demand_tables.json"
-const TABLES_RATE_NEG := "res://tests/fixtures/demand/bad_rate_neg.json"
-const TABLES_WEIGHT := "res://tests/fixtures/demand/bad_weight_sum.json"
-const TABLES_SUBST := "res://tests/fixtures/demand/bad_subst_cap.json"
+const DEMAND_CSV_OK := "res://tests/fixtures/demand/ok/"
+const DEMAND_OUT := "res://tests/fixtures/demand/out/"
+const TABLES_OK := DEMAND_OUT ## demand dir after csv_import
 const PARAMS_MISSING_WEIGHT := "res://tests/fixtures/params_sys06_missing_weight.json"
 const PARAMS_MISSING_DPW := "res://tests/fixtures/params_sys06_missing_days_per_week.json"
 
@@ -15,6 +16,10 @@ const ROOT := "user://wp22_demand/"
 const PORT := "PT-01"
 const ACTOR := &"ACT-PLAYER"
 const CITY := &"CITY-PT-01"
+
+const RATE_SCALE := 100
+const PPM_SCALE := 1000000
+const WEIGHT_SUM := 100
 
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
@@ -77,6 +82,7 @@ class TestCapUnlimited extends CapacityProvider:
 
 func before_each() -> void:
 	_wipe_dir(ROOT)
+	_wipe_demand_out()
 	DemandModel._clear_state()
 	PopulationModel._loaded = false
 	PopulationModel._sat_input = null
@@ -112,18 +118,97 @@ func test_ERR_SYS06_01_negative_rate_rejects_boot() -> void:
 	_boot_params_ports_goods()
 	_boot_pop_sat()
 	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
-	var errs: Array = DemandModel.load_and_validate(TABLES_RATE_NEG)
+	_install_demand_ok()
+	## Mutate one rate tres to negative (DemandModel ERR path; import already rejects).
+	var def: DemandRate = load(DEMAND_OUT.path_join("rates/GD-001.tres")) as DemandRate
+	def.poor_rate_cj = 0 - 1
+	ResourceSaver.save(def, DEMAND_OUT.path_join("rates/GD-001.tres"))
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
 	assert_gt(errs.size(), 0)
 	assert_true(_has_code(errs, DemandModel.ERR_SYS06_01))
 	assert_false(DemandModel.is_loaded())
 	assert_push_error_count(errs.size())
 
 
+func test_ERR_SYS06_01_missing_demand_dir_rejects() -> void:
+	## D-30a／R9-06 dedicated missing-file test.
+	_boot_params_ports_goods()
+	_boot_pop_sat()
+	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	var missing := ROOT + "no_demand_dir/"
+	var errs: Array = DemandModel.load_and_validate(missing)
+	assert_gt(errs.size(), 0)
+	assert_true(_has_code(errs, DemandModel.ERR_SYS06_01))
+	assert_false(DemandModel.is_loaded())
+	assert_push_error_count(errs.size())
+
+
+func test_D40c_bad_tres_load_collects_filename() -> void:
+	## D-40c: corrupt .tres → ERR-SYS06-01 with filename.
+	_boot_params_ports_goods()
+	_boot_pop_sat()
+	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	_install_demand_ok()
+	var bad_path: String = DEMAND_OUT.path_join("rates/BAD-D40.tres")
+	var f := FileAccess.open(bad_path, FileAccess.WRITE)
+	assert_ne(f, null)
+	f.store_string("NOT A VALID RESOURCE\n")
+	f.close()
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
+	## Godot emits engine parse errors for corrupt .tres; count them so GUT does not fail the test.
+	assert_engine_error_count(2, "corrupt .tres parse")
+	assert_gt(errs.size(), 0)
+	assert_true(_has_code(errs, DemandModel.ERR_SYS06_01))
+	var saw_name := false
+	for e in errs:
+		var detail: Dictionary = (e as Dictionary).get("detail", {}) as Dictionary
+		if String(detail.get("field", "")) == "BAD-D40.tres":
+			saw_name = true
+			break
+	assert_true(saw_name, "expected detail.field=BAD-D40.tres in errors: %s" % str(errs))
+	assert_false(DemandModel.is_loaded())
+	assert_push_error_count(errs.size())
+
+
+func test_D40c_missing_substitutions_dir_fails() -> void:
+	## D-40c: substitutions subdir must exist.
+	_boot_params_ports_goods()
+	_boot_pop_sat()
+	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	_install_demand_ok()
+	var subst: String = DEMAND_OUT.path_join("substitutions/")
+	_wipe_dir(subst)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(subst))
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
+	assert_gt(errs.size(), 0)
+	assert_true(_has_code(errs, DemandModel.ERR_SYS06_03))
+	assert_false(DemandModel.is_loaded())
+	assert_push_error_count(errs.size())
+
+
+func test_D40c_empty_substitutions_dir_passes() -> void:
+	## D-40c: empty substitutions OK when dir exists.
+	_boot_params_ports_goods()
+	_boot_pop_sat()
+	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	_install_demand_ok()
+	var subst: String = DEMAND_OUT.path_join("substitutions/")
+	_wipe_dir(subst)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(subst))
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
+	assert_eq(errs.size(), 0, str(errs))
+	assert_true(DemandModel.is_loaded())
+
+
 func test_ERR_SYS06_02_weight_sum_rejects_boot() -> void:
 	_boot_params_ports_goods()
 	_boot_pop_sat()
 	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
-	var errs: Array = DemandModel.load_and_validate(TABLES_WEIGHT)
+	_install_demand_ok()
+	var def: SatisfactionWeight = load(DEMAND_OUT.path_join("weights/GD-001.tres")) as SatisfactionWeight
+	def.poor_weight_pct = 29
+	ResourceSaver.save(def, DEMAND_OUT.path_join("weights/GD-001.tres"))
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
 	assert_gt(errs.size(), 0)
 	assert_true(_has_code(errs, DemandModel.ERR_SYS06_02))
 	assert_false(DemandModel.is_loaded())
@@ -134,7 +219,13 @@ func test_ERR_SYS06_03_subst_cap_rejects_boot() -> void:
 	_boot_params_ports_goods()
 	_boot_pop_sat()
 	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
-	var errs: Array = DemandModel.load_and_validate(TABLES_SUBST)
+	_install_demand_ok()
+	var def: SubstitutionRule = load(
+		DEMAND_OUT.path_join("substitutions/GD-001__GD-014.tres")
+	) as SubstitutionRule
+	def.cap_ppm = Params.get_int("PRM-SYS06-PPM_SCALE") + 1
+	ResourceSaver.save(def, DEMAND_OUT.path_join("substitutions/GD-001__GD-014.tres"))
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
 	assert_gt(errs.size(), 0)
 	assert_true(_has_code(errs, DemandModel.ERR_SYS06_03))
 	assert_false(DemandModel.is_loaded())
@@ -145,6 +236,7 @@ func test_ERR_SYS06_04_negative_population() -> void:
 	_boot_params_ports_goods()
 	_boot_pop_sat()
 	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	_install_demand_ok()
 	assert_eq(DemandModel.load_and_validate(TABLES_OK).size(), 0)
 	# Force negative via direct PortPop (boot-time path covered by validate; runtime record).
 	var p: Object = PopulationModel._ports[PORT]
@@ -210,8 +302,8 @@ func test_TST_SYS06_04_sat_weights_sum_100() -> void:
 	assert_true(DemandModel.is_loaded())
 	for cls in ["POOR", "CITIZEN", "RICH"]:
 		var s := 0
-		for g in DemandModel._sat_ppt[cls].keys():
-			s = s + int(DemandModel._sat_ppt[cls][g])
+		for g in DemandModel._sat_pct[cls].keys():
+			s = s + int(DemandModel._sat_pct[cls][g])
 		assert_eq(s, Params.get_int("PRM-SYS06-WEIGHT_SUM"), cls)
 
 
@@ -243,6 +335,7 @@ func test_TST_SYS06_06_paused_workshops_zero_input_consume() -> void:
 	var wf := TestWorkforce.new()
 	wf.set_default(10)
 	_boot_be_with_input_workshops(wf)
+	_install_demand_ok()
 	assert_eq(DemandModel.load_and_validate(TABLES_OK).size(), 0)
 	PopulationModel.set_port_state(PORT, 700, 200, 100, 0)
 	var rice_w0: int = DemandModel.weekly_demand(StringName(PORT), &"GD-001")
@@ -365,26 +458,28 @@ func test_TST_SYS06_10_consume_equals_min_demand_stock() -> void:
 
 
 func test_TST_SYS07_16_beggar_sat_necessities_only() -> void:
-	## D-19b／U-15: beggars ignore pottery／oil; only poor necessities.
-	## 2000 beggars so day-1 rice daily share > 0 (W≥7).
-	_boot_demand_world(0, 0, 0, 2000)
-	for g in ["GD-001", "GD-002", "GD-013", "GD-014"]:
-		_seed_market(g, 5000)
+	## D-36a／U-15: keep name; content — 100 beggars do not affect daily demand per good;
+	## PopulationModel neither stores nor reports beggar sat; DemandModel rejects BEGGAR sat.
+	_boot_demand_world(700, 200, 100, 0)
+	var base: Dictionary = {}
 	for g in GoodCatalog.all_ids():
-		DemandModel.consume_qty(StringName(PORT), StringName(String(g)), 1)
-	var sat_ok: float = DemandModel.satisfaction_input(StringName(PORT), &"BEGGAR")
-	assert_gt(sat_ok, 0.99)
-	assert_gt(DemandModel.weekly_demand(StringName(PORT), &"GD-001"), 0)
-	assert_eq(DemandModel.weekly_demand(StringName(PORT), &"GD-015"), 0)
-	assert_eq(DemandModel.weekly_demand(StringName(PORT), &"GD-018"), 0)
+		base[String(g)] = DemandModel.daily_demand(StringName(PORT), StringName(String(g)), 1)
 	before_each()
-	_boot_demand_world(0, 0, 0, 2000)
-	for g in ["GD-002", "GD-013", "GD-014", "GD-015", "GD-018"]:
-		_seed_market(g, 5000)
-	for g in GoodCatalog.all_ids():
-		DemandModel.consume_qty(StringName(PORT), StringName(String(g)), 1)
-	var sat_bad: float = DemandModel.satisfaction_input(StringName(PORT), &"BEGGAR")
-	assert_lt(sat_bad, sat_ok)
+	_boot_demand_world(700, 200, 100, 100)
+	for g2 in GoodCatalog.all_ids():
+		var gid: String = String(g2)
+		assert_eq(
+			DemandModel.daily_demand(StringName(PORT), StringName(gid), 1),
+			int(base[gid]),
+			"beggar must not affect demand %s" % gid
+		)
+	var sat_b: float = DemandModel.satisfaction_input(StringName(PORT), &"BEGGAR")
+	assert_eq(sat_b, 0.0)
+	assert_eq(String(DemandModel.last_error().get("code", "")), String(DemandModel.ERR_SYS06_04))
+	## PopulationModel: no beggar sat storage／report.
+	assert_eq(PopulationModel.satisfaction(StringName(PORT), &"BEGGAR"), 0)
+	assert_eq(String(PopulationModel.last_error().get("code", "")), String(PopulationModel.ERR_SYS07_08))
+	assert_push_error_count(2)
 
 
 func test_TST_SYS06_11_small_port_low_volume_averages() -> void:
@@ -495,9 +590,30 @@ func _boot_demand_world(poor: int, cit: int, rich: int, beg: int) -> void:
 	_boot_params_ports_goods()
 	_boot_pop_sat()
 	PopulationModel.set_port_state(PORT, poor, cit, rich, beg)
+	_install_demand_ok()
 	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
 	assert_eq(errs.size(), 0, str(errs))
 	assert_true(DemandModel.is_loaded())
+
+
+func _install_demand_ok() -> void:
+	var result: Dictionary = CsvImport.run_batch_demand(
+		DEMAND_CSV_OK,
+		DEMAND_OUT.path_join("rates/"),
+		DEMAND_OUT.path_join("weights/"),
+		DEMAND_OUT.path_join("substitutions/"),
+		RATE_SCALE,
+		PPM_SCALE,
+		WEIGHT_SUM
+	)
+	assert_true(result["ok"], "demand csv_import: %s" % str(result.get("errors", [])))
+
+
+func _wipe_demand_out() -> void:
+	var abs_path := ProjectSettings.globalize_path(DEMAND_OUT)
+	if not DirAccess.dir_exists_absolute(abs_path):
+		return
+	_wipe_dir(DEMAND_OUT)
 
 
 func _boot_params_ports_goods() -> void:

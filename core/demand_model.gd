@@ -1,12 +1,18 @@
 extends Node
-## Autoload DemandModel — SYS-06 resident consumption (TechSpec §16 / D-09a／D-09b).
+## Autoload DemandModel — SYS-06 resident consumption (TechSpec §16 / D-09a／D-09b／WP-34).
 ## Formal ConsumptionProvider + SatisfactionInputProvider. Residents only (not SYS-08 inputs).
 ## _ready() field init only; load_and_validate() from SimLoop.boot (2.2-01).
-## Data: exported tables (16-04); tests use res://tests/fixtures/demand/ only. No weekly_consumption.
+## Data: csv_import → res://data/demand/{rates,weights,substitutions}/ (D-25／D-36c; N-04 single path).
+## D-36a: beggars are hire-pool only — no goods consumption, no satisfaction.
 
 const SYS_ID := &"SYS-06"
 const SCRIPT_PATH := "res://core/demand_model.gd"
-const TABLES_PATH := "res://data/demand/demand_tables.json"
+## Directory root produced by csv_import run_batch_demand (keep TABLES_PATH alias for boot param).
+const DEMAND_DIR := "res://data/demand/"
+const TABLES_PATH := DEMAND_DIR
+const RATES_SUBDIR := "rates"
+const WEIGHTS_SUBDIR := "weights"
+const SUBST_SUBDIR := "substitutions"
 
 const CLASS_POOR := &"POOR"
 const CLASS_CITIZEN := &"CITIZEN"
@@ -30,9 +36,8 @@ signal demand_unmet(port_id: StringName, good_id: StringName, shortfall: int)
 var _loaded: bool = false
 var _tables_path: String = TABLES_PATH
 var _rate_cj: Dictionary = {} ## class → {good_id: int rate_scaled}
-var _sat_ppt: Dictionary = {} ## class → {good_id: int weight units}
+var _sat_pct: Dictionary = {} ## class → {good_id: int weight pct points} (D-36c)
 var _subst: Array = [] ## [{from,to,cap_ppm,util_ppm}, ...] sorted by from,to
-var _beggar_goods: Array = [] ## good_id strings (necessities)
 
 ## PRM-backed scales (C-03／N-01); set only from Params in load_and_validate.
 var _days_per_week: int = 0
@@ -133,25 +138,23 @@ func fulfilment(port_id: StringName, good_id: StringName) -> float:
 
 func satisfaction_input(port_id: StringName, clazz: StringName) -> float:
 	assert(_loaded, "DemandModel.satisfaction_input before load")
-	## FRM-SYS06-09: class sat = Σ (w/WEIGHT_SUM) × fulfil
+	## FRM-SYS06-09／D-36a: class sat = Σ (w/WEIGHT_SUM) × fulfil; POOR／CITIZEN／RICH only.
 	var port_s := String(port_id)
 	var cls := _norm_class(clazz)
-	if cls == CLASS_BEGGAR:
-		return _sat_beggar(port_s)
 	if cls != CLASS_POOR and cls != CLASS_CITIZEN and cls != CLASS_RICH:
-		_record(ERR_SYS06_04, "class", clazz, "unknown class for sat input")
+		_record(ERR_SYS06_04, "class", clazz, "unknown class for sat input (beggar has no sat)")
 		return 0.0
-	var weights: Dictionary = _sat_ppt.get(String(cls), {})
+	var weights: Dictionary = _sat_pct.get(String(cls), {})
 	var acc: int = 0
 	var keys: Array = weights.keys()
 	keys.sort()
 	for g_variant in keys:
 		var g: String = String(g_variant)
-		var w_ppt: int = _to_int(weights[g])
-		if w_ppt <= 0:
+		var w_pct: int = _to_int(weights[g])
+		if w_pct <= 0:
 			continue
 		var f_ppm: int = _to_int(_fulfil_ppm.get("%s|%s" % [port_s, g], _ppm_scale))
-		acc = acc + w_ppt * f_ppm
+		acc = acc + w_pct * f_ppm
 	return float(acc) / float(_weight_sum * _ppm_scale)
 
 
@@ -179,9 +182,8 @@ func _clear_state() -> void:
 	_loaded = false
 	_tables_path = TABLES_PATH
 	_rate_cj = {}
-	_sat_ppt = {}
+	_sat_pct = {}
 	_subst = []
-	_beggar_goods = []
 	_days_per_week = 0
 	_jin_per_dan = 0
 	_rate_scale = 0
@@ -249,131 +251,172 @@ func _required_prm_ids() -> Array:
 	]
 
 
-func _load_tables(path: String) -> Array:
+func _load_tables(demand_dir: String) -> Array:
+	## N-04／D-36c／D-40c: single path — csv_import .tres under demand/{rates,weights,substitutions}/.
 	var errors: Array = []
-	if not FileAccess.file_exists(path):
-		errors.append(_err(ERR_SYS06_01, path, null, "demand tables file missing (16-04)"))
+	var rates_dir: String = demand_dir.path_join(RATES_SUBDIR)
+	var weights_dir: String = demand_dir.path_join(WEIGHTS_SUBDIR)
+	var subst_dir: String = demand_dir.path_join(SUBST_SUBDIR)
+	if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(demand_dir)):
+		errors.append(_err(ERR_SYS06_01, demand_dir, null, "demand tables dir missing (D-25b／D-30a)"))
 		return errors
-	var text := FileAccess.get_file_as_string(path)
-	var parsed: Variant = JSON.parse_string(text)
-	if typeof(parsed) != TYPE_DICTIONARY:
-		errors.append(_err(ERR_SYS06_01, path, null, "demand tables root must be Dictionary"))
+	## D-40c: all three subdirs must exist (empty substitutions OK).
+	var rates_abs: String = ProjectSettings.globalize_path(rates_dir)
+	var weights_abs: String = ProjectSettings.globalize_path(weights_dir)
+	var subst_abs: String = ProjectSettings.globalize_path(subst_dir)
+	if not DirAccess.dir_exists_absolute(rates_abs):
+		errors.append(_err(ERR_SYS06_01, rates_dir, null, "rates subdir missing (D-40c)"))
+	if not DirAccess.dir_exists_absolute(weights_abs):
+		errors.append(_err(ERR_SYS06_02, weights_dir, null, "weights subdir missing (D-40c)"))
+	if not DirAccess.dir_exists_absolute(subst_abs):
+		errors.append(_err(ERR_SYS06_03, subst_dir, null, "substitutions subdir missing (D-40c)"))
+	if not errors.is_empty():
 		return errors
-	var root: Dictionary = parsed
-	errors.append_array(_parse_rates(root.get("rate_cj", null), path))
-	errors.append_array(_parse_weights(root.get("sat_weight_ppt", null), path))
-	errors.append_array(_parse_subst(root.get("subst", null), path))
-	var beg: Variant = root.get("beggar_necessities", [])
-	if typeof(beg) != TYPE_ARRAY:
-		errors.append(_err(ERR_SYS06_01, "beggar_necessities", beg, "must be Array of good_id"))
-	else:
-		_beggar_goods = []
-		for g in beg:
-			_beggar_goods.append(String(g))
-		_beggar_goods.sort()
+	var rate_res: Array = _load_tres_dir(rates_dir, ERR_SYS06_01, errors)
+	var weight_res: Array = _load_tres_dir(weights_dir, ERR_SYS06_02, errors)
+	var subst_res: Array = _load_tres_dir(subst_dir, ERR_SYS06_03, errors)
+	if rate_res.is_empty():
+		errors.append(
+			_err(ERR_SYS06_01, rates_dir, null, "demand rates missing or empty (D-25b／D-30a)")
+		)
+	if weight_res.is_empty():
+		errors.append(
+			_err(ERR_SYS06_02, weights_dir, null, "demand weights missing or empty (D-25b／D-30a)")
+		)
+		## Still attempt parse so C-06 can collect further shape errors when partial.
+	errors.append_array(_parse_rates_from_tres(rate_res))
+	errors.append_array(_parse_weights_from_tres(weight_res))
+	errors.append_array(_parse_subst_from_tres(subst_res))
 	return errors
 
 
-func _parse_rates(raw: Variant, path: String) -> Array:
+## D-40c: load failures collect errors with filename (ERR-SYS06-01／02／03).
+func _load_tres_dir(dir_path: String, err_code: StringName, errors: Array) -> Array:
+	var out: Array = []
+	var abs_path: String = ProjectSettings.globalize_path(dir_path)
+	if not DirAccess.dir_exists_absolute(abs_path):
+		errors.append(_err(err_code, dir_path, null, "subdir missing (D-40c)"))
+		return out
+	var d := DirAccess.open(dir_path)
+	if d == null:
+		errors.append(_err(err_code, dir_path, null, "subdir open failed (D-40c)"))
+		return out
+	var names: Array = []
+	d.list_dir_begin()
+	var fn := d.get_next()
+	while fn != "":
+		if not d.current_is_dir() and fn.ends_with(".tres"):
+			names.append(fn)
+		fn = d.get_next()
+	d.list_dir_end()
+	names.sort()
+	for name_v in names:
+		var fname: String = String(name_v)
+		var full: String = dir_path.path_join(fname)
+		var res: Resource = load(full) as Resource
+		if res == null:
+			errors.append(
+				_err(err_code, fname, null, "failed to load .tres (D-40c)")
+			)
+			continue
+		out.append(res)
+	return out
+
+
+func _parse_rates_from_tres(resources: Array) -> Array:
 	var errors: Array = []
-	if typeof(raw) != TYPE_DICTIONARY:
-		errors.append(_err(ERR_SYS06_01, "rate_cj", raw, "rate_cj must be Dictionary"))
+	_rate_cj = {"POOR": {}, "CITIZEN": {}, "RICH": {}}
+	if resources.is_empty():
+		errors.append(_err(ERR_SYS06_01, "rate_cj", null, "no DemandRate resources"))
 		return errors
-	var root: Dictionary = raw
-	for cls in ["POOR", "CITIZEN", "RICH"]:
-		if not root.has(cls):
-			errors.append(_err(ERR_SYS06_01, "rate_cj.%s" % cls, null, "missing class rates"))
+	for res_v in resources:
+		if not (res_v is DemandRate):
+			errors.append(_err(ERR_SYS06_01, "rate_cj", res_v, "resource must be DemandRate"))
 			continue
-		var block_v: Variant = root[cls]
-		if typeof(block_v) != TYPE_DICTIONARY:
-			errors.append(_err(ERR_SYS06_01, "rate_cj.%s" % cls, block_v, "class rates must be Dictionary"))
+		var def: DemandRate = res_v
+		var g: String = String(def.good_id)
+		if g.is_empty():
+			errors.append(_err(ERR_SYS06_01, "rate_cj.good_id", g, "empty good_id"))
 			continue
-		var block: Dictionary = block_v
-		var out: Dictionary = {}
-		var gkeys: Array = block.keys()
-		gkeys.sort()
-		for g_variant in gkeys:
-			var g: String = String(g_variant)
-			var v: Variant = block[g]
-			if typeof(v) != TYPE_INT and typeof(v) != TYPE_FLOAT:
-				errors.append(_err(ERR_SYS06_01, "rate_cj.%s.%s" % [cls, g], v, "rate must be int"))
-				continue
-			var n: int = _to_int(v)
+		for pair in [
+			["POOR", def.poor_rate_cj],
+			["CITIZEN", def.citizen_rate_cj],
+			["RICH", def.rich_rate_cj],
+		]:
+			var cls: String = String(pair[0])
+			var n: int = _to_int(pair[1])
 			if n < 0:
-				errors.append(_err(ERR_SYS06_01, "rate_cj.%s.%s" % [cls, g], n, "consumption rate negative"))
+				errors.append(
+					_err(ERR_SYS06_01, "rate_cj.%s.%s" % [cls, g], n, "consumption rate negative")
+				)
 				continue
-			out[g] = n
-		_rate_cj[cls] = out
+			(_rate_cj[cls] as Dictionary)[g] = n
 	return errors
 
 
-func _parse_weights(raw: Variant, path: String) -> Array:
+func _parse_weights_from_tres(resources: Array) -> Array:
 	var errors: Array = []
-	if typeof(raw) != TYPE_DICTIONARY:
-		errors.append(_err(ERR_SYS06_02, "sat_weight_ppt", raw, "sat_weight_ppt must be Dictionary"))
+	_sat_pct = {"POOR": {}, "CITIZEN": {}, "RICH": {}}
+	if resources.is_empty():
+		errors.append(_err(ERR_SYS06_02, "sat_weight_pct", null, "no SatisfactionWeight resources"))
 		return errors
-	var root: Dictionary = raw
-	for cls in ["POOR", "CITIZEN", "RICH"]:
-		if not root.has(cls):
-			errors.append(_err(ERR_SYS06_02, "sat_weight_ppt.%s" % cls, null, "missing class weights"))
+	for res_v in resources:
+		if not (res_v is SatisfactionWeight):
+			errors.append(
+				_err(ERR_SYS06_02, "sat_weight_pct", res_v, "resource must be SatisfactionWeight")
+			)
 			continue
-		var block_v: Variant = root[cls]
-		if typeof(block_v) != TYPE_DICTIONARY:
-			errors.append(_err(ERR_SYS06_02, "sat_weight_ppt.%s" % cls, block_v, "weights must be Dictionary"))
+		var def: SatisfactionWeight = res_v
+		var g: String = String(def.good_id)
+		if g.is_empty():
+			errors.append(_err(ERR_SYS06_02, "sat_weight_pct.good_id", g, "empty good_id"))
 			continue
-		var block: Dictionary = block_v
-		var out: Dictionary = {}
-		var sum_ppt: int = 0
+		for pair in [
+			["POOR", def.poor_weight_pct],
+			["CITIZEN", def.citizen_weight_pct],
+			["RICH", def.rich_weight_pct],
+		]:
+			var cls: String = String(pair[0])
+			var n: int = _to_int(pair[1])
+			if n < 0:
+				errors.append(
+					_err(ERR_SYS06_02, "sat_weight_pct.%s.%s" % [cls, g], n, "weight negative")
+				)
+				continue
+			(_sat_pct[cls] as Dictionary)[g] = n
+	for cls2 in ["POOR", "CITIZEN", "RICH"]:
+		var sum_pct: int = 0
+		var block: Dictionary = _sat_pct[cls2]
 		var gkeys: Array = block.keys()
 		gkeys.sort()
 		for g_variant in gkeys:
-			var g: String = String(g_variant)
-			var v: Variant = block[g]
-			if typeof(v) != TYPE_INT and typeof(v) != TYPE_FLOAT:
-				errors.append(_err(ERR_SYS06_02, "sat_weight_ppt.%s.%s" % [cls, g], v, "weight must be int"))
-				continue
-			var n: int = _to_int(v)
-			if n < 0:
-				errors.append(_err(ERR_SYS06_02, "sat_weight_ppt.%s.%s" % [cls, g], n, "weight negative"))
-				continue
-			out[g] = n
-			sum_ppt = sum_ppt + n
-		if sum_ppt != _weight_sum:
+			sum_pct = sum_pct + _to_int(block[g_variant])
+		if sum_pct != _weight_sum:
 			errors.append(
 				_err(
 					ERR_SYS06_02,
-					"sat_weight_ppt.%s" % cls,
-					sum_ppt,
+					"sat_weight_pct.%s" % cls2,
+					sum_pct,
 					"class sat weights must sum to PRM-SYS06-WEIGHT_SUM"
 				)
 			)
-		_sat_ppt[cls] = out
 	return errors
 
 
-func _parse_subst(raw: Variant, path: String) -> Array:
+func _parse_subst_from_tres(resources: Array) -> Array:
 	var errors: Array = []
-	if raw == null:
-		_subst = []
-		return errors
-	if typeof(raw) != TYPE_ARRAY:
-		errors.append(_err(ERR_SYS06_03, "subst", raw, "subst must be Array"))
-		return errors
 	var out: Array = []
-	for row_v in raw:
-		if typeof(row_v) != TYPE_DICTIONARY:
-			errors.append(_err(ERR_SYS06_03, "subst", row_v, "subst row must be Dictionary"))
+	for res_v in resources:
+		if not (res_v is SubstitutionRule):
+			errors.append(_err(ERR_SYS06_03, "subst", res_v, "resource must be SubstitutionRule"))
 			continue
-		var row: Dictionary = row_v
-		if not row.has("from") or not row.has("to") or not row.has("cap_ppm") or not row.has("util_ppm"):
-			errors.append(_err(ERR_SYS06_03, "subst", row, "subst from/to/cap_ppm/util_ppm required"))
-			continue
-		var fr: String = String(row["from"])
-		var to: String = String(row["to"])
-		var cap: int = _to_int(row["cap_ppm"])
-		var util: int = _to_int(row["util_ppm"])
+		var def: SubstitutionRule = res_v
+		var fr: String = String(def.good_id)
+		var to: String = String(def.substitute_id)
+		var cap: int = _to_int(def.cap_ppm)
+		var util: int = _to_int(def.util_ppm)
 		if fr.is_empty() or to.is_empty():
-			errors.append(_err(ERR_SYS06_03, "subst", row, "subst from/to required"))
+			errors.append(_err(ERR_SYS06_03, "subst", def, "subst from/to required"))
 			continue
 		# Cap／util in (0, PPM_SCALE]
 		if cap <= 0 or cap > _ppm_scale:
@@ -408,19 +451,16 @@ func _validate_population_nonneg() -> Array:
 
 
 func _w_num(port_s: String, good_s: String) -> int:
-	## FRM-SYS06-01／10: W_num = Σ_class pop × rate_scaled (centi-jin units).
+	## FRM-SYS06-01／10／D-36a: W_num = Σ_class pop × rate_scaled; POOR／CITIZEN／RICH only.
 	if _has_neg_pop(port_s):
 		return 0
 	var poor: int = PopulationModel.population(StringName(port_s), CLASS_POOR)
 	var cit: int = PopulationModel.population(StringName(port_s), CLASS_CITIZEN)
 	var rich: int = PopulationModel.population(StringName(port_s), CLASS_RICH)
-	var beg: int = PopulationModel.population(StringName(port_s), CLASS_BEGGAR)
 	var acc: int = 0
 	acc = acc + poor * _to_int(_rate_cj.get(String(CLASS_POOR), {}).get(good_s, 0))
 	acc = acc + cit * _to_int(_rate_cj.get(String(CLASS_CITIZEN), {}).get(good_s, 0))
 	acc = acc + rich * _to_int(_rate_cj.get(String(CLASS_RICH), {}).get(good_s, 0))
-	if _beggar_goods.has(good_s):
-		acc = acc + beg * _to_int(_rate_cj.get(String(CLASS_POOR), {}).get(good_s, 0))
 	return acc
 
 
@@ -595,24 +635,6 @@ func _subst_for(good_s: String) -> Array:
 		if String(row["from"]) == good_s:
 			out.append(row)
 	return out
-
-
-func _sat_beggar(port_s: String) -> float:
-	## U-15／FRM-SYS06-09: only poor necessities; renormalize those poor weights to 100%.
-	var poor_w: Dictionary = _sat_ppt.get(String(CLASS_POOR), {})
-	var sum_ppt: int = 0
-	for g in _beggar_goods:
-		sum_ppt = sum_ppt + _to_int(poor_w.get(g, 0))
-	if sum_ppt <= 0:
-		return 0.0
-	var acc: int = 0
-	for g in _beggar_goods:
-		var w_ppt: int = _to_int(poor_w.get(g, 0))
-		if w_ppt <= 0:
-			continue
-		var f_ppm: int = _to_int(_fulfil_ppm.get("%s|%s" % [port_s, g], _ppm_scale))
-		acc = acc + w_ppt * f_ppm
-	return float(acc) / float(sum_ppt * _ppm_scale)
 
 
 func _norm_class(clazz: StringName) -> StringName:

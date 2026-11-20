@@ -5,9 +5,14 @@ extends GutTest
 const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 ## R2-13 / 2.1-04 ⑤: curve from fixtures (PRM-SYS04-CURVE_W1–W5 / M1–M5). Formal path after Owner csv_import.
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
-const DEMAND_TABLES_OK := "res://tests/fixtures/demand/demand_tables.json"
+const DEMAND_CSV_OK := "res://tests/fixtures/demand/ok/"
+const DEMAND_OUT := "res://tests/fixtures/demand/out/"
+const DEMAND_TABLES_OK := DEMAND_OUT
 const GOODS_FIXTURE_ROOT := "user://sim_loop_goods/"
 const PORTS_FIXTURE_ROOT := "user://sim_loop_ports/"
+const DEMAND_RATE_SCALE := 100
+const DEMAND_PPM_SCALE := 1000000
+const DEMAND_WEIGHT_SUM := 100
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
@@ -82,7 +87,9 @@ func before_each() -> void:
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
 	_wipe_dir(SEA_FIXTURE_ROOT)
+	_wipe_dir(DEMAND_OUT)
 	_wipe_formal_opening_layout()
+	_wipe_formal_demand()
 	# Reset SimLoop injection between tests (Autoload persists).
 	# D-08j: providers only before boot — clear _booted so setters take effect.
 	SimLoop._booted = false
@@ -158,11 +165,12 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	## injected vs auto-wire; this test never reads PopulationModel._sat_input (C-07).
 	assert_true(PopulationModel.has_method("has_satisfaction_input_provider"))
 	assert_false(PopulationModel.has_satisfaction_input_provider())
-	# --- auto-wire: not injected + demand tables path → DemandModel sat ---
+	# --- auto-wire: not injected + demand dir → DemandModel sat ---
 	var fixtures := _prepare_fixtures()
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	_install_opening_fixtures()
+	_install_demand_fixtures()
 	assert_false(PopulationModel.has_satisfaction_input_provider())
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
@@ -197,6 +205,53 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 		DEMAND_TABLES_OK
 	)
 	assert_eq(errors2.size(), 0, "injected boot: %s" % str(errors2))
+	assert_true(PopulationModel.has_satisfaction_input_provider())
+
+
+func test_D30a_missing_demand_refuses_boot() -> void:
+	## D-30a: no demand dir + no injected consumption → ERR-SYS06-01 refuse boot.
+	var fixtures := _prepare_fixtures()
+	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
+	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
+	_install_opening_fixtures()
+	var missing := GOODS_FIXTURE_ROOT + "missing_demand/"
+	var errors: Array = SimLoop.boot(
+		PARAMS_FIXTURE,
+		fixtures["goods"],
+		fixtures["ports"],
+		CURVE_FIXTURE,
+		fixtures["sea_nodes"],
+		fixtures["sea_regions"],
+		fixtures["sea_lanes"],
+		missing
+	)
+	assert_gt(errors.size(), 0)
+	assert_true(_has_code(errors, DemandModel.ERR_SYS06_01))
+	assert_false(SimLoop.is_booted())
+	assert_false(DemandModel.is_loaded())
+	assert_push_error_count(errors.size())
+
+
+func test_D30a_complete_demand_boots() -> void:
+	## D-30a: complete demand fixtures → boot without injected ConsumptionProvider.
+	var fixtures := _prepare_fixtures()
+	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
+	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
+	_install_opening_fixtures()
+	_install_demand_fixtures()
+	var errors: Array = SimLoop.boot(
+		PARAMS_FIXTURE,
+		fixtures["goods"],
+		fixtures["ports"],
+		CURVE_FIXTURE,
+		fixtures["sea_nodes"],
+		fixtures["sea_regions"],
+		fixtures["sea_lanes"],
+		DEMAND_TABLES_OK
+	)
+	assert_eq(errors.size(), 0, "complete demand boot: %s" % str(errors))
+	assert_true(SimLoop.is_booted())
+	assert_true(DemandModel.is_loaded())
 	assert_true(PopulationModel.has_satisfaction_input_provider())
 
 
@@ -557,6 +612,29 @@ func _install_opening_fixtures() -> void:
 	assert_true(pop["ok"], "opening population import: %s" % str(pop.get("errors", [])))
 
 
+func _install_demand_fixtures() -> void:
+	## WP-34／D-36c: fixture CSV → tres via csv_import (no handwritten demand_tables.json).
+	var result: Dictionary = CsvImport.run_batch_demand(
+		DEMAND_CSV_OK,
+		DEMAND_OUT.path_join("rates/"),
+		DEMAND_OUT.path_join("weights/"),
+		DEMAND_OUT.path_join("substitutions/"),
+		DEMAND_RATE_SCALE,
+		DEMAND_PPM_SCALE,
+		DEMAND_WEIGHT_SUM
+	)
+	assert_true(result["ok"], "demand import: %s" % str(result.get("errors", [])))
+
+
+func _wipe_formal_demand() -> void:
+	for dir_path in [
+		CsvImport.DEMAND_RATES_OUT_DIR,
+		CsvImport.DEMAND_WEIGHTS_OUT_DIR,
+		CsvImport.DEMAND_SUBST_OUT_DIR,
+	]:
+		_wipe_tres_only(dir_path)
+
+
 func _wipe_formal_opening_layout() -> void:
 	## Remove only .tres; keep .gitkeep so 2.1-04 ⑤／repo placeholders stay intact.
 	for dir_path in [
@@ -610,7 +688,9 @@ func _reset_simloop_for_reboot() -> void:
 	# Mirror before_each so a test may boot more than once without D-08j／D-11d errors.
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
+	_wipe_dir(DEMAND_OUT)
 	_wipe_formal_opening_layout()
+	_wipe_formal_demand()
 	SimLoop._booted = false
 	SimLoop._capacity_by_kind.clear()
 	SimLoop._capacity_reg_errors.clear()
