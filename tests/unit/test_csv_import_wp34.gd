@@ -1,5 +1,5 @@
 extends GutTest
-## WP-34 csv_import: demand_rates／satisfaction_weights／substitutions (D-25／D-36b／c).
+## WP-34 csv_import: demand_rates／satisfaction_weights／substitutions (D-25／D-36b／c／D-40).
 
 
 const CsvImport := preload("res://tools/csv_import.gd")
@@ -16,6 +16,7 @@ const FIXTURE_PPM_DEC := "res://tests/fixtures/demand/bad_ppm_decimals/"
 const OUT_RATES := "res://tests/fixtures/demand/out/rates/"
 const OUT_WEIGHTS := "res://tests/fixtures/demand/out/weights/"
 const OUT_SUBST := "res://tests/fixtures/demand/out/substitutions/"
+const PARAMS_TMP := "res://tests/fixtures/demand/out/params_d40.json"
 
 const RATE_SCALE := 100
 const PPM_SCALE := 1000000
@@ -63,15 +64,15 @@ func test_WP34_row_roundtrip_28_28_7() -> void:
 		var def: DemandRate = load(OUT_RATES + gid + ".tres") as DemandRate
 		assert_eq(
 			def.poor_rate_cj,
-			int(CsvImport.parse_scaled_decimal(cols[1], RATE_SCALE, 2)["value"])
+			CsvImport.parse_scaled_decimal(cols[1], RATE_SCALE)["value"] as int
 		)
 		assert_eq(
 			def.citizen_rate_cj,
-			int(CsvImport.parse_scaled_decimal(cols[2], RATE_SCALE, 2)["value"])
+			CsvImport.parse_scaled_decimal(cols[2], RATE_SCALE)["value"] as int
 		)
 		assert_eq(
 			def.rich_rate_cj,
-			int(CsvImport.parse_scaled_decimal(cols[3], RATE_SCALE, 2)["value"])
+			CsvImport.parse_scaled_decimal(cols[3], RATE_SCALE)["value"] as int
 		)
 	var weight_lines: PackedStringArray = _data_lines(
 		FIXTURE_OK.path_join("satisfaction_weights.csv")
@@ -90,10 +91,10 @@ func test_WP34_row_roundtrip_28_28_7() -> void:
 		var path: String = OUT_SUBST + cols3[0] + "__" + cols3[1] + ".tres"
 		var sdef: SubstitutionRule = load(path) as SubstitutionRule
 		assert_eq(
-			sdef.cap_ppm, int(CsvImport.parse_scaled_decimal(cols3[2], PPM_SCALE, 6)["value"])
+			sdef.cap_ppm, CsvImport.parse_scaled_decimal(cols3[2], PPM_SCALE)["value"] as int
 		)
 		assert_eq(
-			sdef.util_ppm, int(CsvImport.parse_scaled_decimal(cols3[3], PPM_SCALE, 6)["value"])
+			sdef.util_ppm, CsvImport.parse_scaled_decimal(cols3[3], PPM_SCALE)["value"] as int
 		)
 
 
@@ -120,16 +121,46 @@ func test_WP34_type_mismatch_aborts() -> void:
 
 func test_WP34_parse_scaled_decimal_examples() -> void:
 	## Special evidence (h): 5.94→594、0.3→300000、超位报错.
-	var a: Dictionary = CsvImport.parse_scaled_decimal("5.94", RATE_SCALE, 2)
+	var a: Dictionary = CsvImport.parse_scaled_decimal("5.94", RATE_SCALE)
 	assert_true(a["ok"])
-	assert_eq(int(a["value"]), 594)
-	var b: Dictionary = CsvImport.parse_scaled_decimal("0.3", PPM_SCALE, 6)
+	assert_eq(a["value"] as int, 594)
+	var b: Dictionary = CsvImport.parse_scaled_decimal("0.3", PPM_SCALE)
 	assert_true(b["ok"])
-	assert_eq(int(b["value"]), 300000)
-	var c: Dictionary = CsvImport.parse_scaled_decimal("5.941", RATE_SCALE, 2)
+	assert_eq(b["value"] as int, 300000)
+	var c: Dictionary = CsvImport.parse_scaled_decimal("5.941", RATE_SCALE)
 	assert_false(c["ok"])
-	var d: Dictionary = CsvImport.parse_scaled_decimal("0.3000001", PPM_SCALE, 6)
+	var d: Dictionary = CsvImport.parse_scaled_decimal("0.3000001", PPM_SCALE)
 	assert_false(d["ok"])
+
+
+func test_D40a_scale_not_power_of_10() -> void:
+	var bad: Dictionary = CsvImport.parse_scaled_decimal("1.0", 50)
+	assert_false(bad["ok"])
+	assert_true(String(bad["error"]).contains("power of 10"))
+
+
+func test_D40a_excess_decimals() -> void:
+	## D-40a: digit budget from scale (100 → 2 places); 5.941 exceeds.
+	var c: Dictionary = CsvImport.parse_scaled_decimal("5.941", RATE_SCALE)
+	assert_false(c["ok"])
+	assert_eq(String(c["error"]), "too many fractional digits")
+	var d: Dictionary = CsvImport.parse_scaled_decimal("0.3000001", PPM_SCALE)
+	assert_false(d["ok"])
+
+
+func test_D40b_non_int_value() -> void:
+	## D-40b: JSON float 100.5 rejected; whole JSON float 100 accepted.
+	_write_params_tmp({"PRM-SYS06-RATE_SCALE": 100.5, "PRM-SYS06-PPM_SCALE": 1000000.0, "PRM-SYS06-WEIGHT_SUM": 100.0})
+	var bad: Dictionary = CsvImport._read_demand_scales_from_params(PARAMS_TMP)
+	assert_false(bad["ok"])
+	assert_gt((bad["errors"] as PackedStringArray).size(), 0)
+	_write_params_tmp({"PRM-SYS06-RATE_SCALE": 100.0, "PRM-SYS06-PPM_SCALE": 1000000.0, "PRM-SYS06-WEIGHT_SUM": 100.0})
+	var ok: Dictionary = CsvImport._read_demand_scales_from_params(PARAMS_TMP)
+	assert_true(ok["ok"], str(ok["errors"]))
+	assert_eq(ok["rate_scale"] as int, 100)
+	## Direct helper: TYPE_FLOAT 100.5 fails _expect_int.
+	var as_i: Dictionary = CsvImport._expect_int(100.5, "probe")
+	assert_false(as_i["ok"])
 
 
 func test_WP34_rate_excess_decimals_aborts() -> void:
@@ -203,7 +234,19 @@ func _data_lines(path: String) -> PackedStringArray:
 	return out
 
 
+func _write_params_tmp(values: Dictionary) -> void:
+	DirAccess.make_dir_recursive_absolute(
+		ProjectSettings.globalize_path("res://tests/fixtures/demand/out/")
+	)
+	var f := FileAccess.open(PARAMS_TMP, FileAccess.WRITE)
+	assert_ne(f, null, PARAMS_TMP)
+	f.store_string(JSON.stringify(values))
+	f.close()
+
+
 func _wipe_out() -> void:
+	if FileAccess.file_exists(PARAMS_TMP):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PARAMS_TMP))
 	for d in [OUT_RATES, OUT_WEIGHTS, OUT_SUBST, "res://tests/fixtures/demand/out/"]:
 		var abs_path := ProjectSettings.globalize_path(d)
 		if DirAccess.dir_exists_absolute(abs_path):

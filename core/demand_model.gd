@@ -252,7 +252,7 @@ func _required_prm_ids() -> Array:
 
 
 func _load_tables(demand_dir: String) -> Array:
-	## N-04／D-36c: single path — csv_import .tres under demand/{rates,weights,substitutions}/.
+	## N-04／D-36c／D-40c: single path — csv_import .tres under demand/{rates,weights,substitutions}/.
 	var errors: Array = []
 	var rates_dir: String = demand_dir.path_join(RATES_SUBDIR)
 	var weights_dir: String = demand_dir.path_join(WEIGHTS_SUBDIR)
@@ -260,17 +260,28 @@ func _load_tables(demand_dir: String) -> Array:
 	if not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(demand_dir)):
 		errors.append(_err(ERR_SYS06_01, demand_dir, null, "demand tables dir missing (D-25b／D-30a)"))
 		return errors
-	var rate_res: Array = _load_tres_dir(rates_dir)
-	var weight_res: Array = _load_tres_dir(weights_dir)
-	var subst_res: Array = _load_tres_dir(subst_dir)
-	if rate_res.is_empty() or weight_res.is_empty():
+	## D-40c: all three subdirs must exist (empty substitutions OK).
+	var rates_abs: String = ProjectSettings.globalize_path(rates_dir)
+	var weights_abs: String = ProjectSettings.globalize_path(weights_dir)
+	var subst_abs: String = ProjectSettings.globalize_path(subst_dir)
+	if not DirAccess.dir_exists_absolute(rates_abs):
+		errors.append(_err(ERR_SYS06_01, rates_dir, null, "rates subdir missing (D-40c)"))
+	if not DirAccess.dir_exists_absolute(weights_abs):
+		errors.append(_err(ERR_SYS06_02, weights_dir, null, "weights subdir missing (D-40c)"))
+	if not DirAccess.dir_exists_absolute(subst_abs):
+		errors.append(_err(ERR_SYS06_03, subst_dir, null, "substitutions subdir missing (D-40c)"))
+	if not errors.is_empty():
+		return errors
+	var rate_res: Array = _load_tres_dir(rates_dir, ERR_SYS06_01, errors)
+	var weight_res: Array = _load_tres_dir(weights_dir, ERR_SYS06_02, errors)
+	var subst_res: Array = _load_tres_dir(subst_dir, ERR_SYS06_03, errors)
+	if rate_res.is_empty():
 		errors.append(
-			_err(
-				ERR_SYS06_01,
-				demand_dir,
-				null,
-				"demand rates／weights missing or empty (D-25b／D-30a)"
-			)
+			_err(ERR_SYS06_01, rates_dir, null, "demand rates missing or empty (D-25b／D-30a)")
+		)
+	if weight_res.is_empty():
+		errors.append(
+			_err(ERR_SYS06_02, weights_dir, null, "demand weights missing or empty (D-25b／D-30a)")
 		)
 		## Still attempt parse so C-06 can collect further shape errors when partial.
 	errors.append_array(_parse_rates_from_tres(rate_res))
@@ -279,13 +290,16 @@ func _load_tables(demand_dir: String) -> Array:
 	return errors
 
 
-func _load_tres_dir(dir_path: String) -> Array:
+## D-40c: load failures collect errors with filename (ERR-SYS06-01／02／03).
+func _load_tres_dir(dir_path: String, err_code: StringName, errors: Array) -> Array:
 	var out: Array = []
 	var abs_path: String = ProjectSettings.globalize_path(dir_path)
 	if not DirAccess.dir_exists_absolute(abs_path):
+		errors.append(_err(err_code, dir_path, null, "subdir missing (D-40c)"))
 		return out
 	var d := DirAccess.open(dir_path)
 	if d == null:
+		errors.append(_err(err_code, dir_path, null, "subdir open failed (D-40c)"))
 		return out
 	var names: Array = []
 	d.list_dir_begin()
@@ -297,9 +311,15 @@ func _load_tres_dir(dir_path: String) -> Array:
 	d.list_dir_end()
 	names.sort()
 	for name_v in names:
-		var res: Resource = load(dir_path.path_join(String(name_v))) as Resource
-		if res != null:
-			out.append(res)
+		var fname: String = String(name_v)
+		var full: String = dir_path.path_join(fname)
+		var res: Resource = load(full) as Resource
+		if res == null:
+			errors.append(
+				_err(err_code, fname, null, "failed to load .tres (D-40c)")
+			)
+			continue
+		out.append(res)
 	return out
 
 

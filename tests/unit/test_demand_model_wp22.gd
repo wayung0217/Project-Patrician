@@ -143,6 +143,63 @@ func test_ERR_SYS06_01_missing_demand_dir_rejects() -> void:
 	assert_push_error_count(errs.size())
 
 
+func test_D40c_bad_tres_load_collects_filename() -> void:
+	## D-40c: corrupt .tres → ERR-SYS06-01 with filename.
+	_boot_params_ports_goods()
+	_boot_pop_sat()
+	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	_install_demand_ok()
+	var bad_path: String = DEMAND_OUT.path_join("rates/BAD-D40.tres")
+	var f := FileAccess.open(bad_path, FileAccess.WRITE)
+	assert_ne(f, null)
+	f.store_string("NOT A VALID RESOURCE\n")
+	f.close()
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
+	## Godot emits engine parse errors for corrupt .tres; count them so GUT does not fail the test.
+	assert_engine_error_count(2, "corrupt .tres parse")
+	assert_gt(errs.size(), 0)
+	assert_true(_has_code(errs, DemandModel.ERR_SYS06_01))
+	var saw_name := false
+	for e in errs:
+		var detail: Dictionary = (e as Dictionary).get("detail", {}) as Dictionary
+		if String(detail.get("field", "")) == "BAD-D40.tres":
+			saw_name = true
+			break
+	assert_true(saw_name, "expected detail.field=BAD-D40.tres in errors: %s" % str(errs))
+	assert_false(DemandModel.is_loaded())
+	assert_push_error_count(errs.size())
+
+
+func test_D40c_missing_substitutions_dir_fails() -> void:
+	## D-40c: substitutions subdir must exist.
+	_boot_params_ports_goods()
+	_boot_pop_sat()
+	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	_install_demand_ok()
+	var subst: String = DEMAND_OUT.path_join("substitutions/")
+	_wipe_dir(subst)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(subst))
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
+	assert_gt(errs.size(), 0)
+	assert_true(_has_code(errs, DemandModel.ERR_SYS06_03))
+	assert_false(DemandModel.is_loaded())
+	assert_push_error_count(errs.size())
+
+
+func test_D40c_empty_substitutions_dir_passes() -> void:
+	## D-40c: empty substitutions OK when dir exists.
+	_boot_params_ports_goods()
+	_boot_pop_sat()
+	PopulationModel.set_port_state(PORT, 100, 50, 10, 0)
+	_install_demand_ok()
+	var subst: String = DEMAND_OUT.path_join("substitutions/")
+	_wipe_dir(subst)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(subst))
+	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
+	assert_eq(errs.size(), 0, str(errs))
+	assert_true(DemandModel.is_loaded())
+
+
 func test_ERR_SYS06_02_weight_sum_rejects_boot() -> void:
 	_boot_params_ports_goods()
 	_boot_pop_sat()

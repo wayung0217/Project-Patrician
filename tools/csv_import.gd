@@ -125,10 +125,6 @@ const FILE_DEMAND_RATES := "demand_rates.csv"
 const FILE_SATISFACTION_WEIGHTS := "satisfaction_weights.csv"
 const FILE_SUBSTITUTIONS := "substitutions.csv"
 
-## WP-34 D-36b: rate cells ≤ 2 fractional digits; cap／util ≤ 6.
-const DEMAND_RATE_MAX_DECIMALS := 2
-const DEMAND_PPM_MAX_DECIMALS := 6
-
 ## WP-29 / D-14e kind／lane_type allowlists.
 const SEA_KIND_PORT := "PORT"
 const SEA_KIND_JUNCTION := "JUNCTION"
@@ -356,24 +352,30 @@ func _run() -> void:
 		print("csv_import WP-29: wrote %s resources" % str((wp29["written"] as Array).size()))
 	else:
 		push_error("csv_import WP-29: aborted with %s error(s)" % str((wp29["errors"] as PackedStringArray).size()))
-	## WP-34: demand_rates／satisfaction_weights／substitutions (D-25／D-36b／c).
+	## WP-34: demand_rates／satisfaction_weights／substitutions (D-25／D-36b／c／D-40).
 	var scales: Dictionary = _read_demand_scales_from_params()
-	var wp34: Dictionary = run_batch_demand(
-		IMPORT_DIR,
-		DEMAND_RATES_OUT_DIR,
-		DEMAND_WEIGHTS_OUT_DIR,
-		DEMAND_SUBST_OUT_DIR,
-		int(scales["rate_scale"]),
-		int(scales["ppm_scale"]),
-		int(scales["weight_sum"])
-	)
-	if wp34["ok"]:
-		print("csv_import WP-34 demand: wrote %s resources" % str((wp34["written"] as Array).size()))
-	else:
+	if not bool(scales["ok"]):
 		push_error(
-			"csv_import WP-34 demand: aborted with %s error(s)"
-			% str((wp34["errors"] as PackedStringArray).size())
+			"csv_import WP-34 demand: scale read failed: %s"
+			% str(scales["errors"])
 		)
+	else:
+		var wp34: Dictionary = run_batch_demand(
+			IMPORT_DIR,
+			DEMAND_RATES_OUT_DIR,
+			DEMAND_WEIGHTS_OUT_DIR,
+			DEMAND_SUBST_OUT_DIR,
+			scales["rate_scale"] as int,
+			scales["ppm_scale"] as int,
+			scales["weight_sum"] as int
+		)
+		if wp34["ok"]:
+			print("csv_import WP-34 demand: wrote %s resources" % str((wp34["written"] as Array).size()))
+		else:
+			push_error(
+				"csv_import WP-34 demand: aborted with %s error(s)"
+				% str((wp34["errors"] as PackedStringArray).size())
+			)
 
 
 ## Returns schema field list for a resource kind, or empty if unknown.
@@ -1227,13 +1229,15 @@ static func run_batch_demand(
 	return result
 
 
-## D-36b: parse decimal text → scaled int without float／rounding (C-09).
-## value = whole × scale + frac × scale／10^max_decimals (frac padded; excess digits error).
-static func parse_scaled_decimal(cell: String, scale: int, max_decimals: int) -> Dictionary:
+## D-36b／D-40a: parse decimal text → scaled int without float／rounding (C-09).
+## Fractional digit budget derived from scale (must be 10^k); excess digits error.
+static func parse_scaled_decimal(cell: String, scale: int) -> Dictionary:
 	var out: Dictionary = {"ok": false, "value": 0, "error": ""}
-	if scale <= 0 or max_decimals < 0:
-		out["error"] = "invalid scale／max_decimals"
+	var dec_info: Dictionary = _decimal_places_from_scale(scale)
+	if not bool(dec_info["ok"]):
+		out["error"] = String(dec_info["error"])
 		return out
+	var max_decimals: int = dec_info["decimals"] as int
 	var text: String = cell.strip_edges()
 	if text.is_empty():
 		out["error"] = "empty decimal cell"
@@ -1249,11 +1253,13 @@ static func parse_scaled_decimal(cell: String, scale: int, max_decimals: int) ->
 		return out
 	## Keep empty segments so ".5"／"1." stay valid.
 	var parts: PackedStringArray = text.split(".", true)
+	## D-40a: at most one fractional segment (segment-2 only here／helpers).
 	if parts.size() > 2:
 		out["error"] = "multiple decimal points"
 		return out
 	var int_part: String = parts[0]
 	var frac_part: String = ""
+	## D-40a: optional fractional segment.
 	if parts.size() == 2:
 		frac_part = parts[1]
 	if int_part.is_empty():
@@ -1273,13 +1279,14 @@ static func parse_scaled_decimal(cell: String, scale: int, max_decimals: int) ->
 		frac_part = frac_part + "0"
 	var place: int = 1
 	for _i in range(max_decimals):
+		## D-40a: base-10 only inside parse_scaled_decimal helpers.
 		place = place * 10
 	if place <= 0:
 		out["error"] = "place overflow"
 		return out
-	## D-36b／C-09: scale must be 10^max_decimals (RATE_SCALE＝100／PPM＝1e6); no float.
+	## D-40a／C-09: scale must equal 10^decimals derived above; no float.
 	if scale != place:
-		out["error"] = "scale must equal 10^max_decimals"
+		out["error"] = "scale must equal 10^decimals"
 		return out
 	var whole: int = int_part.to_int()
 	var frac_val: int = 0
@@ -1297,13 +1304,75 @@ static func parse_scaled_decimal(cell: String, scale: int, max_decimals: int) ->
 	return out
 
 
+## D-40a: max fractional digits = log10(scale); scale must be power of 10.
+static func _decimal_places_from_scale(scale: int) -> Dictionary:
+	var out: Dictionary = {"ok": false, "decimals": 0, "error": ""}
+	if scale <= 0:
+		out["error"] = "scale must be > 0"
+		return out
+	var decimals: int = 0
+	var n: int = scale
+	while n > 1:
+		## D-40a: base-10 only inside parse_scaled_decimal helpers.
+		if n % 10 != 0:
+			out["error"] = "scale must be power of 10"
+			return out
+		n = n / 10
+		decimals = decimals + 1
+	if n != 1:
+		out["error"] = "scale must be power of 10"
+		return out
+	out["ok"] = true
+	out["decimals"] = decimals
+	out["error"] = ""
+	return out
+
+
+## D-40b: Variant must already be TYPE_INT; no int(Variant) coerce (rejects 100.5).
+static func _expect_int(value: Variant, label: String) -> Dictionary:
+	var out: Dictionary = {"ok": false, "value": 0, "error": ""}
+	if typeof(value) != TYPE_INT:
+		out["error"] = "%s: expected int, got type %s value %s" % [
+			label, str(typeof(value)), str(value)
+		]
+		return out
+	out["ok"] = true
+	out["value"] = value as int
+	out["error"] = ""
+	return out
+
+
+## D-40b: JSON numbers are float in Godot; accept whole floats only (reject 100.5).
+static func _expect_json_int(value: Variant, label: String) -> Dictionary:
+	var out: Dictionary = {"ok": false, "value": 0, "error": ""}
+	if typeof(value) == TYPE_INT:
+		out["ok"] = true
+		out["value"] = value as int
+		out["error"] = ""
+		return out
+	if typeof(value) == TYPE_FLOAT:
+		var f: float = value as float
+		if f == floorf(f):
+			out["ok"] = true
+			out["value"] = floori(f)
+			out["error"] = ""
+			return out
+		out["error"] = "%s: non-int float %s" % [label, str(value)]
+		return out
+	out["error"] = "%s: expected int, got type %s" % [label, str(typeof(value))]
+	return out
+
+
 static func _collect_demand_rate_rows(
 	rows: Array, rate_scale: int, out_rows: Array, errors: PackedStringArray
 ) -> void:
 	var seen: Dictionary = {}
 	for i in range(rows.size()):
 		var row: Dictionary = rows[i]
-		var gid: String = String(row.get("good_id", ""))
+		if not row.has("good_id"):
+			errors.append("%s: row %s missing good_id" % [FILE_DEMAND_RATES, str(i + 1)])
+			continue
+		var gid: String = String(row["good_id"])
 		if gid.is_empty():
 			errors.append("%s: row %s empty good_id" % [FILE_DEMAND_RATES, str(i + 1)])
 			continue
@@ -1311,40 +1380,46 @@ static func _collect_demand_rate_rows(
 			errors.append("%s: duplicate good_id %s" % [FILE_DEMAND_RATES, gid])
 			continue
 		seen[gid] = true
-		var poor_p: Dictionary = parse_scaled_decimal(
-			String(row.get("poor_jin_per_week", "")), rate_scale, DEMAND_RATE_MAX_DECIMALS
-		)
-		var cit_p: Dictionary = parse_scaled_decimal(
-			String(row.get("citizen_jin_per_week", "")), rate_scale, DEMAND_RATE_MAX_DECIMALS
-		)
-		var rich_p: Dictionary = parse_scaled_decimal(
-			String(row.get("rich_jin_per_week", "")), rate_scale, DEMAND_RATE_MAX_DECIMALS
-		)
-		for pair in [
-			["poor_jin_per_week", poor_p],
-			["citizen_jin_per_week", cit_p],
-			["rich_jin_per_week", rich_p],
-		]:
-			var field: String = String(pair[0])
-			var parsed: Dictionary = pair[1]
+		var field_ok := true
+		var rate_vals: Dictionary = {}
+		for field in ["poor_jin_per_week", "citizen_jin_per_week", "rich_jin_per_week"]:
+			if not row.has(field):
+				errors.append(
+					"%s: row %s missing field %s" % [FILE_DEMAND_RATES, str(i + 1), field]
+				)
+				field_ok = false
+				continue
+			var parsed: Dictionary = parse_scaled_decimal(String(row[field]), rate_scale)
 			if not bool(parsed["ok"]):
 				errors.append(
 					"%s: row %s field %s parse error: %s"
 					% [FILE_DEMAND_RATES, str(i + 1), field, String(parsed["error"])]
 				)
-			elif int(parsed["value"]) < 0:
+				field_ok = false
+				continue
+			var as_int: Dictionary = _expect_int(parsed["value"], field)
+			if not bool(as_int["ok"]):
+				errors.append(
+					"%s: row %s field %s: %s"
+					% [FILE_DEMAND_RATES, str(i + 1), field, String(as_int["error"])]
+				)
+				field_ok = false
+				continue
+			var n: int = as_int["value"] as int
+			if n < 0:
 				errors.append(
 					"%s: row %s field %s negative rate" % [FILE_DEMAND_RATES, str(i + 1), field]
 				)
-		if not bool(poor_p["ok"]) or not bool(cit_p["ok"]) or not bool(rich_p["ok"]):
-			continue
-		if int(poor_p["value"]) < 0 or int(cit_p["value"]) < 0 or int(rich_p["value"]) < 0:
+				field_ok = false
+				continue
+			rate_vals[field] = n
+		if not field_ok:
 			continue
 		out_rows.append({
 			"good_id": gid,
-			"poor_rate_cj": int(poor_p["value"]),
-			"citizen_rate_cj": int(cit_p["value"]),
-			"rich_rate_cj": int(rich_p["value"]),
+			"poor_rate_cj": rate_vals["poor_jin_per_week"] as int,
+			"citizen_rate_cj": rate_vals["citizen_jin_per_week"] as int,
+			"rich_rate_cj": rate_vals["rich_jin_per_week"] as int,
 		})
 
 
@@ -1357,7 +1432,10 @@ static func _collect_demand_weight_rows(
 	var sum_rich: int = 0
 	for i in range(rows.size()):
 		var row: Dictionary = rows[i]
-		var gid: String = String(row.get("good_id", ""))
+		if not row.has("good_id"):
+			errors.append("%s: row %s missing good_id" % [FILE_SATISFACTION_WEIGHTS, str(i + 1)])
+			continue
+		var gid: String = String(row["good_id"])
 		if gid.is_empty():
 			errors.append("%s: row %s empty good_id" % [FILE_SATISFACTION_WEIGHTS, str(i + 1)])
 			continue
@@ -1365,15 +1443,37 @@ static func _collect_demand_weight_rows(
 			errors.append("%s: duplicate good_id %s" % [FILE_SATISFACTION_WEIGHTS, gid])
 			continue
 		seen[gid] = true
-		## Weights must be integer pct points (COL_TYPE_INT already); reject negatives.
-		var poor_w: int = int(row.get("poor_weight_pct", 0))
-		var cit_w: int = int(row.get("citizen_weight_pct", 0))
-		var rich_w: int = int(row.get("rich_weight_pct", 0))
-		if poor_w < 0 or cit_w < 0 or rich_w < 0:
-			errors.append(
-				"%s: row %s negative weight" % [FILE_SATISFACTION_WEIGHTS, str(i + 1)]
-			)
+		## Weights must be integer pct points (COL_TYPE_INT); D-40b no default／no int(coerce).
+		var field_ok := true
+		var weight_vals: Dictionary = {}
+		for field2 in ["poor_weight_pct", "citizen_weight_pct", "rich_weight_pct"]:
+			if not row.has(field2):
+				errors.append(
+					"%s: row %s missing field %s" % [FILE_SATISFACTION_WEIGHTS, str(i + 1), field2]
+				)
+				field_ok = false
+				continue
+			var as_w: Dictionary = _expect_int(row[field2], field2)
+			if not bool(as_w["ok"]):
+				errors.append(
+					"%s: row %s field %s: %s"
+					% [FILE_SATISFACTION_WEIGHTS, str(i + 1), field2, String(as_w["error"])]
+				)
+				field_ok = false
+				continue
+			var w: int = as_w["value"] as int
+			if w < 0:
+				errors.append(
+					"%s: row %s negative weight" % [FILE_SATISFACTION_WEIGHTS, str(i + 1)]
+				)
+				field_ok = false
+				continue
+			weight_vals[field2] = w
+		if not field_ok:
 			continue
+		var poor_w: int = weight_vals["poor_weight_pct"] as int
+		var cit_w: int = weight_vals["citizen_weight_pct"] as int
+		var rich_w: int = weight_vals["rich_weight_pct"] as int
 		sum_poor = sum_poor + poor_w
 		sum_cit = sum_cit + cit_w
 		sum_rich = sum_rich + rich_w
@@ -1407,8 +1507,13 @@ static func _collect_demand_subst_rows(
 	var seen: Dictionary = {}
 	for i in range(rows.size()):
 		var row: Dictionary = rows[i]
-		var from_id: String = String(row.get("good_id", ""))
-		var to_id: String = String(row.get("substitute_id", ""))
+		if not row.has("good_id") or not row.has("substitute_id"):
+			errors.append(
+				"%s: row %s missing good_id／substitute_id" % [FILE_SUBSTITUTIONS, str(i + 1)]
+			)
+			continue
+		var from_id: String = String(row["good_id"])
+		var to_id: String = String(row["substitute_id"])
 		if from_id.is_empty() or to_id.is_empty():
 			errors.append("%s: row %s empty good_id／substitute_id" % [FILE_SUBSTITUTIONS, str(i + 1)])
 			continue
@@ -1417,12 +1522,13 @@ static func _collect_demand_subst_rows(
 			errors.append("%s: duplicate pair %s" % [FILE_SUBSTITUTIONS, key])
 			continue
 		seen[key] = true
-		var cap_p: Dictionary = parse_scaled_decimal(
-			String(row.get("cap", "")), ppm_scale, DEMAND_PPM_MAX_DECIMALS
-		)
-		var util_p: Dictionary = parse_scaled_decimal(
-			String(row.get("utility_discount", "")), ppm_scale, DEMAND_PPM_MAX_DECIMALS
-		)
+		if not row.has("cap") or not row.has("utility_discount"):
+			errors.append(
+				"%s: row %s missing cap／utility_discount" % [FILE_SUBSTITUTIONS, str(i + 1)]
+			)
+			continue
+		var cap_p: Dictionary = parse_scaled_decimal(String(row["cap"]), ppm_scale)
+		var util_p: Dictionary = parse_scaled_decimal(String(row["utility_discount"]), ppm_scale)
 		if not bool(cap_p["ok"]):
 			errors.append(
 				"%s: row %s field cap parse error: %s"
@@ -1435,8 +1541,22 @@ static func _collect_demand_subst_rows(
 			)
 		if not bool(cap_p["ok"]) or not bool(util_p["ok"]):
 			continue
-		var cap_ppm: int = int(cap_p["value"])
-		var util_ppm: int = int(util_p["value"])
+		var cap_as: Dictionary = _expect_int(cap_p["value"], "cap")
+		var util_as: Dictionary = _expect_int(util_p["value"], "utility_discount")
+		if not bool(cap_as["ok"]):
+			errors.append(
+				"%s: row %s field cap: %s"
+				% [FILE_SUBSTITUTIONS, str(i + 1), String(cap_as["error"])]
+			)
+		if not bool(util_as["ok"]):
+			errors.append(
+				"%s: row %s field utility_discount: %s"
+				% [FILE_SUBSTITUTIONS, str(i + 1), String(util_as["error"])]
+			)
+		if not bool(cap_as["ok"]) or not bool(util_as["ok"]):
+			continue
+		var cap_ppm: int = cap_as["value"] as int
+		var util_ppm: int = util_as["value"] as int
 		## Bounds checked again by DemandModel (ERR-SYS06-03); import rejects ≤0 here.
 		if cap_ppm <= 0 or util_ppm <= 0:
 			errors.append(
@@ -1459,9 +1579,17 @@ static func _write_demand_rate_tres(
 		var row: Dictionary = row_v
 		var def := DemandRate.new()
 		def.good_id = String(row["good_id"])
-		def.poor_rate_cj = int(row["poor_rate_cj"])
-		def.citizen_rate_cj = int(row["citizen_rate_cj"])
-		def.rich_rate_cj = int(row["rich_rate_cj"])
+		var poor_as: Dictionary = _expect_int(row["poor_rate_cj"], "poor_rate_cj")
+		var cit_as: Dictionary = _expect_int(row["citizen_rate_cj"], "citizen_rate_cj")
+		var rich_as: Dictionary = _expect_int(row["rich_rate_cj"], "rich_rate_cj")
+		if not bool(poor_as["ok"]) or not bool(cit_as["ok"]) or not bool(rich_as["ok"]):
+			errors.append(
+				"demand rates: non-int rate fields for %s" % String(row["good_id"])
+			)
+			continue
+		def.poor_rate_cj = poor_as["value"] as int
+		def.citizen_rate_cj = cit_as["value"] as int
+		def.rich_rate_cj = rich_as["value"] as int
 		var path: String = rates_dir.path_join("%s%s" % [def.good_id, TRES_SUFFIX])
 		var err: Error = ResourceSaver.save(def, path)
 		if err != OK:
@@ -1478,9 +1606,17 @@ static func _write_demand_weight_tres(
 		var row: Dictionary = row_v
 		var def := SatisfactionWeight.new()
 		def.good_id = String(row["good_id"])
-		def.poor_weight_pct = int(row["poor_weight_pct"])
-		def.citizen_weight_pct = int(row["citizen_weight_pct"])
-		def.rich_weight_pct = int(row["rich_weight_pct"])
+		var poor_as: Dictionary = _expect_int(row["poor_weight_pct"], "poor_weight_pct")
+		var cit_as: Dictionary = _expect_int(row["citizen_weight_pct"], "citizen_weight_pct")
+		var rich_as: Dictionary = _expect_int(row["rich_weight_pct"], "rich_weight_pct")
+		if not bool(poor_as["ok"]) or not bool(cit_as["ok"]) or not bool(rich_as["ok"]):
+			errors.append(
+				"demand weights: non-int weight fields for %s" % String(row["good_id"])
+			)
+			continue
+		def.poor_weight_pct = poor_as["value"] as int
+		def.citizen_weight_pct = cit_as["value"] as int
+		def.rich_weight_pct = rich_as["value"] as int
 		var path: String = weights_dir.path_join("%s%s" % [def.good_id, TRES_SUFFIX])
 		var err: Error = ResourceSaver.save(def, path)
 		if err != OK:
@@ -1498,8 +1634,16 @@ static func _write_demand_subst_tres(
 		var def := SubstitutionRule.new()
 		def.good_id = String(row["good_id"])
 		def.substitute_id = String(row["substitute_id"])
-		def.cap_ppm = int(row["cap_ppm"])
-		def.util_ppm = int(row["util_ppm"])
+		var cap_as: Dictionary = _expect_int(row["cap_ppm"], "cap_ppm")
+		var util_as: Dictionary = _expect_int(row["util_ppm"], "util_ppm")
+		if not bool(cap_as["ok"]) or not bool(util_as["ok"]):
+			errors.append(
+				"demand subst: non-int cap／util for %s|%s"
+				% [String(row["good_id"]), String(row["substitute_id"])]
+			)
+			continue
+		def.cap_ppm = cap_as["value"] as int
+		def.util_ppm = util_as["value"] as int
 		var fname: String = "%s%s%s%s" % [
 			def.good_id, COMPOSITE_TRES_JOINER, def.substitute_id, TRES_SUFFIX
 		]
@@ -1511,20 +1655,44 @@ static func _write_demand_subst_tres(
 			written.append(path)
 
 
-## Read PRM-SYS06 scales from formal params.json for EditorScript _run (C-03／N-01).
+## Read PRM-SYS06 scales from formal params.json for EditorScript _run (C-03／N-01／D-40b).
 static func _read_demand_scales_from_params(
 	params_path: String = "res://data/params/params.json"
 ) -> Dictionary:
-	var out: Dictionary = {"rate_scale": 0, "ppm_scale": 0, "weight_sum": 0}
+	var out: Dictionary = {
+		"ok": false,
+		"rate_scale": 0,
+		"ppm_scale": 0,
+		"weight_sum": 0,
+		"errors": PackedStringArray(),
+	}
+	var errors: PackedStringArray = PackedStringArray()
 	if not FileAccess.file_exists(params_path):
+		errors.append("params missing: %s" % params_path)
+		out["errors"] = errors
 		return out
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(params_path))
 	if typeof(parsed) != TYPE_DICTIONARY:
+		errors.append("params root not Dictionary: %s" % params_path)
+		out["errors"] = errors
 		return out
 	var root: Dictionary = parsed
-	out["rate_scale"] = int(root.get("PRM-SYS06-RATE_SCALE", 0))
-	out["ppm_scale"] = int(root.get("PRM-SYS06-PPM_SCALE", 0))
-	out["weight_sum"] = int(root.get("PRM-SYS06-WEIGHT_SUM", 0))
+	for key in ["PRM-SYS06-RATE_SCALE", "PRM-SYS06-PPM_SCALE", "PRM-SYS06-WEIGHT_SUM"]:
+		if not root.has(key):
+			errors.append("params missing key %s" % key)
+			continue
+		var as_i: Dictionary = _expect_json_int(root[key], key)
+		if not bool(as_i["ok"]):
+			errors.append(String(as_i["error"]))
+			continue
+		if key == "PRM-SYS06-RATE_SCALE":
+			out["rate_scale"] = as_i["value"] as int
+		elif key == "PRM-SYS06-PPM_SCALE":
+			out["ppm_scale"] = as_i["value"] as int
+		else:
+			out["weight_sum"] = as_i["value"] as int
+	out["errors"] = errors
+	out["ok"] = errors.is_empty()
 	return out
 
 
@@ -2279,10 +2447,12 @@ static func _is_decimal_text(cell: String) -> bool:
 	if text.is_empty():
 		return false
 	var parts: PackedStringArray = text.split(".", true)
+	## D-40a: at most one fractional segment (same helper as parse_scaled_decimal).
 	if parts.size() > 2:
 		return false
 	var int_part: String = parts[0]
 	var frac_part: String = ""
+	## D-40a: optional fractional segment.
 	if parts.size() == 2:
 		frac_part = parts[1]
 	if int_part.is_empty():
