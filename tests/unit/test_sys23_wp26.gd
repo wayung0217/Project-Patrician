@@ -686,6 +686,47 @@ func test_WP26_layer1_two_years_headers_and_counts() -> void:
 	assert_eq(_first_line(d + "daily_PT-01.csv"), SimSampler.HDR_DAILY)
 
 
+func test_WP26_json_int_rejects_non_integral() -> void:
+	## C-06：非整數 float 不得被 floori 靜默吞；SimJsonInt 報錯並回 0。
+	assert_true(SimJsonInt.is_json_int(3))
+	assert_true(SimJsonInt.is_json_int(3.0))
+	assert_false(SimJsonInt.is_json_int(3.7))
+	assert_eq(SimJsonInt.as_int(3.0, "ok_float"), 3)
+	assert_eq(SimJsonInt.as_int(3.7, "bad_float"), 0)
+	assert_push_error("non-integral rejected for bad_float")
+	## grid_expand skips non-integral seeds (no silent floori).
+	var jobs: Array = SimGridExpand.expand({}, [1.5])
+	assert_eq(jobs.size(), 0)
+	assert_push_error("non-integral seed rejected")
+	## transfer_acc produced／consumed 走 as_int。
+	var acc := SimTransferAcc.new()
+	acc._produced["PT-01|GD-001"] = 2.3
+	assert_eq(acc.produced("PT-01", "GD-001"), 0)
+	assert_push_error("non-integral rejected for produced")
+	print("WP26_json_int_rejects_non_integral ok")
+
+
+func test_WP26_empty_sample_mets_blank_not_zero() -> void:
+	## D-52c／9.8：無評估樣本時 MET-01..05b／OBS-02 必須空白，不得寫 0。
+	var empty := SimSampler.new()
+	var summary: Dictionary = SimMetrics.compute(
+		empty, 0, 1, {}, false, "", 1, 0, 0, 1, {}
+	)
+	print("EMPTY_SAMPLE_SUMMARY %s" % str(summary))
+	for k in ["MET-01", "MET-02", "MET-03", "MET-04", "MET-05a", "MET-05b"]:
+		assert_eq(String(summary[k]), "", "empty-sample %s must be blank" % k)
+		assert_ne(str(summary[k]), "0")
+		assert_ne(str(summary[k]), "0.0")
+		assert_eq(String(summary["%s_pass" % k]), SimMetrics.PASS_NA)
+	## MET-06 hits==0 是實測 0，不是無樣本。
+	assert_eq(float(summary["MET-06"]), 0.0)
+	assert_eq(String(summary["MET-06_pass"]), "1")
+	## OBS-02 無港樣本 → 空白；OBS-03 一律空白。
+	assert_eq(String(summary["OBS-02"]), "")
+	assert_eq(String(summary["OBS-03"]), "")
+	print("WP26_empty_sample_mets_blank_not_zero ok")
+
+
 # --- helpers ---
 
 

@@ -155,11 +155,17 @@ func _weekly_offtake_like_pricer(port_s: String, good_s: String) -> float:
 	var window_qty: int = 0
 	var window_days: int = 1
 	if not snap.is_empty():
-		## 甲：offtake_snapshot window_* 為 int；防衛性 typeof 分支，不用 int() 截斷。
+		## 甲：offtake_snapshot window_* 應為 int；非整數拒絕（C-06，不靜默 floori）。
 		var wq: Variant = snap.get(MarketPricer.FIELD_WINDOW_QTY, 0)
 		var wd: Variant = snap.get(MarketPricer.FIELD_WINDOW_DAYS, 1)
-		window_qty = wq if typeof(wq) == TYPE_INT else floori(float(wq))
-		window_days = wd if typeof(wd) == TYPE_INT else floori(float(wd))
+		if not SimJsonInt.is_json_int(wq) or not SimJsonInt.is_json_int(wd):
+			push_error(
+				"SimSampler: non-integral offtake window rejected qty=%s days=%s"
+				% [str(wq), str(wd)]
+			)
+			return 0.0
+		window_qty = SimJsonInt.as_int(wq, "window_qty")
+		window_days = SimJsonInt.as_int(wd, "window_days")
 		if window_days < 1:
 			window_days = 1
 	if window_qty <= 0:

@@ -340,7 +340,5 @@ static func _is_json_int(v: Variant) -> bool:
 
 
 static func _as_int(v: Variant) -> int:
-	## 乙：JSON 整數還原（floori）；已是 int 時 floori 仍安全。
-	if typeof(v) == TYPE_INT:
-		return v
-	return floori(float(v))
+	## 乙／C-06：僅在呼叫端已 `_is_json_int` 通過後使用；非整數走 SimJsonInt 報錯。
+	return SimJsonInt.as_int(v, "scenario_validator")

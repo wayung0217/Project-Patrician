@@ -5,10 +5,9 @@ extends SceneTree
 ## Multi-combo isolation: each combo×seed runs in a **child process** so Autoload
 ## state is never shared (avoids private SimLoop reset; see WP-26 gap note).
 ##
-## Entry: MainLoop._initialize → call_deferred(_main). Autoload nodes exist at
-## _initialize but Autoload._ready (e.g. GoodCatalog RegEx.compile) has NOT run
-## yet — pure _initialize boot fails ERR-SYS01-07 on every good. Deferred runs
-## after _ready. No await process_frame. 請求核准例外：call_deferred（見 evidence-2）.
+## Entry: SceneTree `_process(delta)` first frame runs `_main` once (bool re-entry
+## guard), then quit. Autoload `_ready` (e.g. GoodCatalog RegEx.compile) has run
+## before the first `_process`. No call_deferred／await／Timer／signal ordering.
 ## Do not reference Autoload identifiers at parse time — load() modules in _main.
 
 
@@ -23,10 +22,18 @@ const PATH_SAMPLER := "res://sim/sampler.gd"
 const PATH_TRANSFER := "res://sim/transfer_acc.gd"
 const PATH_METRICS := "res://sim/metrics.gd"
 const PATH_ENGINE := "res://sim/sim_engine.gd"
+const PATH_JSON_INT := "res://sim/json_int.gd"
+
+var _main_started: bool = false
 
 
-func _initialize() -> void:
-	call_deferred("_main")
+func _process(_delta: float) -> bool:
+	## MainLoop._process returns bool (Godot 4.7); false = keep processing until quit.
+	if _main_started:
+		return false
+	_main_started = true
+	_main()
+	return false
 
 
 func _main() -> void:
@@ -83,11 +90,15 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 	var summaries: Array = []
 	var all_sampler: RefCounted = SimSampler.new()
 	all_sampler.set("acc", SimTransferAcc.new())
+	var SimJsonInt: GDScript = load(PATH_JSON_INT) as GDScript
 
 	for job_v in jobs:
 		var job: Dictionary = job_v
-		## 乙：expand 產出 int；防衛 floori。
-		var rid: int = job["run_id"] if typeof(job["run_id"]) == TYPE_INT else floori(float(job["run_id"]))
+		## C-06：run_id 須為整數；非整數報錯（不靜默 floori）。
+		if not bool(SimJsonInt.is_json_int(job["run_id"])):
+			push_error("sim_runner: non-integral run_id rejected: %s" % str(job["run_id"]))
+			return 1
+		var rid: int = SimJsonInt.as_int(job["run_id"], "job.run_id")
 		var job_file: String = "user://sim_jobs/job_%d.json" % rid
 		DirAccess.make_dir_recursive_absolute(
 			ProjectSettings.globalize_path("user://sim_jobs/")

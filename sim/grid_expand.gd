@@ -27,12 +27,11 @@ static func expand(grid: Dictionary, seeds: Array) -> Array:
 		var combo: Dictionary = combos[combo_index]
 		for seed_index in range(seed_count):
 			var seed_v: Variant = seeds[seed_index]
-			## 乙：seeds 經 JSON 可能為 float 整數 → floori 還原（非截斷真小數）。
-			var seed_i: int
-			if typeof(seed_v) == TYPE_INT:
-				seed_i = seed_v
-			else:
-				seed_i = floori(float(seed_v))
+			## C-06：非整數 seed 拒絕（不靜默 floori）；整數 float → as_int。
+			if not SimJsonInt.is_json_int(seed_v):
+				push_error("SimGridExpand: non-integral seed rejected: %s" % str(seed_v))
+				continue
+			var seed_i: int = SimJsonInt.as_int(seed_v, "seed")
 			var run_id: int = combo_index * seed_count + seed_index
 			jobs.append({
 				"combo_index": combo_index,

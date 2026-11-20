@@ -229,7 +229,5 @@ func _combo_count(grid: Dictionary) -> int:
 
 
 static func _job_int(v: Variant) -> int:
-	## 乙：JSON／Variant 整數還原。
-	if typeof(v) == TYPE_INT:
-		return v
-	return floori(float(v))
+	## C-06：JSON／Variant 整數還原；非整數報錯（不靜默 floori）。
+	return SimJsonInt.as_int(v, "job_int")

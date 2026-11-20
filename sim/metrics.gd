@@ -172,13 +172,12 @@ static func aggregate_combos(summaries: Array) -> Array:
 
 
 static func _json_int(v: Variant) -> int:
-	## 乙：JSON／Variant 整數還原（整數 float → floori）；非截斷真小數。
-	if typeof(v) == TYPE_INT:
-		return v
-	return floori(float(v))
+	## C-06：JSON／Variant 整數還原；非整數報錯（不靜默 floori）。
+	return SimJsonInt.as_int(v, "metrics_json_int")
 
 
 static func _met01(cells: Array, th: Dictionary) -> Dictionary:
+	## 9.8 分母＝weekly_offtake>0 的 (港,貨)×評估季格數；無樣本 → 空白（D-52c）。
 	var total: int = 0
 	var eq: int = 0
 	for c_v in cells:
@@ -189,13 +188,14 @@ static func _met01(cells: Array, th: Dictionary) -> Dictionary:
 		total = total + 1
 		if _json_int(c["band"]) == MarketPricer.BAND_EQUILIBRIUM:
 			eq = eq + 1
-	var ratio: float = 0.0
-	if total > 0:
-		ratio = float(eq) / float(total)
+	if total == 0:
+		return {"value": "", "pass": PASS_NA}
+	var ratio: float = float(eq) / float(total)
 	return _pass_ge(ratio, th, "TH-01")
 
 
 static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+	## 9.8 分母＝可算比值的 (港,貨) 格（第一評估年平均週數≠0）；無樣本 → 空白（D-52c）。
 	## Group by port|good; first eval year avg weeks vs last year.
 	var by_cell: Dictionary = {}
 	for c_v in cells:
@@ -207,6 +207,7 @@ static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 			by_cell[k] = []
 		(by_cell[k] as Array).append(c)
 	var diverged: int = 0
+	var sampled: int = 0
 	var th02: Variant = th.get("TH-02", null)
 	for k_v in by_cell.keys():
 		var rows: Array = by_cell[k_v]
@@ -241,9 +242,12 @@ static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 			last_avg = last_sum / float(last_n)
 		if first_avg == 0.0:
 			continue ## 「由零起」— excluded from > TH-02 count per 9.8
+		sampled = sampled + 1
 		var ratio: float = last_avg / first_avg
 		if th02 != null and ratio > float(th02):
 			diverged = diverged + 1
+	if sampled == 0:
+		return {"value": "", "pass": PASS_NA}
 	var pass_s := PASS_NA
 	if th.has("TH-02"):
 		pass_s = "1" if diverged == 0 else "0"
@@ -251,8 +255,10 @@ static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 
 
 static func _met03(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+	## 9.8 分母＝最後一年第一季總人口>0 的港；無樣本 → 空白（D-52c）。
 	var by_port: Dictionary = _group_ports(ports)
 	var worst: float = 0.0
+	var sampled: int = 0
 	for pid_v in by_port.keys():
 		var rows: Array = by_port[pid_v]
 		rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
@@ -273,15 +279,20 @@ static func _met03(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 		var pop_first: int = _total_pop(first_of_last_year)
 		if pop_first <= 0:
 			continue
+		sampled = sampled + 1
 		var delta: float = absf(float(pop_last - pop_first)) / float(pop_first)
 		if delta > worst:
 			worst = delta
+	if sampled == 0:
+		return {"value": "", "pass": PASS_NA}
 	return _pass_le(worst, th, "TH-03")
 
 
 static func _met04(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+	## 9.8 分母＝最後一年有 sat 樣本的港；無樣本 → 空白（D-52c）。
 	var by_port: Dictionary = _group_ports(ports)
 	var worst: float = 0.0
+	var sampled: int = 0
 	for pid_v in by_port.keys():
 		var rows: Array = by_port[pid_v]
 		rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
@@ -308,14 +319,22 @@ static func _met04(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 					mn = sat
 				if sat > mx:
 					mx = sat
+		if not init:
+			continue
+		sampled = sampled + 1
 		var span: float = float(mx - mn)
 		if span > worst:
 			worst = span
+	if sampled == 0:
+		return {"value": "", "pass": PASS_NA}
 	return _pass_le(worst, th, "TH-04")
 
 
 static func _met05(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+	## 9.8 分母＝有季表的 CITY／港；無港樣本 → a／b 空白（D-52c）。實測 0 保留。
 	var by_port: Dictionary = _group_ports(ports)
+	if by_port.is_empty():
+		return {"a": "", "a_pass": PASS_NA, "b": "", "b_pass": PASS_NA}
 	var longest_zero: int = 0
 	var worst_growth: float = 0.0
 	for pid_v in by_port.keys():
@@ -401,18 +420,22 @@ static func _obs01(ports: Array) -> String:
 
 
 static func _obs02(ports: Array) -> Variant:
-	## Return float (CSV _fmt emits integral floats as ints). Blank unused.
+	## 9.8：評估期每港每季乞丐÷總人口之最大值。無港／無有效人口樣本 → 空白（D-52c）。
 	var by_port: Dictionary = _group_ports(ports)
 	var worst: float = 0.0
+	var sampled: int = 0
 	for pid_v in by_port.keys():
 		for r_v in by_port[pid_v]:
 			var r: Dictionary = r_v
 			var tot: int = _total_pop(r) + _json_int(r["beggar"])
 			if tot <= 0:
 				continue
+			sampled = sampled + 1
 			var ratio: float = float(r["beggar"]) / float(tot)
 			if ratio > worst:
 				worst = ratio
+	if sampled == 0:
+		return ""
 	return worst
 
 

@@ -29,15 +29,15 @@ func clear() -> void:
 
 
 func produced(port_id: String, good_id: String) -> int:
-	## 甲：map 值為本類寫入的 int。
+	## 甲：map 值為本類寫入的 int；非整數拒絕（C-06）。
 	var v: Variant = _produced.get(_key(port_id, good_id), 0)
-	return v if typeof(v) == TYPE_INT else floori(float(v))
+	return SimJsonInt.as_int(v, "produced")
 
 
 func consumed(port_id: String, good_id: String) -> int:
-	## 甲：map 值為本類寫入的 int。
+	## 甲：map 值為本類寫入的 int；非整數拒絕（C-06）。
 	var v: Variant = _consumed.get(_key(port_id, good_id), 0)
-	return v if typeof(v) == TYPE_INT else floori(float(v))
+	return SimJsonInt.as_int(v, "consumed")
 
 
 func take_season_produced(port_id: String, good_id: String) -> int:
@@ -76,7 +76,8 @@ func _port_of(container: Variant) -> String:
 func _add(map: Dictionary, port_id: String, good_id: String, qty: int) -> void:
 	var k: String = _key(port_id, good_id)
 	var prev: Variant = map.get(k, 0)
-	var prev_i: int = prev if typeof(prev) == TYPE_INT else floori(float(prev))
+	## C-06：map 既有值非整數 → 報錯後以 0 起算（不靜默 floori）。
+	var prev_i: int = SimJsonInt.as_int(prev, "transfer_acc.prev")
 	map[k] = prev_i + qty
 
 
