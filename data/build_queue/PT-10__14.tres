@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="BuildStep" format=3]
+
+[ext_resource type="Script" path="res://core/types/build_step.gd" id="1_sika4"]
+
+[resource]
+script = ExtResource("1_sika4")
+port_id = "PT-10"
+step = 14
+cb_id = "CB-15"
+target_level = 2

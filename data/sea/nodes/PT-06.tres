@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SeaNode" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_node.gd" id="1_umcp3"]
+
+[resource]
+script = ExtResource("1_umcp3")
+node_id = "PT-06"
+kind = "PORT"
+name_zh = "澎湖"
+x = 230
+y = 720

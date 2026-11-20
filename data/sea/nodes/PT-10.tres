@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SeaNode" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_node.gd" id="1_c0e6p"]
+
+[resource]
+script = ExtResource("1_c0e6p")
+node_id = "PT-10"
+kind = "PORT"
+name_zh = "魍港"
+x = 260
+y = 730

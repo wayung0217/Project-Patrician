@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ZoneDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/zone_def.gd" id="1_b8nvo"]
+
+[resource]
+script = ExtResource("1_b8nvo")
+port_id = "PT-08"
+zone = 2
+slot_share = 0.35
+rings = 4
+slots = 60

@@ -95,10 +95,11 @@ const BOOL_FALSE := "false"
 const ROLE_NAME_PRODUCER := "PRODUCER"
 const ROLE_NAME_TRANSIT := "TRANSIT"
 const ROLE_NAME_TERMINAL := "TERMINAL"
-## Int values match PortRegistry.Role declaration order (0／1／2).
-const ROLE_VALUE_PRODUCER := 0
-const ROLE_VALUE_TRANSIT := 1
-const ROLE_VALUE_TERMINAL := 2
+## Int values must equal PortRegistry.Role members (D-04／R3-02: PRODUCER=1／TRANSIT=2／TERMINAL=3; 0=ROLE_INVALID).
+## C-03: prefer enum members over numeric literals.
+const ROLE_VALUE_PRODUCER := PortRegistry.Role.PRODUCER
+const ROLE_VALUE_TRANSIT := PortRegistry.Role.TRANSIT
+const ROLE_VALUE_TERMINAL := PortRegistry.Role.TERMINAL
 
 ## Array cell delimiter for downstream_terminals (join／split).
 const ARRAY_CELL_SEPARATOR := ";"

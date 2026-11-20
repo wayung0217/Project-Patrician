@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SeaLane" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_lane.gd" id="1_cgx40"]
+
+[resource]
+script = ExtResource("1_cgx40")
+lane_id = "LN-46"
+node_a = "PT-02"
+node_b = "PT-03"
+region_id = "RG-01"
+length = 80.6
+waypoints = 3
+lane_type = "NEIGHBOR"

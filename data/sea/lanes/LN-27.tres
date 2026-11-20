@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SeaLane" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_lane.gd" id="1_hl3bb"]
+
+[resource]
+script = ExtResource("1_hl3bb")
+lane_id = "LN-27"
+node_a = "PT-11"
+node_b = "JN-13"
+region_id = "RG-04"
+length = 41.8
+waypoints = 2
+lane_type = "SPUR"

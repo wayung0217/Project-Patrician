@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GoodDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/good_def.gd" id="1_c02pn"]
+
+[resource]
+script = ExtResource("1_c02pn")
+good_id = "GD-011"
+name_zh = "茶"
+tier = 1
+base_price_li = 8000
+season_mask = 15

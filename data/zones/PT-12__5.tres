@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ZoneDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/zone_def.gd" id="1_ackrw"]
+
+[resource]
+script = ExtResource("1_ackrw")
+port_id = "PT-12"
+zone = 5
+slot_share = 0.26
+rings = 4
+slots = 182

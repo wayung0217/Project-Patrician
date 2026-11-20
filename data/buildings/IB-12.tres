@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/building_def.gd" id="1_umsu5"]
+
+[resource]
+script = ExtResource("1_umsu5")
+type = "IB-12"
+tier = 1
+max_workers = 30
+base_output_per_worker = 0.0533
+output_good_id = "GD-012"
+build_class = "IND1"

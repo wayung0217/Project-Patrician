@@ -1,0 +1,187 @@
+[gd_resource type="Resource" script_class="PortDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/role_cell.gd" id="1_ooa5l"]
+[ext_resource type="Script" path="res://core/types/port_def.gd" id="2_0mdwn"]
+
+[sub_resource type="Resource" id="Resource_23d6p"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_ef28x"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_fakca"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_uta80"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_asetb"]
+script = ExtResource("1_ooa5l")
+role = 1
+downstream_terminals = PackedStringArray()
+base_output_per_season = 15303
+
+[sub_resource type="Resource" id="Resource_6brcq"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_udvao"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_5ut4y"]
+script = ExtResource("1_ooa5l")
+role = 1
+downstream_terminals = PackedStringArray()
+base_output_per_season = 9772
+
+[sub_resource type="Resource" id="Resource_tybnu"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_t4iah"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_nx0au"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_dd28y"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_wib0m"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_pbfou"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_abxp7"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_rasfx"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_dy3id"]
+script = ExtResource("1_ooa5l")
+role = 1
+downstream_terminals = PackedStringArray()
+base_output_per_season = 4121
+
+[sub_resource type="Resource" id="Resource_6bc0h"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_5b7xj"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_13ivi"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_lkcgc"]
+script = ExtResource("1_ooa5l")
+role = 1
+downstream_terminals = PackedStringArray()
+base_output_per_season = 669
+
+[sub_resource type="Resource" id="Resource_to7pe"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_eisss"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_3rue2"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_wlwch"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_5l2v5"]
+script = ExtResource("1_ooa5l")
+role = 1
+downstream_terminals = PackedStringArray()
+base_output_per_season = 205
+
+[sub_resource type="Resource" id="Resource_nail6"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[sub_resource type="Resource" id="Resource_ma188"]
+script = ExtResource("1_ooa5l")
+role = 3
+downstream_terminals = PackedStringArray()
+
+[resource]
+script = ExtResource("2_0mdwn")
+port_id = "PT-02"
+name_zh = "安海"
+is_free_port = true
+draft_limit_class = 2
+regime_id = "明（鄭氏實控）"
+role_cells = {
+"GD-001": SubResource("Resource_23d6p"),
+"GD-002": SubResource("Resource_ef28x"),
+"GD-003": SubResource("Resource_fakca"),
+"GD-004": SubResource("Resource_uta80"),
+"GD-005": SubResource("Resource_asetb"),
+"GD-006": SubResource("Resource_6brcq"),
+"GD-007": SubResource("Resource_udvao"),
+"GD-008": SubResource("Resource_5ut4y"),
+"GD-009": SubResource("Resource_tybnu"),
+"GD-010": SubResource("Resource_t4iah"),
+"GD-011": SubResource("Resource_nx0au"),
+"GD-012": SubResource("Resource_dd28y"),
+"GD-013": SubResource("Resource_wib0m"),
+"GD-014": SubResource("Resource_pbfou"),
+"GD-015": SubResource("Resource_abxp7"),
+"GD-016": SubResource("Resource_rasfx"),
+"GD-017": SubResource("Resource_dy3id"),
+"GD-018": SubResource("Resource_6bc0h"),
+"GD-019": SubResource("Resource_5b7xj"),
+"GD-020": SubResource("Resource_13ivi"),
+"GD-021": SubResource("Resource_lkcgc"),
+"GD-022": SubResource("Resource_to7pe"),
+"GD-023": SubResource("Resource_eisss"),
+"GD-024": SubResource("Resource_3rue2"),
+"GD-025": SubResource("Resource_wlwch"),
+"GD-026": SubResource("Resource_5l2v5"),
+"GD-027": SubResource("Resource_nail6"),
+"GD-028": SubResource("Resource_ma188")
+}

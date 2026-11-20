@@ -168,7 +168,7 @@ func test_2_1_04_rule4_tests_use_fixtures_only() -> void:
 		)
 
 
-## 2.1-04 ⑤ / N-09 — no hand-written formal CSV or .tres under res://data/.
+## 2.1-04 ⑤ / N-09 — no hand-written formal CSV under res://data/ (.tres allowed after formal import).
 func test_2_1_04_rule5_no_formal_data_csv_or_tres() -> void:
 	for dir_path in DATA_SUBDIRS:
 		assert_true(DirAccess.dir_exists_absolute(dir_path), "data dir exists: %s" % dir_path)
@@ -180,13 +180,36 @@ func test_2_1_04_rule5_no_formal_data_csv_or_tres() -> void:
 			if not dir.current_is_dir():
 				var lower: String = file_name.to_lower()
 				var is_csv := lower.ends_with(".csv")
-				var is_tres := lower.ends_with(".tres")
 				assert_false(
-					is_csv or is_tres,
-					"source 2.1-04 ⑤: formal data must not contain %s/%s" % [dir_path, file_name]
+					is_csv,
+					"source 2.1-04 ⑤: formal data must not contain CSV %s/%s" % [dir_path, file_name]
 				)
 			file_name = dir.get_next()
 		dir.list_dir_end()
+
+
+## D-08i／D-04 — ROLE_VALUE_* must equal PortRegistry.Role members (not declaration-order 0／1／2).
+func test_D08i_role_values_match_port_registry_role_enum() -> void:
+	assert_eq(
+		CsvImport.ROLE_VALUE_PRODUCER,
+		PortRegistry.Role.PRODUCER,
+		"source D-08i: ROLE_VALUE_PRODUCER == PortRegistry.Role.PRODUCER"
+	)
+	assert_eq(
+		CsvImport.ROLE_VALUE_TRANSIT,
+		PortRegistry.Role.TRANSIT,
+		"source D-08i: ROLE_VALUE_TRANSIT == PortRegistry.Role.TRANSIT"
+	)
+	assert_eq(
+		CsvImport.ROLE_VALUE_TERMINAL,
+		PortRegistry.Role.TERMINAL,
+		"source D-08i: ROLE_VALUE_TERMINAL == PortRegistry.Role.TERMINAL"
+	)
+	assert_ne(
+		CsvImport.ROLE_VALUE_PRODUCER,
+		PortRegistry.ROLE_INVALID,
+		"source D-04: PRODUCER must not be ROLE_INVALID 0"
+	)
 
 
 ## D-08i / TST — fixed formal import／output path constants.

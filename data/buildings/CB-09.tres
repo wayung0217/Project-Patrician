@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/building_def.gd" id="1_3titf"]
+
+[resource]
+script = ExtResource("1_3titf")
+type = "CB-09"
+build_class = "PUBLIC"

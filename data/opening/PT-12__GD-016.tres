@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="OpeningWorkshop" format=3]
+
+[ext_resource type="Script" path="res://core/types/opening_workshop.gd" id="1_h7vau"]
+
+[resource]
+script = ExtResource("1_h7vau")
+port_id = "PT-12"
+good_id = "GD-016"
+count = 3

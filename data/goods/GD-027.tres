@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GoodDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/good_def.gd" id="1_bhi4y"]
+
+[resource]
+script = ExtResource("1_bhi4y")
+good_id = "GD-027"
+name_zh = "彩瓷"
+tier = 3
+base_price_li = 45000
+season_mask = 15

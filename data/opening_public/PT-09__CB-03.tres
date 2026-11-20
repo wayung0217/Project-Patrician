@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="OpeningPublic" format=3]
+
+[ext_resource type="Script" path="res://core/types/opening_public.gd" id="1_kj4ct"]
+
+[resource]
+script = ExtResource("1_kj4ct")
+port_id = "PT-09"
+cb_id = "CB-03"
+level = 1
