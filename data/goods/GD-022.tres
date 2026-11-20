@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GoodDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/good_def.gd" id="1_l6rbx"]
+
+[resource]
+script = ExtResource("1_l6rbx")
+good_id = "GD-022"
+name_zh = "衣物"
+tier = 2
+base_price_li = 12000
+season_mask = 15

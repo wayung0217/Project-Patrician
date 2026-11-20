@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/building_def.gd" id="1_yxiec"]
+
+[resource]
+script = ExtResource("1_yxiec")
+type = "IB-25"
+tier = 2
+max_workers = 30
+base_output_per_worker = 0.0833
+output_good_id = "GD-025"
+input1_good_id = "GD-012"
+input1_qty = 1.3
+build_class = "IND2"

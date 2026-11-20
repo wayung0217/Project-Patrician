@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SeaRegion" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_region.gd" id="1_ocuu4"]
+
+[resource]
+script = ExtResource("1_ocuu4")
+region_id = "RG-01"
+name_zh = "台灣海峽"
+note = "月港、安海、福州、澎湖、大員、魍港；明、荷、鄭三方交會"

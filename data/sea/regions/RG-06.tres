@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="SeaRegion" format=3]
+
+[ext_resource type="Script" path="res://core/types/sea_region.gd" id="1_vnpxc"]
+
+[resource]
+script = ExtResource("1_vnpxc")
+region_id = "RG-06"
+name_zh = "對馬海峽"
+note = "平戶、博多、釜山"

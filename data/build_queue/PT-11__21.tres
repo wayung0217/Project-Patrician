@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="BuildStep" format=3]
+
+[ext_resource type="Script" path="res://core/types/build_step.gd" id="1_y6pvm"]
+
+[resource]
+script = ExtResource("1_y6pvm")
+port_id = "PT-11"
+step = 21
+cb_id = "CB-04"
+target_level = 3

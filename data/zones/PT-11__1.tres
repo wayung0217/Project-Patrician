@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ZoneDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/zone_def.gd" id="1_jaidx"]
+
+[resource]
+script = ExtResource("1_jaidx")
+port_id = "PT-11"
+zone = 1
+slot_share = 0.15
+rings = 3
+slots = 48
+open_at_start = 1

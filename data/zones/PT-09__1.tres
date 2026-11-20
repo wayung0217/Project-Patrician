@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ZoneDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/zone_def.gd" id="1_basyq"]
+
+[resource]
+script = ExtResource("1_basyq")
+port_id = "PT-09"
+zone = 1
+slot_share = 0.15
+rings = 3
+slots = 23
+open_at_start = 1

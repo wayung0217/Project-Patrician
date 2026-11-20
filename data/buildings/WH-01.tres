@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BuildingDef" format=3]
+
+[ext_resource type="Script" path="res://core/types/building_def.gd" id="1_maix8"]
+
+[resource]
+script = ExtResource("1_maix8")
+type = "WH-01"
+max_workers = 5
+build_class = "WAREHOUSE"
