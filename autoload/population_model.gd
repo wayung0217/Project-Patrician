@@ -85,6 +85,11 @@ func set_satisfaction_input_provider(provider: SatisfactionInputProvider) -> voi
 	_sat_input = provider
 
 
+func has_satisfaction_input_provider() -> bool:
+	## D-17c／WP-22: public readonly — SimLoop must not read `_sat_input` (C-07).
+	return _sat_input != null
+
+
 func set_master_seed(seed: int) -> void:
 	_seed = seed
 

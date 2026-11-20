@@ -5,6 +5,7 @@ extends GutTest
 const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 ## R2-13 / 2.1-04 ⑤: curve from fixtures (PRM-SYS04-CURVE_W1–W5 / M1–M5). Formal path after Owner csv_import.
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
+const DEMAND_TABLES_OK := "res://tests/fixtures/demand/demand_tables.json"
 const GOODS_FIXTURE_ROOT := "user://sim_loop_goods/"
 const PORTS_FIXTURE_ROOT := "user://sim_loop_ports/"
 
@@ -93,6 +94,7 @@ func before_each() -> void:
 	BuildingEconomy._workforce = null
 	PopulationModel._loaded = false
 	PopulationModel._sat_input = null
+	DemandModel._clear_state()
 	SeaLanes._loaded = false
 
 
@@ -111,7 +113,7 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_autoload_order_2_2_01() -> void:
-	# D-14c: … → PortRegistry → SeaLanes → GoodsLedger → … → BuildingEconomy → SimLoop
+	# D-14c／D-09a: … → BuildingEconomy → PopulationModel → DemandModel → ShipRegistry → SimLoop
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -123,6 +125,8 @@ func test_autoload_order_2_2_01() -> void:
 		"CashLedger",
 		"BuildingEconomy",
 		"PopulationModel",
+		"DemandModel",
+		"ShipRegistry",
 		"SimLoop",
 	]
 	for name_variant in expected:
@@ -143,6 +147,57 @@ func test_autoload_order_2_2_01() -> void:
 		String(ProjectSettings.get_setting("autoload/Clock")),
 		"*res://autoload/clock.gd"
 	)
+	assert_eq(
+		String(ProjectSettings.get_setting("autoload/DemandModel")),
+		"*res://core/demand_model.gd"
+	)
+
+
+func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
+	## SimLoop.boot detects sat provider via public has_satisfaction_input_provider();
+	## injected vs auto-wire; this test never reads PopulationModel._sat_input (C-07).
+	assert_true(PopulationModel.has_method("has_satisfaction_input_provider"))
+	assert_false(PopulationModel.has_satisfaction_input_provider())
+	# --- auto-wire: not injected + demand tables path → DemandModel sat ---
+	var fixtures := _prepare_fixtures()
+	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
+	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
+	_install_opening_fixtures()
+	assert_false(PopulationModel.has_satisfaction_input_provider())
+	var errors: Array = SimLoop.boot(
+		PARAMS_FIXTURE,
+		fixtures["goods"],
+		fixtures["ports"],
+		CURVE_FIXTURE,
+		fixtures["sea_nodes"],
+		fixtures["sea_regions"],
+		fixtures["sea_lanes"],
+		DEMAND_TABLES_OK
+	)
+	assert_eq(errors.size(), 0, "auto-wire boot: %s" % str(errors))
+	assert_true(PopulationModel.has_satisfaction_input_provider())
+	assert_true(DemandModel.is_loaded())
+	# --- injected: has_* true → boot must not require `_` and keeps provider ---
+	_reset_simloop_for_reboot()
+	fixtures = _prepare_fixtures()
+	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
+	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
+	PopulationModel.set_satisfaction_input_provider(_TestSatProvider.new())
+	SimLoop.set_consumption_provider(_full_zero_provider())
+	_install_opening_fixtures()
+	assert_true(PopulationModel.has_satisfaction_input_provider())
+	var errors2: Array = SimLoop.boot(
+		PARAMS_FIXTURE,
+		fixtures["goods"],
+		fixtures["ports"],
+		CURVE_FIXTURE,
+		fixtures["sea_nodes"],
+		fixtures["sea_regions"],
+		fixtures["sea_lanes"],
+		DEMAND_TABLES_OK
+	)
+	assert_eq(errors2.size(), 0, "injected boot: %s" % str(errors2))
+	assert_true(PopulationModel.has_satisfaction_input_provider())
 
 
 func test_boot_requires_consumption_provider_2_3_03() -> void:
@@ -565,6 +620,7 @@ func _reset_simloop_for_reboot() -> void:
 	BuildingEconomy._workforce = null
 	PopulationModel._loaded = false
 	PopulationModel._sat_input = null
+	DemandModel._clear_state()
 
 
 func _boot_ready_provider() -> TestConsumptionProvider:
