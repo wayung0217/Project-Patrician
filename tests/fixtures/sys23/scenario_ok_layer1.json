@@ -1,0 +1,11 @@
+{
+  "scenario_id": "sys23_l1_ok",
+  "years": 2,
+  "warmup_years": 1,
+  "seeds": [1],
+  "layers": { "RELOCATE": false },
+  "overrides": {},
+  "grid": {},
+  "daily_detail_ports": [],
+  "thresholds": {}
+}

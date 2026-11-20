@@ -1,0 +1,563 @@
+extends GutTest
+## WP-26 SYS-23 layer1 — TST-SYS23-01..04, 08..11 (fixtures only).
+
+
+const CsvImport := preload("res://tools/csv_import.gd")
+## params_sys05_demo has all schema keys + non-zero START_CASH (boot requires genesis_grant).
+const PARAMS_ALL := "res://tests/fixtures/params_sys05_demo.json"
+const PARAMS_FORMAL := "res://data/params/params.json"
+const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
+const SEA_CSV := "res://tests/fixtures/wp29_sea_ok/"
+const OPENING_CSV := "res://tests/fixtures/sim_loop_opening/"
+const DEMAND_CSV_OK := "res://tests/fixtures/demand/ok/"
+const DEMAND_OUT := "res://tests/fixtures/demand/out_sys23/"
+
+const GOODS_ROOT := "user://sys23_goods/"
+const PORTS_ROOT := "user://sys23_ports/"
+const SEA_ROOT := "user://sys23_sea/"
+
+const FORMAL_ZONES := "res://data/zones/"
+const FORMAL_BUILDINGS := "res://data/buildings/"
+const FORMAL_OPENING := "res://data/opening/"
+const FORMAL_BUILD_QUEUE := "res://data/build_queue/"
+const FORMAL_CITY_CENTER := "res://data/city_center/"
+const FORMAL_OPENING_PUBLIC := "res://data/opening_public/"
+const FORMAL_OPENING_POP := "res://data/opening_population/"
+
+const SCENARIO_UNKNOWN := "res://tests/fixtures/sys23/scenario_bad_unknown_key.json"
+const SCENARIO_MISSING := "res://tests/fixtures/sys23/scenario_bad_missing_required.json"
+const SCENARIO_CLASH := "res://tests/fixtures/sys23/scenario_bad_override_grid_clash.json"
+
+## FNV vectors (TST-SYS23-08 / FRM-SYS23-10) — same bit-patterns as test_rng_wp25.
+const FNV_EMPTY := -3750763034362895579
+const FNV_A := -5808556873153909620
+
+
+func before_each() -> void:
+	_wipe_dir(GOODS_ROOT)
+	_wipe_dir(PORTS_ROOT)
+	_wipe_dir(SEA_ROOT)
+	_wipe_dir(DEMAND_OUT)
+	_wipe_formal_opening()
+	_wipe_formal_demand()
+	_session_reset()
+
+
+func after_each() -> void:
+	_wipe_formal_opening()
+	_wipe_formal_demand()
+
+
+func test_TST_SYS23_03_unknown_scenario_key() -> void:
+	var r: Dictionary = SimScenarioValidator.validate_file(SCENARIO_UNKNOWN)
+	assert_false(r["ok"])
+	var errs: PackedStringArray = r["errors"]
+	assert_gt(errs.size(), 0)
+	var joined: String = " ".join(errs)
+	assert_true(joined.find("ERR-SYS23-02") >= 0, joined)
+	print("TST-SYS23-03 errors:\n%s" % "\n".join(errs))
+
+
+func test_WP26_bad_missing_required_key_errors() -> void:
+	var r: Dictionary = SimScenarioValidator.validate_file(SCENARIO_MISSING)
+	assert_false(r["ok"])
+	var errs: PackedStringArray = r["errors"]
+	assert_true(" ".join(errs).find("ERR-SYS23-02") >= 0)
+	print("bad_missing errors:\n%s" % "\n".join(errs))
+
+
+func test_WP26_bad_override_grid_clash_errors() -> void:
+	var r: Dictionary = SimScenarioValidator.validate_file(SCENARIO_CLASH)
+	assert_false(r["ok"])
+	var errs: PackedStringArray = r["errors"]
+	assert_true(" ".join(errs).find("ERR-SYS23-04") >= 0)
+	print("bad_clash errors:\n%s" % "\n".join(errs))
+
+
+func test_TST_SYS23_04_grid_cartesian_run_id_order() -> void:
+	## grid two keys 3×2 values, seeds 2 → 12 jobs; FRM-02 order.
+	var grid := {
+		"PRM-SYS05-START_CASH": [1, 0, 1],
+		"PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": [1, 0],
+	}
+	## Force key order: ARREARS before START when sorted → A first then S.
+	var seeds: Array = [1, 0]
+	var jobs: Array = SimGridExpand.expand(grid, seeds)
+	assert_eq(jobs.size(), 12)
+	print("TST-SYS23-04 jobs:")
+	for j_v in jobs:
+		var j: Dictionary = j_v
+		print(
+			"run_id=%s combo_index=%s seed=%s combo=%s"
+			% [str(j["run_id"]), str(j["combo_index"]), str(j["seed"]), str(j["combo"])]
+		)
+	assert_eq(int((jobs[0] as Dictionary)["run_id"]), 0)
+	assert_eq(int((jobs[0] as Dictionary)["combo_index"]), 0)
+	assert_eq(int((jobs[11] as Dictionary)["run_id"]), 11)
+	assert_eq(int((jobs[11] as Dictionary)["combo_index"]), 5)
+
+
+func test_TST_SYS23_08_fnv_vectors() -> void:
+	## Existing Rng FNV-1a (WP-25); vectors per FRM-SYS23-10 / TST-SYS23-08.
+	var empty := PackedByteArray()
+	assert_eq(Rng.fnv1a64(empty), FNV_EMPTY)
+	var buf := PackedByteArray()
+	buf.append(97) ## 'a'
+	assert_eq(Rng.fnv1a64(buf), FNV_A)
+
+
+func test_TST_SYS23_11_missing_threshold_pass_na() -> void:
+	var sampler := SimSampler.new()
+	sampler.acc = SimTransferAcc.new()
+	## One eval season port row (warmup_years=0 so season 0 counts).
+	sampler.season_ports.append({
+		"run_id": 0, "seed": 1, "season_index": 0, "port_id": "PT-01",
+		"rich": 1, "citizen": 1, "poor": 1, "beggar": 0, "sat_weighted": 500,
+		"workplaces": 1, "beds": 1, "city_balance_li": 1,
+	})
+	sampler.season_cells.append({
+		"run_id": 0, "seed": 1, "season_index": 0, "port_id": "PT-01", "good_id": "GD-001",
+		"stock": 1, "mid_li": 1, "stock_weeks": "1", "band": MarketPricer.BAND_EQUILIBRIUM,
+		"produced": 0, "consumed": 0, "relocated_in": 0, "relocated_out": 0,
+	})
+	## Params must be loaded for seasons_per_year in metrics.
+	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	assert_eq(perr.size(), 0)
+	var summary: Dictionary = SimMetrics.compute(
+		sampler, 0, 1, {"TH-01": 0.0}, false, "", 0, 0, 0, 1, {}
+	)
+	assert_eq(String(summary["MET-03_pass"]), SimMetrics.PASS_NA)
+	assert_true(summary.has("MET-03"))
+	print("TST-SYS23-11 MET-03=%s pass=%s" % [str(summary["MET-03"]), summary["MET-03_pass"]])
+
+
+func test_TST_SYS23_10_met_hand_fixture() -> void:
+	## Hand fixture: 2 eval cells, both band equilibrium with stock_weeks set → MET-01 = 1.
+	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	assert_eq(perr.size(), 0)
+	var sampler := SimSampler.new()
+	sampler.acc = SimTransferAcc.new()
+	for si in [0, 1]:
+		sampler.season_cells.append({
+			"run_id": 0, "seed": 1, "season_index": si, "port_id": "PT-01", "good_id": "GD-001",
+			"stock": 1, "mid_li": 1, "stock_weeks": "1.0",
+			"band": MarketPricer.BAND_EQUILIBRIUM,
+			"produced": 0, "consumed": 0, "relocated_in": 0, "relocated_out": 0,
+		})
+		sampler.season_ports.append({
+			"run_id": 0, "seed": 1, "season_index": si, "port_id": "PT-01",
+			"rich": 1, "citizen": 1, "poor": 1, "beggar": 0, "sat_weighted": 100,
+			"workplaces": 0, "beds": 0, "city_balance_li": 1,
+		})
+	var summary: Dictionary = SimMetrics.compute(
+		sampler, 0, 1, {"TH-01": 1.0}, false, "", 0, 0, 0, 1, {}
+	)
+	assert_eq(float(summary["MET-01"]), 1.0)
+	assert_eq(String(summary["MET-01_pass"]), "1")
+	print("TST-SYS23-10 MET-01=%s" % str(summary["MET-01"]))
+
+
+func test_TST_SYS23_02_formal_params_unchanged_sha256() -> void:
+	## Formal may miss unbound keys; overrides from params_all_keys fill them.
+	## Boot via SimEngine must succeed; formal file bytes unchanged (TST-SYS23-02).
+	var sha_before: String = FileAccess.get_sha256(PARAMS_FORMAL)
+	assert_false(sha_before.is_empty())
+	var all_raw: String = FileAccess.get_file_as_string(PARAMS_ALL)
+	var overrides: Dictionary = JSON.parse_string(all_raw)
+	## Short run for sha256／boot proof (years from fixture).
+	var short_raw: String = FileAccess.get_file_as_string(
+		"res://tests/fixtures/sys23/scenario_tst02_meta.json"
+	)
+	var short: Dictionary = JSON.parse_string(short_raw)
+	var scenario := {
+		"scenario_id": "sys23_tst02",
+		"years": int(short["years"]),
+		"warmup_years": int(short["warmup_years"]),
+		"seeds": short["seeds"],
+		"layers": {"RELOCATE": false},
+		"overrides": overrides,
+		"grid": {},
+		"daily_detail_ports": [],
+		"thresholds": {},
+	}
+	var engine := _make_engine()
+	engine.params_formal_path = PARAMS_FORMAL
+	engine.session_reset = _session_reset
+	var result: Dictionary = engine.run_scenario_dict(scenario)
+	assert_true(result["ok"], "TST-02 run ok")
+	var summaries: Array = result["summaries"]
+	assert_eq(summaries.size(), 1)
+	assert_eq(int((summaries[0] as Dictionary)["aborted"]), 0, str(summaries[0]))
+	var sha_after: String = FileAccess.get_sha256(PARAMS_FORMAL)
+	assert_eq(sha_before, sha_after)
+	print("TST-SYS23-02 sha256 before=%s after=%s" % [sha_before, sha_after])
+
+
+func test_TST_SYS23_01_two_runs_csv_match_except_elapsed() -> void:
+	var scenario: Dictionary = _fast_scenario("sys23_tst01")
+	var paths_a: Dictionary = _run_full(scenario)
+	assert_true(paths_a["ok"], "run A failed")
+	var snap_a: Dictionary = _snapshot_outputs(String(scenario["scenario_id"]))
+	## Reset and second run.
+	_session_reset()
+	_wipe_dir(SimCsvOut.out_dir(String(scenario["scenario_id"])))
+	var paths_b: Dictionary = _run_full(scenario)
+	assert_true(paths_b["ok"], "run B failed")
+	var snap_b: Dictionary = _snapshot_outputs(String(scenario["scenario_id"]))
+	for fname in snap_a.keys():
+		var a: String = String(snap_a[fname])
+		var b: String = String(snap_b[fname])
+		if String(fname) == "summary.csv":
+			a = _strip_elapsed(a)
+			b = _strip_elapsed(b)
+		assert_eq(a, b, "mismatch in %s" % fname)
+	print("TST-SYS23-01 cmp empty (elapsed stripped on summary)")
+	_print_output_stats(String(scenario["scenario_id"]))
+
+
+func test_TST_SYS23_09_one_combo_aborts_on_conservation() -> void:
+	var scenario: Dictionary = _fast_scenario("sys23_tst09")
+	scenario["grid"] = {
+		"PRM-SYS05-MIN_CASH_UNIT": [1, 1],
+	}
+	scenario["seeds"] = [1]
+	var engine := _make_engine()
+	engine.session_reset = _session_reset
+	engine.before_day = func(combo_index: int, day: int) -> void:
+		if combo_index == 1 and day == 1 and GoodCatalog.is_loaded() and GoodsLedger.is_loaded():
+			## Artificial conservation break (TST-SYS03-01 Given / 紅隊-03).
+			var good: StringName = StringName(GoodCatalog.all_ids()[0])
+			var key: String = String(
+				GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01")
+			)
+			if not GoodsLedger._stock.has(key):
+				GoodsLedger._stock[key] = {}
+			var bucket: Dictionary = GoodsLedger._stock[key]
+			bucket[String(good)] = int(bucket.get(String(good), 0)) + 1
+			GoodsLedger._stock[key] = bucket
+	var result: Dictionary = engine.run_scenario_dict(scenario)
+	assert_true(result["ok"])
+	var summaries: Array = result["summaries"]
+	assert_eq(summaries.size(), 2)
+	var aborted_count: int = 0
+	var ok_count: int = 0
+	for s_v in summaries:
+		var s: Dictionary = s_v
+		print(
+			"TST-SYS23-09 summary combo=%s aborted=%s reason=%s"
+			% [str(s["combo_index"]), str(s["aborted"]), str(s["abort_reason"])]
+		)
+		if int(s["aborted"]) == 1:
+			aborted_count = aborted_count + 1
+		else:
+			ok_count = ok_count + 1
+	assert_eq(aborted_count, 1)
+	assert_eq(ok_count, 1)
+	## Expected GoodsLedger push_error from conservation violation (ERR-SYS03-05).
+	assert_push_error_count(1)
+
+
+func test_WP26_layer1_two_years_headers_and_counts() -> void:
+	var scenario: Dictionary = _fast_scenario("sys23_l1_2y")
+	scenario["daily_detail_ports"] = ["PT-01"]
+	var result: Dictionary = _run_full(scenario)
+	assert_true(result["ok"])
+	_print_output_stats(String(scenario["scenario_id"]))
+	var d: String = SimCsvOut.out_dir(String(scenario["scenario_id"]))
+	assert_eq(_first_line(d + "season_cells.csv"), SimSampler.HDR_SEASON_CELLS)
+	assert_eq(_first_line(d + "season_ports.csv"), SimSampler.HDR_SEASON_PORTS)
+	assert_eq(_first_line(d + "summary.csv").substr(0, 10), "run_id,com")
+	assert_eq(_first_line(d + "combos.csv").substr(0, 11), "combo_index")
+	assert_eq(_first_line(d + "daily_PT-01.csv"), SimSampler.HDR_DAILY)
+
+
+# --- helpers ---
+
+
+func _fast_scenario(scenario_id: String) -> Dictionary:
+	## years／warmup from fixture JSON (schema locks DAYS_PER_SEASON＝90; no calendar shrink).
+	var meta_raw: String = FileAccess.get_file_as_string(
+		"res://tests/fixtures/sys23/scenario_run_meta.json"
+	)
+	var meta: Dictionary = JSON.parse_string(meta_raw)
+	var all_raw: String = FileAccess.get_file_as_string(PARAMS_ALL)
+	var all_params: Dictionary = JSON.parse_string(all_raw)
+	return {
+		"scenario_id": scenario_id,
+		"years": int(meta["years"]),
+		"warmup_years": int(meta["warmup_years"]),
+		"seeds": meta["seeds"],
+		"layers": {"RELOCATE": false},
+		"overrides": all_params,
+		"grid": {},
+		"daily_detail_ports": [],
+		"thresholds": {},
+	}
+
+
+func _run_full(scenario: Dictionary) -> Dictionary:
+	var engine := _make_engine()
+	engine.session_reset = _session_reset
+	return engine.run_scenario_dict(scenario)
+
+
+func _make_engine() -> SimEngine:
+	_prepare_world()
+	var engine := SimEngine.new()
+	engine.params_formal_path = PARAMS_ALL
+	engine.goods_dir = GOODS_ROOT + "base/"
+	engine.ports_dir = PORTS_ROOT + "base/"
+	engine.curve_path = CURVE_FIXTURE
+	var sea: Dictionary = _install_sea()
+	engine.sea_nodes_dir = sea["nodes"]
+	engine.sea_regions_dir = sea["regions"]
+	engine.sea_lanes_dir = sea["lanes"]
+	engine.demand_tables_path = DEMAND_OUT
+	return engine
+
+
+func _prepare_world() -> void:
+	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	assert_eq(perr.size(), 0, "params_all_keys")
+	_build_goods(GOODS_ROOT + "base/")
+	var gerr: Array = GoodCatalog.load_and_validate(GOODS_ROOT + "base/")
+	assert_eq(gerr.size(), 0, str(gerr))
+	_build_ports(PORTS_ROOT + "base/")
+	_install_opening()
+	_install_demand()
+
+
+func _session_reset() -> void:
+	## Mirror test_sim_loop reboot helper (private Autoload fields; test-side only).
+	SimLoop._booted = false
+	SimLoop._capacity_by_kind.clear()
+	SimLoop._capacity_reg_errors.clear()
+	SimLoop.set_consumption_provider(null)
+	BuildingEconomy._loaded = false
+	BuildingEconomy._population = null
+	BuildingEconomy._workforce = null
+	PopulationModel._loaded = false
+	PopulationModel._sat_input = null
+	DemandModel._clear_state()
+	SeaLanes._loaded = false
+	ShipRegistry._loaded = false
+	## Clear sailor pool so SimLoop can re-inject on next boot.
+	if ShipRegistry.has_method("set_sailor_pool_provider"):
+		## set_sailor_pool_provider ignored when _loaded; we cleared _loaded above.
+		pass
+
+
+func _install_sea() -> Dictionary:
+	var nodes_dir: String = SEA_ROOT + "nodes/"
+	var regions_dir: String = SEA_ROOT + "regions/"
+	var lanes_dir: String = SEA_ROOT + "lanes/"
+	_wipe_dir(nodes_dir)
+	_wipe_dir(regions_dir)
+	_wipe_dir(lanes_dir)
+	var result: Dictionary = CsvImport.run_batch_wp29(SEA_CSV, nodes_dir, regions_dir, lanes_dir)
+	assert_true(result["ok"], str(result.get("errors", [])))
+	return {"nodes": nodes_dir, "regions": regions_dir, "lanes": lanes_dir}
+
+
+func _install_opening() -> void:
+	var wp17: Dictionary = CsvImport.run_batch_wp17(
+		OPENING_CSV, FORMAL_ZONES, FORMAL_BUILDINGS, FORMAL_OPENING, FORMAL_BUILD_QUEUE
+	)
+	assert_true(wp17["ok"], str(wp17.get("errors", [])))
+	var wp18: Dictionary = CsvImport.run_batch_wp18(
+		OPENING_CSV, FORMAL_CITY_CENTER, FORMAL_OPENING_PUBLIC
+	)
+	assert_true(wp18["ok"], str(wp18.get("errors", [])))
+	var pop: Dictionary = CsvImport.run_batch_opening_population(
+		OPENING_CSV, FORMAL_OPENING_POP, OPENING_CSV.path_join("ports.csv")
+	)
+	assert_true(pop["ok"], str(pop.get("errors", [])))
+
+
+func _install_demand() -> void:
+	## Scales from Params (C-03); Params already loaded in _prepare_world.
+	var rate_scale: int = Params.get_int("PRM-SYS06-RATE_SCALE")
+	var ppm_scale: int = Params.get_int("PRM-SYS06-PPM_SCALE")
+	var weight_sum: int = Params.get_int("PRM-SYS06-WEIGHT_SUM")
+	var result: Dictionary = CsvImport.run_batch_demand(
+		DEMAND_CSV_OK,
+		DEMAND_OUT.path_join("rates/"),
+		DEMAND_OUT.path_join("weights/"),
+		DEMAND_OUT.path_join("substitutions/"),
+		rate_scale,
+		ppm_scale,
+		weight_sum
+	)
+	assert_true(result["ok"], str(result.get("errors", [])))
+
+
+func _build_goods(dir: String) -> void:
+	_wipe_dir(dir)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var count: int = Params.get_int("PRM-SYS01-GOOD_COUNT_MIN")
+	var staples: Array = [
+		{"id": "GD-001", "name": "米", "build": false},
+		{"id": "GD-002", "name": "鹽", "build": false},
+		{"id": "GD-003", "name": "木材", "build": true},
+		{"id": "GD-004", "name": "魚乾", "build": false},
+	]
+	var written: int = 0
+	for s in staples:
+		ResourceSaver.save(_make_good(s["id"], s["name"], 1, true, s["build"]), dir + "%s.tres" % s["id"])
+		written += 1
+	var n: int = 5
+	while written < count:
+		var gid := "GD-%03d" % n
+		ResourceSaver.save(_make_good(gid, "填料%d" % n, 1, false, false), dir + "%s.tres" % gid)
+		written += 1
+		n += 1
+
+
+func _build_ports(dir: String) -> void:
+	_wipe_dir(dir)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var port_count: int = Params.get_int("PRM-SYS02-PORT_COUNT_MAX")
+	var free_count: int = _valid_free_count(port_count)
+	var good_ids: PackedStringArray = GoodCatalog.all_ids()
+	for i in range(port_count):
+		var n: int = i + 1
+		var port_id := "PT-%02d" % n
+		var def := PortDef.new()
+		def.port_id = port_id
+		def.name_zh = "港%d" % n
+		def.is_free_port = i < free_count
+		def.draft_limit_class = 0
+		def.regime_id = "RG-TEST"
+		def.role_cells = {}
+		for g_v in good_ids:
+			var cell := RoleCell.new()
+			cell.role = PortRegistry.ROLE_TERMINAL
+			cell.base_output_per_season = 0
+			if i == 0:
+				cell.role = PortRegistry.ROLE_PRODUCER
+				cell.base_output_per_season = 1
+			def.role_cells[String(g_v)] = cell
+		ResourceSaver.save(def, dir + "%s.tres" % port_id)
+
+
+func _make_good(id: String, name_zh: String, tier: int, staple: bool, build: bool) -> GoodDef:
+	var def := GoodDef.new()
+	def.good_id = id
+	def.name_zh = name_zh
+	def.tier = tier
+	def.is_staple = staple
+	def.is_build_material = build
+	def.is_strategic = false
+	def.base_price_li = 1000
+	def.season_mask = (1 << Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")) - 1
+	return def
+
+
+func _valid_free_count(port_count: int) -> int:
+	var ratio_min: float = Params.get_float("PRM-SYS02-FREE_PORT_RATIO_MIN")
+	var ratio_max: float = Params.get_float("PRM-SYS02-FREE_PORT_RATIO_MAX")
+	var free_count: int = 0
+	while free_count <= port_count:
+		var ratio: float = float(free_count) / float(port_count)
+		if ratio >= ratio_min and ratio <= ratio_max:
+			return free_count
+		free_count += 1
+	return 0
+
+
+func _snapshot_outputs(scenario_id: String) -> Dictionary:
+	var d: String = SimCsvOut.out_dir(scenario_id)
+	var out := {}
+	for fname in ["season_cells.csv", "season_ports.csv", "summary.csv", "combos.csv"]:
+		var p: String = d + fname
+		if FileAccess.file_exists(p):
+			out[fname] = FileAccess.get_file_as_string(p)
+	return out
+
+
+func _strip_elapsed(summary_csv: String) -> String:
+	var lines: PackedStringArray = summary_csv.strip_edges().split("\n")
+	var out: PackedStringArray = PackedStringArray()
+	for i in range(lines.size()):
+		var line: String = String(lines[i])
+		if i == 0:
+			out.append(line)
+			continue
+		var parts: PackedStringArray = line.split(",")
+		if parts.size() > 0:
+			## Drop last column elapsed_ms.
+			var kept: PackedStringArray = PackedStringArray()
+			for j in range(parts.size() - 1):
+				kept.append(parts[j])
+			out.append(",".join(kept))
+	return "\n".join(out)
+
+
+func _print_output_stats(scenario_id: String) -> void:
+	var d: String = SimCsvOut.out_dir(scenario_id)
+	for fname in [
+		"season_cells.csv", "season_ports.csv", "summary.csv", "combos.csv", "daily_PT-01.csv"
+	]:
+		var p: String = d + fname
+		if not FileAccess.file_exists(p):
+			print("%s: (missing)" % fname)
+			continue
+		var text: String = FileAccess.get_file_as_string(p)
+		var lines: PackedStringArray = text.strip_edges().split("\n")
+		print("%s header=%s rows=%s" % [fname, lines[0], str(lines.size())])
+
+
+func _first_line(path: String) -> String:
+	var text: String = FileAccess.get_file_as_string(path)
+	return String(text.split("\n")[0])
+
+
+func _wipe_formal_opening() -> void:
+	for dir_path in [
+		FORMAL_ZONES, FORMAL_BUILDINGS, FORMAL_OPENING, FORMAL_BUILD_QUEUE,
+		FORMAL_CITY_CENTER, FORMAL_OPENING_PUBLIC, FORMAL_OPENING_POP,
+	]:
+		_wipe_tres(dir_path)
+
+
+func _wipe_formal_demand() -> void:
+	for dir_path in [
+		CsvImport.DEMAND_RATES_OUT_DIR,
+		CsvImport.DEMAND_WEIGHTS_OUT_DIR,
+		CsvImport.DEMAND_SUBST_OUT_DIR,
+	]:
+		_wipe_tres(dir_path)
+
+
+func _wipe_tres(dir: String) -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var d := DirAccess.open(dir)
+	if d == null:
+		return
+	d.list_dir_begin()
+	var fn := d.get_next()
+	while fn != "":
+		if not d.current_is_dir() and fn.ends_with(".tres"):
+			d.remove(fn)
+		fn = d.get_next()
+	d.list_dir_end()
+
+
+func _wipe_dir(dir: String) -> void:
+	var abs_path := ProjectSettings.globalize_path(dir)
+	if not DirAccess.dir_exists_absolute(abs_path):
+		DirAccess.make_dir_recursive_absolute(abs_path)
+		return
+	var d := DirAccess.open(dir)
+	if d == null:
+		return
+	d.list_dir_begin()
+	var fn := d.get_next()
+	while fn != "":
+		if d.current_is_dir():
+			if fn != "." and fn != "..":
+				_wipe_dir(dir.path_join(fn))
+		else:
+			d.remove(fn)
+		fn = d.get_next()
+	d.list_dir_end()
