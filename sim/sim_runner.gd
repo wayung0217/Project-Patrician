@@ -4,11 +4,22 @@ extends SceneTree
 ##
 ## Multi-combo isolation: each combo×seed runs in a **child process** so Autoload
 ## state is never shared (avoids private SimLoop reset; see WP-26 gap note).
+##
+## Scripts are load()'d after the first frame so Autoload globals exist (Godot -s
+## compiles class_name deps before Autoload names are registered otherwise).
 
 
 const ARG_SCENARIO := "--scenario"
 const ARG_JOB := "--job"
 const ARG_PORTS_DIR := "--ports-dir"
+
+const PATH_VALIDATOR := "res://sim/scenario_validator.gd"
+const PATH_GRID := "res://sim/grid_expand.gd"
+const PATH_CSV := "res://sim/csv_out.gd"
+const PATH_SAMPLER := "res://sim/sampler.gd"
+const PATH_TRANSFER := "res://sim/transfer_acc.gd"
+const PATH_METRICS := "res://sim/metrics.gd"
+const PATH_ENGINE := "res://sim/sim_engine.gd"
 
 
 func _init() -> void:
@@ -34,35 +45,42 @@ func _main() -> void:
 
 
 func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int:
+	var SimScenarioValidator: GDScript = load(PATH_VALIDATOR) as GDScript
+	var SimGridExpand: GDScript = load(PATH_GRID) as GDScript
+	var SimCsvOut: GDScript = load(PATH_CSV) as GDScript
+	var SimSampler: GDScript = load(PATH_SAMPLER) as GDScript
+	var SimTransferAcc: GDScript = load(PATH_TRANSFER) as GDScript
+	var SimMetrics: GDScript = load(PATH_METRICS) as GDScript
+
 	var validated: Dictionary = SimScenarioValidator.validate_file(scenario_path, ports_dir)
 	if not bool(validated["ok"]):
 		for e in validated["errors"]:
 			push_error(String(e))
-		print("sim_runner: scenario validation failed (%s errors)" % str((validated["errors"] as PackedStringArray).size()))
+		print(
+			"sim_runner: scenario validation failed (%s errors)"
+			% str((validated["errors"] as PackedStringArray).size())
+		)
 		return 1
 	var scenario: Dictionary = validated["scenario"]
 	if bool((scenario.get("layers", {}) as Dictionary).get("RELOCATE", false)):
 		push_error("sim_runner: WP-26 supports layer1 ISOLATED only (RELOCATE=false)")
 		return 1
 
-	var jobs: Array = SimGridExpand.expand(
-		scenario[SimScenarioValidator.KEY_GRID],
-		scenario[SimScenarioValidator.KEY_SEEDS]
-	)
+	## Key strings match SimScenarioValidator.KEY_* (avoid class_name at -s parse time).
+	var jobs: Array = SimGridExpand.expand(scenario["grid"], scenario["seeds"])
 	print(
 		"sim_runner: scenario_id=%s jobs=%s"
-		% [String(scenario[SimScenarioValidator.KEY_SCENARIO_ID]), str(jobs.size())]
+		% [String(scenario["scenario_id"]), str(jobs.size())]
 	)
 
-	## Clear prior outputs for this scenario_id.
-	var out_d: String = SimCsvOut.ensure_dir(String(scenario[SimScenarioValidator.KEY_SCENARIO_ID]))
+	var out_d: String = SimCsvOut.ensure_dir(String(scenario["scenario_id"]))
 	_wipe_dir(out_d)
 
 	var exe: String = OS.get_executable_path()
 	var project_path: String = ProjectSettings.globalize_path("res://").trim_suffix("/")
 	var summaries: Array = []
-	var all_sampler := SimSampler.new()
-	all_sampler.acc = SimTransferAcc.new()
+	var all_sampler: RefCounted = SimSampler.new()
+	all_sampler.set("acc", SimTransferAcc.new())
 
 	for job_v in jobs:
 		var job: Dictionary = job_v
@@ -87,12 +105,16 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 			"res://sim/sim_runner.gd",
 			"--",
 			ARG_JOB,
-			job_file,
+			ProjectSettings.globalize_path(job_file),
 		])
+		## Evidence (d): one actual argv line for subprocess launch.
+		print("sim_runner_child_argv: %s %s" % [exe, " ".join(cmd_args)])
 		var output: Array = []
 		var exit_code: int = OS.execute(exe, cmd_args, output, true, false)
 		if exit_code != 0:
 			push_error("sim_runner: job run_id=%s exit=%s" % [str(job["run_id"]), str(exit_code)])
+			for line in output:
+				print("child: %s" % str(line))
 		var result_path: String = String(payload["result_path"])
 		if FileAccess.file_exists(result_path):
 			var res_raw: String = FileAccess.get_file_as_string(result_path)
@@ -102,25 +124,23 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 				if res.has("summary"):
 					summaries.append(res["summary"])
 				if res.has("season_cells"):
-					all_sampler.season_cells.append_array(res["season_cells"])
+					(all_sampler.get("season_cells") as Array).append_array(res["season_cells"])
 				if res.has("season_ports"):
-					all_sampler.season_ports.append_array(res["season_ports"])
+					(all_sampler.get("season_ports") as Array).append_array(res["season_ports"])
 				if res.has("daily_rows"):
 					var dr: Dictionary = res["daily_rows"]
+					var daily: Dictionary = all_sampler.get("daily_rows")
 					for pid_v in dr.keys():
 						var pid: String = String(pid_v)
-						if not all_sampler.daily_rows.has(pid):
-							all_sampler.daily_rows[pid] = []
-						(all_sampler.daily_rows[pid] as Array).append_array(dr[pid])
+						if not daily.has(pid):
+							daily[pid] = []
+						(daily[pid] as Array).append_array(dr[pid])
+					all_sampler.set("daily_rows", daily)
 
 	var combo_rows: Array = SimMetrics.aggregate_combos(summaries)
-	var sid: String = String(scenario[SimScenarioValidator.KEY_SCENARIO_ID])
+	var sid: String = String(scenario["scenario_id"])
 	SimCsvOut.write_all(
-		sid,
-		all_sampler,
-		summaries,
-		combo_rows,
-		scenario[SimScenarioValidator.KEY_DAILY_PORTS]
+		sid, all_sampler, summaries, combo_rows, scenario["daily_detail_ports"]
 	)
 	print("sim_runner: wrote outputs under %s" % SimCsvOut.out_dir(sid))
 	return 0
@@ -135,19 +155,20 @@ func _run_job_file(job_path: String) -> int:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		push_error("sim_runner: bad job JSON")
 		return 1
+	var SimEngine: GDScript = load(PATH_ENGINE) as GDScript
 	var payload: Dictionary = parsed
 	var scenario: Dictionary = payload["scenario"]
 	var job: Dictionary = payload["job"]
 	var ports_dir: String = String(payload.get("ports_dir", ""))
-	var engine := SimEngine.new()
+	var engine: RefCounted = SimEngine.new()
 	if not ports_dir.is_empty():
-		engine.ports_dir = ports_dir
-	## Single job in fresh process — no session_reset needed.
-	var one: Dictionary = engine.run_one_job(
+		engine.set("ports_dir", ports_dir)
+	var one: Dictionary = engine.call(
+		"run_one_job",
 		scenario,
 		job,
-		scenario[SimScenarioValidator.KEY_OVERRIDES],
-		scenario[SimScenarioValidator.KEY_DAILY_PORTS]
+		scenario["overrides"],
+		scenario["daily_detail_ports"]
 	)
 	var out := {
 		"summary": one.get("summary", {}),
@@ -156,10 +177,10 @@ func _run_job_file(job_path: String) -> int:
 		"daily_rows": {},
 	}
 	if one.has("sampler"):
-		var sm: SimSampler = one["sampler"]
-		out["season_cells"] = sm.season_cells
-		out["season_ports"] = sm.season_ports
-		out["daily_rows"] = sm.daily_rows
+		var sm: RefCounted = one["sampler"]
+		out["season_cells"] = sm.get("season_cells")
+		out["season_ports"] = sm.get("season_ports")
+		out["daily_rows"] = sm.get("daily_rows")
 	var result_path: String = String(payload["result_path"])
 	var rf := FileAccess.open(result_path, FileAccess.WRITE)
 	rf.store_string(JSON.stringify(out))

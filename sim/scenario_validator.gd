@@ -134,23 +134,27 @@ static func _check_scenario_id(scenario: Dictionary, errors: PackedStringArray) 
 
 
 static func _check_years(scenario: Dictionary, errors: PackedStringArray) -> void:
-	if not scenario.has(KEY_YEARS) or not scenario.has(KEY_WARMUP):
-		return
-	if not _is_json_int(scenario[KEY_YEARS]):
-		errors.append("%s: years must be int ≥ 1" % ERR_SYS23_03)
-	else:
-		var y: int = _as_int(scenario[KEY_YEARS])
-		if y < 1:
+	## Validate each present key independently so C-06 lists type errors even when
+	## a sibling required key is missing (all-at-once).
+	var years_ok := false
+	var y: int = 0
+	if scenario.has(KEY_YEARS):
+		if not _is_json_int(scenario[KEY_YEARS]):
 			errors.append("%s: years must be int ≥ 1" % ERR_SYS23_03)
-	if not _is_json_int(scenario[KEY_WARMUP]):
-		errors.append("%s: warmup_years must be int ≥ 0 and < years" % ERR_SYS23_03)
-	else:
-		var w: int = _as_int(scenario[KEY_WARMUP])
-		if w < 0:
+		else:
+			y = _as_int(scenario[KEY_YEARS])
+			if y < 1:
+				errors.append("%s: years must be int ≥ 1" % ERR_SYS23_03)
+			else:
+				years_ok = true
+	if scenario.has(KEY_WARMUP):
+		if not _is_json_int(scenario[KEY_WARMUP]):
 			errors.append("%s: warmup_years must be int ≥ 0 and < years" % ERR_SYS23_03)
-		elif _is_json_int(scenario[KEY_YEARS]):
-			var y2: int = _as_int(scenario[KEY_YEARS])
-			if w >= y2:
+		else:
+			var w: int = _as_int(scenario[KEY_WARMUP])
+			if w < 0:
+				errors.append("%s: warmup_years must be int ≥ 0 and < years" % ERR_SYS23_03)
+			elif years_ok and w >= y:
 				errors.append("%s: warmup_years must be < years" % ERR_SYS23_03)
 
 

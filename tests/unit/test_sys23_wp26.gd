@@ -294,6 +294,182 @@ func test_TST_SYS23_09_one_combo_aborts_on_conservation() -> void:
 	assert_push_error_count(1)
 
 
+func test_WP26_evidence_bad_triple_all_at_once() -> void:
+	## missing required + unknown key + type error → all listed (C-06).
+	var path := "res://tests/fixtures/sys23/scenario_bad_triple.json"
+	var r: Dictionary = SimScenarioValidator.validate_file(path)
+	assert_false(r["ok"])
+	var errs: PackedStringArray = r["errors"]
+	print("bad_triple errors (%s):\n%s" % [str(errs.size()), "\n".join(errs)])
+	var joined: String = " ".join(errs)
+	assert_true(joined.find("ERR-SYS23-02") >= 0)
+	assert_true(joined.find("ERR-SYS23-03") >= 0)
+	assert_true(joined.find("extra_forbidden") >= 0 or joined.find("unknown") >= 0)
+	assert_true(joined.find("warmup_years") >= 0 or joined.find("missing") >= 0)
+	assert_true(joined.find("years") >= 0)
+
+
+func test_WP26_evidence_ERR_SYS23_01_missing_file() -> void:
+	var path := "res://tests/fixtures/sys23/DOES_NOT_EXIST_scenario.json"
+	var r: Dictionary = SimScenarioValidator.validate_file(path)
+	assert_false(r["ok"])
+	print("ERR-01 errors:\n%s" % "\n".join(r["errors"]))
+	assert_true(" ".join(r["errors"]).find("ERR-SYS23-01") >= 0)
+
+
+func test_WP26_evidence_ERR_SYS23_03_type() -> void:
+	var r: Dictionary = SimScenarioValidator.validate_file(
+		"res://tests/fixtures/sys23/scenario_bad_err03_type.json"
+	)
+	assert_false(r["ok"])
+	print("ERR-03 errors:\n%s" % "\n".join(r["errors"]))
+	assert_true(" ".join(r["errors"]).find("ERR-SYS23-03") >= 0)
+
+
+func test_WP26_evidence_ERR_SYS23_05_unknown_port() -> void:
+	var r: Dictionary = SimScenarioValidator.validate_file(
+		"res://tests/fixtures/sys23/scenario_bad_err05_unknown_port.json"
+	)
+	assert_false(r["ok"])
+	print("ERR-05 errors:\n%s" % "\n".join(r["errors"]))
+	assert_true(" ".join(r["errors"]).find("ERR-SYS23-05") >= 0)
+
+
+func test_WP26_evidence_ERR_SYS23_06_relocate_f() -> void:
+	var r: Dictionary = SimScenarioValidator.validate_file(
+		"res://tests/fixtures/sys23/scenario_bad_err06_relocate_f.json"
+	)
+	assert_false(r["ok"])
+	print("ERR-06 errors:\n%s" % "\n".join(r["errors"]))
+	assert_true(" ".join(r["errors"]).find("ERR-SYS23-06") >= 0)
+
+
+func test_WP26_evidence_accounts_after_boot_layer1() -> void:
+	## Print all CashLedger accounts; genesis_grant → ACT-PLAYER.
+	## Snapshot player balance at first day (post-boot) vs after 1 year.
+	## Note: opening player kontor/ship incur mandatory SYS-08/13 charges — balance
+	## may fall; arrears stay 0. No voluntary player trade in layer1.
+	var scenario: Dictionary = _fast_scenario("sys23_acct_dump")
+	scenario["years"] = 1
+	scenario["warmup_years"] = 0
+	var engine := _make_engine()
+	engine.session_reset = _session_reset
+	var bal_day1: Array = [-1]
+	var arr_day1: Array = [-1]
+	engine.before_day = func(combo_index: int, day: int) -> void:
+		if combo_index == 0 and day == 1 and bal_day1[0] < 0:
+			bal_day1[0] = CashLedger.balance(CashLedger.ACCOUNT_PLAYER)
+			arr_day1[0] = CashLedger.arrears(CashLedger.ACCOUNT_PLAYER)
+			print(
+				"post_boot_day1 player_balance=%s arrears=%s start_cash=%s"
+				% [
+					str(bal_day1[0]),
+					str(arr_day1[0]),
+					str(Params.get_int("PRM-SYS05-START_CASH")),
+				]
+			)
+	var result: Dictionary = engine.run_scenario_dict(scenario)
+	assert_true(result["ok"])
+	assert_eq(int((result["summaries"][0] as Dictionary)["aborted"]), 0)
+	var ids: Array = CashLedger._accounts.keys()
+	ids.sort()
+	print("WP26_ACCOUNTS_BEGIN")
+	for id_v in ids:
+		var id_s: String = String(id_v)
+		var acc: Account = CashLedger._accounts[id_s]
+		print(
+			"account id=%s kind=%s balance=%s arrears=%s arrears_seasons=%s"
+			% [id_s, str(acc.kind), str(acc.balance), str(acc.arrears), str(acc.arrears_seasons)]
+		)
+	print("WP26_ACCOUNTS_END")
+	var player_bal: int = CashLedger.balance(CashLedger.ACCOUNT_PLAYER)
+	var start_cash: int = Params.get_int("PRM-SYS05-START_CASH")
+	print(
+		"genesis_grant target=%s start_cash=%s day1_balance=%s end_balance=%s end_arrears=%s"
+		% [
+			String(CashLedger.ACCOUNT_PLAYER),
+			str(start_cash),
+			str(bal_day1[0]),
+			str(player_bal),
+			str(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER)),
+		]
+	)
+	## Day-1 balance equals START_CASH (genesis only so far that calendar day start).
+	assert_eq(int(bal_day1[0]), start_cash)
+	assert_eq(int(arr_day1[0]), 0)
+	assert_eq(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), 0)
+	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 0)
+
+
+func test_WP26_evidence_cli_twice_cmp() -> void:
+	## Prep formal dirs, CLI sim_runner twice in-process via OS.execute, cmp five outputs.
+	_prepare_world()
+	_install_formal_from_fixtures()
+	var scenario: Dictionary = _fast_scenario("sys23_cli_cmp")
+	scenario["years"] = 1
+	scenario["warmup_years"] = 0
+	scenario["daily_detail_ports"] = ["PT-01"]
+	var v: Dictionary = SimScenarioValidator.validate_dict(scenario, PortRegistry.PORTS_DIR)
+	assert_true(v["ok"], str(v["errors"]))
+	var scen_path := "user://sys23_cli_scenario.json"
+	var sf := FileAccess.open(scen_path, FileAccess.WRITE)
+	sf.store_string(JSON.stringify(v["scenario"]))
+	sf.close()
+	var scen_abs: String = ProjectSettings.globalize_path(scen_path)
+	var exe: String = OS.get_executable_path()
+	var project_path: String = ProjectSettings.globalize_path("res://").trim_suffix("/")
+	var argv: PackedStringArray = PackedStringArray([
+		"--headless", "--path", project_path, "-s", "res://sim/sim_runner.gd",
+		"--", "--scenario", scen_abs,
+	])
+	print("CLI_ARGV: %s %s" % [exe, " ".join(argv)])
+	_wipe_dir(SimCsvOut.out_dir("sys23_cli_cmp"))
+	var out_a: Array = []
+	var rc_a: int = OS.execute(exe, argv, out_a, true, false)
+	print("CLI_RUN_A rc=%s\n%s" % [str(rc_a), "\n".join(PackedStringArray(out_a))])
+	assert_eq(rc_a, 0)
+	var snap_a: Dictionary = _snapshot_outputs_five("sys23_cli_cmp")
+	assert_gt(String(snap_a["summary.csv"]).length(), 1)
+	assert_true(
+		String(snap_a["summary.csv"]).find("aborted,") >= 0
+		or String(snap_a["summary.csv"]).find("\n0,") >= 0
+		or String(snap_a["summary.csv"]).find("\n0.0,") >= 0
+	)
+	## Must not be an aborted-only empty run: expect season rows.
+	assert_gt(String(snap_a["season_cells.csv"]).split("\n").size(), 1)
+	## OBS-03 cell blank in summary CSV.
+	var sum_hdr: PackedStringArray = String(snap_a["summary.csv"]).get_slice("\n", 0).split(",")
+	var sum_row: PackedStringArray = String(snap_a["summary.csv"]).get_slice("\n", 1).split(",")
+	var obs03_i := -1
+	for i in range(sum_hdr.size()):
+		if String(sum_hdr[i]) == "OBS-03":
+			obs03_i = i
+			break
+	assert_gt(obs03_i, -1)
+	assert_eq(String(sum_row[obs03_i]), "", "CLI summary OBS-03 must be blank")
+	_wipe_dir(SimCsvOut.out_dir("sys23_cli_cmp"))
+	var out_b: Array = []
+	var rc_b: int = OS.execute(exe, argv, out_b, true, false)
+	print("CLI_RUN_B rc=%s\n%s" % [str(rc_b), "\n".join(PackedStringArray(out_b))])
+	assert_eq(rc_b, 0)
+	var snap_b: Dictionary = _snapshot_outputs_five("sys23_cli_cmp")
+	for fname in snap_a.keys():
+		var a: String = String(snap_a[fname])
+		var b: String = String(snap_b[fname])
+		if String(fname) == "summary.csv":
+			print("CLI_CMP summary: stripping elapsed_ms column before cmp")
+			a = _strip_elapsed(a)
+			b = _strip_elapsed(b)
+			print("CLI_CMP summary_stripped_a:\n%s" % a)
+			print("CLI_CMP summary_stripped_b:\n%s" % b)
+		print(
+			"CLI_CMP %s equal=%s bytes_a=%s bytes_b=%s"
+			% [fname, str(a == b), str(a.length()), str(b.length())]
+		)
+		assert_eq(a, b, "CLI cmp mismatch %s" % fname)
+	print("CLI_CMP all five outputs match (elapsed stripped on summary)")
+
+
 func test_WP26_layer1_two_years_headers_and_counts() -> void:
 	var scenario: Dictionary = _fast_scenario("sys23_l1_2y")
 	scenario["daily_detail_ports"] = ["PT-01"]
@@ -510,6 +686,53 @@ func _snapshot_outputs(scenario_id: String) -> Dictionary:
 		if FileAccess.file_exists(p):
 			out[fname] = FileAccess.get_file_as_string(p)
 	return out
+
+
+func _snapshot_outputs_five(scenario_id: String) -> Dictionary:
+	var d: String = SimCsvOut.out_dir(scenario_id)
+	var out := {}
+	for fname in [
+		"season_cells.csv", "season_ports.csv", "summary.csv", "combos.csv", "daily_PT-01.csv"
+	]:
+		var p: String = d + fname
+		assert_true(FileAccess.file_exists(p), "missing output %s" % p)
+		out[fname] = FileAccess.get_file_as_string(p)
+	return out
+
+
+func _install_formal_from_fixtures() -> void:
+	## Copy fixture-built goods/ports/sea/demand into formal dirs for CLI sim_runner.
+	_copy_tres_dir(GOODS_ROOT + "base/", GoodCatalog.GOODS_DIR)
+	_copy_tres_dir(PORTS_ROOT + "base/", PortRegistry.PORTS_DIR)
+	var sea: Dictionary = _install_sea()
+	_copy_tres_dir(sea["nodes"], SeaLanes.NODES_DIR)
+	_copy_tres_dir(sea["regions"], SeaLanes.REGIONS_DIR)
+	_copy_tres_dir(sea["lanes"], SeaLanes.LANES_DIR)
+	_copy_tres_dir(DEMAND_OUT.path_join("rates/"), CsvImport.DEMAND_RATES_OUT_DIR)
+	_copy_tres_dir(DEMAND_OUT.path_join("weights/"), CsvImport.DEMAND_WEIGHTS_OUT_DIR)
+	_copy_tres_dir(DEMAND_OUT.path_join("substitutions/"), CsvImport.DEMAND_SUBST_OUT_DIR)
+	## price curve
+	var curve_bytes: PackedByteArray = FileAccess.get_file_as_bytes(CURVE_FIXTURE)
+	var cf := FileAccess.open(MarketPricer.CURVE_PATH, FileAccess.WRITE)
+	cf.store_buffer(curve_bytes)
+	cf.close()
+
+
+func _copy_tres_dir(src: String, dst: String) -> void:
+	_wipe_tres(dst)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dst))
+	var d := DirAccess.open(src)
+	assert_true(d != null, "open src %s" % src)
+	d.list_dir_begin()
+	var fn := d.get_next()
+	while fn != "":
+		if not d.current_is_dir() and fn.ends_with(".tres"):
+			var data: PackedByteArray = FileAccess.get_file_as_bytes(src.path_join(fn))
+			var out := FileAccess.open(dst.path_join(fn), FileAccess.WRITE)
+			out.store_buffer(data)
+			out.close()
+		fn = d.get_next()
+	d.list_dir_end()
 
 
 func _strip_elapsed(summary_csv: String) -> String:
