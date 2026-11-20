@@ -5,142 +5,149 @@
 
 [sub_resource type="Resource" id="Resource_bghqo"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_4u13q"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_wff7k"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_3uvvp"]
 script = ExtResource("1_sgqmd")
+role = 1
 downstream_terminals = PackedStringArray()
 base_output_per_season = 15952
 
 [sub_resource type="Resource" id="Resource_xtc0k"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_vykp1"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_k7pfb"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_yw5sf"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_puear"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_0vfdi"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_2cidt"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_c87v6"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_akboo"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_my08k"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_j3mnv"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_kbm4y"]
 script = ExtResource("1_sgqmd")
+role = 1
 downstream_terminals = PackedStringArray()
 base_output_per_season = 4948
 
 [sub_resource type="Resource" id="Resource_1l75w"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_sdu8i"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_e4gdl"]
 script = ExtResource("1_sgqmd")
+role = 1
 downstream_terminals = PackedStringArray()
 base_output_per_season = 4123
 
 [sub_resource type="Resource" id="Resource_c1cq2"]
 script = ExtResource("1_sgqmd")
+role = 1
 downstream_terminals = PackedStringArray()
 base_output_per_season = 2029
 
 [sub_resource type="Resource" id="Resource_0ole4"]
 script = ExtResource("1_sgqmd")
+role = 1
 downstream_terminals = PackedStringArray()
 base_output_per_season = 2008
 
 [sub_resource type="Resource" id="Resource_1h8d1"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_ck66o"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_cpaks"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_bot8j"]
 script = ExtResource("1_sgqmd")
+role = 1
 downstream_terminals = PackedStringArray()
 base_output_per_season = 118
 
 [sub_resource type="Resource" id="Resource_a1rky"]
 script = ExtResource("1_sgqmd")
+role = 1
 downstream_terminals = PackedStringArray()
 base_output_per_season = 410
 
 [sub_resource type="Resource" id="Resource_cxkdo"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_6dd36"]
 script = ExtResource("1_sgqmd")
-role = 2
+role = 3
 downstream_terminals = PackedStringArray()
 
 [resource]
