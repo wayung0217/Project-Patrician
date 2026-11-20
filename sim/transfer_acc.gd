@@ -29,11 +29,15 @@ func clear() -> void:
 
 
 func produced(port_id: String, good_id: String) -> int:
-	return int(_produced.get(_key(port_id, good_id), 0))
+	## 甲：map 值為本類寫入的 int。
+	var v: Variant = _produced.get(_key(port_id, good_id), 0)
+	return v if typeof(v) == TYPE_INT else floori(float(v))
 
 
 func consumed(port_id: String, good_id: String) -> int:
-	return int(_consumed.get(_key(port_id, good_id), 0))
+	## 甲：map 值為本類寫入的 int。
+	var v: Variant = _consumed.get(_key(port_id, good_id), 0)
+	return v if typeof(v) == TYPE_INT else floori(float(v))
 
 
 func take_season_produced(port_id: String, good_id: String) -> int:
@@ -48,7 +52,8 @@ func reset_counters() -> void:
 func _on_transferred(event: TransferEvent) -> void:
 	var reason: StringName = event.reason
 	var good_s: String = String(event.good_id)
-	var qty: int = int(event.qty)
+	## 甲：TransferEvent.qty 為 int。
+	var qty: int = event.qty
 	if reason == GoodsLedger.REASON_PRODUCE or reason == GoodsLedger.REASON_GENESIS:
 		var to_port: String = _port_of(event.to)
 		if not to_port.is_empty():
@@ -70,7 +75,9 @@ func _port_of(container: Variant) -> String:
 
 func _add(map: Dictionary, port_id: String, good_id: String, qty: int) -> void:
 	var k: String = _key(port_id, good_id)
-	map[k] = int(map.get(k, 0)) + qty
+	var prev: Variant = map.get(k, 0)
+	var prev_i: int = prev if typeof(prev) == TYPE_INT else floori(float(prev))
+	map[k] = prev_i + qty
 
 
 func _key(port_id: String, good_id: String) -> String:

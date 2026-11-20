@@ -340,4 +340,7 @@ static func _is_json_int(v: Variant) -> bool:
 
 
 static func _as_int(v: Variant) -> int:
-	return int(floori(float(v)))
+	## 乙：JSON 整數還原（floori）；已是 int 時 floori 仍安全。
+	if typeof(v) == TYPE_INT:
+		return v
+	return floori(float(v))

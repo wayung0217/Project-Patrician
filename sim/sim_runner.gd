@@ -5,8 +5,11 @@ extends SceneTree
 ## Multi-combo isolation: each combo×seed runs in a **child process** so Autoload
 ## state is never shared (avoids private SimLoop reset; see WP-26 gap note).
 ##
-## Scripts are load()'d after the first frame so Autoload globals exist (Godot -s
-## compiles class_name deps before Autoload names are registered otherwise).
+## Entry: MainLoop._initialize → call_deferred(_main). Autoload nodes exist at
+## _initialize but Autoload._ready (e.g. GoodCatalog RegEx.compile) has NOT run
+## yet — pure _initialize boot fails ERR-SYS01-07 on every good. Deferred runs
+## after _ready. No await process_frame. 請求核准例外：call_deferred（見 evidence-2）.
+## Do not reference Autoload identifiers at parse time — load() modules in _main.
 
 
 const ARG_SCENARIO := "--scenario"
@@ -22,12 +25,11 @@ const PATH_METRICS := "res://sim/metrics.gd"
 const PATH_ENGINE := "res://sim/sim_engine.gd"
 
 
-func _init() -> void:
+func _initialize() -> void:
 	call_deferred("_main")
 
 
 func _main() -> void:
-	await process_frame
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	var scenario_path: String = _arg_value(args, ARG_SCENARIO)
 	var job_path: String = _arg_value(args, ARG_JOB)
@@ -84,7 +86,9 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 
 	for job_v in jobs:
 		var job: Dictionary = job_v
-		var job_file: String = "user://sim_jobs/job_%d.json" % int(job["run_id"])
+		## 乙：expand 產出 int；防衛 floori。
+		var rid: int = job["run_id"] if typeof(job["run_id"]) == TYPE_INT else floori(float(job["run_id"]))
+		var job_file: String = "user://sim_jobs/job_%d.json" % rid
 		DirAccess.make_dir_recursive_absolute(
 			ProjectSettings.globalize_path("user://sim_jobs/")
 		)
@@ -92,7 +96,7 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 			"scenario": scenario,
 			"job": job,
 			"ports_dir": ports_dir,
-			"result_path": "user://sim_jobs/result_%d.json" % int(job["run_id"]),
+			"result_path": "user://sim_jobs/result_%d.json" % rid,
 		}
 		var jf := FileAccess.open(job_file, FileAccess.WRITE)
 		jf.store_string(JSON.stringify(payload))

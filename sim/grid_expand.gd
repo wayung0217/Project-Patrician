@@ -27,7 +27,12 @@ static func expand(grid: Dictionary, seeds: Array) -> Array:
 		var combo: Dictionary = combos[combo_index]
 		for seed_index in range(seed_count):
 			var seed_v: Variant = seeds[seed_index]
-			var seed_i: int = int(floori(float(seed_v)))
+			## 乙：seeds 經 JSON 可能為 float 整數 → floori 還原（非截斷真小數）。
+			var seed_i: int
+			if typeof(seed_v) == TYPE_INT:
+				seed_i = seed_v
+			else:
+				seed_i = floori(float(seed_v))
 			var run_id: int = combo_index * seed_count + seed_index
 			jobs.append({
 				"combo_index": combo_index,

@@ -349,6 +349,7 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 	## Snapshot player balance at first day (post-boot) vs after 1 year.
 	## Note: opening player kontor/ship incur mandatory SYS-08/13 charges — balance
 	## may fall; arrears stay 0. No voluntary player trade in layer1.
+	## end_balance = after years=1 complete (last day of last season); season_index 0..3.
 	var scenario: Dictionary = _fast_scenario("sys23_acct_dump")
 	scenario["years"] = 1
 	scenario["warmup_years"] = 0
@@ -356,8 +357,41 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 	engine.session_reset = _session_reset
 	var bal_day1: Array = [-1]
 	var arr_day1: Array = [-1]
+	var xfer_log: Array = [] ## {season, day, id, delta, reason, balance}
+	var player_seen_reasons: Dictionary = {} ## reason -> true when ACT-PLAYER moved
+	var on_cash := func(
+		id: StringName, new_balance: int, delta: int, reason: StringName
+	) -> void:
+		var id_s: String = String(id)
+		var reason_s: String = String(reason)
+		if id_s == String(CashLedger.ACCOUNT_PLAYER):
+			player_seen_reasons[reason_s] = true
+		## Keep ACT-PLAYER + any account sharing a reason that touched ACT-PLAYER this run,
+		## plus SINK／CITY always (counterparties for mandatory charges).
+		var keep := (
+			id_s == String(CashLedger.ACCOUNT_PLAYER)
+			or id_s == String(CashLedger.ID_SINK)
+			or id_s.begins_with("CITY-")
+			or player_seen_reasons.has(reason_s)
+		)
+		if not keep:
+			return
+		var season_i: int = 0
+		if Clock.is_loaded():
+			var dps: int = Params.get_int("PRM-SYS00-DAYS_PER_SEASON")
+			season_i = int((Clock.day - 1) / dps) if Clock.day > 0 else 0
+		xfer_log.append({
+			"season": season_i,
+			"day": Clock.day if Clock.is_loaded() else -1,
+			"id": id_s,
+			"delta": delta,
+			"reason": reason_s,
+			"balance": new_balance,
+		})
 	engine.before_day = func(combo_index: int, day: int) -> void:
 		if combo_index == 0 and day == 1 and bal_day1[0] < 0:
+			if not CashLedger.cash_changed.is_connected(on_cash):
+				CashLedger.cash_changed.connect(on_cash)
 			bal_day1[0] = CashLedger.balance(CashLedger.ACCOUNT_PLAYER)
 			arr_day1[0] = CashLedger.arrears(CashLedger.ACCOUNT_PLAYER)
 			print(
@@ -368,7 +402,13 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 					str(Params.get_int("PRM-SYS05-START_CASH")),
 				]
 			)
+			print(
+				"xfer season=-1 day=0 account=ACT-PLAYER delta_li=%s reason=GENESIS_CASH balance_after=%s counterparty=SOURCE emitting=CashLedger.genesis_grant/PRM-SYS05-START_CASH"
+				% [str(bal_day1[0]), str(bal_day1[0])]
+			)
 	var result: Dictionary = engine.run_scenario_dict(scenario)
+	if CashLedger.cash_changed.is_connected(on_cash):
+		CashLedger.cash_changed.disconnect(on_cash)
 	assert_true(result["ok"])
 	assert_eq(int((result["summaries"][0] as Dictionary)["aborted"]), 0)
 	var ids: Array = CashLedger._accounts.keys()
@@ -382,10 +422,21 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 			% [id_s, str(acc.kind), str(acc.balance), str(acc.arrears), str(acc.arrears_seasons)]
 		)
 	print("WP26_ACCOUNTS_END")
+	print("WP26_PLAYER_TRANSFERS_BEGIN")
+	for row_v in xfer_log:
+		var row: Dictionary = row_v
+		print(
+			"xfer season=%s day=%s account=%s delta_li=%s reason=%s balance_after=%s"
+			% [
+				str(row["season"]), str(row["day"]), str(row["id"]),
+				str(row["delta"]), str(row["reason"]), str(row["balance"]),
+			]
+		)
+	print("WP26_PLAYER_TRANSFERS_END count=%s" % str(xfer_log.size()))
 	var player_bal: int = CashLedger.balance(CashLedger.ACCOUNT_PLAYER)
 	var start_cash: int = Params.get_int("PRM-SYS05-START_CASH")
 	print(
-		"genesis_grant target=%s start_cash=%s day1_balance=%s end_balance=%s end_arrears=%s"
+		"genesis_grant target=%s start_cash=%s day1_balance=%s end_balance=%s end_arrears=%s end_season_note=after_years=1_last_day"
 		% [
 			String(CashLedger.ACCOUNT_PLAYER),
 			str(start_cash),
@@ -399,6 +450,156 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 	assert_eq(int(arr_day1[0]), 0)
 	assert_eq(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), 0)
 	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 0)
+
+
+func test_WP26_abort_summary_mets_blank() -> void:
+	## Abort path MET-01..05b blank (not 0.0); pass N/A; MET-06 blank when no hits.
+	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	assert_eq(perr.size(), 0)
+	var eng := SimEngine.new()
+	var s: Dictionary = eng._abort_summary(0, 0, 1, {}, "ERR-SYS23-07: boot failed: []", Time.get_ticks_msec())
+	for k in ["MET-01", "MET-02", "MET-03", "MET-04", "MET-05a", "MET-05b", "MET-06"]:
+		assert_eq(String(s[k]), "", "abort %s must be blank" % k)
+		assert_ne(str(s[k]), "0")
+		assert_ne(str(s[k]), "0.0")
+	for k in ["MET-01_pass", "MET-02_pass", "MET-03_pass", "MET-04_pass", "MET-05a_pass", "MET-05b_pass", "MET-06_pass"]:
+		assert_eq(String(s[k]), SimMetrics.PASS_NA)
+	## aggregate: aborted excluded; all-aborted → blanks.
+	var rows: Array = SimMetrics.aggregate_combos([s, s])
+	assert_eq(rows.size(), 1)
+	var row: Dictionary = rows[0]
+	print("ABORT_AGGREGATE_ALL_ABORTED %s" % str(row))
+	for met_id in ["MET-01", "MET-02", "MET-03", "MET-04", "MET-05a", "MET-05b", "MET-06"]:
+		assert_eq(String(row["%s_avg" % met_id]), "")
+		assert_eq(String(row["%s_min" % met_id]), "")
+		assert_eq(String(row["%s_max" % met_id]), "")
+	assert_eq(String(row["combo_pass"]), SimMetrics.PASS_NA)
+	## Mixed: one aborted + one alive → avg from alive only.
+	var alive: Dictionary = SimMetrics.compute(SimSampler.new(), 0, 1, {}, false, "", 1, 0, 0, 1, {})
+	var mix: Array = SimMetrics.aggregate_combos([s, alive])
+	print("ABORT_AGGREGATE_MIXED %s" % str(mix[0]))
+	assert_eq(float(mix[0]["MET-06_avg"]), float(alive["MET-06"]))
+	## CSV integers: run_id/combo_index/seed/aborted have no '.'
+	var sid := "sys23_abort_blank"
+	var sampler := SimSampler.new()
+	SimCsvOut.write_all(sid, sampler, [s], mix, [])
+	var sum_text: String = FileAccess.get_file_as_string(SimCsvOut.out_dir(sid) + "summary.csv")
+	print("ABORT_SUMMARY_CSV\n%s" % sum_text)
+	var cols: PackedStringArray = sum_text.strip_edges().split("\n")[1].split(",")
+	## run_id,combo_index,seed,aborted = indices 0,1,2,4
+	for idx in [0, 1, 2, 4]:
+		assert_eq(String(cols[idx]).find("."), -1, "int col %s has dot: %s" % [str(idx), cols[idx]])
+
+
+func test_WP26_csv_integer_columns_no_dot() -> void:
+	## run_id/combo_index/seed/aborted strings contain no '.'
+	var scenario: Dictionary = _fast_scenario("sys23_int_csv")
+	scenario["years"] = 1
+	scenario["warmup_years"] = 0
+	var result: Dictionary = _run_full(scenario)
+	assert_true(result["ok"])
+	var d: String = SimCsvOut.out_dir(String(scenario["scenario_id"]))
+	var sum: String = FileAccess.get_file_as_string(d + "summary.csv")
+	var combos: String = FileAccess.get_file_as_string(d + "combos.csv")
+	var ports: String = FileAccess.get_file_as_string(d + "season_ports.csv")
+	print("INT_CSV_SUMMARY\n%s" % sum)
+	print("INT_CSV_COMBOS\n%s" % combos)
+	## season_ports first data row int-ish cols
+	var plines: PackedStringArray = ports.strip_edges().split("\n")
+	print("INT_CSV_SEASON_PORTS_HEADER\n%s" % plines[0])
+	if plines.size() > 1:
+		print("INT_CSV_SEASON_PORTS_ROW1\n%s" % plines[1])
+	var scols: PackedStringArray = sum.strip_edges().split("\n")[1].split(",")
+	for idx in [0, 1, 2, 4]:
+		assert_eq(String(scols[idx]).find("."), -1, "summary int col dotted: %s" % scols[idx])
+	var ccols: PackedStringArray = combos.strip_edges().split("\n")[1].split(",")
+	assert_eq(String(ccols[0]).find("."), -1, "combos combo_index dotted")
+
+
+func test_WP26_evidence_years10_player_arrears() -> void:
+	## Temp years=10: season-end ACT-PLAYER balance/arrears/arrears_seasons.
+	var scenario: Dictionary = _fast_scenario("sys23_y10")
+	scenario["years"] = 10
+	scenario["warmup_years"] = 0
+	var engine := _make_engine()
+	engine.session_reset = _session_reset
+	var bankrupt_lim: Array = [-1]
+	var season_rows: Array = []
+	var hit_zero: Array = [false]
+	var hit_bankrupt: Array = [false]
+	var on_cutoff := func(season_index: int) -> void:
+		## Clock emits season_cutoff AFTER close_season path in SimLoop — sample here.
+		var bal: int = CashLedger.balance(CashLedger.ACCOUNT_PLAYER)
+		var arr: int = CashLedger.arrears(CashLedger.ACCOUNT_PLAYER)
+		var arr_s: int = CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER)
+		season_rows.append({
+			"season_index": season_index,
+			"balance": bal,
+			"arrears": arr,
+			"arrears_seasons": arr_s,
+		})
+		print(
+			"Y10_SEASON_END season=%s balance=%s arrears=%s arrears_seasons=%s bankrupt_lim=%s"
+			% [str(season_index), str(bal), str(arr), str(arr_s), str(bankrupt_lim[0])]
+		)
+		if bal == 0:
+			hit_zero[0] = true
+		if bankrupt_lim[0] >= 0 and arr_s >= bankrupt_lim[0]:
+			hit_bankrupt[0] = true
+	engine.before_day = func(combo_index: int, day: int) -> void:
+		if combo_index == 0 and day == 1:
+			bankrupt_lim[0] = Params.get_int("PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT")
+			if not Clock.season_cutoff.is_connected(on_cutoff):
+				Clock.season_cutoff.connect(on_cutoff)
+	var result: Dictionary = engine.run_scenario_dict(scenario)
+	if Clock.is_loaded() and Clock.season_cutoff.is_connected(on_cutoff):
+		Clock.season_cutoff.disconnect(on_cutoff)
+	assert_true(result["ok"])
+	var summary: Dictionary = result["summaries"][0]
+	print(
+		"Y10_DONE seasons_logged=%s hit_zero=%s hit_bankrupt=%s aborted=%s reason=%s MET-06=%s"
+		% [
+			str(season_rows.size()),
+			str(hit_zero[0]),
+			str(hit_bankrupt[0]),
+			str(summary.get("aborted")),
+			str(summary.get("abort_reason")),
+			str(summary.get("MET-06")),
+		]
+	)
+	print(
+		"Y10_BANKRUPTCY_CODE cash_ledger.gd close_season lines ~601-602: if arrears_seasons >= bankrupt_lim: bankruptcy_referred.emit(acc.id) — no sim abort/ERR-SYS23"
+	)
+	assert_gt(season_rows.size(), 0)
+
+
+func test_TST_SYS23_09_print_summary_csv() -> void:
+	## Companion to TST-09: dump summary.csv full for aborted+ok combo (9.10 ERR-SYS23-07 當日狀態).
+	var scenario: Dictionary = _fast_scenario("sys23_tst09_csv")
+	scenario["grid"] = {"PRM-SYS05-MIN_CASH_UNIT": [1, 1]}
+	scenario["seeds"] = [1]
+	var engine := _make_engine()
+	engine.session_reset = _session_reset
+	engine.before_day = func(combo_index: int, day: int) -> void:
+		if combo_index == 1 and day == 1 and GoodCatalog.is_loaded() and GoodsLedger.is_loaded():
+			var good: StringName = StringName(GoodCatalog.all_ids()[0])
+			var key: String = String(
+				GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01")
+			)
+			if not GoodsLedger._stock.has(key):
+				GoodsLedger._stock[key] = {}
+			var bucket: Dictionary = GoodsLedger._stock[key]
+			bucket[String(good)] = int(bucket.get(String(good), 0)) + 1
+			GoodsLedger._stock[key] = bucket
+	var result: Dictionary = engine.run_scenario_dict(scenario)
+	assert_true(result["ok"])
+	var path: String = SimCsvOut.out_dir(String(scenario["scenario_id"])) + "summary.csv"
+	var text: String = FileAccess.get_file_as_string(path)
+	print("TST09_SUMMARY_CSV_BEGIN\n%sTST09_SUMMARY_CSV_END" % text)
+	print(
+		"TST09_ERR07_STATE_NOTE: ERR-SYS23-07 abort_reason lands in summary.abort_reason; season/daily rows sampled before abort remain in CSVs; MET-01..05b blank on aborted row; MET-06=conservation hits"
+	)
+	assert_push_error_count(1)
 
 
 func test_WP26_evidence_cli_twice_cmp() -> void:
@@ -433,13 +634,14 @@ func test_WP26_evidence_cli_twice_cmp() -> void:
 	assert_true(
 		String(snap_a["summary.csv"]).find("aborted,") >= 0
 		or String(snap_a["summary.csv"]).find("\n0,") >= 0
-		or String(snap_a["summary.csv"]).find("\n0.0,") >= 0
 	)
 	## Must not be an aborted-only empty run: expect season rows.
 	assert_gt(String(snap_a["season_cells.csv"]).split("\n").size(), 1)
-	## OBS-03 cell blank in summary CSV.
-	var sum_hdr: PackedStringArray = String(snap_a["summary.csv"]).get_slice("\n", 0).split(",")
-	var sum_row: PackedStringArray = String(snap_a["summary.csv"]).get_slice("\n", 1).split(",")
+	## OBS-03 blank (success rows have no commas in OBS-01, so split is safe).
+	var sum_body: String = String(snap_a["summary.csv"])
+	assert_true(sum_body.find("boot failed") < 0, "CLI must boot successfully")
+	var sum_hdr: PackedStringArray = sum_body.get_slice("\n", 0).split(",")
+	var sum_row: PackedStringArray = sum_body.get_slice("\n", 1).split(",")
 	var obs03_i := -1
 	for i in range(sum_hdr.size()):
 		if String(sum_hdr[i]) == "OBS-03":

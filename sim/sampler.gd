@@ -155,8 +155,11 @@ func _weekly_offtake_like_pricer(port_s: String, good_s: String) -> float:
 	var window_qty: int = 0
 	var window_days: int = 1
 	if not snap.is_empty():
-		window_qty = int(snap.get(MarketPricer.FIELD_WINDOW_QTY, 0))
-		window_days = int(snap.get(MarketPricer.FIELD_WINDOW_DAYS, 1))
+		## 甲：offtake_snapshot window_* 為 int；防衛性 typeof 分支，不用 int() 截斷。
+		var wq: Variant = snap.get(MarketPricer.FIELD_WINDOW_QTY, 0)
+		var wd: Variant = snap.get(MarketPricer.FIELD_WINDOW_DAYS, 1)
+		window_qty = wq if typeof(wq) == TYPE_INT else floori(float(wq))
+		window_days = wd if typeof(wd) == TYPE_INT else floori(float(wd))
 		if window_days < 1:
 			window_days = 1
 	if window_qty <= 0:

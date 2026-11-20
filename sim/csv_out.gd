@@ -65,9 +65,11 @@ static func _write_season_cells(path: String, rows: Array) -> void:
 		lines.append(
 			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
-				r["run_id"], r["seed"], r["season_index"], r["port_id"], r["good_id"],
-				r["stock"], r["mid_li"], r["stock_weeks"], r["band"],
-				r["produced"], r["consumed"], r["relocated_in"], r["relocated_out"],
+				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]),
+				r["port_id"], r["good_id"],
+				_fmt(r["stock"]), _fmt(r["mid_li"]), _fmt(r["stock_weeks"]), _fmt(r["band"]),
+				_fmt(r["produced"]), _fmt(r["consumed"]),
+				_fmt(r["relocated_in"]), _fmt(r["relocated_out"]),
 			]
 		)
 	_store(path, lines)
@@ -80,9 +82,10 @@ static func _write_season_ports(path: String, rows: Array) -> void:
 		lines.append(
 			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
-				r["run_id"], r["seed"], r["season_index"], r["port_id"],
-				r["rich"], r["citizen"], r["poor"], r["beggar"], r["sat_weighted"],
-				r["workplaces"], r["beds"], r["city_balance_li"],
+				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]), r["port_id"],
+				_fmt(r["rich"]), _fmt(r["citizen"]), _fmt(r["poor"]), _fmt(r["beggar"]),
+				_fmt(r["sat_weighted"]), _fmt(r["workplaces"]), _fmt(r["beds"]),
+				_fmt(r["city_balance_li"]),
 			]
 		)
 	_store(path, lines)
@@ -95,9 +98,10 @@ static func _write_daily(path: String, rows: Array) -> void:
 		lines.append(
 			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
-				r["run_id"], r["seed"], r["day"], r["good_id"],
-				r["stock"], r["mid_li"], r["stock_weeks"], r["band"],
-				r["produced"], r["consumed"], r["relocated_in"], r["relocated_out"],
+				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["day"]), r["good_id"],
+				_fmt(r["stock"]), _fmt(r["mid_li"]), _fmt(r["stock_weeks"]), _fmt(r["band"]),
+				_fmt(r["produced"]), _fmt(r["consumed"]),
+				_fmt(r["relocated_in"]), _fmt(r["relocated_out"]),
 			]
 		)
 	_store(path, lines)
@@ -112,14 +116,14 @@ static func _write_summary(path: String, rows: Array) -> void:
 		lines.append(
 			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
-				r["run_id"], r["combo_index"], r["seed"], combo_esc,
-				r["aborted"], reason_esc,
-				r["MET-01"], r["MET-01_pass"], r["MET-02"], r["MET-02_pass"],
-				r["MET-03"], r["MET-03_pass"], r["MET-04"], r["MET-04_pass"],
-				r["MET-05a"], r["MET-05a_pass"], r["MET-05b"], r["MET-05b_pass"],
-				r["MET-06"], r["MET-06_pass"],
-				_csv_escape(String(r["OBS-01"])), r["OBS-02"], r["OBS-03"],
-				r["elapsed_ms"],
+				_fmt(r["run_id"]), _fmt(r["combo_index"]), _fmt(r["seed"]), combo_esc,
+				_fmt(r["aborted"]), reason_esc,
+				_fmt(r["MET-01"]), r["MET-01_pass"], _fmt(r["MET-02"]), r["MET-02_pass"],
+				_fmt(r["MET-03"]), r["MET-03_pass"], _fmt(r["MET-04"]), r["MET-04_pass"],
+				_fmt(r["MET-05a"]), r["MET-05a_pass"], _fmt(r["MET-05b"]), r["MET-05b_pass"],
+				_fmt(r["MET-06"]), r["MET-06_pass"],
+				_csv_escape(String(r["OBS-01"])), _fmt(r["OBS-02"]), _fmt(r["OBS-03"]),
+				_fmt(r["elapsed_ms"]),
 			]
 		)
 	_store(path, lines)
@@ -132,18 +136,37 @@ static func _write_combos(path: String, rows: Array) -> void:
 		lines.append(
 			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
-				r["combo_index"], _csv_escape(String(r["combo"])),
-				r["MET-01_avg"], r["MET-01_min"], r["MET-01_max"],
-				r["MET-02_avg"], r["MET-02_min"], r["MET-02_max"],
-				r["MET-03_avg"], r["MET-03_min"], r["MET-03_max"],
-				r["MET-04_avg"], r["MET-04_min"], r["MET-04_max"],
-				r["MET-05a_avg"], r["MET-05a_min"], r["MET-05a_max"],
-				r["MET-05b_avg"], r["MET-05b_min"], r["MET-05b_max"],
-				r["MET-06_avg"], r["MET-06_min"], r["MET-06_max"],
+				_fmt(r["combo_index"]), _csv_escape(String(r["combo"])),
+				_fmt(r["MET-01_avg"]), _fmt(r["MET-01_min"]), _fmt(r["MET-01_max"]),
+				_fmt(r["MET-02_avg"]), _fmt(r["MET-02_min"]), _fmt(r["MET-02_max"]),
+				_fmt(r["MET-03_avg"]), _fmt(r["MET-03_min"]), _fmt(r["MET-03_max"]),
+				_fmt(r["MET-04_avg"]), _fmt(r["MET-04_min"]), _fmt(r["MET-04_max"]),
+				_fmt(r["MET-05a_avg"]), _fmt(r["MET-05a_min"]), _fmt(r["MET-05a_max"]),
+				_fmt(r["MET-05b_avg"]), _fmt(r["MET-05b_min"]), _fmt(r["MET-05b_max"]),
+				_fmt(r["MET-06_avg"]), _fmt(r["MET-06_min"]), _fmt(r["MET-06_max"]),
 				r["combo_pass"],
 			]
 		)
 	_store(path, lines)
+
+
+static func _fmt(v: Variant) -> String:
+	## Integers emit without ".0". Blank string stays blank.
+	## Integral floats (JSON 乙) → decimal int via floori; fractional floats kept.
+	if typeof(v) == TYPE_NIL:
+		return ""
+	if typeof(v) == TYPE_STRING:
+		return String(v)
+	if typeof(v) == TYPE_BOOL:
+		return "1" if bool(v) else "0"
+	if typeof(v) == TYPE_INT:
+		return "%d" % v
+	if typeof(v) == TYPE_FLOAT:
+		var f: float = float(v)
+		if is_equal_approx(f, roundf(f)):
+			return "%d" % floori(f)
+		return str(f)
+	return str(v)
 
 
 static func _csv_escape(s: String) -> String:

@@ -92,9 +92,10 @@ func run_one_job(
 func _run_one_job(
 	scenario: Dictionary, job: Dictionary, overrides: Dictionary, daily_ports: Array
 ) -> Dictionary:
-	var run_id: int = int(job["run_id"])
-	var combo_index: int = int(job["combo_index"])
-	var seed: int = int(job["seed"])
+	## 乙：job 可能經 JSON roundtrip（CLI 子行程）→ floori 還原整數。
+	var run_id: int = _job_int(job["run_id"])
+	var combo_index: int = _job_int(job["combo_index"])
+	var seed: int = _job_int(job["seed"])
 	var combo: Dictionary = job["combo"]
 	var t0: int = Time.get_ticks_msec()
 
@@ -189,6 +190,7 @@ func _run_one_job(
 func _abort_summary(
 	run_id: int, combo_index: int, seed: int, combo: Dictionary, reason: String, t0: int
 ) -> Dictionary:
+	## No-value MET → blank (not 0.0). MET-06 blank when no measured conservation hits.
 	return {
 		"run_id": run_id,
 		"combo_index": combo_index,
@@ -196,20 +198,20 @@ func _abort_summary(
 		"combo": JSON.stringify(combo),
 		"aborted": 1,
 		"abort_reason": reason,
-		"MET-01": 0.0,
+		"MET-01": "",
 		"MET-01_pass": SimMetrics.PASS_NA,
-		"MET-02": 0.0,
+		"MET-02": "",
 		"MET-02_pass": SimMetrics.PASS_NA,
-		"MET-03": 0.0,
+		"MET-03": "",
 		"MET-03_pass": SimMetrics.PASS_NA,
-		"MET-04": 0.0,
+		"MET-04": "",
 		"MET-04_pass": SimMetrics.PASS_NA,
-		"MET-05a": 0.0,
+		"MET-05a": "",
 		"MET-05a_pass": SimMetrics.PASS_NA,
-		"MET-05b": 0.0,
+		"MET-05b": "",
 		"MET-05b_pass": SimMetrics.PASS_NA,
-		"MET-06": 0.0,
-		"MET-06_pass": "0",
+		"MET-06": "",
+		"MET-06_pass": SimMetrics.PASS_NA,
 		"OBS-01": "",
 		"OBS-02": "",
 		"OBS-03": "",
@@ -224,3 +226,10 @@ func _combo_count(grid: Dictionary) -> int:
 	for k_v in grid.keys():
 		n = n * (grid[k_v] as Array).size()
 	return n
+
+
+static func _job_int(v: Variant) -> int:
+	## 乙：JSON／Variant 整數還原。
+	if typeof(v) == TYPE_INT:
+		return v
+	return floori(float(v))
