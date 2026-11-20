@@ -74,6 +74,9 @@ func before_each() -> void:
 	assert_eq(params_errors.size(), 0, "params fixture must load")
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
+	## D-30a: unload ShipRegistry so HOLD capacity／transfer fixtures stay ledger-only.
+	ShipRegistry._loaded = false
+	ShipRegistry._sailor_pool = null
 	var goods_dir := _build_valid_goods(GOODS_FIXTURE_ROOT + "base/")
 	var goods_errors: Array = GoodCatalog.load_and_validate(goods_dir)
 	assert_eq(goods_errors.size(), 0, "goods fixture must load")

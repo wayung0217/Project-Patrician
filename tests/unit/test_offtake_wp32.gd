@@ -36,6 +36,10 @@ func before_each() -> void:
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
 	_wipe_dir(PARAMS_OVERRIDE_ROOT)
+	## D-30a side-effect: prior SimLoop boots may leave ShipRegistry loaded; HOLD
+	## fixtures here are ledger-only (no ShipRegistry dock), so unload (FRM-SYS13-10).
+	ShipRegistry._loaded = false
+	ShipRegistry._sailor_pool = null
 	_boot_catalog_ports_ledger()
 
 

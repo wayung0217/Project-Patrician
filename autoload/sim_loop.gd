@@ -102,11 +102,8 @@ func boot(
 	errors.append_array(MarketPricer.load_and_validate(curve_path))
 	errors.append_array(CashLedger.load_and_validate())
 	# D-17d／D-17c: PopulationModel after CashLedger／before BuildingEconomy.
-	# WP-22: inject DemandModel sat only when formal／fixture tables exist (else keep SAT_PROVIDER_MISSING).
-	if (
-		not PopulationModel.has_satisfaction_input_provider()
-		and FileAccess.file_exists(demand_tables_path)
-	):
+	# WP-34／D-30a: always wire DemandModel sat when unset (no file_exists gate).
+	if not PopulationModel.has_satisfaction_input_provider():
 		PopulationModel.set_satisfaction_input_provider(DemandModel.get_satisfaction_input_provider())
 	errors.append_array(PopulationModel.load_and_validate())
 	if PopulationModel.is_loaded():
@@ -121,8 +118,9 @@ func boot(
 	if BuildingEconomy.is_loaded() and errors.is_empty():
 		errors.append_array(BuildingEconomy.apply_opening_init())
 
-	# D-09a／WP-22: DemandModel after opening init when no ConsumptionProvider was pre-injected.
-	# Phase tests that inject a fixture provider skip DemandModel load (formal tables may be absent).
+	# D-09a／WP-22／D-30a: DemandModel after opening init when no ConsumptionProvider pre-injected.
+	# Missing demand dir → ERR-SYS06-01 collected; refuse boot (C-06／D-25b). Injected
+	# fixture ConsumptionProvider still skips DemandModel load.
 	if _consumption == null:
 		errors.append_array(DemandModel.load_and_validate(demand_tables_path))
 		if DemandModel.is_loaded():

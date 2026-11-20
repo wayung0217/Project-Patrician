@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b1xdkhutjwx0w"
+
+[deps]
+
+files=["res://tests/fixtures/demand/bad_type/substitutions.substitute.translation", "res://tests/fixtures/demand/bad_type/substitutions.cap.translation", "res://tests/fixtures/demand/bad_type/substitutions.utility.translation"]
+
+source_file="res://tests/fixtures/demand/bad_type/substitutions.csv"
+dest_files=["res://tests/fixtures/demand/bad_type/substitutions.substitute.translation", "res://tests/fixtures/demand/bad_type/substitutions.cap.translation", "res://tests/fixtures/demand/bad_type/substitutions.utility.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

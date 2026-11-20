@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cklsqcxconl5j"
+
+[deps]
+
+files=["res://tests/fixtures/demand/bad_extra_col/demand_rates.poor.translation", "res://tests/fixtures/demand/bad_extra_col/demand_rates.citizen.translation", "res://tests/fixtures/demand/bad_extra_col/demand_rates.rich.translation", "res://tests/fixtures/demand/bad_extra_col/demand_rates.extra.translation"]
+
+source_file="res://tests/fixtures/demand/bad_extra_col/demand_rates.csv"
+dest_files=["res://tests/fixtures/demand/bad_extra_col/demand_rates.poor.translation", "res://tests/fixtures/demand/bad_extra_col/demand_rates.citizen.translation", "res://tests/fixtures/demand/bad_extra_col/demand_rates.rich.translation", "res://tests/fixtures/demand/bad_extra_col/demand_rates.extra.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

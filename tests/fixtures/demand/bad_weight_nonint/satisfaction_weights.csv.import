@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b1kl25mfog8o5"
+
+[deps]
+
+files=["res://tests/fixtures/demand/bad_weight_nonint/satisfaction_weights.poor.translation", "res://tests/fixtures/demand/bad_weight_nonint/satisfaction_weights.citizen.translation", "res://tests/fixtures/demand/bad_weight_nonint/satisfaction_weights.rich.translation"]
+
+source_file="res://tests/fixtures/demand/bad_weight_nonint/satisfaction_weights.csv"
+dest_files=["res://tests/fixtures/demand/bad_weight_nonint/satisfaction_weights.poor.translation", "res://tests/fixtures/demand/bad_weight_nonint/satisfaction_weights.citizen.translation", "res://tests/fixtures/demand/bad_weight_nonint/satisfaction_weights.rich.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

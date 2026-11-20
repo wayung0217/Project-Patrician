@@ -106,6 +106,9 @@ func before_each() -> void:
 	_wipe_dir(PORTS_FIXTURE_ROOT)
 	_wipe_dir(CURVE_FIXTURE_ROOT)
 	_wipe_dir(PARAMS_OVERRIDE_ROOT)
+	## D-30a: unload ShipRegistry so HOLD transfer fixtures are not dock-gated.
+	ShipRegistry._loaded = false
+	ShipRegistry._sailor_pool = null
 
 
 func test_consumption_provider_base_push_error() -> void:

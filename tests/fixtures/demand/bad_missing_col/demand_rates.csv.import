@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://b8gdmt7c83pn4"
+
+[deps]
+
+files=["res://tests/fixtures/demand/bad_missing_col/demand_rates.poor.translation", "res://tests/fixtures/demand/bad_missing_col/demand_rates.citizen.translation"]
+
+source_file="res://tests/fixtures/demand/bad_missing_col/demand_rates.csv"
+dest_files=["res://tests/fixtures/demand/bad_missing_col/demand_rates.poor.translation", "res://tests/fixtures/demand/bad_missing_col/demand_rates.citizen.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

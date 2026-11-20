@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cim5jsb66qct1"
+
+[deps]
+
+files=["res://tests/fixtures/demand/bad_ppm_decimals/demand_rates.poor.translation", "res://tests/fixtures/demand/bad_ppm_decimals/demand_rates.citizen.translation", "res://tests/fixtures/demand/bad_ppm_decimals/demand_rates.rich.translation"]
+
+source_file="res://tests/fixtures/demand/bad_ppm_decimals/demand_rates.csv"
+dest_files=["res://tests/fixtures/demand/bad_ppm_decimals/demand_rates.poor.translation", "res://tests/fixtures/demand/bad_ppm_decimals/demand_rates.citizen.translation", "res://tests/fixtures/demand/bad_ppm_decimals/demand_rates.rich.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
