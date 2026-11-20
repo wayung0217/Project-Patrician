@@ -134,6 +134,12 @@ func boot(
 	if ShipRegistry.is_loaded() and errors.is_empty():
 		errors.append_array(ShipRegistry.apply_opening_init())
 
+	# D-34d／25.1: IntelLedger after ShipRegistry; inject ShipEventObserver; ERR-SYS15-06.
+	errors.append_array(IntelLedger.load_and_validate())
+	if IntelLedger.is_loaded() and ShipRegistry.is_loaded():
+		ShipRegistry.set_ship_observer(IntelLedger.get_ship_event_observer())
+	errors.append_array(IntelLedger.boot_gate_errors())
+
 	# 2.3-03: 未注入 provider（且 DemandModel 未載入）→ boot() 回錯誤。
 	if _consumption == null:
 		var missing := {
@@ -231,6 +237,10 @@ func tick_day() -> Array:
 	if ShipRegistry.is_loaded():
 		day_errors.append_array(ShipRegistry.daily_step(Clock.day))
 
+	# 25.1 F／D-34d: IntelLedger.daily_step after ShipRegistry, before TraderRegistry (not yet).
+	if IntelLedger.is_loaded():
+		day_errors.append_array(IntelLedger.daily_step(Clock.day))
+
 	# 2.3-03 步驟 3: 注入的 ConsumptionProvider 執行 CONSUME，依 (port_id, good_id) 升序
 	day_errors.append_array(_run_daily_consume(Clock.day))
 
@@ -266,6 +276,8 @@ func tick_day() -> Array:
 		PopulationModel.flush_signals()
 	if ShipRegistry.is_loaded():
 		ShipRegistry.flush_signals()
+	if IntelLedger.is_loaded():
+		IntelLedger.flush_signals()
 	Clock.day_ticked.emit(Clock.day)
 	if at_cutoff:
 		# D-05(c): season_index = floori((day−1)/D)；首季 0

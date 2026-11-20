@@ -120,7 +120,7 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_autoload_order_2_2_01() -> void:
-	# D-14c／D-09a: … → BuildingEconomy → PopulationModel → DemandModel → ShipRegistry → SimLoop
+	# D-14c／D-09a／D-34d: … → ShipRegistry → IntelLedger → SimLoop
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -134,6 +134,7 @@ func test_autoload_order_2_2_01() -> void:
 		"PopulationModel",
 		"DemandModel",
 		"ShipRegistry",
+		"IntelLedger",
 		"SimLoop",
 	]
 	for name_variant in expected:

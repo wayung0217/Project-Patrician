@@ -81,6 +81,7 @@ const PATH_KEY_FROM_NODE := "from_node"
 
 var _loaded: bool = false
 var _sailor_pool: SailorPoolProvider = null
+var _ship_observer: ShipEventObserver = null
 var _ships: Dictionary = {} ## ship_id:String → Ship
 var _next_ship_seq: int = 1
 var _last_error: Dictionary = {}
@@ -102,6 +103,15 @@ func set_sailor_pool_provider(provider: SailorPoolProvider) -> void:
 
 func has_sailor_pool_provider() -> bool:
 	return _sailor_pool != null
+
+
+func set_ship_observer(observer: ShipEventObserver) -> void:
+	## D-34d／25.1 H: SimLoop.boot injects IntelLedger adapter (ERR-SYS15-06 if missing).
+	_ship_observer = observer
+
+
+func has_ship_observer() -> bool:
+	return _ship_observer != null
 
 
 func get_hold_capacity_provider() -> CapacityProvider:
@@ -304,6 +314,9 @@ func sail(actor: StringName, ship_id: StringName, dest_port: StringName) -> int:
 	GoodsLedger.set_container_port(hold_id, &"")
 	_queue_signal("ship_departed", [s.ship_id, from_port, dest_port, depart_tick, arrival])
 	_flush_signals()
+	# 25.1 F／D-34d: on_departed after SAILING committed, before return (snapshot fail ≠ block sail).
+	if _ship_observer != null:
+		_ship_observer.on_departed(s.ship_id, s.owner, from_port, depart_tick)
 	return arrival
 
 
@@ -481,6 +494,7 @@ func hold_transfer_allowed(container: Variant) -> bool:
 
 func tick_step(tick: int) -> void:
 	## FRM-SYS14-06: arrivals with arrival_tick == tick, ship_id ascending.
+	## 25.1 F／D-34d: after arrival loop, on_arrivals at most once (batch atomic).
 	assert(_loaded, "ShipRegistry.tick_step before load")
 	var arriving: Array = []
 	for key in _ships.keys():
@@ -488,10 +502,13 @@ func tick_step(tick: int) -> void:
 		if s.state == Ship.STATE_SAILING and s.arrival_tick == tick:
 			arriving.append(s)
 	arriving.sort_custom(func(a: Ship, b: Ship) -> bool: return String(a.ship_id) < String(b.ship_id))
+	var arrivals: Array = []
 	for s_variant in arriving:
 		var s: Ship = s_variant
 		var from_port: StringName = s.origin_port
 		var dest: StringName = s.dest_port
+		var owner_id: StringName = s.owner
+		var sid: StringName = s.ship_id
 		s.state = Ship.STATE_DOCKED
 		s.port_id = dest
 		s.path = []
@@ -500,6 +517,14 @@ func tick_step(tick: int) -> void:
 		s.wp_offset = 0
 		GoodsLedger.set_container_port(s.hold_container_id(), dest)
 		_queue_signal("ship_arrived", [s.ship_id, dest, from_port, tick])
+		arrivals.append({
+			"ship_id": sid,
+			"owner_id": owner_id,
+			"port_id": dest,
+			"from_port_id": from_port,
+		})
+	if not arrivals.is_empty() and _ship_observer != null:
+		_ship_observer.on_arrivals(tick, arrivals)
 	_flush_signals()
 
 
@@ -573,6 +598,7 @@ func _clear_runtime(keep_provider: bool) -> void:
 	_last_error = {}
 	_pending_signals = []
 	_hold_provider = null
+	_ship_observer = null
 	if not keep_provider:
 		_sailor_pool = null
 

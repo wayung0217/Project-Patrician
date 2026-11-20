@@ -540,5 +540,33 @@
     "type": "int",
     "min": 100,
     "max": 100
+  },
+  "PRM-SYS15-WINDOW_DAYS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS15-DECAY_DAYS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS15-DIVERGENCE_LO_PPM": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS15-DIVERGENCE_HI_PPM": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS15-DIRECTION_DEADBAND_PPM": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS15-WEEKS_SCALE": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS15-PUBLIC_DELAY_TICKS": {
+    "type": "int",
+    "min": 0
   }
 }

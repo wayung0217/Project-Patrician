@@ -151,7 +151,7 @@ func validate() -> Array:
 
 
 func mid_price(port_id: StringName, good_id: StringName) -> float:
-	# FRM-SYS04-03: mid = anchor × m(w)
+	# FRM-SYS04-03: mid = anchor × m(w); w via single weeks formula (D-34d／N-04).
 	assert(_loaded, "MarketPricer.mid_price before load_and_validate")
 	_clear_last_error()
 	var ctx: Dictionary = _resolve_context(port_id, good_id)
@@ -159,9 +159,8 @@ func mid_price(port_id: StringName, good_id: StringName) -> float:
 		_fail_from_ctx(ctx)
 		return 0.0
 	var anchor: int = int(ctx[FIELD_ANCHOR])
-	var stock: int = int(ctx["stock"])
-	var weekly_offtake: float = float(ctx["weekly_offtake"])
-	var m: float = _multiplier_for_stock(stock, weekly_offtake)
+	var w: Variant = _stock_weeks_raw(int(ctx["stock"]), float(ctx["weekly_offtake"]))
+	var m: float = _floor_mult() if w == null else _m_of_w(float(w))
 	return float(anchor) * m
 
 
@@ -213,13 +212,27 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 		# FRM-SYS04-05 + D-01: FLOOR(quantize(Area × (1 − HALF_SPREAD)))
 		total = floori(AmountQuantize.quantize_amount(area * (EQ_MULT - half)))
 
-	var mid_after: float = float(anchor) * _multiplier_for_stock(stock_after, weekly_offtake)
+	var w_after: Variant = _stock_weeks_raw(stock_after, weekly_offtake)
+	var mid_after: float = (
+		float(anchor) * _floor_mult() if w_after == null else float(anchor) * _m_of_w(float(w_after))
+	)
 	var ratio: float = mid_after / float(anchor) if anchor > 0 else 0.0
 	out[KEY_TOTAL_LI] = total
 	out[KEY_AVG_LI] = float(total) / float(qty)
 	out[KEY_MID_AFTER] = mid_after
 	out[KEY_BAND_AFTER] = indicator_band(ratio)
 	return out
+
+
+func stock_weeks(port_id: StringName, good_id: StringName) -> Variant:
+	## D-34d／FRM-SYS04-01: weeks = stock ÷ weekly_offtake；window_qty＝0 → null（不得填 0）.
+	assert(_loaded, "MarketPricer.stock_weeks before load_and_validate")
+	_clear_last_error()
+	var ctx: Dictionary = _resolve_context(port_id, good_id)
+	if ctx.has(KEY_ERROR):
+		_fail_from_ctx(ctx)
+		return null
+	return _stock_weeks_raw(int(ctx["stock"]), float(ctx["weekly_offtake"]))
 
 
 func indicator_band(ratio: float) -> int:
@@ -298,12 +311,11 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 	}
 
 
-func _multiplier_for_stock(stock: int, weekly_offtake: float) -> float:
-	# FRM-SYS04-01／09（改）: w = stock ÷ weekly_offtake；window_qty=0 → m = M_n
+func _stock_weeks_raw(stock: int, weekly_offtake: float) -> Variant:
+	# Single weeks formula site (TST-SYS15-19／N-04): stock ÷ weekly_offtake；≤0 → null.
 	if weekly_offtake <= 0.0:
-		return _floor_mult()
-	var w: float = float(stock) / weekly_offtake
-	return _m_of_w(w)
+		return null
+	return float(stock) / weekly_offtake
 
 
 func _m_of_w(w: float) -> float:
@@ -330,17 +342,17 @@ func _floor_mult() -> float:
 
 
 func _batch_area(anchor: int, weekly_offtake: float, stock_before: int, stock_after: int) -> float:
-	# FRM-SYS04-04／09（改）: Area uses weekly_offtake; window_qty=0 → anchor × M_n × q
+	# FRM-SYS04-04／09（改）: Area uses weekly_offtake; weeks via _stock_weeks_raw (N-04).
 	var q: int = stock_after - stock_before
 	if q < 0:
 		q = 0 - q
-	if weekly_offtake <= 0.0:
+	var w_before: Variant = _stock_weeks_raw(stock_before, weekly_offtake)
+	if w_before == null:
 		# FRM-SYS04-09（改）
 		return float(anchor) * _floor_mult() * float(q)
 	var c_f: float = weekly_offtake
-	var w_before: float = float(stock_before) / c_f
-	var w_after: float = float(stock_after) / c_f
-	var delta_g: float = _G(w_after) - _G(w_before)
+	var w_after: Variant = _stock_weeks_raw(stock_after, weekly_offtake)
+	var delta_g: float = _G(float(w_after)) - _G(float(w_before))
 	if delta_g < 0.0:
 		delta_g = 0.0 - delta_g
 	return float(anchor) * c_f * delta_g
