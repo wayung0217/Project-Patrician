@@ -1,0 +1,17 @@
+﻿port_id,name_zh,is_free_port,draft_limit_class,regime_id
+PT-01,月港,false,2,明
+PT-02,安海,true,2,明（鄭氏實控）
+PT-03,福州,false,3,明
+PT-04,寧波,true,2,明
+PT-05,松江,true,1,明
+PT-06,澎湖,true,2,明（巡檢司）
+PT-07,大員,false,2,荷蘭 VOC
+PT-08,雞籠,false,3,西班牙→荷蘭
+PT-09,淡水,false,2,西班牙→荷蘭
+PT-10,魍港,true,1,無主（漢人聚落）
+PT-11,那霸,true,2,琉球王府
+PT-12,長崎,false,3,日本幕府
+PT-13,平戶,true,2,松浦氏
+PT-14,博多,true,2,日本（黑田氏）
+PT-15,鹿兒島,false,3,島津氏（薩摩）
+PT-16,釜山倭館,false,2,朝鮮（對馬宗氏管）
