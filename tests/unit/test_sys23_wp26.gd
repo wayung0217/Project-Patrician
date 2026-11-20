@@ -131,6 +131,43 @@ func test_TST_SYS23_11_missing_threshold_pass_na() -> void:
 	print("TST-SYS23-11 MET-03=%s pass=%s" % [str(summary["MET-03"]), summary["MET-03_pass"]])
 
 
+func test_WP26_obs03_blank_not_zero() -> void:
+	## OBS-03 undefined until WP-21 — must be blank string, never "0" (C-15 / Owner).
+	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	assert_eq(perr.size(), 0)
+	var sampler := SimSampler.new()
+	sampler.acc = SimTransferAcc.new()
+	sampler.season_ports.append({
+		"run_id": 0, "seed": 1, "season_index": 0, "port_id": "PT-01",
+		"rich": 1, "citizen": 1, "poor": 1, "beggar": 0, "sat_weighted": 1,
+		"workplaces": 0, "beds": 0, "city_balance_li": 0,
+	})
+	var summary: Dictionary = SimMetrics.compute(
+		sampler, 0, 1, {}, false, "", 0, 0, 0, 1, {}
+	)
+	assert_eq(String(summary["OBS-03"]), "")
+	assert_ne(String(summary["OBS-03"]), "0")
+	## Write summary CSV and assert OBS-03 cell is empty (not the digit 0).
+	var sid := "sys23_obs03_blank"
+	SimCsvOut.write_all(sid, sampler, [summary], SimMetrics.aggregate_combos([summary]), [])
+	var text: String = FileAccess.get_file_as_string(SimCsvOut.out_dir(sid) + "summary.csv")
+	var lines: PackedStringArray = text.strip_edges().split("\n")
+	assert_eq(lines.size(), 2)
+	var hdr: PackedStringArray = String(lines[0]).split(",")
+	var cols: PackedStringArray = String(lines[1]).split(",")
+	var obs03_i: int = -1
+	for i in range(hdr.size()):
+		if String(hdr[i]) == "OBS-03":
+			obs03_i = i
+			break
+	assert_gt(obs03_i, -1, "OBS-03 column missing")
+	assert_eq(String(cols[obs03_i]), "", "OBS-03 CSV cell must be blank")
+	## combos.csv has no OBS columns — confirm header has none.
+	var combos_hdr: String = _first_line(SimCsvOut.out_dir(sid) + "combos.csv")
+	assert_eq(combos_hdr.find("OBS-03"), -1)
+	print("WP26 OBS-03 blank ok; summary cell empty; combos has no OBS-03")
+
+
 func test_TST_SYS23_10_met_hand_fixture() -> void:
 	## Hand fixture: 2 eval cells, both band equilibrium with stock_weeks set → MET-01 = 1.
 	var perr: Array = Params.load_and_validate(PARAMS_ALL)

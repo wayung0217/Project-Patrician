@@ -211,8 +211,8 @@ func _abort_summary(
 		"MET-06": 0.0,
 		"MET-06_pass": "0",
 		"OBS-01": "",
-		"OBS-02": "0",
-		"OBS-03": "0",
+		"OBS-02": "",
+		"OBS-03": "",
 		"elapsed_ms": Time.get_ticks_msec() - t0,
 	}
 

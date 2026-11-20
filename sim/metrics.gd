@@ -41,7 +41,8 @@ static func compute(
 	var met06: Dictionary = _met06(sampler.conservation_hits, aborted)
 	var obs01: String = _obs01(eval_ports)
 	var obs02: String = _obs02(eval_ports)
-	var obs03: String = "0" ## OBS-03 precise lock definition pending WP-21; record 0.
+	## OBS-03 precise lock definition pending WP-21 (9.5 K) — no value → blank, not "0".
+	var obs03: String = ""
 
 	return {
 		"run_id": run_id,
