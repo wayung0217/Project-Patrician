@@ -67,7 +67,11 @@ func _run() -> void:
 	if tables_path.is_empty() or tables_path == "<null>":
 		tables_path = "res://data/demand/"
 	print("PROBE_BOOT: paths goods=%s ports=%s demand=%s" % [goods_dir, ports_dir, tables_path])
-	## D-63b: probe expects successful boot → inject deny-all fixtures（not formal always-allow）.
+	## D-60f／D-63b: probe expects successful boot → inject deny-all fixtures（not formal always-allow）.
+	var intel: Node = root.get_node_or_null("IntelLedger")
+	if intel != null and not bool(intel.call("has_broker_provider")):
+		var fixture_script: GDScript = load("res://sim/sim_broker_fixture.gd") as GDScript
+		intel.call("set_broker_provider", fixture_script.new())
 	var trade_desk: Node = root.get_node_or_null("TradeDesk")
 	if trade_desk != null:
 		if not bool(trade_desk.call("has_qualification_provider")):

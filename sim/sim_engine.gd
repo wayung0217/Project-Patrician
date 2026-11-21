@@ -117,7 +117,9 @@ func _run_one_job(
 	if not GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.connect(sampler.on_conservation)
 
-	# D-63b: sim expects successful boot → inject deny-all fixtures（not formal always-allow）.
+	# D-60f／D-63b: sim expects successful boot → inject deny-all fixtures（not formal always-allow）.
+	if not IntelLedger.has_broker_provider():
+		IntelLedger.set_broker_provider(SimBrokerFixture.new())
 	# Allow re-inject after a prior boot left TradeDesk._loaded true without providers.
 	if not TradeDesk.has_qualification_provider() or not TradeDesk.has_trade_observers():
 		TradeDesk._loaded = false
