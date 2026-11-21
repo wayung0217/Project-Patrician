@@ -63,7 +63,9 @@ signal satisfaction_changed(port_id: StringName)
 var _sat_input: SatisfactionInputProvider = null
 var _ports: Dictionary = {} ## port_id → PortPop
 var _workers: Dictionary = {} ## ws_id:String → int
-var _residents: Dictionary = {} ## res_id:String → {poor,citizen,rich,ring}
+var _residents: Dictionary = {} ## res_id:String → {poor,citizen,rich,ring,cap,port}
+var _port_res_ids: Dictionary = {} ## port_id → Array[String] sorted local res_ids
+var _opening_placed: Dictionary = {} ## port_id → bool (FRM-SYS07-14 once)
 var _seed: int = 0
 var _loaded: bool = false
 var _last_error: Dictionary = {}
@@ -72,6 +74,8 @@ var _work_adapter: _WorkAdapter = null
 var _sailor_adapter: _SailorAdapter = null
 var _pending_pop_ports: Array = []
 var _pending_sat_ports: Array = []
+## Test／WP-51: count Rng.derive_seed calls during placement (movers only after opening).
+var _wp51_rng_calls: int = 0
 
 
 func _ready() -> void:
@@ -308,8 +312,14 @@ func set_residence_occupants(
 	res_id: StringName, poor: int, citizen: int, rich: int, ring: int = 1
 ) -> void:
 	assert(_loaded, "PopulationModel.set_residence_occupants before load")
-	_residents[String(res_id)] = {
-		"poor": poor, "citizen": citizen, "rich": rich, "ring": ring, "cap": 100
+	var rid: String = String(res_id)
+	_residents[rid] = {
+		"poor": poor,
+		"citizen": citizen,
+		"rich": rich,
+		"ring": ring,
+		"cap": 100,
+		"port": "",
 	}
 
 
@@ -405,6 +415,11 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 	var s0_sat_p: int = p.sat_poor
 	var s0_sat_c: int = p.sat_citizen
 	var s0_sat_r: int = p.sat_rich
+	# FRM-SYS07-14／D-63e: one full local placement before first movers (S0 counts).
+	_sync_port_residences(port_id, day)
+	if not bool(_opening_placed.get(port_id, false)):
+		_opening_place_full(port_id, p, day)
+		_opening_placed[port_id] = true
 	# ② sat targets + inertia
 	_update_satisfaction(p, port_id)
 	_pending_sat_ports.append(port_id)
@@ -432,13 +447,23 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 	p.rich = p.rich + int(flows["up2"]) - int(flows["dn2"])
 	_clamp_nonneg(p)
 	# FRM-03／OQ-13w: release workers whose workshops vanished (e.g. demolish).
-	_apply_lost_workshop_workers(port_id, p)
+	var lost_poor: int = _apply_lost_workshop_workers(port_id, p)
 	# FRM-03／Q-07a: residents over job_cap → citizen via PF-5 → beggar (gradual).
-	_apply_job_cap_overflow(port_id, p, s0_cit)
+	var overflow_cit: int = _apply_job_cap_overflow(port_id, p, s0_cit)
 	# ⑥ hire
-	_hire_workers(port_id, p)
-	# ⑦ lottery placement (best-effort redistribute into residences)
-	_place_residents(port_id, p, day)
+	var hired_poor: int = _hire_workers(port_id, p)
+	# ⑦ incremental placement — movers only (FRM-SYS07-12／OQ-13j／D-63e)
+	_place_movers(
+		port_id,
+		day,
+		int(flows["out_poor"]) + lost_poor,
+		overflow_cit,
+		int(flows["dn2"]),
+		int(flows["dn1"]),
+		int(flows["up1"]),
+		int(flows["up2"]),
+		hired_poor
+	)
 	_pending_pop_ports.append(port_id)
 	var _e: Array = errors # reserved
 
@@ -638,26 +663,27 @@ func release_workshop_workers(port_id: StringName, ws_id: StringName) -> void:
 	p.pending_release_workers = p.pending_release_workers + n
 
 
-func _apply_lost_workshop_workers(port_id: String, p: PortPop) -> void:
+func _apply_lost_workshop_workers(port_id: String, p: PortPop) -> int:
 	## OQ-13w／TST-SYS07-08: queued demolish releases → poor become beggars.
 	## Citizen shortfall is gradual via PF-5 (FRM-03／Q-07a), not instant.
 	var hh: int = Params.get_int(PRM_HH)
 	if hh <= 0 or p.pending_release_workers <= 0:
-		return
+		return 0
 	var people: int = p.pending_release_workers * hh
 	p.pending_release_workers = 0
 	var take: int = mini(people, p.poor)
 	p.poor = p.poor - take
 	p.beggar = p.beggar + take
+	return take
 
 
-func _apply_job_cap_overflow(port_id: String, p: PortPop, s0_cit: int) -> void:
+func _apply_job_cap_overflow(port_id: String, p: PortPop, s0_cit: int) -> int:
 	## FRM-03／Q-07a／TST-SYS07-18: residents > job_cap → citizen @ PF-5 → beggar.
 	var job_cap: int = job_capacity(StringName(port_id))
 	var residents: int = p.poor + p.citizen + p.rich
 	var excess: int = residents - job_cap
 	if excess <= 0 or p.citizen <= 0:
-		return
+		return 0
 	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
 	var rate_scale: int = Params.get_int(PRM_RATE_SCALE)
 	var denom: int = rate_scale * days_pw
@@ -666,17 +692,18 @@ func _apply_job_cap_overflow(port_id: String, p: PortPop, s0_cit: int) -> void:
 	flow = mini(flow, excess)
 	flow = mini(flow, p.citizen)
 	if flow <= 0:
-		return
+		return 0
 	p.citizen = p.citizen - flow
 	p.beggar = p.beggar + flow
+	return flow
 
 
-func _hire_workers(port_id: String, p: PortPop) -> void:
+func _hire_workers(port_id: String, p: PortPop) -> int:
 	if not BuildingEconomy.is_loaded():
-		return
+		return 0
 	var hh: int = Params.get_int(PRM_HH)
 	if hh <= 0:
-		return
+		return 0
 	var beds: int = housing_capacity(StringName(port_id))
 	var residents: int = p.poor + p.citizen + p.rich
 	var free_beds: int = beds - residents
@@ -697,7 +724,7 @@ func _hire_workers(port_id: String, p: PortPop) -> void:
 	var h: int = mini(int(p.beggar / hh), int(free_beds / hh))
 	h = mini(h, total_need)
 	if h <= 0:
-		return
+		return 0
 	# Largest remainder allocation across slots
 	var assigned: Dictionary = {}
 	var sum_need: int = maxi(1, total_need)
@@ -716,6 +743,7 @@ func _hire_workers(port_id: String, p: PortPop) -> void:
 			break
 		var idv: StringName = fracs[i]["id"]
 		assigned[idv] = int(assigned.get(idv, 0)) + 1
+	var hired_people := 0
 	for id_k in assigned.keys():
 		var add: int = int(assigned[id_k])
 		if add <= 0:
@@ -723,59 +751,219 @@ func _hire_workers(port_id: String, p: PortPop) -> void:
 		_workers[String(id_k)] = workers(StringName(String(id_k))) + add
 		p.beggar = p.beggar - add * hh
 		p.poor = p.poor + add * hh
+		hired_people = hired_people + add * hh
+	return hired_people
 
 
-func _place_residents(port_id: String, p: PortPop, day: int) -> void:
-	## FRM-12 simplified: fill residences by ring weight using Rng.derive_seed.
+## FRM-SYS07-12 purposes (D-63e／WP-51): place_in / place_up / place_dn
+## (replaced legacy place_poor／place_citizen／place_rich full re-place).
+const PURPOSE_IN := "place_in"
+const PURPOSE_UP := "place_up"
+const PURPOSE_DN := "place_dn"
+
+
+func _sync_port_residences(port_id: String, day: int) -> void:
+	## Keep persistent local occupants; add new residences; demolish → rehouse (OQ-13p／res_id asc).
 	if not BuildingEconomy.is_loaded():
 		return
-	var res_list: Array = BuildingEconomy.residences(StringName(port_id))
-	if res_list.is_empty():
-		return
 	var house_cap: int = Params.get_int(PRM_HOUSE_CAP)
-	var lambda: float = Params.get_float(PRM_LAMBDA)
-	# reset
+	var res_list: Array = BuildingEconomy.residences(StringName(port_id))
+	var live: Dictionary = {} ## res_id → true
+	var ids: Array = []
 	for bld_v in res_list:
 		var bld: Building = bld_v
-		var ring := 1
-		var slot: Slot = BuildingEconomy.get_slot(bld.slot_id)
-		if slot != null:
-			ring = maxi(1, slot.ring)
-		_residents[String(bld.building_id)] = {
-			"poor": 0, "citizen": 0, "rich": 0, "ring": ring, "cap": house_cap
-		}
-	_fill_class(port_id, "poor", p.poor, day, lambda)
-	_fill_class(port_id, "citizen", p.citizen, day, lambda)
-	_fill_class(port_id, "rich", p.rich, day, lambda)
+		var rid: String = String(bld.building_id)
+		live[rid] = true
+		ids.append(rid)
+		if not _residents.has(rid):
+			var ring := 1
+			var slot: Slot = BuildingEconomy.get_slot(bld.slot_id)
+			if slot != null:
+				ring = maxi(1, slot.ring)
+			_residents[rid] = {
+				"poor": 0,
+				"citizen": 0,
+				"rich": 0,
+				"ring": ring,
+				"cap": house_cap,
+				"port": port_id,
+			}
+		else:
+			var r0: Dictionary = _residents[rid]
+			r0["port"] = port_id
+			r0["cap"] = house_cap
+	ids.sort()
+	# Demolished / gone residences previously tracked for this port (res_id asc).
+	var old_ids: Array = _port_res_ids.get(port_id, [])
+	var displaced_poor := 0
+	var displaced_cit := 0
+	var displaced_rich := 0
+	for oid_v in old_ids:
+		var oid: String = String(oid_v)
+		if live.has(oid):
+			continue
+		if not _residents.has(oid):
+			continue
+		var gone: Dictionary = _residents[oid]
+		displaced_poor = displaced_poor + int(gone.get("poor", 0))
+		displaced_cit = displaced_cit + int(gone.get("citizen", 0))
+		displaced_rich = displaced_rich + int(gone.get("rich", 0))
+		_residents.erase(oid)
+	_port_res_ids[port_id] = ids
+	# Rehouse displaced via 移入 lottery (same building class); leftover stay unplaced.
+	for _i in range(displaced_rich):
+		_place_one_in(port_id, day, "rich")
+	for _j in range(displaced_cit):
+		_place_one_in(port_id, day, "citizen")
+	for _k in range(displaced_poor):
+		_place_one_in(port_id, day, "poor")
 
 
-func _fill_class(port_id: String, clazz: String, count: int, day: int, lambda: float) -> void:
-	for i in range(count):
-		var best_id := ""
-		var best_score := -1.0e30
-		for rid in _residents.keys():
-			var r: Dictionary = _residents[rid]
-			var used: int = int(r["poor"]) + int(r["citizen"]) + int(r["rich"])
-			if used >= int(r["cap"]):
-				continue
-			var ring: int = int(r["ring"])
-			var w: float = exp(0.0 - lambda * float(ring - 1))
-			if w <= 0.0:
-				w = 1.0e-9
-			var u_seed: int = Rng.derive_seed(_seed, day, port_id, rid, "place_" + clazz)
-			var u_pair: Array = Rng.next(u_seed)
-			var u: float = float(abs(int(u_pair[1]) % 1000000)) / 1000000.0
-			if u <= 0.0:
-				u = 1.0e-9
-			# migrate weight: prefer higher 1/w for outer? FRM-12 migrate uses 1/w
-			var score: float = pow(u, 1.0 / (1.0 / w))
-			if score > best_score:
-				best_score = score
-				best_id = rid
-		if best_id == "":
-			break
-		var bucket: Dictionary = _residents[best_id]
-		bucket[clazz] = int(bucket[clazz]) + 1
+func _opening_place_full(port_id: String, p: PortPop, day: int) -> void:
+	## FRM-SYS07-14 once: place all housed classes with FRM-SYS07-12 移入 keys (local only).
+	_clear_port_occupants(port_id)
+	for _i in range(p.poor):
+		_place_one_in(port_id, day, "poor")
+	for _j in range(p.citizen):
+		_place_one_in(port_id, day, "citizen")
+	for _k in range(p.rich):
+		_place_one_in(port_id, day, "rich")
+
+
+func _clear_port_occupants(port_id: String) -> void:
+	var ids: Array = _port_res_ids.get(port_id, [])
+	for rid_v in ids:
+		var rid: String = String(rid_v)
+		if not _residents.has(rid):
+			continue
+		var r: Dictionary = _residents[rid]
+		r["poor"] = 0
+		r["citizen"] = 0
+		r["rich"] = 0
+
+
+func _place_movers(
+	port_id: String,
+	day: int,
+	out_poor: int,
+	out_citizen: int,
+	dn2: int,
+	dn1: int,
+	up1: int,
+	up2: int,
+	in_poor: int
+) -> void:
+	## FRM-SYS07-12／OQ-13j: one lottery per mover; local residences only; res_id asc.
+	for _a in range(maxi(0, out_poor)):
+		_remove_one(port_id, day, "poor", PURPOSE_DN)
+	for _b in range(maxi(0, out_citizen)):
+		_remove_one(port_id, day, "citizen", PURPOSE_DN)
+	for _c in range(maxi(0, dn2)):
+		_class_shift(port_id, day, "rich", "citizen", PURPOSE_DN)
+	for _d in range(maxi(0, dn1)):
+		_class_shift(port_id, day, "citizen", "poor", PURPOSE_DN)
+	for _e in range(maxi(0, up1)):
+		_class_shift(port_id, day, "poor", "citizen", PURPOSE_UP)
+	for _f in range(maxi(0, up2)):
+		_class_shift(port_id, day, "citizen", "rich", PURPOSE_UP)
+	for _g in range(maxi(0, in_poor)):
+		_place_one_in(port_id, day, "poor")
+
+
+func _local_res_ids(port_id: String) -> Array:
+	var ids: Array = _port_res_ids.get(port_id, [])
+	# Defensive copy＋sort (ids already sorted at sync; keep deterministic).
+	var out: Array = ids.duplicate()
+	out.sort()
+	return out
+
+
+func _ring_weight(ring: int, lambda: float) -> float:
+	var w: float = exp(0.0 - lambda * float(ring - 1))
+	if w <= 0.0:
+		w = 1.0e-9
+	return w
+
+
+func _draw_u(port_id: String, day: int, res_id: String, purpose: String) -> float:
+	_wp51_rng_calls = _wp51_rng_calls + 1
+	var u_seed: int = Rng.derive_seed(_seed, day, port_id, res_id, purpose)
+	var u_pair: Array = Rng.next(u_seed)
+	var u: float = float(abs(int(u_pair[1]) % 1000000)) / 1000000.0
+	if u <= 0.0:
+		u = 1.0e-9
+	return u
+
+
+func _place_one_in(port_id: String, day: int, clazz: String) -> bool:
+	## 移入：weight 1/w → score = u^(1/(1/w)) = u^w among residences with free beds.
+	var lambda: float = Params.get_float(PRM_LAMBDA)
+	var best_id := ""
+	var best_score := -1.0e30
+	for rid_v in _local_res_ids(port_id):
+		var rid: String = String(rid_v)
+		var r: Dictionary = _residents[rid]
+		var used: int = int(r["poor"]) + int(r["citizen"]) + int(r["rich"])
+		if used >= int(r["cap"]):
+			continue
+		var w: float = _ring_weight(int(r["ring"]), lambda)
+		var u: float = _draw_u(port_id, day, rid, PURPOSE_IN)
+		var score: float = pow(u, w)
+		if score > best_score:
+			best_score = score
+			best_id = rid
+	if best_id == "":
+		return false
+	var bucket: Dictionary = _residents[best_id]
+	bucket[clazz] = int(bucket[clazz]) + 1
+	return true
+
+
+func _pick_residence_with_class(
+	port_id: String, day: int, clazz: String, purpose: String
+) -> String:
+	## Upgrade: u^(1/w); downgrade／leave: u^w (FRM-SYS07-12).
+	var lambda: float = Params.get_float(PRM_LAMBDA)
+	var best_id := ""
+	var best_score := -1.0e30
+	var is_up: bool = purpose == PURPOSE_UP
+	for rid_v in _local_res_ids(port_id):
+		var rid: String = String(rid_v)
+		var r: Dictionary = _residents[rid]
+		if int(r.get(clazz, 0)) <= 0:
+			continue
+		var w: float = _ring_weight(int(r["ring"]), lambda)
+		var u: float = _draw_u(port_id, day, rid, purpose)
+		var score: float
+		if is_up:
+			score = pow(u, 1.0 / w)
+		else:
+			score = pow(u, w)
+		if score > best_score:
+			best_score = score
+			best_id = rid
+	return best_id
+
+
+func _remove_one(port_id: String, day: int, clazz: String, purpose: String) -> bool:
+	var rid: String = _pick_residence_with_class(port_id, day, clazz, purpose)
+	if rid == "":
+		return false
+	var r: Dictionary = _residents[rid]
+	r[clazz] = int(r[clazz]) - 1
+	return true
+
+
+func _class_shift(
+	port_id: String, day: int, from_c: String, to_c: String, purpose: String
+) -> bool:
+	var rid: String = _pick_residence_with_class(port_id, day, from_c, purpose)
+	if rid == "":
+		return false
+	var r: Dictionary = _residents[rid]
+	r[from_c] = int(r[from_c]) - 1
+	r[to_c] = int(r[to_c]) + 1
+	return true
 
 
 func _clamp_nonneg(p: PortPop) -> void:
@@ -871,6 +1059,9 @@ func _clear_state() -> void:
 	_ports = {}
 	_workers = {}
 	_residents = {}
+	_port_res_ids = {}
+	_opening_placed = {}
+	_wp51_rng_calls = 0
 	_loaded = false
 	_pending_pop_ports = []
 	_pending_sat_ports = []
