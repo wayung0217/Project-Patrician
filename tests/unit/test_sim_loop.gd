@@ -103,6 +103,13 @@ func before_each() -> void:
 	PopulationModel._sat_input = null
 	DemandModel._clear_state()
 	SeaLanes._loaded = false
+	# WP-33: TradeDesk injection gate — reset so fixture setters take effect.
+	TradeDesk._loaded = false
+	TradeDesk._qualification = null
+	TradeDesk._observers = []
+	TradeDesk._pending_signals = []
+	TradeDesk._day_errors = []
+	TradeDesk._last_error = {}
 
 
 func after_each() -> void:
@@ -120,7 +127,8 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_autoload_order_2_2_01() -> void:
-	# D-14c／D-09a: … → BuildingEconomy → PopulationModel → DemandModel → ShipRegistry → SimLoop
+	# 2.2-01／D-26b: … → CashLedger → TradeDesk → BuildingEconomy → … → SimLoop
+	# (TierRegistry／ReputationLedger／TaxLedger not yet registered — relative order kept)
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -130,6 +138,7 @@ func test_autoload_order_2_2_01() -> void:
 		"GoodsLedger",
 		"MarketPricer",
 		"CashLedger",
+		"TradeDesk",
 		"BuildingEconomy",
 		"PopulationModel",
 		"DemandModel",
@@ -149,6 +158,10 @@ func test_autoload_order_2_2_01() -> void:
 	assert_eq(
 		String(ProjectSettings.get_setting("autoload/CashLedger")),
 		"*res://autoload/cash_ledger.gd"
+	)
+	assert_eq(
+		String(ProjectSettings.get_setting("autoload/TradeDesk")),
+		"*res://autoload/trade_desk.gd"
 	)
 	assert_eq(
 		String(ProjectSettings.get_setting("autoload/Clock")),
@@ -171,6 +184,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	_install_opening_fixtures()
 	_install_demand_fixtures()
+	_inject_trade_desk_fixtures()
 	assert_false(PopulationModel.has_satisfaction_input_provider())
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
@@ -193,6 +207,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	PopulationModel.set_satisfaction_input_provider(_TestSatProvider.new())
 	SimLoop.set_consumption_provider(_full_zero_provider())
 	_install_opening_fixtures()
+	_inject_trade_desk_fixtures()
 	assert_true(PopulationModel.has_satisfaction_input_provider())
 	var errors2: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
@@ -239,6 +254,7 @@ func test_D30a_complete_demand_boots() -> void:
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	_install_opening_fixtures()
 	_install_demand_fixtures()
+	_inject_trade_desk_fixtures()
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
 		fixtures["goods"],
@@ -576,9 +592,20 @@ func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 # --- helpers ---
 
 
+func _inject_trade_desk_fixtures() -> void:
+	## WP-33／N-05: test-only fixtures (not product always-allow providers).
+	TradeDesk._loaded = false
+	TradeDesk.set_qualification_provider(FixtureQualificationProvider.new())
+	TradeDesk.set_trade_observers([
+		FixtureTradeObserver.new(),
+		FixtureTradeObserver.new(),
+	])
+
+
 func _boot_with_fixtures(fixtures: Dictionary) -> Array:
 	## D-21a: every boot path runs opening validation; seed formal dirs from CSV fixtures.
 	_install_opening_fixtures()
+	_inject_trade_desk_fixtures()
 	return SimLoop.boot(
 		PARAMS_FIXTURE,
 		fixtures["goods"],
@@ -701,6 +728,12 @@ func _reset_simloop_for_reboot() -> void:
 	PopulationModel._loaded = false
 	PopulationModel._sat_input = null
 	DemandModel._clear_state()
+	TradeDesk._loaded = false
+	TradeDesk._qualification = null
+	TradeDesk._observers = []
+	TradeDesk._pending_signals = []
+	TradeDesk._day_errors = []
+	TradeDesk._last_error = {}
 
 
 func _boot_ready_provider() -> TestConsumptionProvider:

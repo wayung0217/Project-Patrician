@@ -101,6 +101,8 @@ func boot(
 	errors.append_array(GoodsLedger.load_and_validate())
 	errors.append_array(MarketPricer.load_and_validate(curve_path))
 	errors.append_array(CashLedger.load_and_validate())
+	# 2.2-01／D-26b: TradeDesk after CashLedger (before TierRegistry／BuildingEconomy).
+	errors.append_array(TradeDesk.load_and_validate())
 	# D-17d／D-17c: PopulationModel after CashLedger／before BuildingEconomy.
 	# WP-34／D-30a: always wire DemandModel sat when unset (no file_exists gate).
 	if not PopulationModel.has_satisfaction_input_provider():
@@ -146,6 +148,11 @@ func boot(
 		errors.append(missing)
 		# Modules already push_error inside load_and_validate；此處只發 SimLoop 自有錯誤，避免重複。
 		push_error("SimLoop: %s" % str(missing))
+
+	# ERR-SYS05-12／14: formal boot requires QualificationProvider + TradeObserver list (C-06).
+	# Tests inject fixtures before boot; formal Autoloads (TierRegistry／ReputationLedger／TaxLedger)
+	# are later WPs — WP-33 must not create always-allow product providers (N-05).
+	errors.append_array(TradeDesk.boot_gate_errors())
 
 	if not errors.is_empty():
 		_booted = false
@@ -259,6 +266,8 @@ func tick_day() -> Array:
 	# 2.3-06 步驟 6: 全部寫入完成後才發出信號（D-05(a)）
 	# D-12h／14-03 ⑧: flush BuildingEconomy + PopulationModel signals before clock signals.
 	# WP-22／D-05: DemandModel.flush_signals once after all same-day writes.
+	# WP-33／D-28d: TradeDesk observer day-errors + trade_executed flush (order unchanged).
+	day_errors.append_array(TradeDesk.take_day_errors())
 	BuildingEconomy.flush_signals()
 	if DemandModel.is_loaded():
 		DemandModel.flush_signals()
@@ -266,6 +275,7 @@ func tick_day() -> Array:
 		PopulationModel.flush_signals()
 	if ShipRegistry.is_loaded():
 		ShipRegistry.flush_signals()
+	TradeDesk.flush_signals()
 	Clock.day_ticked.emit(Clock.day)
 	if at_cutoff:
 		# D-05(c): season_index = floori((day−1)/D)；首季 0
