@@ -112,6 +112,55 @@ func test_trade_observer_base_push_error_2_1_03() -> void:
 	assert_push_error_count(1)
 
 
+func test_WP33_D63b_sim_qualification_fixture_always_denies() -> void:
+	## D-63b: SimQualificationFixture is deny-all with ErrorInfo；never always-allow.
+	var fx := SimQualificationFixture.new()
+	assert_false(fx.can_enter(ACTOR, StringName(PORT)))
+	assert_eq(
+		StringName(fx.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		QualificationProvider.ERR_SYS09_08
+	)
+	assert_false(
+		fx.can_trade(ACTOR, StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY)
+	)
+	assert_eq(
+		StringName(fx.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		QualificationProvider.ERR_SYS09_09
+	)
+	assert_false(fx.can_build(ACTOR, StringName(PORT)))
+	assert_eq(
+		StringName(fx.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		QualificationProvider.ERR_SYS09_08
+	)
+	assert_push_error_count(3)
+
+
+func test_WP33_D63b_sim_trade_observer_fixture_no_record() -> void:
+	## D-63b: SimTradeObserverFixture records nothing and never returns RECORD_OK.
+	var fx := SimTradeObserverFixture.new()
+	var cash_before: int = 0
+	if CashLedger.is_loaded() and CashLedger.has_account(ACTOR):
+		cash_before = CashLedger.balance(ACTOR)
+	assert_eq(
+		fx.record_trade(ACTOR, StringName(PORT), StringName(GOOD), 0, 1, 1.0, 1.0, 1),
+		TradeObserver.RECORD_FAIL
+	)
+	if CashLedger.is_loaded() and CashLedger.has_account(ACTOR):
+		assert_eq(CashLedger.balance(ACTOR), cash_before)
+
+
+func test_WP33_D63b_sim_fixtures_satisfy_boot_gate() -> void:
+	## D-63b: deny-all Sim fixtures unblock TradeDesk boot_gate（sim／probe inject path）.
+	TradeDesk._loaded = false
+	TradeDesk._qualification = null
+	TradeDesk._observers = []
+	TradeDesk.set_qualification_provider(SimQualificationFixture.new())
+	TradeDesk.set_trade_observers([SimTradeObserverFixture.new()])
+	assert_true(TradeDesk.has_qualification_provider())
+	assert_true(TradeDesk.has_trade_observers())
+	assert_eq(TradeDesk.boot_gate_errors().size(), 0)
+
+
 func test_TST_SYS05_13_boot_missing_qualification_provider() -> void:
 	var fixtures := _prepare_sim_fixtures()
 	_install_opening_fixtures()
