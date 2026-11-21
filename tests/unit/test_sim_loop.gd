@@ -83,6 +83,15 @@ class TestConsumptionProvider extends ConsumptionProvider:
 		return int(_daily[key])
 
 
+class FixtureBrokerProvider extends BrokerProvider:
+	## D-60f／N-05: deny-all fixture so SimLoop.boot gate passes without BrokerDesk.
+	func has_kontor(_actor_id: StringName, _port_id: StringName) -> bool:
+		return false
+
+	func is_broker_qualified(_actor_id: StringName, _port_id: StringName) -> bool:
+		return false
+
+
 func before_each() -> void:
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
@@ -96,6 +105,7 @@ func before_each() -> void:
 	SimLoop._capacity_by_kind.clear()
 	SimLoop._capacity_reg_errors.clear()
 	SimLoop.set_consumption_provider(null)
+	IntelLedger.set_broker_provider(null)
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null
@@ -172,6 +182,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	_install_opening_fixtures()
 	_install_demand_fixtures()
+	_inject_broker_fixture()
 	assert_false(PopulationModel.has_satisfaction_input_provider())
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
@@ -194,6 +205,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	PopulationModel.set_satisfaction_input_provider(_TestSatProvider.new())
 	SimLoop.set_consumption_provider(_full_zero_provider())
 	_install_opening_fixtures()
+	_inject_broker_fixture()
 	assert_true(PopulationModel.has_satisfaction_input_provider())
 	var errors2: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
@@ -215,6 +227,7 @@ func test_D30a_missing_demand_refuses_boot() -> void:
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	_install_opening_fixtures()
+	_inject_broker_fixture()
 	var missing := GOODS_FIXTURE_ROOT + "missing_demand/"
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
@@ -240,6 +253,7 @@ func test_D30a_complete_demand_boots() -> void:
 	BuildingEconomy.set_workforce_provider(_TestWorkforceProvider.new())
 	_install_opening_fixtures()
 	_install_demand_fixtures()
+	_inject_broker_fixture()
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
 		fixtures["goods"],
@@ -280,6 +294,7 @@ func test_boot_collects_all_module_errors_2_2_02() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "nodes/"))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "regions/"))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "lanes/"))
+	_inject_broker_fixture()
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,
 		empty_goods,
@@ -580,6 +595,7 @@ func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 func _boot_with_fixtures(fixtures: Dictionary) -> Array:
 	## D-21a: every boot path runs opening validation; seed formal dirs from CSV fixtures.
 	_install_opening_fixtures()
+	_inject_broker_fixture()
 	return SimLoop.boot(
 		PARAMS_FIXTURE,
 		fixtures["goods"],
@@ -589,6 +605,11 @@ func _boot_with_fixtures(fixtures: Dictionary) -> Array:
 		fixtures["sea_regions"],
 		fixtures["sea_lanes"]
 	)
+
+
+func _inject_broker_fixture() -> void:
+	## D-60f: inject before SimLoop.boot（load_and_validate keeps provider）.
+	IntelLedger.set_broker_provider(FixtureBrokerProvider.new())
 
 
 func _install_opening_fixtures() -> void:
@@ -696,6 +717,7 @@ func _reset_simloop_for_reboot() -> void:
 	SimLoop._capacity_by_kind.clear()
 	SimLoop._capacity_reg_errors.clear()
 	SimLoop.set_consumption_provider(null)
+	IntelLedger.set_broker_provider(null)
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null

@@ -102,8 +102,8 @@ class CountingObserver extends ShipEventObserver:
 		last_arrivals = arrivals.duplicate(true)
 
 
-class FixtureBrokerDesk extends Node:
-	## Stand-in for WP-41 BrokerDesk (tests only).
+class FixtureBrokerProvider extends BrokerProvider:
+	## Stand-in for WP-41 BrokerDesk (tests only；D-60f).
 	var kontor: Dictionary = {} ## "actor|port" → true
 	var qualified: Dictionary = {}
 
@@ -115,17 +115,17 @@ class FixtureBrokerDesk extends Node:
 
 
 var _sailor: FixtureSailorPool
-var _broker: FixtureBrokerDesk
+var _broker: FixtureBrokerProvider
 
 
 func before_each() -> void:
 	_wipe_dir(ROOT)
-	_remove_broker()
+	_broker = null
 	_reset_runtime()
 
 
 func after_each() -> void:
-	_remove_broker()
+	_broker = null
 
 
 func test_TST_SYS15_01_missing_prm() -> void:
@@ -311,7 +311,7 @@ func test_TST_SYS15_11_12_13_14_presence_contact_samples() -> void:
 	assert_eq(int(board.get(IntelLedger.KEY_N, 0)), 0)
 	# Never visited → 0.
 	assert_eq(IntelLedger.contact_level(ACTOR_B, StringName(PT_B)), 0)
-	# Level 2 via fixture BrokerDesk.has_kontor.
+	# Level 2 via fixture BrokerProvider.has_kontor（D-60f／D-37e）.
 	_install_broker()
 	_broker.kontor["%s|%s" % [String(ACTOR), PT_B]] = true
 	assert_eq(IntelLedger.contact_level(ACTOR, StringName(PT_B)), 1 + 1)
@@ -328,7 +328,36 @@ func test_TST_SYS15_11_12_13_14_presence_contact_samples() -> void:
 	assert_gte(samples.size(), 0)
 
 
+func test_TST_SYS15_13_publish_at_actual_arrival_port() -> void:
+	## TST-SYS15-13：中途改道／他港抵達 → 公開在實際抵達港，origin＝原起航港.
+	_boot_intel(true)
+	_seed_market(PT_A, GOOD, DEMO_STOCK, DEMO_WEEKLY_C)
+	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
+	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
+	# Sail A→B then divert dest to a third fixture port before arrival.
+	assert_gt(ShipRegistry.sail(ACTOR, sid, StringName(PT_B)), 0)
+	var ship: Ship = ShipRegistry._ships[String(sid)]
+	var pt_c := "PT-01"
+	ship.arrival_tick = 8000
+	ship.origin_port = StringName(PT_A)
+	ship.dest_port = StringName(pt_c) # 改道：實際抵達 ≠ 原目的
+	_add_building(ACTOR, pt_c)
+	ShipRegistry.set_ship_observer(IntelLedger.get_ship_event_observer())
+	ShipRegistry.tick_step(8000)
+	var board_c: Dictionary = IntelLedger.board_for(
+		ACTOR, StringName(pt_c), StringName(PT_A), StringName(GOOD)
+	)
+	assert_eq(int(board_c[IntelLedger.KEY_N]), 1)
+	# 原目的港 B 無此筆公開.
+	_add_building(ACTOR, PT_B)
+	var board_b: Dictionary = IntelLedger.board_for(
+		ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD)
+	)
+	assert_eq(int(board_b.get(IntelLedger.KEY_N, 0)), 0)
+
+
 func test_TST_SYS15_15_16_snapshot_fail_and_no_observer() -> void:
+	## TST-SYS15-15／16：離港取樣失敗＋未注入觀察者 → ERR-SYS15-05／06.
 	_boot_intel(true)
 	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
 	_seed_market(PT_A, GOOD, DEMO_STOCK, DEMO_WEEKLY_C)
@@ -345,8 +374,21 @@ func test_TST_SYS15_15_16_snapshot_fail_and_no_observer() -> void:
 	assert_gt(ShipRegistry.sail(ACTOR, sid, StringName(PT_B)), 0)
 	var gate: Array = IntelLedger.boot_gate_errors()
 	assert_true(_has_code(gate, IntelLedger.ERR_SYS15_06))
+	assert_true(_gate_field(gate, "ShipEventObserver"))
 	# Absorb all expected pushes from this test (MarketPricer + ERR-05 + ERR-06).
 	assert_push_error_count(1 + 1 + gate.size())
+
+
+func test_TST_SYS15_16_D60f_broker_provider_required() -> void:
+	## TST-SYS15-16／D-60f：無 BrokerProvider → ERR-SYS15-06 field＝broker_provider.
+	_boot_intel(true)
+	# _boot_intel injects fixture；clear it to simulate missing injection.
+	IntelLedger.set_broker_provider(null)
+	assert_false(IntelLedger.has_broker_provider())
+	var gate: Array = IntelLedger.boot_gate_errors()
+	assert_true(_has_code(gate, IntelLedger.ERR_SYS15_06))
+	assert_true(_gate_field(gate, "broker_provider"))
+	assert_push_error_count(gate.size())
 
 
 func test_TST_SYS15_17_18_20_deterministic_lcr_no_cash_goods() -> void:
@@ -402,6 +444,7 @@ func test_TST_SYS15_19_stock_weeks_single_site_and_regression() -> void:
 
 
 func test_D37c_public_delay_visibility() -> void:
+	## D-37c／FRM-SYS16-04：PUBLIC_DELAY 與 is_broker_qualified 特權可見性.
 	_boot_intel(false)
 	_add_building(ACTOR, PT_B)
 	_add_building(ACTOR_B, PT_B)
@@ -421,15 +464,68 @@ func test_D37c_public_delay_visibility() -> void:
 	assert_eq(int(board[IntelLedger.KEY_N]), 1)
 
 
-func test_red_team_94_96_same_ship_dedupe_and_batch() -> void:
-	# 紅隊-94／96 covered by TST-07／05; explicit markers for S9a.
-	assert_true(true)
+func test_red_team_94_same_ship_dedupe() -> void:
+	## 紅隊-94：同一艘船同一起航港只算最新一筆（依 TST-SYS15-07）.
+	_boot_intel(false)
+	_add_building(ACTOR, PT_B)
+	_inject_board_sample(PT_B, PT_A, &"SHIP:RT94", ACTOR, 100, Clock.day - 3, 1)
+	_inject_board_sample(PT_B, PT_A, &"SHIP:RT94", ACTOR, 55, Clock.day - 1, 2)
+	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+	assert_eq(int(board[IntelLedger.KEY_N]), 1)
+	assert_eq(int(board[IntelLedger.KEY_CONSENSUS_MID]), 55)
+
+
+func test_red_team_96_batch_atomic_before_read() -> void:
+	## 紅隊-96：同 tick 批次寫完才公開（依 TST-SYS15-05）.
+	_boot_intel(true)
+	_seed_market(PT_A, GOOD, DEMO_STOCK, DEMO_WEEKLY_C)
+	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
+	var a: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
+	var b: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
+	assert_gt(ShipRegistry.sail(ACTOR, a, StringName(PT_B)), 0)
+	assert_gt(ShipRegistry.sail(ACTOR, b, StringName(PT_B)), 0)
+	var tick_arrive: int = 7000
+	for sid in [a, b]:
+		var s: Ship = ShipRegistry._ships[String(sid)]
+		s.arrival_tick = tick_arrive
+		s.origin_port = StringName(PT_A)
+		s.dest_port = StringName(PT_B)
+	_add_building(ACTOR, PT_B)
+	var counter := _ForwardObserver.new()
+	counter.inner = IntelLedger.get_ship_event_observer()
+	ShipRegistry.set_ship_observer(counter)
+	ShipRegistry.tick_step(tick_arrive)
+	assert_eq(counter.arrival_calls, 1)
+	assert_eq(counter.last_arrivals.size(), 2)
+	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+	assert_eq(int(board[IntelLedger.KEY_N]), 2)
+
+
+func test_red_team_97_registry_not_live_price() -> void:
+	## 紅隊-97：商籍／接觸不給即時遠港價；遠端行情靠船報（TST-SYS15-11／18）.
+	_boot_intel(false)
+	# Never present at PT_B → ERR-SYS15-04；無行市.
+	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+	assert_true(board.is_empty())
+	assert_eq(StringName(IntelLedger.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), IntelLedger.ERR_SYS15_04)
+	assert_eq(IntelLedger.contact_level(ACTOR, StringName(PT_B)), 0)
+	assert_push_error_count(1)
 
 
 func test_ship_event_observer_base_2_1_03() -> void:
 	var base := ShipEventObserver.new()
 	base.on_departed(&"S", &"A", &"P", 0)
 	base.on_arrivals(0, [])
+	assert_push_error_count(1 + 1)
+
+
+func test_WP40_D60f_broker_provider_base_2_1_03() -> void:
+	## D-60f／2.1-03：BrokerProvider 基底 push_error 並回 false＋ErrorInfo.
+	var base := BrokerProvider.new()
+	assert_false(base.has_kontor(ACTOR, StringName(PT_A)))
+	assert_false(base.last_error().is_empty())
+	assert_false(base.is_broker_qualified(ACTOR, StringName(PT_A)))
+	assert_false(base.last_error().is_empty())
 	assert_push_error_count(1 + 1)
 
 
@@ -483,6 +579,7 @@ func _boot_intel(with_sea: bool) -> void:
 			StringName(GoodsLedger.KIND_WAREHOUSE), TestCapUnlimited.new()
 		)
 	assert_eq(IntelLedger.load_and_validate().size(), 0)
+	_install_broker()
 	ShipRegistry.set_ship_observer(IntelLedger.get_ship_event_observer())
 
 
@@ -582,17 +679,19 @@ func _add_building(actor: StringName, port: String) -> void:
 
 
 func _install_broker() -> void:
-	_remove_broker()
-	_broker = FixtureBrokerDesk.new()
-	_broker.name = "BrokerDesk"
-	get_tree().root.add_child(_broker)
+	## D-60f: inject FixtureBrokerProvider（no /root/BrokerDesk）.
+	_broker = FixtureBrokerProvider.new()
+	IntelLedger.set_broker_provider(_broker)
 
 
-func _remove_broker() -> void:
-	var n := get_tree().root.get_node_or_null("BrokerDesk")
-	if n != null:
-		n.free()
-	_broker = null
+func _gate_field(errors: Array, field: String) -> bool:
+	for e in errors:
+		if typeof(e) != TYPE_DICTIONARY:
+			continue
+		var detail: Variant = e.get(ErrorInfoUtil.KEY_DETAIL, {})
+		if typeof(detail) == TYPE_DICTIONARY and str(detail.get(ErrorInfoUtil.DETAIL_FIELD, "")) == field:
+			return true
+	return false
 
 
 func _sorted_good_ids() -> Array:

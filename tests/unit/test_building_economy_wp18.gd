@@ -33,6 +33,15 @@ const ANCHOR_LI := 1000
 const ROOT := "user://wp18_be/"
 
 
+class _DenyBroker extends BrokerProvider:
+	## D-60f fixture: deny-all so SimLoop.boot demand-gate tests stay focused.
+	func has_kontor(_actor_id: StringName, _port_id: StringName) -> bool:
+		return false
+
+	func is_broker_qualified(_actor_id: StringName, _port_id: StringName) -> bool:
+		return false
+
+
 class TestPop extends PopulationProvider:
 	var _pop: Dictionary = {}
 
@@ -303,6 +312,8 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	PopulationModel._sat_input = null
 	DemandModel._clear_state()
 	SeaLanes._loaded = false
+	# D-60f: inject deny-all BrokerProvider so gate error is demand-only.
+	IntelLedger.set_broker_provider(_DenyBroker.new())
 	var missing_demand := ROOT + "no_demand_dir_wp18/"
 	var errors: Array = SimLoop.boot(
 		PARAMS_FIXTURE,

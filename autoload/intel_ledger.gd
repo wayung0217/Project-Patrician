@@ -2,8 +2,9 @@ extends Node
 ## Autoload: IntelLedger — SYS-15 ship intel & board (03_Systems 25.1／D-34／D-37c／D-38a).
 ## _ready() only clears fields; load_and_validate via SimLoop.boot (2.2-01).
 ## Implements ShipEventObserver via adapter (Node cannot extend RefCounted interface).
-## D-37e／D-38a: no grant_base；contact level 2 via BrokerDesk.has_kontor when present.
+## D-37e／D-38a: no grant_base；contact level 2 via BrokerProvider.has_kontor (D-60f).
 ## D-37c: PUBLIC_DELAY visibility；board_samples requester SYS-16 only.
+## D-60f: BrokerProvider injected；absent → ERR-SYS15-06（field＝broker_provider）.
 
 signal board_updated(port_id: StringName, tick: int)
 
@@ -79,6 +80,7 @@ var _contact: Dictionary = {} ## actor:String → {port:String → 1}
 var _pending_errors: Array = []
 var _pending_board_signals: Array = [] ## {port_id, tick}
 var _observer_adapter: _ObserverAdapter = null
+var _broker: BrokerProvider = null
 
 
 func _ready() -> void:
@@ -92,6 +94,16 @@ func get_ship_event_observer() -> ShipEventObserver:
 	return _observer_adapter
 
 
+func set_broker_provider(provider: BrokerProvider) -> void:
+	## D-60f: inject before SimLoop.boot；formal provider＝BrokerDesk（WP-41）.
+	## Tests may pass null to clear（fixture teardown／gate probes）.
+	_broker = provider
+
+
+func has_broker_provider() -> bool:
+	return _broker != null
+
+
 func is_loaded() -> bool:
 	return _loaded
 
@@ -101,7 +113,8 @@ func last_error() -> Dictionary:
 
 
 func load_and_validate() -> Array:
-	_clear_runtime()
+	# Keep injected BrokerProvider across reload（D-60f；mirror TradeDesk／BuildingEconomy）.
+	_clear_runtime(true)
 	var errors: Array = []
 	if not Params.is_loaded():
 		errors.append(_err(ERR_SYS15_01, "Params", null, "Params must load before IntelLedger"))
@@ -149,11 +162,15 @@ func load_and_validate() -> Array:
 
 
 func boot_gate_errors() -> Array:
-	## ERR-SYS15-06: observer injected + MarketPricer.stock_weeks present (C-06).
+	## ERR-SYS15-06: observer＋BrokerProvider＋stock_weeks (C-06／D-60f).
 	var errors: Array = []
 	if not ShipRegistry.has_ship_observer():
 		errors.append(
 			_err(ERR_SYS15_06, "ShipEventObserver", null, "ShipRegistry has no ship observer")
+		)
+	if not has_broker_provider():
+		errors.append(
+			_err(ERR_SYS15_06, "broker_provider", null, "BrokerProvider not injected (D-60f)")
 		)
 	if not MarketPricer.has_method("stock_weeks"):
 		errors.append(
@@ -267,7 +284,7 @@ func daily_step(_day: int) -> Array:
 			var pair: String = String(pair_variant)
 			var entry: Dictionary = board[pair]
 			var snap: Dictionary = entry.get(KEY_SNAPSHOT, {})
-			var day_taken: int = int(snap.get(KEY_DAY_TAKEN, 0))
+			var day_taken: int = _dict_int(snap, KEY_DAY_TAKEN, 0)
 			var age: int = today - day_taken
 			if age >= window_d:
 				board.erase(pair)
@@ -286,7 +303,7 @@ func flush_signals() -> void:
 	_pending_board_signals.clear()
 	for item_variant in queued:
 		var item: Dictionary = item_variant
-		board_updated.emit(item["port_id"], int(item["tick"]))
+		board_updated.emit(item["port_id"], _expect_int(item["tick"], "tick"))
 
 
 func own_snapshot(actor_id: StringName, origin_port: StringName) -> Dictionary:
@@ -300,7 +317,7 @@ func own_snapshot(actor_id: StringName, origin_port: StringName) -> Dictionary:
 	if typeof(snap_v) != TYPE_DICTIONARY:
 		return {}
 	var out: Dictionary = (snap_v as Dictionary).duplicate(true)
-	out[KEY_AGE_DAYS] = Clock.day - int(out.get(KEY_DAY_TAKEN, 0))
+	out[KEY_AGE_DAYS] = Clock.day - _dict_int(out, KEY_DAY_TAKEN, 0)
 	return out
 
 
@@ -357,7 +374,7 @@ func contact_level(actor_id: StringName, port_id: StringName) -> int:
 # --- internals ---
 
 
-func _clear_runtime() -> void:
+func _clear_runtime(keep_broker: bool = false) -> void:
 	_loaded = false
 	_last_error = {}
 	_ship_snap = {}
@@ -366,6 +383,8 @@ func _clear_runtime() -> void:
 	_contact = {}
 	_pending_errors = []
 	_pending_board_signals = []
+	if not keep_broker:
+		_broker = null
 
 
 func _clear_last() -> void:
@@ -407,7 +426,7 @@ func _bump_contact(owner_id: StringName, port_id: StringName) -> void:
 	var port_s: String = String(port_id)
 	if not _contact.has(actor_s):
 		_contact[actor_s] = {}
-	var cur: int = int((_contact[actor_s] as Dictionary).get(port_s, 0))
+	var cur: int = _dict_int(_contact[actor_s] as Dictionary, port_s, 0)
 	if cur < 1:
 		(_contact[actor_s] as Dictionary)[port_s] = 1
 
@@ -450,27 +469,18 @@ func _actor_present(actor_id: StringName, port_id: StringName) -> bool:
 	return false
 
 
-func _broker_desk() -> Object:
-	## WP-41 BrokerDesk optional; absent → no early privilege / no kontor level 2.
-	var tree := Engine.get_main_loop() as SceneTree
-	if tree == null:
-		return null
-	return tree.root.get_node_or_null("BrokerDesk")
-
-
 func _has_kontor(actor_id: StringName, port_id: StringName) -> bool:
-	var desk: Object = _broker_desk()
-	if desk != null and desk.has_method("has_kontor"):
-		return bool(desk.call("has_kontor", actor_id, port_id))
-	return false
+	## D-60f／FRM-SYS15-09: only via injected BrokerProvider（no /root lookup）.
+	if _broker == null:
+		return false
+	return _broker.has_kontor(actor_id, port_id)
 
 
 func _is_broker_qualified(actor_id: StringName, port_id: StringName) -> bool:
-	## FRM-SYS16-04／02: single rule via BrokerDesk when present (D-37e／N-04).
-	var desk: Object = _broker_desk()
-	if desk != null and desk.has_method("is_broker_qualified"):
-		return bool(desk.call("is_broker_qualified", actor_id, port_id))
-	return false
+	## FRM-SYS16-04／02／D-60f: single rule via injected BrokerProvider（N-04）.
+	if _broker == null:
+		return false
+	return _broker.is_broker_qualified(actor_id, port_id)
 
 
 func _sample_visible(actor_id: StringName, port_id: StringName, tick_arrived: int) -> bool:
@@ -497,10 +507,10 @@ func _visible_samples(
 		var snap: Dictionary = entry.get(KEY_SNAPSHOT, {})
 		if String(snap.get(KEY_ORIGIN_PORT, "")) != String(origin_port):
 			continue
-		var tick_arrived: int = int(entry.get(KEY_TICK_ARRIVED, 0))
+		var tick_arrived: int = _dict_int(entry, KEY_TICK_ARRIVED, 0)
 		if not _sample_visible(actor_id, port_id, tick_arrived):
 			continue
-		var day_taken: int = int(snap.get(KEY_DAY_TAKEN, 0))
+		var day_taken: int = _dict_int(snap, KEY_DAY_TAKEN, 0)
 		var age: int = today - day_taken
 		if age < 0 or age >= window_d:
 			continue
@@ -512,10 +522,10 @@ func _visible_samples(
 			KEY_SHIP_ID: snap.get(KEY_SHIP_ID, &""),
 			KEY_OWNER_ID: snap.get(KEY_OWNER_ID, &""),
 			KEY_ORIGIN_PORT: origin_port,
-			KEY_TICK_TAKEN: int(snap.get(KEY_TICK_TAKEN, 0)),
+			KEY_TICK_TAKEN: _dict_int(snap, KEY_TICK_TAKEN, 0),
 			KEY_DAY_TAKEN: day_taken,
-			KEY_MID_LI: int(g.get(KEY_MID_LI, 0)),
-			KEY_BAND: int(g.get(KEY_BAND, 0)),
+			KEY_MID_LI: _dict_int(g, KEY_MID_LI, 0),
+			KEY_BAND: _dict_int(g, KEY_BAND, 0),
 			KEY_WEEKS_X: g.get(KEY_WEEKS_X, null),
 			KEY_TICK_ARRIVED: tick_arrived,
 			KEY_AGE_DAYS: age,
@@ -550,33 +560,40 @@ func _summarize_board(samples: Array, good_id: StringName) -> Dictionary:
 	var first := true
 	for s_variant in samples:
 		var s: Dictionary = s_variant
-		var age: int = int(s[KEY_AGE_DAYS])
+		var age: int = _dict_int(s, KEY_AGE_DAYS, 0)
 		var w: int = decay_d - age
-		var mid: int = int(s[KEY_MID_LI])
+		var mid: int = _dict_int(s, KEY_MID_LI, 0)
 		var prod_wm: Variant = _mul_checked(w, mid)
 		var prod_wa: Variant = _mul_checked(w, age)
 		if prod_wm == null or prod_wa == null:
 			_record(ERR_SYS15_07, KEY_CONSENSUS_MID, mid, "weighted sum overflow")
 			return {}
-		if not _add_checked(sum_w, w) or not _add_checked(sum_wm, int(prod_wm)):
+		var prod_wm_i: int = _expect_int(prod_wm, KEY_CONSENSUS_MID)
+		var prod_wa_i: int = _expect_int(prod_wa, KEY_MEAN_AGE)
+		if not _add_checked(sum_w, w) or not _add_checked(sum_wm, prod_wm_i):
 			_record(ERR_SYS15_07, KEY_CONSENSUS_MID, mid, "weighted sum overflow")
 			return {}
-		if not _add_checked(sum_wa, int(prod_wa)):
+		if not _add_checked(sum_wa, prod_wa_i):
 			_record(ERR_SYS15_07, KEY_MEAN_AGE, age, "weighted age overflow")
 			return {}
 		sum_w = sum_w + w
-		sum_wm = sum_wm + int(prod_wm)
-		sum_wa = sum_wa + int(prod_wa)
+		sum_wm = sum_wm + prod_wm_i
+		sum_wa = sum_wa + prod_wa_i
 		var weeks_x: Variant = s.get(KEY_WEEKS_X, null)
 		if weeks_x != null:
-			var prod_ww: Variant = _mul_checked(w, int(weeks_x))
-			if prod_ww == null or not _add_checked(sum_ww, int(prod_ww)):
+			var weeks_i: int = _expect_int(weeks_x, KEY_CONSENSUS_WEEKS)
+			var prod_ww: Variant = _mul_checked(w, weeks_i)
+			if prod_ww == null:
+				_record(ERR_SYS15_07, KEY_CONSENSUS_WEEKS, weeks_x, "weeks weighted overflow")
+				return {}
+			var prod_ww_i: int = _expect_int(prod_ww, KEY_CONSENSUS_WEEKS)
+			if not _add_checked(sum_ww, prod_ww_i):
 				_record(ERR_SYS15_07, KEY_CONSENSUS_WEEKS, weeks_x, "weeks weighted overflow")
 				return {}
 			if not _add_checked(sum_w_weeks, w):
 				_record(ERR_SYS15_07, KEY_CONSENSUS_WEEKS, weeks_x, "weeks weight overflow")
 				return {}
-			sum_ww = sum_ww + int(prod_ww)
+			sum_ww = sum_ww + prod_ww_i
 			sum_w_weeks = sum_w_weeks + w
 		if first:
 			min_mid = mid
@@ -620,7 +637,8 @@ func _summarize_board(samples: Array, good_id: StringName) -> Dictionary:
 		if prod_div == null:
 			_record(ERR_SYS15_07, KEY_DIV_PPM, span, "divergence overflow")
 			return {}
-		div_ppm = floori(float(int(prod_div)) / float(consensus))
+		var prod_div_i: int = _expect_int(prod_div, KEY_DIV_PPM)
+		div_ppm = floori(float(prod_div_i) / float(consensus))
 		var lo: int = Params.get_int(StringName(PRM_DIV_LO))
 		var hi: int = Params.get_int(StringName(PRM_DIV_HI))
 		if div_ppm <= lo:
@@ -649,12 +667,12 @@ func _direction_of(samples: Array, ppm: int) -> StringName:
 		return DIR_NONE
 	var ordered: Array = samples.duplicate()
 	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var da: int = int(a[KEY_DAY_TAKEN])
-		var db: int = int(b[KEY_DAY_TAKEN])
+		var da: int = _dict_int(a, KEY_DAY_TAKEN, 0)
+		var db: int = _dict_int(b, KEY_DAY_TAKEN, 0)
 		if da != db:
 			return da > db
-		var ta: int = int(a[KEY_TICK_TAKEN])
-		var tb: int = int(b[KEY_TICK_TAKEN])
+		var ta: int = _dict_int(a, KEY_TICK_TAKEN, 0)
+		var tb: int = _dict_int(b, KEY_TICK_TAKEN, 0)
 		if ta != tb:
 			return ta > tb
 		return String(a[KEY_SHIP_ID]) < String(b[KEY_SHIP_ID])
@@ -666,19 +684,23 @@ func _direction_of(samples: Array, ppm: int) -> StringName:
 	var sum_wm: int = 0
 	for s_variant in rest:
 		var s: Dictionary = s_variant
-		var age: int = int(s[KEY_AGE_DAYS])
+		var age: int = _dict_int(s, KEY_AGE_DAYS, 0)
 		var w: int = decay_d - age
-		var mid: int = int(s[KEY_MID_LI])
+		var mid: int = _dict_int(s, KEY_MID_LI, 0)
 		var prod: Variant = _mul_checked(w, mid)
-		if prod == null or not _add_checked(sum_w, w) or not _add_checked(sum_wm, int(prod)):
+		if prod == null:
+			_record(ERR_SYS15_07, KEY_DIRECTION, mid, "direction rest overflow")
+			return DIR_NONE
+		var prod_i: int = _expect_int(prod, KEY_DIRECTION)
+		if not _add_checked(sum_w, w) or not _add_checked(sum_wm, prod_i):
 			_record(ERR_SYS15_07, KEY_DIRECTION, mid, "direction rest overflow")
 			return DIR_NONE
 		sum_w = sum_w + w
-		sum_wm = sum_wm + int(prod)
+		sum_wm = sum_wm + prod_i
 	if sum_w <= 0:
 		return DIR_NONE
 	var rest_mid: int = floori(float(sum_wm) / float(sum_w))
-	var mid_n: int = int(newest[KEY_MID_LI])
+	var mid_n: int = _dict_int(newest, KEY_MID_LI, 0)
 	var d: int = mid_n - rest_mid
 	var abs_d: int = d if d >= 0 else 0 - d
 	var deadband: int = Params.get_int(StringName(PRM_DEADBAND))
@@ -687,7 +709,9 @@ func _direction_of(samples: Array, ppm: int) -> StringName:
 	if left == null or right == null:
 		_record(ERR_SYS15_07, KEY_DIRECTION, d, "direction deadband overflow")
 		return DIR_NONE
-	if int(left) <= int(right):
+	var left_i: int = _expect_int(left, KEY_DIRECTION)
+	var right_i: int = _expect_int(right, KEY_DIRECTION)
+	if left_i <= right_i:
 		return DIR_FLAT
 	if d > 0:
 		return DIR_UP
@@ -698,6 +722,7 @@ func _direction_of(samples: Array, ppm: int) -> StringName:
 
 func _mul_checked(a: int, b: int) -> Variant:
 	## C-10: detect int64 wrap without magic INT64_MAX literal.
+	## Returns int（TYPE_INT）or null — never float（C-09）.
 	if a == 0 or b == 0:
 		return 0
 	var p: int = a * b
@@ -712,6 +737,25 @@ func _add_checked(a: int, b: int) -> bool:
 	if b > 0:
 		return a <= a + b
 	return a >= a + b
+
+
+func _expect_int(v: Variant, field: String) -> int:
+	## C-09: reject float→int coercion；only accept already-integer Variants.
+	if typeof(v) != TYPE_INT:
+		_record(ERR_SYS15_07, field, v, "non-int where int required (C-09)")
+		return 0
+	return v
+
+
+func _dict_int(d: Dictionary, key: String, default_v: int) -> int:
+	## C-09: Dictionary values written as int／null only；prove TYPE_INT before use.
+	if not d.has(key):
+		return default_v
+	var v: Variant = d[key]
+	if typeof(v) != TYPE_INT:
+		_record(ERR_SYS15_07, key, v, "non-int dict value (C-09)")
+		return default_v
+	return v
 
 
 class _ObserverAdapter extends ShipEventObserver:

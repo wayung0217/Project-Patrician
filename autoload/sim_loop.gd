@@ -134,10 +134,14 @@ func boot(
 	if ShipRegistry.is_loaded() and errors.is_empty():
 		errors.append_array(ShipRegistry.apply_opening_init())
 
-	# D-34d／25.1: IntelLedger after ShipRegistry; inject ShipEventObserver; ERR-SYS15-06.
+	# D-34d／25.1／D-60f: IntelLedger after ShipRegistry; inject ShipEventObserver＋BrokerProvider.
 	errors.append_array(IntelLedger.load_and_validate())
 	if IntelLedger.is_loaded() and ShipRegistry.is_loaded():
 		ShipRegistry.set_ship_observer(IntelLedger.get_ship_event_observer())
+	# D-60f BrokerProvider injection site:
+	# - Tests: IntelLedger.set_broker_provider(FixtureBrokerProvider) before boot.
+	# - Formal: WP-41 BrokerDesk Autoload calls set_broker_provider(get_broker_provider()).
+	# No /root path lookup（D-60f）. Absent → ERR-SYS15-06 field＝broker_provider.
 	errors.append_array(IntelLedger.boot_gate_errors())
 
 	# 2.3-03: 未注入 provider（且 DemandModel 未載入）→ boot() 回錯誤。

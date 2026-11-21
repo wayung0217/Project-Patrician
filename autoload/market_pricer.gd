@@ -159,7 +159,10 @@ func mid_price(port_id: StringName, good_id: StringName) -> float:
 		_fail_from_ctx(ctx)
 		return 0.0
 	var anchor: int = int(ctx[FIELD_ANCHOR])
-	var w: Variant = _stock_weeks_raw(int(ctx["stock"]), float(ctx["weekly_offtake"]))
+	# stock／weekly_offtake written as int／float in _context（C-09: no float→int via int()）.
+	var stock_mid: int = ctx["stock"]
+	var weekly_mid: float = ctx["weekly_offtake"]
+	var w: Variant = _stock_weeks_raw(stock_mid, weekly_mid)
 	var m: float = _floor_mult() if w == null else _m_of_w(float(w))
 	return float(anchor) * m
 
@@ -232,7 +235,9 @@ func stock_weeks(port_id: StringName, good_id: StringName) -> Variant:
 	if ctx.has(KEY_ERROR):
 		_fail_from_ctx(ctx)
 		return null
-	return _stock_weeks_raw(int(ctx["stock"]), float(ctx["weekly_offtake"]))
+	var stock_sw: int = ctx["stock"]
+	var weekly_sw: float = ctx["weekly_offtake"]
+	return _stock_weeks_raw(stock_sw, weekly_sw)
 
 
 func indicator_band(ratio: float) -> int:
