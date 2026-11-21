@@ -1,0 +1,13 @@
+{
+  "scenario_id": "sys23_bad_clash",
+  "years": 2,
+  "warmup_years": 1,
+  "seeds": [1],
+  "layers": { "RELOCATE": false },
+  "overrides": {
+    "PRM-SYS05-START_CASH": 1
+  },
+  "grid": {
+    "PRM-SYS05-START_CASH": [1, 0]
+  }
+}
