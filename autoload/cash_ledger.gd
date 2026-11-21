@@ -328,6 +328,12 @@ func post(entries: Array, reason: StringName, requester: StringName) -> Error:
 	return OK
 
 
+func has_account(id: StringName) -> bool:
+	## FRM-SYS05-13 (0)(b): assert-free existence check for TradeDesk pre-validation.
+	assert(_loaded, "CashLedger.has_account before load")
+	return _accounts.has(String(id))
+
+
 func balance(id: StringName) -> int:
 	assert(_loaded, "CashLedger.balance before load")
 	var key := String(id)

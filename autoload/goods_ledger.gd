@@ -41,6 +41,8 @@ const CODE_PORT_REGISTRY_NOT_LOADED := &"PORT_REGISTRY_NOT_LOADED"
 
 const FIELD_OWNER_ID := "owner_id"
 const FIELD_PORT_ID := "port_id"
+## HOLD registry: ship_id stored so callers need not parse container id (D-08d／FRM-SYS05-14).
+const FIELD_SHIP_ID := "ship_id"
 const FIELD_WINDOW_QTY := "window_qty"
 const FIELD_LOCAL_QTY := "local_qty"
 const FIELD_WINDOW_DAYS := "window_days"
@@ -167,54 +169,33 @@ func next_seq() -> int:
 	return seq
 
 
+func can_transfer(
+	from: Variant, to: Variant, good: StringName, qty: Variant, reason: StringName, requester: StringName
+) -> bool:
+	## D-39b／TST-SYS05-23: read-only; same checks as transfer (N-04 shared helper).
+	## true → transfer would succeed under current state; false → last_error() has the code.
+	assert(_loaded, "GoodsLedger.can_transfer before load_and_validate")
+	_clear_last_error()
+	var prep: Dictionary = _validate_transfer_preconditions(from, to, good, qty, reason, requester)
+	return bool(prep.get("ok", false))
+
+
 func transfer(from: Variant, to: Variant, good: StringName, qty: Variant, reason: StringName, requester: StringName) -> int:
 	# FRM-SYS03-02: qty 整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無
 	# D-04: success → seq≥1；fail → 0 + ErrorInfo in last_error()
 	assert(_loaded, "GoodsLedger.transfer before load_and_validate")
 	_clear_last_error()
 
-	# ERR-SYS03-04 — SEA_LOSS 停用（OQ-08 7c）
-	if reason == REASON_SEA_LOSS:
-		return _fail(ERR_SYS03_04, FIELD_REASON, reason, "SEA_LOSS disabled")
-
-	# ERR-SYS03-01 — qty ≤ 0 或非整數
-	if not _is_positive_int(qty):
-		return _fail(ERR_SYS03_01, FIELD_QTY, qty, "qty must be integer > 0")
-	var qty_i: int = int(qty)
-
-	var from_key: String = _container_key(from)
-	if from_key.is_empty():
-		# ERR-SYS03-09 may already be recorded during registration.
-		if not _last_error.is_empty() and StringName(_last_error.get(ErrorInfoUtil.KEY_CODE, &"")) == ERR_SYS03_09:
-			return 0
-		return _fail(ERR_SYS03_01, KEY_KIND, from, "invalid container")
-	var to_key: String = _container_key(to)
-	var good_s: String = String(good)
-
-	if to_key.is_empty():
-		if not _last_error.is_empty() and StringName(_last_error.get(ErrorInfoUtil.KEY_CODE, &"")) == ERR_SYS03_09:
-			return 0
-		return _fail(ERR_SYS03_01, KEY_KIND, to, "invalid container")
-
-	# Snapshot for all-or-nothing rollback
-	var from_before: int = _get_qty_by_key(from_key, good_s)
-	var to_before: int = _get_qty_by_key(to_key, good_s)
-
-	# ERR-SYS03-02 — from 餘額不足（EXTERNAL 不檢查餘額）
-	# D-05(d): CONSUME 同一般 transfer — 不足即 ERR-SYS03-02、全有或全無、收進錯誤清單
-	if not _is_external_key(from_key):
-		if from_before < qty_i:
-			return _fail(ERR_SYS03_02, FIELD_QTY, qty_i, "insufficient balance")
-
-	# FRM-SYS13-10／TST-SYS13-13: TRADE／LOAD／UNLOAD involving HOLD while SAILING → ERR-SYS13-03.
-	if (
-		reason == REASON_TRADE or reason == REASON_LOAD or reason == REASON_UNLOAD
-	) and _hold_sailing_blocked(from, from_key, to, to_key):
+	var prep: Dictionary = _validate_transfer_preconditions(from, to, good, qty, reason, requester)
+	if not bool(prep.get("ok", false)):
 		return 0
 
-	# ERR-SYS03-03 — to 容量不足
-	if not _has_capacity_for(to, to_key, qty_i):
-		return _fail(ERR_SYS03_03, FIELD_QTY, qty_i, "insufficient capacity")
+	var from_key: String = String(prep["from_key"])
+	var to_key: String = String(prep["to_key"])
+	var good_s: String = String(prep["good_s"])
+	var qty_i: int = int(prep["qty_i"])
+	var from_before: int = int(prep["from_before"])
+	var to_before: int = int(prep["to_before"])
 
 	# Apply (both sides); EXTERNAL 不記帳
 	if not _is_external_key(from_key):
@@ -241,6 +222,70 @@ func transfer(from: Variant, to: Variant, good: StringName, qty: Variant, reason
 	event.requester = requester
 	goods_transferred.emit(event)
 	return seq
+
+
+func _validate_transfer_preconditions(
+	from: Variant, to: Variant, good: StringName, qty: Variant, reason: StringName, _requester: StringName
+) -> Dictionary:
+	## Shared by can_transfer + transfer (D-39b／N-04). Sets last_error on failure.
+	## Returns {ok, from_key, to_key, good_s, qty_i, from_before, to_before}.
+
+	# ERR-SYS03-04 — SEA_LOSS 停用（OQ-08 7c）
+	if reason == REASON_SEA_LOSS:
+		_fail(ERR_SYS03_04, FIELD_REASON, reason, "SEA_LOSS disabled")
+		return {}
+
+	# ERR-SYS03-01 — qty ≤ 0 或非整數
+	if not _is_positive_int(qty):
+		_fail(ERR_SYS03_01, FIELD_QTY, qty, "qty must be integer > 0")
+		return {}
+	var qty_i: int = int(qty)
+
+	var from_key: String = _container_key(from)
+	if from_key.is_empty():
+		# ERR-SYS03-09 may already be recorded during registration.
+		if _last_error.is_empty() or StringName(_last_error.get(ErrorInfoUtil.KEY_CODE, &"")) != ERR_SYS03_09:
+			_fail(ERR_SYS03_01, KEY_KIND, from, "invalid container")
+		return {}
+	var to_key: String = _container_key(to)
+	var good_s: String = String(good)
+
+	if to_key.is_empty():
+		if _last_error.is_empty() or StringName(_last_error.get(ErrorInfoUtil.KEY_CODE, &"")) != ERR_SYS03_09:
+			_fail(ERR_SYS03_01, KEY_KIND, to, "invalid container")
+		return {}
+
+	# Snapshot for all-or-nothing rollback / can_transfer read
+	var from_before: int = _get_qty_by_key(from_key, good_s)
+	var to_before: int = _get_qty_by_key(to_key, good_s)
+
+	# ERR-SYS03-02 — from 餘額不足（EXTERNAL 不檢查餘額）
+	# D-05(d): CONSUME 同一般 transfer — 不足即 ERR-SYS03-02、全有或全無、收進錯誤清單
+	if not _is_external_key(from_key):
+		if from_before < qty_i:
+			_fail(ERR_SYS03_02, FIELD_QTY, qty_i, "insufficient balance")
+			return {}
+
+	# FRM-SYS13-10／TST-SYS13-13: TRADE／LOAD／UNLOAD involving HOLD while SAILING → ERR-SYS13-03.
+	if (
+		reason == REASON_TRADE or reason == REASON_LOAD or reason == REASON_UNLOAD
+	) and _hold_sailing_blocked(from, from_key, to, to_key):
+		return {}
+
+	# ERR-SYS03-03 — to 容量不足
+	if not _has_capacity_for(to, to_key, qty_i):
+		_fail(ERR_SYS03_03, FIELD_QTY, qty_i, "insufficient capacity")
+		return {}
+
+	return {
+		"ok": true,
+		"from_key": from_key,
+		"to_key": to_key,
+		"good_s": good_s,
+		"qty_i": qty_i,
+		"from_before": from_before,
+		"to_before": to_before,
+	}
 
 
 func get_qty(container: Variant, good: StringName) -> int:
@@ -450,6 +495,77 @@ func offtake_snapshot(port_id: StringName, good_id: StringName) -> Dictionary:
 	if not by_good.has(good_s):
 		return {}
 	return (by_good[good_s] as Dictionary).duplicate(true)
+
+
+func is_container_registered(container_id: StringName) -> bool:
+	## FRM-SYS05-14: registration lookup without parsing id strings (D-08d).
+	assert(_loaded, "GoodsLedger.is_container_registered before load_and_validate")
+	return _kind_by_id.has(String(container_id))
+
+
+func get_container_kind(container_id: StringName) -> StringName:
+	## FRM-SYS05-14: kind from registry; empty StringName if unregistered.
+	assert(_loaded, "GoodsLedger.get_container_kind before load_and_validate")
+	var cid: String = String(container_id)
+	if not _kind_by_id.has(cid):
+		return StringName()
+	return StringName(String(_kind_by_id[cid]))
+
+
+func get_container_owner_id(container_id: StringName) -> StringName:
+	assert(_loaded, "GoodsLedger.get_container_owner_id before load_and_validate")
+	var cid: String = String(container_id)
+	if not _container_meta.has(cid):
+		return StringName()
+	return StringName(String((_container_meta[cid] as Dictionary).get(FIELD_OWNER_ID, "")))
+
+
+func get_container_port_id(container_id: StringName) -> StringName:
+	assert(_loaded, "GoodsLedger.get_container_port_id before load_and_validate")
+	var cid: String = String(container_id)
+	if not _container_meta.has(cid):
+		return StringName()
+	return StringName(String((_container_meta[cid] as Dictionary).get(FIELD_PORT_ID, "")))
+
+
+func get_container_ship_id(container_id: StringName) -> StringName:
+	## HOLD only; empty if unregistered or non-HOLD (FRM-SYS05-14／OQ-16h).
+	assert(_loaded, "GoodsLedger.get_container_ship_id before load_and_validate")
+	var cid: String = String(container_id)
+	if not _container_meta.has(cid):
+		return StringName()
+	return StringName(String((_container_meta[cid] as Dictionary).get(FIELD_SHIP_ID, "")))
+
+
+func container_dict(container_id: StringName) -> Dictionary:
+	## Rebuild Dictionary from registry for transfer／can_transfer (D-08d; no id parse).
+	assert(_loaded, "GoodsLedger.container_dict before load_and_validate")
+	var cid: String = String(container_id)
+	if not _kind_by_id.has(cid) or not _container_meta.has(cid):
+		return {}
+	var kind: String = String(_kind_by_id[cid])
+	var meta: Dictionary = _container_meta[cid]
+	match kind:
+		KIND_MARKET:
+			return make_market(String(meta.get(FIELD_PORT_ID, "")))
+		KIND_WAREHOUSE:
+			return make_warehouse(
+				String(meta.get(FIELD_OWNER_ID, "")),
+				String(meta.get(FIELD_PORT_ID, ""))
+			)
+		KIND_HOLD:
+			var hold: Dictionary = make_hold(
+				String(meta.get(FIELD_SHIP_ID, "")),
+				String(meta.get(FIELD_OWNER_ID, ""))
+			)
+			var port_h: String = String(meta.get(FIELD_PORT_ID, ""))
+			if not port_h.is_empty():
+				hold[KEY_PORT] = port_h
+			return hold
+		KIND_CONFISCATED:
+			return make_confiscated()
+		_:
+			return {}
 
 
 func set_container_port(container_id: StringName, port_id: StringName) -> int:
@@ -698,7 +814,9 @@ func _container_key(container: Variant) -> String:
 		KIND_CONFISCATED:
 			var cid_c: String = String(container_id(StringName(KIND_CONFISCATED)))
 			_kind_by_id[cid_c] = kind
-			_container_meta[cid_c] = {FIELD_OWNER_ID: "", FIELD_PORT_ID: ""}
+			_container_meta[cid_c] = {
+				FIELD_OWNER_ID: "", FIELD_PORT_ID: "", FIELD_SHIP_ID: ""
+			}
 			return cid_c
 		KIND_MARKET:
 			if not d.has(KEY_PORT):
@@ -706,7 +824,9 @@ func _container_key(container: Variant) -> String:
 			var port_m: String = String(d[KEY_PORT])
 			var cid_m: String = String(container_id(StringName(KIND_MARKET), port_m))
 			_kind_by_id[cid_m] = kind
-			_container_meta[cid_m] = {FIELD_OWNER_ID: "", FIELD_PORT_ID: port_m}
+			_container_meta[cid_m] = {
+				FIELD_OWNER_ID: "", FIELD_PORT_ID: port_m, FIELD_SHIP_ID: ""
+			}
 			return cid_m
 		KIND_WAREHOUSE:
 			if not d.has(KEY_OWNER) or not d.has(KEY_PORT):
@@ -721,7 +841,9 @@ func _container_key(container: Variant) -> String:
 				StringName(KIND_WAREHOUSE), owner_w, port_w
 			))
 			_kind_by_id[cid_w] = kind
-			_container_meta[cid_w] = {FIELD_OWNER_ID: owner_w, FIELD_PORT_ID: port_w}
+			_container_meta[cid_w] = {
+				FIELD_OWNER_ID: owner_w, FIELD_PORT_ID: port_w, FIELD_SHIP_ID: ""
+			}
 			return cid_w
 		KIND_HOLD:
 			if not d.has(KEY_SHIP):
@@ -730,7 +852,8 @@ func _container_key(container: Variant) -> String:
 				_record_error(ERR_SYS03_09, FIELD_OWNER_ID, d, "HOLD registration requires owner_id")
 				return ""
 			var owner_h: String = String(d[KEY_OWNER])
-			var cid_h: String = String(container_id(StringName(KIND_HOLD), String(d[KEY_SHIP])))
+			var ship_h: String = String(d[KEY_SHIP])
+			var cid_h: String = String(container_id(StringName(KIND_HOLD), ship_h))
 			_kind_by_id[cid_h] = kind
 			# Preserve port if already set via set_container_port; else optional KEY_PORT on dict.
 			var port_h: String = ""
@@ -738,7 +861,9 @@ func _container_key(container: Variant) -> String:
 				port_h = String((_container_meta[cid_h] as Dictionary).get(FIELD_PORT_ID, ""))
 			if d.has(KEY_PORT) and not String(d[KEY_PORT]).is_empty():
 				port_h = String(d[KEY_PORT])
-			_container_meta[cid_h] = {FIELD_OWNER_ID: owner_h, FIELD_PORT_ID: port_h}
+			_container_meta[cid_h] = {
+				FIELD_OWNER_ID: owner_h, FIELD_PORT_ID: port_h, FIELD_SHIP_ID: ship_h
+			}
 			return cid_h
 		_:
 			return ""
