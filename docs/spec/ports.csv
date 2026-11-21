@@ -5,9 +5,9 @@ PT-03,福州,false,3,明
 PT-04,寧波,true,2,明
 PT-05,松江,true,1,明
 PT-06,澎湖,true,2,明（巡檢司）
-PT-07,大員,false,2,荷蘭 VOC
-PT-08,雞籠,false,3,西班牙→荷蘭
-PT-09,淡水,false,2,西班牙→荷蘭
+PT-07,大員,true,2,無主
+PT-08,雞籠,false,3,西班牙
+PT-09,淡水,false,2,西班牙
 PT-10,魍港,true,1,無主（漢人聚落）
 PT-11,那霸,true,2,琉球王府
 PT-12,長崎,false,3,日本幕府
