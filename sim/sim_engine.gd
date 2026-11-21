@@ -117,6 +117,9 @@ func _run_one_job(
 	if not GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.connect(sampler.on_conservation)
 
+	# D-60f: sim expects successful boot → inject deny-all fixture（not formal always-allow）.
+	if not IntelLedger.has_broker_provider():
+		IntelLedger.set_broker_provider(SimBrokerFixture.new())
 	var boot_errors: Array = SimLoop.boot(
 		String(merge_res["path"]),
 		goods_dir,
