@@ -1,0 +1,7 @@
+{
+  "scenario_id": "sys23_bad_triple",
+  "years": "two",
+  "seeds": [1],
+  "layers": { "RELOCATE": false },
+  "extra_forbidden": true
+}

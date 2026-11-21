@@ -2610,7 +2610,8 @@ FRM-SYS15-05,SYS-15,較新船報方向：n ＜ 2 → NONE。否則 N ＝ S 中�
 FRM-SYS15-06,SYS-15,"查詢 board_for(actor, P, O, g)：先驗在場（actor 在 P 有停泊船，或持有任何狀態的建築；否則 ERR-SYS15-04、回空）；再回 {n, consensus_mid_li, band ＝ MarketPricer.indicator_band(consensus_mid_li ÷ base_price_li)、consensus_weeks_x、mean_age_days、newest_age_days、divergence_ppm、divergence_band、direction}。查詢不寫入任何狀態。｜★ D-37c（已追認 D-37e）：公開延遲與資格特權可見性見 26.1 FRM-SYS16-04；樣本集依行為者可見性過濾。",FRM-03 至 05,行市結果,Draft,,,,,,,,,,,,,,,
 FRM-SYS15-07,SYS-15,"own_snapshot(actor, O)：回 own_snap[actor][O] 的副本並附 age_days ＝ Clock.day － day_taken；無則回空 Dictionary（不報錯）。",ST-OWNSNAP,快照,Draft,,,,,,,,,,,,,,,
 FRM-SYS15-08,SYS-15,"日修剪 daily_step(day)：依 port_id、（ship_id, origin_port）字串升序，移除 age ≥ WINDOW_DAYS 的 rec；不動 own_snap 與 ship_snap。",ST-BOARD,—,Draft,,,,,,,,,,,,,,,
-FRM-SYS15-09,SYS-15,"接觸等級 contact_level(actor, P)：有 grant_base 記錄 → 2；否則有 contact 記錄或 actor 在 P 在場（FRM-SYS15-06 的在場定義）→ 1；否則 0。grant_base(actor, P, requester)：請求者不在授權清單 → ERR-SYS15-03。｜★ grant_base 已刪（D-37e、D-38a）：等級 2 改 has_kontor；本段文字留存供對照，不實作（R9-25 ②）",ST-KNOW,等級,Draft,,,,,,,,,,,,,,,
+FRM-SYS15-09,"SYS-15
+★ D-60f（Owner 2026-11-21）：資格查詢（has_kontor、is_broker_qualified）改由注入式 BrokerProvider 提供：IntelLedger.set_broker_provider(provider)、has_broker_provider()，SimLoop 於 boot 注入；沒注入則 boot_gate_errors 報 ERR-SYS15-06（field＝broker_provider），不再用 /root/BrokerDesk 路徑查找。BrokerDesk 於 WP-41 實作。","接觸等級 contact_level(actor, P)：有 grant_base 記錄 → 2；否則有 contact 記錄或 actor 在 P 在場（FRM-SYS15-06 的在場定義）→ 1；否則 0。grant_base(actor, P, requester)：請求者不在授權清單 → ERR-SYS15-03。｜★ grant_base 已刪（D-37e、D-38a）：等級 2 改 has_kontor；本段文字留存供對照，不實作（R9-25 ②）",ST-KNOW,等級,Draft,,,,,,,,,,,,,,,
 FRM-SYS15-10,SYS-15,溢位與決定性：Σ w_i × mid_i 與 (MAX－MIN) × PPM_SCALE 乘法前檢查是否超出 int64（ERR-SYS15-07，C-10）；遍歷一律依 port_id、ship_id、origin_port、good_id 升序（C-08）；同一輸入必得同一輸出。,—,—,Draft,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,
 25.1 附錄 C 錯誤碼（ERR）,,,,,,,,,,,,,,,,,,,,

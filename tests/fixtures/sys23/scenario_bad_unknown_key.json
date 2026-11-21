@@ -1,0 +1,8 @@
+{
+  "scenario_id": "sys23_bad_unknown",
+  "years": 2,
+  "warmup_years": 1,
+  "seeds": [1],
+  "layers": { "RELOCATE": false },
+  "extra_forbidden": 1
+}

@@ -1,0 +1,6 @@
+{
+  "scenario_id": "sys23_bad_missing",
+  "years": 2,
+  "seeds": [1],
+  "layers": { "RELOCATE": false }
+}

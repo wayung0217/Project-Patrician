@@ -1,0 +1,8 @@
+{
+  "scenario_id": "sys23_bad_err06",
+  "years": 2,
+  "warmup_years": 1,
+  "seeds": [1],
+  "layers": { "RELOCATE": false },
+  "relocate_f": 0.5
+}
