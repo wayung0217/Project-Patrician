@@ -69,6 +69,11 @@ func is_loaded() -> bool:
 	return _loaded
 
 
+func mark_unloaded() -> void:
+	## D-89b 待追認: allow sim to re-inject providers after a prior boot (was _loaded=false write).
+	_loaded = false
+
+
 func last_error() -> Dictionary:
 	return _last_error.duplicate(true)
 

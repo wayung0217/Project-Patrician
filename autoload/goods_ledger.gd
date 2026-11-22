@@ -113,7 +113,9 @@ var _offtake_pending: Dictionary = {}
 ## snapshot[port][good] = {window_qty, local_qty, window_days, day}
 var _offtake_snapshot: Dictionary = {}
 ## First roll_offtake_snapshot day (window_days epoch); -1 = none yet.
-var _offtake_epoch_day: int = 0 - 1
+## EX-02: offtake epoch unset sentinel.
+const DAY_SENTINEL_UNSET := -1
+var _offtake_epoch_day: int = DAY_SENTINEL_UNSET
 
 
 func _ready() -> void:
@@ -377,60 +379,6 @@ func maybe_check_conservation_on_tick() -> int:
 	return CODE_OK
 
 
-func daily_produce_qty(season_output_q: int, day_index_k: int) -> int:
-	# FRM-SYS03-03: out(k) = FLOOR(Q·(k+1)/D) − FLOOR(Q·k/D)，k = 0..D−1
-	assert(_loaded, "GoodsLedger.daily_produce_qty before load")
-	# PRM-SYS00-DAYS_PER_SEASON
-	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
-	assert(days_d > 0, "DAYS_PER_SEASON must be > 0")
-	assert(day_index_k >= 0 and day_index_k < days_d, "k out of 0..D-1")
-	var q: int = season_output_q
-	var k: int = day_index_k
-	# floori on int operands (TechSpec 3.4 E)；不走 float 累加產量
-	var term_hi: int = floori(q * (k + 1) / days_d)
-	var term_lo: int = floori(q * k / days_d)
-	return term_hi - term_lo
-
-
-func run_daily_produce(day_index_k: int) -> Array:
-	## 2.3-02: PRODUCE 依 (port_id, good_id) 升序。缺口：H 未列本方法名；k 應為 Clock.day_in_season−1。
-	assert(_loaded, "GoodsLedger.run_daily_produce before load")
-	var results: Array = []
-	if not PortRegistry.is_loaded():
-		results.append(_err(CODE_PORT_REGISTRY_NOT_LOADED, FIELD_PORT_REGISTRY, null, "PortRegistry required for PRODUCE"))
-		_emit_errors(results)
-		return results
-	var jobs: Array = []
-	for port_variant in PortRegistry.all_ids():
-		var port_id: String = String(port_variant)
-		var def: PortDef = PortRegistry.get_port(port_id)
-		var good_keys: Array = def.role_cells.keys()
-		good_keys.sort()
-		for good_variant in good_keys:
-			var good_id: String = String(good_variant)
-			var cell: RoleCell = def.role_cells[good_id]
-			if cell.role != PortRegistry.ROLE_PRODUCER:
-				continue
-			jobs.append({
-				"port": port_id,
-				"good": good_id,
-				"q": cell.base_output_per_season,
-			})
-	jobs.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		if String(a["port"]) == String(b["port"]):
-			return String(a["good"]) < String(b["good"])
-		return String(a["port"]) < String(b["port"])
-	)
-	for job_variant in jobs:
-		var job: Dictionary = job_variant
-		var qty: int = daily_produce_qty(int(job["q"]), day_index_k)
-		if qty <= 0:
-			continue
-		var from_c: Dictionary = {KEY_KIND: KIND_EXTERNAL}
-		var to_c: Dictionary = {KEY_KIND: KIND_MARKET, KEY_PORT: String(job["port"])}
-		var seq_or_zero: int = transfer(from_c, to_c, StringName(String(job["good"])), qty, REASON_PRODUCE, REQUESTER_SYS03)
-		results.append({"port": job["port"], "good": job["good"], "qty": qty, "result": seq_or_zero})
-	return results
 
 
 func container_id(kind: StringName, arg1: String = "", arg2: String = "") -> StringName:
@@ -916,7 +864,7 @@ func _clear_state() -> void:
 	_offtake_daily = {}
 	_offtake_pending = {}
 	_offtake_snapshot = {}
-	_offtake_epoch_day = 0 - 1
+	_offtake_epoch_day = DAY_SENTINEL_UNSET
 	_clear_last_error()
 
 

@@ -32,6 +32,8 @@ const PRM_SAT_OUT_MAX := "PRM-SYS07-SAT_OUT_MAX"
 const PRM_UP1_STREAK := "PRM-SYS07-UP1_STREAK_DAYS"
 const PRM_UP2_STREAK := "PRM-SYS07-UP2_STREAK_DAYS"
 const PRM_RATE_SCALE := "PRM-SYS07-RATE_SCALE"
+## EX-06: ‰ scale for ACADEMY_MULT (spec unit dictionary).
+const ACADEMY_MULT_UNIT := 1000
 const PRM_PF1 := "PRM-SYS07-PF1_RATE_WK"
 const PRM_PF2 := "PRM-SYS07-PF2_RATE_WK"
 const PRM_PF3 := "PRM-SYS07-PF3_RATE_WK"
@@ -318,7 +320,7 @@ func set_residence_occupants(
 		"citizen": citizen,
 		"rich": rich,
 		"ring": ring,
-		"cap": 100,
+		"cap": Params.get_int(PRM_HOUSE_CAP),
 		"port": "",
 	}
 
@@ -339,7 +341,7 @@ func job_capacity(port_id: StringName) -> int:
 	var sum := 0
 	for bld_v in BuildingEconomy.workplaces(port_id):
 		var bld: Building = bld_v
-		var def: BuildingDef = BuildingEconomy._building_defs.get(String(bld.type), null) as BuildingDef
+		var def: BuildingDef = BuildingEconomy.get_building_def(StringName(bld.type))
 		if def == null:
 			continue
 		sum = sum + def.max_workers * hh
@@ -586,7 +588,7 @@ func _compute_flows(
 		if BuildingEconomy.is_loaded():
 			lv = maxi(1, BuildingEconomy.public_level(StringName(port_id), CB_ACADEMY))
 		var mult: int = int(amult[mini(lv, amult.size()) - 1])
-		var rate3: int = int(Params.get_int(PRM_PF3) * mult / 1000)
+		var rate3: int = int(Params.get_int(PRM_PF3) * mult / ACADEMY_MULT_UNIT)
 		flow_up2 = _moved(p, "acc_up2", s0_cit, rate3, denom)
 	# PF-4 / PF-5
 	var flow_dn2 := 0
@@ -641,7 +643,7 @@ func _active_tier_workshops(port_id: String, tier: int) -> int:
 	var n := 0
 	for bld_v in BuildingEconomy.workplaces(StringName(port_id)):
 		var bld: Building = bld_v
-		var def: BuildingDef = BuildingEconomy._building_defs.get(String(bld.type), null) as BuildingDef
+		var def: BuildingDef = BuildingEconomy.get_building_def(StringName(bld.type))
 		if def == null:
 			continue
 		if def.tier != tier:
@@ -713,7 +715,7 @@ func _hire_workers(port_id: String, p: PortPop) -> int:
 	var total_need := 0
 	for bld_v in BuildingEconomy.workplaces(StringName(port_id)):
 		var bld: Building = bld_v
-		var def: BuildingDef = BuildingEconomy._building_defs.get(String(bld.type), null) as BuildingDef
+		var def: BuildingDef = BuildingEconomy.get_building_def(StringName(bld.type))
 		if def == null:
 			continue
 		var have: int = workers(bld.building_id)
@@ -889,7 +891,8 @@ func _draw_u(port_id: String, day: int, res_id: String, purpose: String) -> floa
 	_wp51_rng_calls = _wp51_rng_calls + 1
 	var u_seed: int = Rng.derive_seed(_seed, day, port_id, res_id, purpose)
 	var u_pair: Array = Rng.next(u_seed)
-	var u: float = float(abs(int(u_pair[1]) % 1000000)) / 1000000.0
+	var rate_scale: int = Params.get_int(PRM_RATE_SCALE)
+	var u: float = float(abs(int(u_pair[1]) % rate_scale)) / float(rate_scale)
 	if u <= 0.0:
 		u = 1.0e-9
 	return u

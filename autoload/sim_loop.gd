@@ -223,7 +223,7 @@ func tick_day() -> Array:
 		return day_errors
 
 	# 2.3-01 步驟 1: 逐 tick 推進一日份（D-14d／13-02）；信號於步驟 6。
-	# D-05(b)／D-07: boot day=0 → first day advance → day=1，執行 k=0 PRODUCE。
+	# D-05(b)／D-07: boot day=0 → first day advance → day=1；workshop PRODUCE via BuildingEconomy.daily_step (D-86).
 	# 每個 tick 後執行「tick 步驟清單」（本 WP 為空；WP-30 加 ShipRegistry.tick_step）。
 	var tpd: int = Params.get_int(PRM_TICKS_PER_DAY)
 	for _i in range(tpd):
@@ -237,7 +237,7 @@ func tick_day() -> Array:
 	var day_in_season: int = ((Clock.day - 1) % days_d) + 1
 
 	# D-12h／D-12d／8.6 F: BuildingEconomy.daily_step = ① build + ② workshop PRODUCE + ④ wages.
-	# Role-cell PRODUCE path removed (WP-20); GoodsLedger.run_daily_produce kept for SYS-03 tests only.
+	# Role-cell PRODUCE path removed (WP-20／D-86); SYS-03 produce coverage is BuildingEconomy workshop path.
 	day_errors.append_array(BuildingEconomy.daily_step(Clock.day))
 
 	# 14-03: PopulationModel after workshop produce (WP-21).

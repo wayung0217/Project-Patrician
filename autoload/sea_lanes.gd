@@ -13,7 +13,7 @@ const REGIONS_DIR := SEA_DIR + "regions/"
 const LANES_DIR := SEA_DIR + "lanes/"
 const TRES_SUFFIX := ".tres"
 
-const EXPECTED_PORT_COUNT := 16
+const PRM_PORT_COUNT_MAX := "PRM-SYS02-PORT_COUNT_MAX"
 
 const ERR_SYS14_01 := &"ERR-SYS14-01"
 const ERR_SYS14_03 := &"ERR-SYS14-03"
@@ -357,14 +357,20 @@ func _validate_loaded() -> Array:
 					)
 				)
 
-	if port_nodes.size() != EXPECTED_PORT_COUNT:
+	## Prefer PortRegistry loaded count (SYS-14 PORT completeness); fallback PRM-SYS02-PORT_COUNT_MAX.
+	var expected_ports: int = (
+		PortRegistry.all_ids().size()
+		if PortRegistry.is_loaded()
+		else Params.get_int(PRM_PORT_COUNT_MAX)
+	)
+	if port_nodes.size() != expected_ports:
 		errors.append(
 			_err(
 				ERR_SYS14_01,
 				NODES_DIR,
 				FIELD_PORT_COUNT,
 				port_nodes.size(),
-				"expected %s PORT nodes, got %s" % [EXPECTED_PORT_COUNT, port_nodes.size()]
+				"expected %s PORT nodes, got %s" % [expected_ports, port_nodes.size()]
 			)
 		)
 

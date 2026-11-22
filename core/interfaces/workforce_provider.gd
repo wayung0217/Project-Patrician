@@ -4,7 +4,7 @@ extends RefCounted
 ## Formal implementation is PopulationModel (WP-21); WP-20 uses test doubles only.
 
 ## Failure sentinel — not a real worker count (D-12c).
-const WORKERS_FAILURE := 0 - 1
+const WORKERS_FAILURE := -1 ## EX-02 failure sentinel
 
 
 func workers(_ws_id: StringName) -> int:

@@ -38,7 +38,8 @@ const BAND_HIGH := Band.HIGH
 const BAND_VERY_HIGH := Band.VERY_HIGH
 
 ## FRM-SYS04-07: 斷點數 ≥ 2 (built from 0／1 only).
-const MIN_BREAKPOINTS := 1 + 1
+const MIN_BREAKPOINTS := 2 ## EX-03: curve needs ≥2 breakpoints
+const TRAPEZOID_DENOM := 2.0 ## D-84f: trapezoid area divisor (was 1.0+1.0)
 
 const ERR_SYS04_01 := &"ERR-SYS04-01"
 const ERR_SYS04_02 := &"ERR-SYS04-02"
@@ -384,7 +385,7 @@ func _G(x: float) -> float:
 		if e > w_b:
 			e = w_b
 		var m_e: float = m_a + (m_b - m_a) * (e - w_a) / (w_b - w_a)
-		total = total + (e - w_a) * (m_a + m_e) / (1.0 + 1.0)
+		total = total + (e - w_a) * (m_a + m_e) / TRAPEZOID_DENOM
 		i = i + 1
 	var w_n: float = _curve.weeks[last_i]
 	if x > w_n:

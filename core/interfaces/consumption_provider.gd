@@ -7,7 +7,7 @@ extends RefCounted
 
 ## Failure sentinel for consume_qty — not a real quantity (2.1-03).
 ## Built from 0／1 only (C-03).
-const CONSUMPTION_FAILURE := 0 - 1
+const CONSUMPTION_FAILURE := -1 ## EX-02 failure sentinel
 
 
 func consume_qty(_port_id: StringName, _good_id: StringName, _day: int) -> int:

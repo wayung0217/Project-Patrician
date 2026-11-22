@@ -226,31 +226,6 @@ func test_D05_consume_shortage_err_sys03_02_all_or_nothing() -> void:
 	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 
-func test_TST_SYS03_04_season_produce_sums_to_q() -> void:
-	# TST-SYS03-04: Q=1000、D=DAYS_PER_SEASON，跑完一商季 → Σ PRODUCE = 1000；單日差 ≤ 1
-	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
-	var sum: int = 0
-	var prev: int = 0
-	for k in range(days_d):
-		var out_k: int = GoodsLedger.daily_produce_qty(TST_SYS03_04_Q, k)
-		sum += out_k
-		if k > 0:
-			var delta: int = absi(out_k - prev)
-			assert_lte(delta, TST_SYS03_04_MAX_DAY_DELTA, "single-day produce delta ≤ 1 (3.1／TST-SYS03-04)")
-		prev = out_k
-	assert_eq(sum, TST_SYS03_04_Q, "Σ out(k) must equal Q exactly (FRM-SYS03-03)")
-
-	# Also apply PRODUCE via run_daily_produce for one producer cell with Q=1000.
-	_set_producer_output("PT-01", GoodCatalog.all_ids()[0], TST_SYS03_04_Q)
-	# Reload PortRegistry so GoodsLedger sees updated Q — role_cells already mutated in memory.
-	var market: Dictionary = GoodsLedger.make_market("PT-01")
-	var good: StringName = StringName(GoodCatalog.all_ids()[0])
-	var before: int = GoodsLedger.get_qty(market, good)
-	for k in range(days_d):
-		GoodsLedger.run_daily_produce(k)
-	var after: int = GoodsLedger.get_qty(market, good)
-	assert_eq(after - before, TST_SYS03_04_Q)
-
 
 func test_TST_SYS03_05_sea_loss_rejected() -> void:
 	# TST-SYS03-05: reason = SEA_LOSS → ERR-SYS03-04
@@ -268,29 +243,6 @@ func test_TST_SYS03_05_sea_loss_rejected() -> void:
 	assert_push_error_count(1)
 	assert_eq(GoodsLedger.get_qty(market, good), before)
 
-
-func test_TST_SYS03_06_market_unbounded_over_ten_seasons() -> void:
-	# TST-SYS03-06: 產地無人買、10 商季 → MARKET 庫存持續增加、不被截斷、無溢位（9b）
-	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
-	var good_id: String = GoodCatalog.all_ids()[0]
-	var q_per_season: int = 1
-	_set_producer_output("PT-01", good_id, q_per_season)
-	# Zero other producers' output so only PT-01×good contributes.
-	_zero_other_producers("PT-01", good_id)
-
-	var market: Dictionary = GoodsLedger.make_market("PT-01")
-	var good: StringName = StringName(good_id)
-	var prev: int = GoodsLedger.get_qty(market, good)
-	var seasons: int = TST_SYS03_06_SEASONS
-	for _s in range(seasons):
-		for k in range(days_d):
-			GoodsLedger.run_daily_produce(k)
-		var now: int = GoodsLedger.get_qty(market, good)
-		assert_gt(now, prev, "MARKET must keep growing each season (no cap)")
-		prev = now
-	var expected: int = q_per_season * seasons
-	assert_eq(GoodsLedger.get_qty(market, good), expected)
-	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 
 func test_transfer_seq_and_timestamp_match() -> void:
@@ -491,25 +443,6 @@ func _is_error_info(e: Variant) -> bool:
 
 # --- fixtures ---
 
-func _set_producer_output(port_id: String, good_id: String, q: int) -> void:
-	var def: PortDef = PortRegistry.get_port(port_id)
-	var cell: RoleCell = def.role_cells[good_id]
-	cell.role = PortRegistry.ROLE_PRODUCER
-	cell.base_output_per_season = q
-	cell.downstream_terminals = PackedStringArray()
-
-
-func _zero_other_producers(keep_port: String, keep_good: String) -> void:
-	for port_variant in PortRegistry.all_ids():
-		var port_id: String = String(port_variant)
-		var def: PortDef = PortRegistry.get_port(port_id)
-		for good_variant in def.role_cells.keys():
-			var good_id: String = String(good_variant)
-			if port_id == keep_port and good_id == keep_good:
-				continue
-			var cell: RoleCell = def.role_cells[good_id]
-			if cell.role == PortRegistry.ROLE_PRODUCER:
-				cell.base_output_per_season = 0
 
 
 func _build_valid_goods(dir: String) -> String:

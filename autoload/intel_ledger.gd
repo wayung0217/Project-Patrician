@@ -21,6 +21,10 @@ const ERR_SYS15_06 := &"ERR-SYS15-06"
 const ERR_SYS15_07 := &"ERR-SYS15-07"
 
 const PRM_WINDOW_DAYS := "PRM-SYS15-WINDOW_DAYS"
+## EX-03: contact level when actor has kontor at port (was 1+1).
+const CONTACT_LEVEL_KONTOR := 2
+## D-84f: minimum sample count for direction／trend (was 1+1).
+const MIN_SAMPLES_FOR_TREND := 2
 const PRM_DECAY_DAYS := "PRM-SYS15-DECAY_DAYS"
 const PRM_DIV_LO := "PRM-SYS15-DIVERGENCE_LO_PPM"
 const PRM_DIV_HI := "PRM-SYS15-DIVERGENCE_HI_PPM"
@@ -361,7 +365,7 @@ func contact_level(actor_id: StringName, port_id: StringName) -> int:
 	assert(_loaded, "IntelLedger.contact_level before load")
 	_clear_last()
 	if _has_kontor(actor_id, port_id):
-		return 1 + 1
+		return CONTACT_LEVEL_KONTOR
 	var actor_s: String = String(actor_id)
 	var port_s: String = String(port_id)
 	if _contact.has(actor_s) and (_contact[actor_s] as Dictionary).has(port_s):
@@ -631,7 +635,7 @@ func _summarize_board(samples: Array, good_id: StringName) -> Dictionary:
 	)
 	var div_ppm: int = 0
 	var div_band: int = DivergenceBand.LOW
-	if n >= 1 + 1:
+	if n >= MIN_SAMPLES_FOR_TREND:
 		var span: int = max_mid - min_mid
 		var prod_div: Variant = _mul_checked(span, ppm)
 		if prod_div == null:
@@ -663,7 +667,7 @@ func _summarize_board(samples: Array, good_id: StringName) -> Dictionary:
 
 func _direction_of(samples: Array, ppm: int) -> StringName:
 	## FRM-SYS15-05.
-	if samples.size() < 1 + 1:
+	if samples.size() < MIN_SAMPLES_FOR_TREND:
 		return DIR_NONE
 	var ordered: Array = samples.duplicate()
 	ordered.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:

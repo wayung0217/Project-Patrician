@@ -4,7 +4,7 @@ extends RefCounted
 ## Formal implementation is PopulationModel adapter (WP-30); tests may inject fixtures.
 
 ## Failure sentinel — not a real beggar count (2.1-03).
-const BEGGARS_FAILURE := 0 - 1
+const BEGGARS_FAILURE := -1 ## EX-02 failure sentinel
 
 
 func beggars(_port_id: StringName) -> int:

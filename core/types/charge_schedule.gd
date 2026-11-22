@@ -8,4 +8,5 @@ var requester: StringName = &""
 var reason: StringName = &""
 var fee_per_season: int = 0 ## 厘
 var start_day: int = 0
-var end_day: int = 0 - 1 ## 哨兵＝無結束日（規格 null）
+const END_DAY_NONE := -1 ## EX-02: 哨兵＝無結束日（規格 null）
+var end_day: int = END_DAY_NONE
