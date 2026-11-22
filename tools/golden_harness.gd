@@ -210,7 +210,10 @@ func _write_day(
 		var bld_json: String = _buildings_json(be, port_s)
 		var res_json: String = _residences_json(be, pop, port_s)
 		## WP-67／OBS-05: public queries（settled seasons only; day-0 may be empty）.
-		var days_d: int = int(params.call("get_int", "PRM-SYS00-DAYS_PER_SEASON"))
+		var params_node: Node = get_root().get_node_or_null("Params")
+		var days_d: int = 0
+		if params_node != null:
+			days_d = int(params_node.call("get_int", &"PRM-SYS00-DAYS_PER_SEASON"))
 		var season_i: int = 0
 		if days_d > 0:
 			season_i = maxi(0, int(day / days_d) - 1)
