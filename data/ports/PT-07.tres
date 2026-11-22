@@ -153,8 +153,9 @@ downstream_terminals = PackedStringArray()
 script = ExtResource("2_niixg")
 port_id = "PT-07"
 name_zh = "大員"
+is_free_port = true
 draft_limit_class = 2
-regime_id = "荷蘭 VOC"
+regime_id = "無主"
 role_cells = {
 "GD-001": SubResource("Resource_1m45u"),
 "GD-002": SubResource("Resource_dwba2"),
