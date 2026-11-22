@@ -34,6 +34,9 @@ const PRM_UP2_STREAK := "PRM-SYS07-UP2_STREAK_DAYS"
 const PRM_RATE_SCALE := "PRM-SYS07-RATE_SCALE"
 ## EX-06: ‰ scale for ACADEMY_MULT (spec unit dictionary).
 const ACADEMY_MULT_UNIT := 1000
+## A16／C-03: floor for ring-weight and u when exp／mod underflow (was 1.0e-9).
+const RING_WEIGHT_FLOOR := 1.0e-9
+const U_UNIT_FLOOR := 1.0e-9
 const PRM_PF1 := "PRM-SYS07-PF1_RATE_WK"
 const PRM_PF2 := "PRM-SYS07-PF2_RATE_WK"
 const PRM_PF3 := "PRM-SYS07-PF3_RATE_WK"
@@ -78,6 +81,8 @@ var _pending_pop_ports: Array = []
 var _pending_sat_ports: Array = []
 ## Test／WP-51: count Rng.derive_seed calls during placement (movers only after opening).
 var _wp51_rng_calls: int = 0
+## WP-55 A13: per daily_port／opening — purpose → next draw_seq (FRM-SYS07-12／D-83a).
+var _draw_seq_by_purpose: Dictionary = {}
 
 
 func _ready() -> void:
@@ -238,12 +243,14 @@ const OPENING_POP_DIR := "res://data/opening_population/"
 
 
 func apply_opening_init(opening_pop_dir: String = OPENING_POP_DIR) -> Array:
-	## FRM-SYS07-14／D-19e: load opening population; empty／missing／duplicate → ERR-SYS07-09.
+	## FRM-SYS07-14／D-19e／D-87: validate all opening rows first; any error → no writes.
+	## A17: sorted load; unknown port／bad resource collected (C-06), not silent.
 	assert(_loaded, "PopulationModel.apply_opening_init before load")
 	var errors: Array = []
-	var rows: Array = _load_opening_population(opening_pop_dir)
+	var rows: Array = _load_opening_population(opening_pop_dir, errors)
 	var seen: Dictionary = {} ## port_id → true
-	if rows.is_empty():
+	var pending: Array = [] ## OpeningPopulation rows ready to apply
+	if rows.is_empty() and errors.is_empty():
 		errors.append(
 			_err(ERR_SYS07_09, "opening_population", opening_pop_dir, "opening population dir empty or missing")
 		)
@@ -257,12 +264,10 @@ func apply_opening_init(opening_pop_dir: String = OPENING_POP_DIR) -> Array:
 		if row.poor < 0 or row.citizen < 0 or row.rich < 0:
 			errors.append(_err(ERR_SYS07_01, "opening_pop", pid, "negative opening population"))
 			continue
-		set_port_state(pid, row.poor, row.citizen, row.rich, 0)
-		var p: PortPop = _ensure_port(pid)
-		p.streak_up1 = 0
-		p.streak_up2 = 0
-		p.acc = {}
-		p.pending_release_workers = 0
+		if PortRegistry.is_loaded() and not _port_registry_has(pid):
+			errors.append(_err(ERR_SYS07_09, "port_id", pid, "unknown opening population port"))
+			continue
+		pending.append(row)
 	if PortRegistry.is_loaded():
 		for pid_v in PortRegistry.all_ids():
 			var want: String = String(pid_v)
@@ -270,10 +275,22 @@ func apply_opening_init(opening_pop_dir: String = OPENING_POP_DIR) -> Array:
 				errors.append(_err(ERR_SYS07_09, "port_id", want, "missing opening population for port"))
 	if not errors.is_empty():
 		_emit(errors)
+		return errors
+	## D-87: writes only after full validation passed.
+	for row2_v in pending:
+		var row2: OpeningPopulation = row2_v
+		var pid2: String = String(row2.port_id)
+		set_port_state(pid2, row2.poor, row2.citizen, row2.rich, 0)
+		var p: PortPop = _ensure_port(pid2)
+		p.streak_up1 = 0
+		p.streak_up2 = 0
+		p.acc = {}
+		p.pending_release_workers = 0
 	return errors
 
 
-func _load_opening_population(dir: String) -> Array:
+func _load_opening_population(dir: String, errors: Array) -> Array:
+	## A17: enumerate .tres in filename asc; unexpected resource → ERR (no silent skip).
 	var out: Array = []
 	var abs_dir: String = ProjectSettings.globalize_path(dir)
 	if not DirAccess.dir_exists_absolute(abs_dir):
@@ -281,6 +298,7 @@ func _load_opening_population(dir: String) -> Array:
 	var d := DirAccess.open(dir)
 	if d == null:
 		return out
+	var names: Array = []
 	d.list_dir_begin()
 	while true:
 		var fname: String = d.get_next()
@@ -288,10 +306,18 @@ func _load_opening_population(dir: String) -> Array:
 			break
 		if d.current_is_dir() or not fname.ends_with(".tres"):
 			continue
-		var res: Resource = load(dir.path_join(fname))
+		names.append(fname)
+	d.list_dir_end()
+	names.sort()
+	for fname2_v in names:
+		var fname2: String = String(fname2_v)
+		var res: Resource = load(dir.path_join(fname2))
 		if res is OpeningPopulation:
 			out.append(res)
-	d.list_dir_end()
+		else:
+			errors.append(
+				_err(ERR_SYS07_09, "opening_population", fname2, "unexpected resource type")
+			)
 	return out
 
 
@@ -382,9 +408,18 @@ func weighted_avg_sat(port_id: String) -> int:
 	var res: int = p.poor + p.citizen + p.rich
 	if res <= 0:
 		return 0
-	return int(
-		(p.poor * p.sat_poor + p.citizen * p.sat_citizen + p.rich * p.sat_rich) / res
+	## A16: integer ÷ via floori(float) for C-09 clarity (non-negative).
+	return floori(
+		float(p.poor * p.sat_poor + p.citizen * p.sat_citizen + p.rich * p.sat_rich) / float(res)
 	)
+
+
+func _port_registry_has(port_id: String) -> bool:
+	## A17: membership via sorted ids (avoid get_port side-effect on last_error).
+	for pid_v in PortRegistry.all_ids():
+		if String(pid_v) == port_id:
+			return true
+	return false
 
 
 func daily_step(day: int) -> Array:
@@ -409,6 +444,7 @@ func flush_signals() -> void:
 
 func _daily_port(port_id: String, day: int, errors: Array) -> void:
 	var p: PortPop = _ensure_port(port_id)
+	_draw_seq_by_purpose = {}
 	# ① S0
 	var s0_poor: int = p.poor
 	var s0_cit: int = p.citizen
@@ -418,12 +454,12 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 	var s0_sat_c: int = p.sat_citizen
 	var s0_sat_r: int = p.sat_rich
 	# FRM-SYS07-14／D-63e: one full local placement before first movers (S0 counts).
-	_sync_port_residences(port_id, day)
+	_sync_port_residences(port_id, day, errors)
 	if not bool(_opening_placed.get(port_id, false)):
-		_opening_place_full(port_id, p, day)
+		_opening_place_full(port_id, p, day, errors)
 		_opening_placed[port_id] = true
 	# ② sat targets + inertia
-	_update_satisfaction(p, port_id)
+	_update_satisfaction(p, port_id, errors)
 	_pending_sat_ports.append(port_id)
 	# ③ streaks (use updated sat)
 	_update_streaks(p)
@@ -447,14 +483,16 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 		- int(flows["dn1"])
 	)
 	p.rich = p.rich + int(flows["up2"]) - int(flows["dn2"])
-	_clamp_nonneg(p)
+	_clamp_nonneg(p, port_id, errors)
 	# FRM-03／OQ-13w: release workers whose workshops vanished (e.g. demolish).
 	var lost_poor: int = _apply_lost_workshop_workers(port_id, p)
 	# FRM-03／Q-07a: residents over job_cap → citizen via PF-5 → beggar (gradual).
+	## A15（D-89c）: citizen→poor→beggar rewrite deferred — keep current path; see gaps.md.
 	var overflow_cit: int = _apply_job_cap_overflow(port_id, p, s0_cit)
 	# ⑥ hire
 	var hired_poor: int = _hire_workers(port_id, p)
 	# ⑦ incremental placement — movers only (FRM-SYS07-12／OQ-13j／D-63e)
+	## A14（D-89c）: employed-poor leave worker deduction deferred — see gaps.md.
 	_place_movers(
 		port_id,
 		day,
@@ -467,26 +505,34 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 		hired_poor
 	)
 	_pending_pop_ports.append(port_id)
-	var _e: Array = errors # reserved
 
 
-func _update_satisfaction(p: PortPop, port_id: String) -> void:
+func _update_satisfaction(p: PortPop, port_id: String, errors: Array) -> void:
 	var scale: int = Params.get_int(PRM_SAT_SCALE)
 	var step: int = Params.get_int(PRM_SAT_MAX_STEP)
-	p.sat_poor = _step_sat(p.sat_poor, _target_sat(port_id, CLASS_POOR, true), step, scale)
-	p.sat_citizen = _step_sat(
-		p.sat_citizen, _target_sat(port_id, CLASS_CITIZEN, false), step, scale
+	p.sat_poor = _step_sat(
+		p.sat_poor, _target_sat(port_id, CLASS_POOR, true, errors), step, scale
 	)
-	p.sat_rich = _step_sat(p.sat_rich, _target_sat(port_id, CLASS_RICH, false), step, scale)
+	p.sat_citizen = _step_sat(
+		p.sat_citizen, _target_sat(port_id, CLASS_CITIZEN, false, errors), step, scale
+	)
+	p.sat_rich = _step_sat(
+		p.sat_rich, _target_sat(port_id, CLASS_RICH, false, errors), step, scale
+	)
 
 
-func _target_sat(port_id: String, clazz: StringName, is_poor: bool) -> int:
+func _target_sat(port_id: String, clazz: StringName, is_poor: bool, errors: Array) -> int:
 	var scale: int = Params.get_int(PRM_SAT_SCALE)
 	var inp: float = _sat_input.satisfaction_input(StringName(port_id), clazz)
-	if inp < 0.0:
-		inp = 0.0
-	if inp > 1.0:
-		inp = 1.0
+	## A16／C-06: out-of-range sat_input → collect error, then use bounded value for the day.
+	if inp < 0.0 or inp > 1.0:
+		errors.append(
+			_err(ERR_SYS07_08, "sat_input", inp, "satisfaction_input out of [0,1]")
+		)
+		if inp < 0.0:
+			inp = 0.0
+		if inp > 1.0:
+			inp = 1.0
 	var temple_lv: int = 0
 	var alms_lv: int = 0
 	if BuildingEconomy.is_loaded():
@@ -494,22 +540,33 @@ func _target_sat(port_id: String, clazz: StringName, is_poor: bool) -> int:
 		alms_lv = BuildingEconomy.public_level(StringName(port_id), CB_ALMS)
 	var bonus := 0
 	var temple: Array = Params.get_value(PRM_TEMPLE)
-	if temple_lv >= 1 and temple_lv <= temple.size():
-		bonus = int(temple[temple_lv - 1])
+	if temple_lv >= 1:
+		if temple_lv <= temple.size():
+			bonus = int(temple[temple_lv - 1])
+		else:
+			errors.append(
+				_err(ERR_SYS07_08, PRM_TEMPLE, temple_lv, "temple level above TEMPLE_BONUS length")
+			)
 	var t: int = mini(
 		scale, floori(AmountQuantize.quantize_amount(inp * float(scale))) + bonus
 	)
 	if is_poor:
 		var alms: Array = Params.get_value(PRM_ALMS)
 		var floor_v := 0
-		if alms_lv >= 1 and alms_lv <= alms.size():
-			floor_v = int(alms[alms_lv - 1])
+		if alms_lv >= 1:
+			if alms_lv <= alms.size():
+				floor_v = int(alms[alms_lv - 1])
+			else:
+				errors.append(
+					_err(ERR_SYS07_08, PRM_ALMS, alms_lv, "alms level above ALMS_FLOOR length")
+				)
 		if t < floor_v:
 			t = floor_v
 	return t
 
 
 func _step_sat(sat: int, target: int, step: int, scale: int) -> int:
+	## FRM-SYS07-02: inertia toward target; result bounded to [0, SAT_SCALE] by formula.
 	if sat < 0:
 		sat = target # OQ-13l first day
 	var delta: int = target - sat
@@ -556,11 +613,15 @@ func _compute_flows(
 	var free_beds: int = beds - residents0
 	if free_beds < 0:
 		free_beds = 0
-	var cap: int = int(residents0 * Params.get_int(PRM_UNEMP_CAP) / rate_scale)
+	var cap: int = (
+		(residents0 * Params.get_int(PRM_UNEMP_CAP)) / rate_scale if rate_scale > 0 else 0
+	)
 	# weighted avg from S0 sats
 	var wavg := 0
 	if residents0 > 0:
-		wavg = int((s0_poor * s0_sat_p + s0_cit * s0_sat_c + s0_rich * s0_sat_r) / residents0)
+		wavg = floori(
+			float(s0_poor * s0_sat_p + s0_cit * s0_sat_c + s0_rich * s0_sat_r) / float(residents0)
+		)
 	# PF-1
 	var flow_in := 0
 	if wavg >= Params.get_int(PRM_SAT_IN_MIN) and free_beds > 0 and s0_beg < cap:
@@ -583,12 +644,15 @@ func _compute_flows(
 	if p.streak_up2 >= Params.get_int(PRM_UP2_STREAK) and (
 		_active_tier_workshops(port_id, 3) >= Params.get_int(PRM_TIER3) or academy_ok
 	):
+		## A16／D-84c／FRM-SYS07-07: academy level 0 → mult = 1000／1000（no boost）.
 		var amult: Array = Params.get_value(PRM_ACADEMY)
-		var lv: int = 1
+		var academy_lv: int = 0
 		if BuildingEconomy.is_loaded():
-			lv = maxi(1, BuildingEconomy.public_level(StringName(port_id), CB_ACADEMY))
-		var mult: int = int(amult[mini(lv, amult.size()) - 1])
-		var rate3: int = int(Params.get_int(PRM_PF3) * mult / ACADEMY_MULT_UNIT)
+			academy_lv = BuildingEconomy.public_level(StringName(port_id), CB_ACADEMY)
+		var mult: int = ACADEMY_MULT_UNIT
+		if academy_lv >= 1 and amult.size() > 0:
+			mult = int(amult[mini(academy_lv, amult.size()) - 1])
+		var rate3: int = (Params.get_int(PRM_PF3) * mult) / ACADEMY_MULT_UNIT
 		flow_up2 = _moved(p, "acc_up2", s0_cit, rate3, denom)
 	# PF-4 / PF-5
 	var flow_dn2 := 0
@@ -626,10 +690,11 @@ func _compute_flows(
 
 
 func _moved(p: PortPop, acc_key: String, base: int, rate_wk: int, denom: int) -> int:
+	## FRM-SYS07-11／A16: integer floor division (non-negative).
 	if base <= 0 or rate_wk <= 0 or denom <= 0:
 		return 0
 	var acc: int = int(p.acc.get(acc_key, 0)) + base * rate_wk
-	var moved: int = int(acc / denom)
+	var moved: int = acc / denom
 	if moved > base:
 		moved = base
 	acc = acc - moved * denom
@@ -723,30 +788,39 @@ func _hire_workers(port_id: String, p: PortPop) -> int:
 		if need > 0:
 			slots.append({"id": bld.building_id, "need": need})
 			total_need = total_need + need
-	var h: int = mini(int(p.beggar / hh), int(free_beds / hh))
+	var h: int = mini(p.beggar / hh, free_beds / hh)
 	h = mini(h, total_need)
 	if h <= 0:
 		return 0
-	# Largest remainder allocation across slots
+	# A16／FRM-SYS05-12: largest remainder in integers; tie → ws_id asc (C-08).
 	var assigned: Dictionary = {}
 	var sum_need: int = maxi(1, total_need)
 	var allocated := 0
-	var fracs: Array = []
+	var rems: Array = []
 	for s in slots:
-		var raw: float = float(h) * float(s["need"]) / float(sum_need)
-		var base_a: int = int(raw)
+		var need_i: int = int(s["need"])
+		var base_a: int = (h * need_i) / sum_need
+		var rem_i: int = (h * need_i) % sum_need
 		assigned[s["id"]] = base_a
 		allocated = allocated + base_a
-		fracs.append({"id": s["id"], "frac": raw - float(base_a)})
+		rems.append({"id": s["id"], "rem": rem_i})
 	var rem: int = h - allocated
-	fracs.sort_custom(func(a, b): return float(a["frac"]) > float(b["frac"]))
+	rems.sort_custom(func(a, b):
+		var ra: int = int(a["rem"])
+		var rb: int = int(b["rem"])
+		if ra != rb:
+			return ra > rb
+		return String(a["id"]) < String(b["id"])
+	)
 	for i in range(rem):
-		if i >= fracs.size():
+		if i >= rems.size():
 			break
-		var idv: StringName = fracs[i]["id"]
+		var idv: StringName = rems[i]["id"]
 		assigned[idv] = int(assigned.get(idv, 0)) + 1
 	var hired_people := 0
-	for id_k in assigned.keys():
+	var id_keys: Array = assigned.keys()
+	id_keys.sort()
+	for id_k in id_keys:
 		var add: int = int(assigned[id_k])
 		if add <= 0:
 			continue
@@ -764,7 +838,7 @@ const PURPOSE_UP := "place_up"
 const PURPOSE_DN := "place_dn"
 
 
-func _sync_port_residences(port_id: String, day: int) -> void:
+func _sync_port_residences(port_id: String, day: int, errors: Array) -> void:
 	## Keep persistent local occupants; add new residences; demolish → rehouse (OQ-13p／res_id asc).
 	if not BuildingEconomy.is_loaded():
 		return
@@ -812,24 +886,44 @@ func _sync_port_residences(port_id: String, day: int) -> void:
 		displaced_rich = displaced_rich + int(gone.get("rich", 0))
 		_residents.erase(oid)
 	_port_res_ids[port_id] = ids
-	# Rehouse displaced via 移入 lottery (same building class); leftover stay unplaced.
+	# Rehouse displaced via 移入 lottery; A17: unplaced → ERR (C-06).
 	for _i in range(displaced_rich):
-		_place_one_in(port_id, day, "rich")
+		if not _place_one_in(port_id, day, "rich"):
+			errors.append(
+				_err(ERR_SYS07_09, "residence", port_id, "no bed for displaced rich")
+			)
 	for _j in range(displaced_cit):
-		_place_one_in(port_id, day, "citizen")
+		if not _place_one_in(port_id, day, "citizen"):
+			errors.append(
+				_err(ERR_SYS07_09, "residence", port_id, "no bed for displaced citizen")
+			)
 	for _k in range(displaced_poor):
-		_place_one_in(port_id, day, "poor")
+		if not _place_one_in(port_id, day, "poor"):
+			errors.append(
+				_err(ERR_SYS07_09, "residence", port_id, "no bed for displaced poor")
+			)
 
 
-func _opening_place_full(port_id: String, p: PortPop, day: int) -> void:
+func _opening_place_full(port_id: String, p: PortPop, day: int, errors: Array) -> void:
 	## FRM-SYS07-14 once: place all housed classes with FRM-SYS07-12 移入 keys (local only).
+	## A13: draw_seq 0..n-1 across poor→citizen→rich; A17: bed shortfall → ERR.
 	_clear_port_occupants(port_id)
+	_draw_seq_by_purpose = {}
 	for _i in range(p.poor):
-		_place_one_in(port_id, day, "poor")
+		if not _place_one_in(port_id, day, "poor"):
+			errors.append(
+				_err(ERR_SYS07_09, "residence", port_id, "opening place: no bed for poor")
+			)
 	for _j in range(p.citizen):
-		_place_one_in(port_id, day, "citizen")
+		if not _place_one_in(port_id, day, "citizen"):
+			errors.append(
+				_err(ERR_SYS07_09, "residence", port_id, "opening place: no bed for citizen")
+			)
 	for _k in range(p.rich):
-		_place_one_in(port_id, day, "rich")
+		if not _place_one_in(port_id, day, "rich"):
+			errors.append(
+				_err(ERR_SYS07_09, "residence", port_id, "opening place: no bed for rich")
+			)
 
 
 func _clear_port_occupants(port_id: String) -> void:
@@ -855,7 +949,7 @@ func _place_movers(
 	up2: int,
 	in_poor: int
 ) -> void:
-	## FRM-SYS07-12／OQ-13j: one lottery per mover; local residences only; res_id asc.
+	## FRM-SYS07-12／OQ-13j／A13: one lottery per mover with per-purpose draw_seq.
 	for _a in range(maxi(0, out_poor)):
 		_remove_one(port_id, day, "poor", PURPOSE_DN)
 	for _b in range(maxi(0, out_citizen)):
@@ -883,24 +977,32 @@ func _local_res_ids(port_id: String) -> Array:
 func _ring_weight(ring: int, lambda: float) -> float:
 	var w: float = exp(0.0 - lambda * float(ring - 1))
 	if w <= 0.0:
-		w = 1.0e-9
+		w = RING_WEIGHT_FLOOR
 	return w
 
 
-func _draw_u(port_id: String, day: int, res_id: String, purpose: String) -> float:
+func _next_draw_seq(purpose: String) -> int:
+	## A13／D-83a: nth draw today for this purpose (from 0).
+	var n: int = int(_draw_seq_by_purpose.get(purpose, 0))
+	_draw_seq_by_purpose[purpose] = n + 1
+	return n
+
+
+func _draw_u(port_id: String, day: int, res_id: String, purpose: String, draw_seq: int) -> float:
 	_wp51_rng_calls = _wp51_rng_calls + 1
-	var u_seed: int = Rng.derive_seed(_seed, day, port_id, res_id, purpose)
+	var u_seed: int = Rng.derive_seed(_seed, day, port_id, res_id, purpose, draw_seq)
 	var u_pair: Array = Rng.next(u_seed)
 	var rate_scale: int = Params.get_int(PRM_RATE_SCALE)
-	var u: float = float(abs(int(u_pair[1]) % rate_scale)) / float(rate_scale)
+	var u: float = float(absi(int(u_pair[1]) % rate_scale)) / float(rate_scale)
 	if u <= 0.0:
-		u = 1.0e-9
+		u = U_UNIT_FLOOR
 	return u
 
 
 func _place_one_in(port_id: String, day: int, clazz: String) -> bool:
 	## 移入：weight 1/w → score = u^(1/(1/w)) = u^w among residences with free beds.
 	var lambda: float = Params.get_float(PRM_LAMBDA)
+	var draw_seq: int = _next_draw_seq(PURPOSE_IN)
 	var best_id := ""
 	var best_score := -1.0e30
 	for rid_v in _local_res_ids(port_id):
@@ -910,7 +1012,7 @@ func _place_one_in(port_id: String, day: int, clazz: String) -> bool:
 		if used >= int(r["cap"]):
 			continue
 		var w: float = _ring_weight(int(r["ring"]), lambda)
-		var u: float = _draw_u(port_id, day, rid, PURPOSE_IN)
+		var u: float = _draw_u(port_id, day, rid, PURPOSE_IN, draw_seq)
 		var score: float = pow(u, w)
 		if score > best_score:
 			best_score = score
@@ -925,8 +1027,9 @@ func _place_one_in(port_id: String, day: int, clazz: String) -> bool:
 func _pick_residence_with_class(
 	port_id: String, day: int, clazz: String, purpose: String
 ) -> String:
-	## Upgrade: u^(1/w); downgrade／leave: u^w (FRM-SYS07-12).
+	## Upgrade: u^(1/w); downgrade／leave: u^w (FRM-SYS07-12). A13: one draw_seq per mover.
 	var lambda: float = Params.get_float(PRM_LAMBDA)
+	var draw_seq: int = _next_draw_seq(purpose)
 	var best_id := ""
 	var best_score := -1.0e30
 	var is_up: bool = purpose == PURPOSE_UP
@@ -936,7 +1039,7 @@ func _pick_residence_with_class(
 		if int(r.get(clazz, 0)) <= 0:
 			continue
 		var w: float = _ring_weight(int(r["ring"]), lambda)
-		var u: float = _draw_u(port_id, day, rid, purpose)
+		var u: float = _draw_u(port_id, day, rid, purpose, draw_seq)
 		var score: float
 		if is_up:
 			score = pow(u, 1.0 / w)
@@ -969,15 +1072,21 @@ func _class_shift(
 	return true
 
 
-func _clamp_nonneg(p: PortPop) -> void:
+func _clamp_nonneg(p: PortPop, port_id: String, errors: Array) -> void:
+	## A16／C-06: negative after apply → collect error then zero (must not stay negative).
 	if p.poor < 0:
+		errors.append(_err(ERR_SYS07_01, "poor", p.poor, "negative after flow apply"))
 		p.poor = 0
 	if p.citizen < 0:
+		errors.append(_err(ERR_SYS07_01, "citizen", p.citizen, "negative after flow apply"))
 		p.citizen = 0
 	if p.rich < 0:
+		errors.append(_err(ERR_SYS07_01, "rich", p.rich, "negative after flow apply"))
 		p.rich = 0
 	if p.beggar < 0:
+		errors.append(_err(ERR_SYS07_01, "beggar", p.beggar, "negative after flow apply"))
 		p.beggar = 0
+	var _pid: String = port_id # keep signature used for diagnostics
 
 
 func _validate_params() -> Array:
@@ -1065,6 +1174,7 @@ func _clear_state() -> void:
 	_port_res_ids = {}
 	_opening_placed = {}
 	_wp51_rng_calls = 0
+	_draw_seq_by_purpose = {}
 	_loaded = false
 	_pending_pop_ports = []
 	_pending_sat_ports = []

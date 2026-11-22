@@ -34,3 +34,12 @@ func test_WP25_11_08_same_input_same_output() -> void:
 	var x: int = Rng.derive_seed(42, 7, "PT-01", "GD-001", "lottery")
 	var y: int = Rng.derive_seed(42, 7, "PT-01", "GD-001", "lottery")
 	assert_eq(x, y)
+
+
+func test_WP55_A13_draw_seq_optional_preserves_legacy() -> void:
+	## D-89b: omitting draw_seq（or −1）matches pre-WP-55 five-field hash.
+	var legacy: int = Rng.derive_seed(1, 2, "PT-01", "item", "purpose")
+	var omitted: int = Rng.derive_seed(1, 2, "PT-01", "item", "purpose", -1)
+	var with0: int = Rng.derive_seed(1, 2, "PT-01", "item", "purpose", 0)
+	assert_eq(legacy, omitted)
+	assert_ne(legacy, with0)
