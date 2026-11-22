@@ -1,13 +1,12 @@
 extends SceneTree
-## WP-65: formal boot → seed mats/cash → 2 years → per-port queue_pos.
+## WP-65／C3 (17-52): formal boot, **no** cash/material inject, 2y queue probe.
+## Per-port: steps reached, stuck step, reason (slot／prereq／cash／materials／done).
+## Expect: no port stuck on missing public slot or missing prereq building.
 ## Usage: godot --headless --path . -s res://tools/wp65_queue_advance.gd
 
 
 const SCENARIO_PATH := "res://docs/spec/scenario_L1_baseline.json"
 const YEARS := 2
-const FUND_LI := 200_000_000
-const MAT_QTY := 50_000
-const MAT_IDS: Array[String] = ["GD-003", "GD-004", "GD-021"]
 
 
 func _init() -> void:
@@ -24,16 +23,12 @@ func _go() -> void:
 	var params: Node = root.get_node("Params")
 	var be: Node = root.get_node("BuildingEconomy")
 	var sim_loop: Node = root.get_node("SimLoop")
-	var ports_n: Node = root.get_node("PortRegistry")
 	var cash: Node = root.get_node("CashLedger")
-	var goods: Node = root.get_node("GoodsLedger")
-	var catalog: Node = root.get_node("GoodCatalog")
 
-	_seed_mats_and_cash(ports_n, cash, goods, catalog)
 	var days_d: int = int(params.call("get_int", "PRM-SYS00-DAYS_PER_SEASON"))
 	var seasons_y: int = int(params.call("get_int", "PRM-SYS00-SEASONS_PER_YEAR"))
 	var total_days: int = YEARS * seasons_y * days_d
-	print("WP65_QUEUE years=%d days=%d" % [YEARS, total_days])
+	print("WP65_QUEUE years=%d days=%d inject=none" % [YEARS, total_days])
 
 	var queue_by: Dictionary = be.get("_queue_by_port")
 	var queue_pos: Dictionary = be.get("_queue_pos")
@@ -44,8 +39,7 @@ func _go() -> void:
 		var pid: String = String(pid_v)
 		var steps: int = (queue_by.get(pid, []) as Array).size()
 		var pos: int = int(queue_pos.get(pid, 0))
-		var first_up: int = _first_upgrade_step(queue_by, pid)
-		print("port=%s steps=%d pos=%d first_upgrade_step=%d" % [pid, steps, pos, first_up])
+		print("port=%s steps=%d pos=%d" % [pid, steps, pos])
 
 	for _d in range(total_days):
 		sim_loop.call("tick_day")
@@ -53,99 +47,113 @@ func _go() -> void:
 	queue_by = be.get("_queue_by_port")
 	queue_pos = be.get("_queue_pos")
 	print("WP65_QUEUE_AFTER")
-	var stuck := 0
-	var stuck_missing := 0
+	var stuck_slot := 0
+	var stuck_prereq := 0
+	var stuck_cash := 0
+	var stuck_mats := 0
+	var stuck_other := 0
 	for pid_v2 in ports:
 		var pid2: String = String(pid_v2)
-		var steps2: int = (queue_by.get(pid2, []) as Array).size()
+		var steps_arr: Array = queue_by.get(pid2, []) as Array
+		var steps2: int = steps_arr.size()
 		var pos2: int = int(queue_pos.get(pid2, 0))
-		var first_up2: int = _first_upgrade_step(queue_by, pid2)
-		var stuck_first: bool = first_up2 >= 0 and pos2 == first_up2
-		var miss_reason := ""
-		if stuck_first:
-			stuck += 1
-			miss_reason = _missing_upgrade_reason(be, pid2, queue_by, first_up2)
-			if not miss_reason.is_empty():
-				stuck_missing += 1
+		var reason := "done"
+		var stuck_step := -1
+		if pos2 < steps2:
+			stuck_step = pos2
+			reason = _stuck_reason(be, cash, pid2, steps_arr, pos2)
+			match reason:
+				"slot":
+					stuck_slot += 1
+				"prereq":
+					stuck_prereq += 1
+				"cash":
+					stuck_cash += 1
+				"materials":
+					stuck_mats += 1
+				_:
+					stuck_other += 1
 		print(
 			(
-				"port=%s steps=%d pos=%d advanced=%d first_upgrade_step=%d stuck_at_first_upgrade=%s missing_target=%s"
-				% [pid2, steps2, pos2, pos2, first_up2, str(stuck_first), miss_reason]
+				"port=%s steps=%d pos=%d advanced=%d stuck_step=%d reason=%s"
+				% [pid2, steps2, pos2, pos2, stuck_step, reason]
 			)
 		)
 	print(
-		"WP65_QUEUE stuck_at_first_upgrade_count=%d missing_target_count=%d"
-		% [stuck, stuck_missing]
+		(
+			"WP65_QUEUE stuck_slot=%d stuck_prereq=%d stuck_cash=%d stuck_materials=%d stuck_other=%d"
+			% [stuck_slot, stuck_prereq, stuck_cash, stuck_mats, stuck_other]
+		)
 	)
-	## A8／WP-65: stop-on-missing-target is required. Formal queue PT-07 asks CB-16 L2
-	## with no opening／prior L1 — counted as expected stop, not product jam.
-	if stuck > stuck_missing:
-		push_error("WP65_QUEUE FAIL: port stuck at first upgrade for non-missing reason")
+	## C3 rewrite (17-52): new build_queue.csv → expect no slot／prereq stuck.
+	if stuck_slot > 0 or stuck_prereq > 0:
+		push_error(
+			"WP65_QUEUE FAIL: slot/prereq stuck (slot=%d prereq=%d)" % [stuck_slot, stuck_prereq]
+		)
 		quit(1)
 		return
 	print("WP65_QUEUE OK")
 	quit(0)
 
 
-func _first_upgrade_step(queue_by: Dictionary, port_id: String) -> int:
-	var steps: Array = queue_by.get(port_id, [])
-	for i in range(steps.size()):
-		var s: Object = steps[i]
-		if s != null and int(s.get("target_level")) >= 2:
-			return i
-	return -1
-
-
-func _missing_upgrade_reason(
-	be: Node, port_id: String, queue_by: Dictionary, step_idx: int
-) -> String:
-	var steps: Array = queue_by.get(port_id, [])
-	if step_idx < 0 or step_idx >= steps.size():
-		return ""
-	var step: Object = steps[step_idx]
+func _stuck_reason(be: Node, cash: Node, port_id: String, steps: Array, pos: int) -> String:
+	if pos < 0 or pos >= steps.size():
+		return "other"
+	var step: Object = steps[pos]
+	if step == null:
+		return "other"
+	var target_level: int = int(step.get("target_level"))
 	var cb: StringName = StringName(String(step.get("cb_id")))
-	var need_level: int = int(step.get("target_level")) - 1
-	var city: StringName = get_root().get_node("CashLedger").call("make_city_id", port_id)
-	var found: Variant = be.call(
+	var city: StringName = cash.call("make_city_id", port_id)
+	var params: Node = get_root().get_node("Params")
+	var cost: int = 0
+	if target_level <= 1:
+		var cash_map: Dictionary = params.call("get_value", "PRM-SYS08-BUILD_CASH_LI")
+		cost = int(cash_map.get("PUBLIC", 0))
+		var slot_id: StringName = be.call("_find_public_slot", port_id)
+		if slot_id == &"":
+			return "slot"
+		if int(cash.call("balance", city)) < cost:
+			return "cash"
+		## Cash+slot OK but still stuck → materials／order_build fail.
+		return "materials"
+	## Upgrade path.
+	cost = int(be.call("_public_upgrade_cash", port_id, target_level))
+	if cost < 0:
+		return "other"
+	var need_level: int = target_level - 1
+	var found_active: Variant = be.call(
 		"_find_city_public_upgrade_target", port_id, city, cb, need_level
 	)
-	if found == null:
-		return "%s@L%d" % [String(cb), need_level]
-	return ""
-
-
-func _seed_mats_and_cash(ports_n: Node, cash: Node, goods: Node, catalog: Node) -> void:
-	var ports: PackedStringArray = ports_n.call("all_ids")
-	ports.sort()
-	var id_source: StringName = cash.get("ID_SOURCE")
-	var reason_produce: StringName = goods.get("REASON_PRODUCE")
-	for pid_v in ports:
-		var pid: String = String(pid_v)
-		var city: StringName = cash.call("make_city_id", pid)
-		## Boot already created CITY accounts; top up cash.
-		cash.call(
-			"post",
-			[
-				cash.call("make_entry", id_source, 0 - FUND_LI),
-				cash.call("make_entry", city, FUND_LI),
-			],
-			&"WP65_FUND",
-			&"SYS-08"
-		)
-		var mkt: Dictionary = goods.call("make_market", pid)
-		var external: Variant = goods.call("make_external")
-		for gid in MAT_IDS:
-			if catalog.call("get_good", gid) == null:
-				continue
-			goods.call(
-				"transfer",
-				external,
-				mkt,
-				StringName(gid),
-				MAT_QTY,
-				reason_produce,
-				&"WP65_SEED"
-			)
+	if found_active != null:
+		if int(cash.call("balance", city)) < cost:
+			return "cash"
+		return "materials"
+	## No ACTIVE target: distinguish missing building vs still constructing.
+	var any_match := false
+	var buildings: Array = be.get("_buildings_by_port").get(port_id, [])
+	for bld_v in buildings:
+		var bld: Object = bld_v
+		if bld == null:
+			continue
+		if bld.get("owner") != city:
+			continue
+		if String(bld.get("build_class")) != "PUBLIC":
+			continue
+		var bcb: StringName = bld.get("cb_id")
+		var btype: StringName = bld.get("type")
+		if bcb != cb and btype != cb:
+			continue
+		if int(bld.get("level")) != need_level:
+			continue
+		any_match = true
+		break
+	if not any_match:
+		return "prereq"
+	## Exists but not ACTIVE → waiting on construction／materials.
+	if int(cash.call("balance", city)) < cost:
+		return "cash"
+	return "materials"
 
 
 func _boot_formal() -> Dictionary:

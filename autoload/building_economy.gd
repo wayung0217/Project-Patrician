@@ -310,6 +310,22 @@ func load_and_validate(
 	var city_by_port: Dictionary = _load_city_centers(city_center_dir, errors)
 	_building_defs = _load_building_defs(buildings_dir, errors)
 	_load_build_queues(BUILD_QUEUE_DIR, errors)
+	## D-97(a)／N1／FRM-SYS08-21: queue import validation ERR-SYS08-13（C-06 collect all）.
+	## Skip when fixture boots omit city centers for some PortRegistry ports（unit tests）.
+	var registry_ports: Array = []
+	for rp_v in PortRegistry.all_ids():
+		registry_ports.append(String(rp_v))
+	var city_covers_registry := true
+	for rp2 in registry_ports:
+		if not city_by_port.has(String(rp2)):
+			city_covers_registry = false
+			break
+	if city_covers_registry:
+		var opening_load_errs: Array = []
+		var opening_publics: Array = _load_opening_public(OPENING_PUBLIC_DIR, opening_load_errs)
+		for oe in opening_load_errs:
+			errors.append(oe)
+		_validate_build_queue_import_d97a(city_by_port, opening_publics, errors)
 	if not errors.is_empty():
 		_emit_errors(errors)
 		return errors
@@ -2762,6 +2778,105 @@ func _load_build_queues(queue_dir: String, errors: Array) -> void:
 		var arr: Array = _queue_by_port[pid]
 		arr.sort_custom(func(a: BuildStep, b: BuildStep) -> bool: return a.step < b.step)
 		_queue_pos[pid] = 0
+
+
+func _validate_build_queue_import_d97a(
+	city_by_port: Dictionary, opening_publics: Array, errors: Array
+) -> void:
+	## FRM-SYS08-21／D-97(a)／N1: slots + level continuity; ERR-SYS08-13; collect all (C-06).
+	## Opening buildings count as level 1 (or their tres level); unbuilt cb_id starts at 0.
+	var open_by_port: Dictionary = {}
+	for op_v in opening_publics:
+		var op: OpeningPublic = op_v as OpeningPublic
+		if op == null:
+			continue
+		if not open_by_port.has(op.port_id):
+			open_by_port[op.port_id] = []
+		(open_by_port[op.port_id] as Array).append(op)
+
+	## Only ports in PortRegistry（fixture boots must not validate unrelated formal ports）.
+	var ports: Array = []
+	for pid_v in PortRegistry.all_ids():
+		ports.append(String(pid_v))
+	ports.sort()
+
+	for pid_v2 in ports:
+		var port_id: String = String(pid_v2)
+		var slots: int = 0
+		if city_by_port.has(port_id):
+			slots = int((city_by_port[port_id] as CityCenterDef).public_slots)
+		var opens: Array = open_by_port.get(port_id, [])
+		var open_n: int = opens.size()
+		if open_n > slots:
+			errors.append(
+				_err(
+					ERR_SYS08_13,
+					"public_slots",
+					{
+						"port_id": port_id,
+						"step": 0,
+						"cb_id": "",
+						"value": open_n,
+						"public_slots": slots,
+						"opening_public": open_n,
+					},
+					"opening_public count exceeds public_slots (D-97a)"
+				)
+			)
+		var levels: Dictionary = {}
+		for op2_v in opens:
+			var op2: OpeningPublic = op2_v as OpeningPublic
+			## Opening building present → at least level 1 (tres level if higher).
+			var lv: int = maxi(1, int(op2.level))
+			levels[String(op2.cb_id)] = lv
+
+		var steps: Array = _queue_by_port.get(port_id, [])
+		var new_seen: int = 0
+		var remaining_new: int = maxi(0, slots - open_n)
+		for step_v in steps:
+			var step: BuildStep = step_v as BuildStep
+			if step == null:
+				continue
+			var cb: String = String(step.cb_id)
+			var cur: int = int(levels.get(cb, 0))
+			var expected: int = cur + 1
+			if step.target_level != expected:
+				errors.append(
+					_err(
+						ERR_SYS08_13,
+						"target_level",
+						{
+							"port_id": port_id,
+							"step": step.step,
+							"cb_id": cb,
+							"value": step.target_level,
+							"expected": expected,
+						},
+						"build_queue target_level must be current+1 (D-97a／EX skip-level)"
+					)
+				)
+			else:
+				levels[cb] = step.target_level
+
+			if step.target_level == 1:
+				new_seen += 1
+				if remaining_new < 0 or new_seen > remaining_new:
+					## EX-08-21-04: report the overflowing new-build step.
+					errors.append(
+						_err(
+							ERR_SYS08_13,
+							"public_slots",
+							{
+								"port_id": port_id,
+								"step": step.step,
+								"cb_id": cb,
+								"value": open_n + new_seen,
+								"public_slots": slots,
+								"opening_public": open_n,
+							},
+							"opening_public + target_level=1 exceeds public_slots (D-97a／EX-08-21-04)"
+						)
+					)
 
 
 func _clear_state() -> void:
