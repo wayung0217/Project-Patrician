@@ -71,9 +71,7 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 		)
 		return 1
 	var scenario: Dictionary = validated["scenario"]
-	if bool((scenario.get("layers", {}) as Dictionary).get("RELOCATE", false)):
-		push_error("sim_runner: WP-26 supports layer1 ISOLATED only (RELOCATE=false)")
-		return 1
+	## WP-27: layers.RELOCATE true runs FRM-SYS23-04 via SimEngine (child process).
 
 	## Key strings match SimScenarioValidator.KEY_* (avoid class_name at -s parse time).
 	var jobs: Array = SimGridExpand.expand(scenario["grid"], scenario["seeds"])
@@ -151,6 +149,8 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 			(all_sampler.get("season_cells") as Array).append_array(res["season_cells"])
 		if res.has("season_ports"):
 			(all_sampler.get("season_ports") as Array).append_array(res["season_ports"])
+		if res.has("obs_ext_rows"):
+			(all_sampler.get("obs_ext_rows") as Array).append_array(res["obs_ext_rows"])
 		if res.has("daily_rows"):
 			var dr: Dictionary = res["daily_rows"]
 			var daily: Dictionary = all_sampler.get("daily_rows")
@@ -203,12 +203,14 @@ func _run_job_file(job_path: String) -> int:
 		"season_cells": [],
 		"season_ports": [],
 		"daily_rows": {},
+		"obs_ext_rows": [],
 	}
 	if one.has("sampler"):
 		var sm: RefCounted = one["sampler"]
 		out["season_cells"] = sm.get("season_cells")
 		out["season_ports"] = sm.get("season_ports")
 		out["daily_rows"] = sm.get("daily_rows")
+		out["obs_ext_rows"] = sm.get("obs_ext_rows")
 	var result_path: String = String(payload["result_path"])
 	var rf := FileAccess.open(result_path, FileAccess.WRITE)
 	## A34／A32: result write failure → non-zero (parent must not treat as success).
@@ -234,10 +236,15 @@ func _wipe_dir(path: String) -> void:
 	var d := DirAccess.open(path)
 	if d == null:
 		return
+	## R9-64 中-3／C-08: sort directory listing before mutation.
+	var names: PackedStringArray = PackedStringArray()
 	d.list_dir_begin()
 	var fname: String = d.get_next()
 	while fname != "":
 		if not d.current_is_dir():
-			d.remove(fname)
+			names.append(fname)
 		fname = d.get_next()
 	d.list_dir_end()
+	names.sort()
+	for i in range(names.size()):
+		d.remove(names[i])

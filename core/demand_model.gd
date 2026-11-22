@@ -136,6 +136,7 @@ func weekly_potential_demand(port_id: StringName, good_id: StringName) -> int:
 	## D-96f／FRM-SYS23-04／FRM-SYS04-01（改）：週潛在需求（擔／週，FLOOR）。
 	## Exact public name (D-96f)；口径同 weekly_demand。
 	## Provider path allows EX-04-09 fixtures before DemandModel load (R9-65 A2).
+	## int-1751: keep lane A on conflict with WP-27 stub (N-04).
 	if _potential_demand_provider != null:
 		assert(
 			_potential_demand_provider.has_method("weekly_potential_demand"),
