@@ -3,8 +3,7 @@ extends GutTest
 
 
 const CsvImport := preload("res://tools/csv_import.gd")
-## params_sys05_demo has all schema keys + non-zero START_CASH (boot requires genesis_grant).
-const PARAMS_ALL := "res://tests/fixtures/params_sys05_demo.json"
+## G3: ParamsFixtures.path_demo() = baseline + non-zero START_CASH (boot requires genesis_grant).
 const PARAMS_FORMAL := "res://data/params/params.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const SEA_CSV := "res://tests/fixtures/wp29_sea_ok/"
@@ -141,7 +140,7 @@ func test_TST_SYS23_11_missing_threshold_pass_na() -> void:
 		"produced": 0, "consumed": 0, "relocated_in": 0, "relocated_out": 0,
 	})
 	## Params must be loaded for seasons_per_year in metrics.
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var summary: Dictionary = SimMetrics.compute(
 		sampler, 0, 1, {"TH-01": 0.0}, false, "", 0, 0, 0, 1, {}
@@ -153,7 +152,7 @@ func test_TST_SYS23_11_missing_threshold_pass_na() -> void:
 
 func test_WP26_obs03_blank_not_zero() -> void:
 	## OBS-03 undefined until WP-21 — must be blank string, never "0" (C-15 / Owner).
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var sampler := SimSampler.new()
 	sampler.acc = SimTransferAcc.new()
@@ -190,7 +189,7 @@ func test_WP26_obs03_blank_not_zero() -> void:
 
 func test_TST_SYS23_10_met_hand_fixture() -> void:
 	## Hand fixture: 2 eval cells, both band equilibrium with stock_weeks set → MET-01 = 1.
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var sampler := SimSampler.new()
 	sampler.acc = SimTransferAcc.new()
@@ -219,7 +218,7 @@ func test_TST_SYS23_02_formal_params_unchanged_sha256() -> void:
 	## Boot via SimEngine must succeed; formal file bytes unchanged (TST-SYS23-02).
 	var sha_before: String = FileAccess.get_sha256(PARAMS_FORMAL)
 	assert_false(sha_before.is_empty())
-	var all_raw: String = FileAccess.get_file_as_string(PARAMS_ALL)
+	var all_raw: String = FileAccess.get_file_as_string(ParamsFixtures.path_demo())
 	var overrides: Dictionary = JSON.parse_string(all_raw)
 	## Short run for sha256／boot proof (years from fixture).
 	var short_raw: String = FileAccess.get_file_as_string(
@@ -609,7 +608,7 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 
 func test_WP26_abort_summary_mets_blank() -> void:
 	## Abort path MET-01..05b blank (not 0.0); pass N/A; MET-06 blank when no hits.
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var eng := SimEngine.new()
 	var s: Dictionary = eng._abort_summary(0, 0, 1, {}, "ERR-SYS23-07: boot failed: []", Time.get_ticks_msec())
@@ -918,7 +917,7 @@ func _fast_scenario(scenario_id: String) -> Dictionary:
 		"res://tests/fixtures/sys23/scenario_run_meta.json"
 	)
 	var meta: Dictionary = JSON.parse_string(meta_raw)
-	var all_raw: String = FileAccess.get_file_as_string(PARAMS_ALL)
+	var all_raw: String = FileAccess.get_file_as_string(ParamsFixtures.path_demo())
 	var all_params: Dictionary = JSON.parse_string(all_raw)
 	return {
 		"scenario_id": scenario_id,
@@ -942,7 +941,7 @@ func _run_full(scenario: Dictionary) -> Dictionary:
 func _make_engine() -> SimEngine:
 	_prepare_world()
 	var engine := SimEngine.new()
-	engine.params_formal_path = PARAMS_ALL
+	engine.params_formal_path = ParamsFixtures.path_demo()
 	engine.goods_dir = GOODS_ROOT + "base/"
 	engine.ports_dir = PORTS_ROOT + "base/"
 	engine.curve_path = CURVE_FIXTURE
@@ -955,7 +954,7 @@ func _make_engine() -> SimEngine:
 
 
 func _prepare_world() -> void:
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params_all_keys")
 	_build_goods(GOODS_ROOT + "base/")
 	var gerr: Array = GoodCatalog.load_and_validate(GOODS_ROOT + "base/")

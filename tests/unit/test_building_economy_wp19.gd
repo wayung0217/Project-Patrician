@@ -2,7 +2,6 @@ extends GutTest
 ## WP-19 / TechSpec 12-08 BuildingEconomy construction acceptance.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const PORT_PT01 := "PT-01"
 const ACTOR := &"ACT-PLAYER"
@@ -587,7 +586,7 @@ func test_WP19_12_08_simloop_hooks() -> void:
 # --- helpers ---
 
 func _setup_core(pop: TestPop) -> void:
-	var perr: Array = Params.load_and_validate(PARAMS_FIXTURE)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params: %s" % str(perr))
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
@@ -653,7 +652,8 @@ func _load_be() -> void:
 
 
 func _seed_market_mats(qty: int) -> void:
-	for g in ["GD-001", "GD-002", "GD-003"]:
+	## G3: BUILD_MAT uses GD-003／GD-004; keep GD-001 for tests that override mats.
+	for g in ["GD-001", "GD-002", "GD-003", "GD-004"]:
 		_seed_good_market(g, qty)
 
 

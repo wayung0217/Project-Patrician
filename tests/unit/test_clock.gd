@@ -104,14 +104,31 @@ func test_no_season_cutoff_from_clock_at_season_end() -> void:
 
 
 func test_load_requires_params() -> void:
-	# Force Params into unloaded state via official file (missing 1-A8 keys).
+	## BB3: official params missing keys → Clock refuses; reverse when formal is complete.
+	var schema: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string("res://data/params/params_schema.json")
+	)
+	var formal: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string(Params.PARAMS_PATH)
+	)
+	var missing := false
+	for id_variant in schema.keys():
+		if not formal.has(String(id_variant)):
+			missing = true
+			break
 	var perr: Array = Params.load_and_validate(Params.PARAMS_PATH)
-	assert_gt(perr.size(), 0)
-	assert_push_error_count(perr.size())
-	var cerr: Array = Clock.load_and_validate()
-	assert_gt(cerr.size(), 0)
-	assert_push_error_count(perr.size() + cerr.size())
-	assert_false(Clock.is_loaded())
+	if missing:
+		assert_gt(perr.size(), 0)
+		assert_push_error_count(perr.size())
+		var cerr: Array = Clock.load_and_validate()
+		assert_gt(cerr.size(), 0)
+		assert_push_error_count(perr.size() + cerr.size())
+		assert_false(Clock.is_loaded())
+	else:
+		assert_eq(perr.size(), 0)
+		var cerr_ok: Array = Clock.load_and_validate()
+		assert_eq(cerr_ok.size(), 0)
+		assert_true(Clock.is_loaded())
 
 
 func test_load_requires_ticks_per_day() -> void:

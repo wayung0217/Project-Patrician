@@ -1,0 +1,16 @@
+[remap]
+
+importer="keep"
+type="Translation"
+uid="uid://cchcadq125ysj"
+
+[deps]
+
+source_file="res://tests/fixtures/wp59_opening_populated/opening_population.csv"
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

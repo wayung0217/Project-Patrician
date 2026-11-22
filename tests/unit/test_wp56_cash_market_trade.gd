@@ -2,8 +2,7 @@ extends GutTest
 ## WP-56：A18–A23 帳本／報價／成交修復（R9-46／R9-47；D-84）.
 
 
-const PARAMS_DEMO := "res://tests/fixtures/params_sys05_demo.json"
-const PARAMS_ALL := "res://tests/fixtures/params_all_keys.json"
+const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const GOODS_ROOT := "user://wp56_goods/"
 const PORTS_ROOT := "user://wp56_ports/"
@@ -78,7 +77,7 @@ func test_WP56_A18_max_affordable_respects_market_stock() -> void:
 
 func test_WP56_A19_bankruptcy_referred_once_only() -> void:
 	## A19：達門檻後連續季不重發；清償後可再發.
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
@@ -101,7 +100,7 @@ func test_WP56_A19_bankruptcy_referred_once_only() -> void:
 
 func test_WP56_A20_reverse_after_arrears_keeps_sum_zero() -> void:
 	## A20／A23：入帳抵欠後 reverse_last_post → Σ 全帳戶＝0、欠款還原.
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
@@ -130,7 +129,7 @@ func test_WP56_A20_reverse_after_arrears_keeps_sum_zero() -> void:
 
 func test_WP56_A20_prorate_and_split_overflow() -> void:
 	## A20／C-10：prorate／split 乘法溢位 → ERR-SYS05-08
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	var p: int = CashLedger.prorate(HUGE_FEE, HUGE_DAYS)
@@ -164,7 +163,7 @@ func test_WP56_A21_quote_unknown_port() -> void:
 
 func test_WP56_A22_buy_slider_max_rejects_negative() -> void:
 	## A22：buy_slider_max 負數不得靜默夾 0
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	var m: int = CashLedger.buy_slider_max(NEG_ONE, 10, 10)
@@ -175,7 +174,7 @@ func test_WP56_A22_buy_slider_max_rejects_negative() -> void:
 
 func test_WP56_A22_post_requires_goods_ledger_seq() -> void:
 	## A22：GoodsLedger 未載入時 post 不得靜默用 posting_id 當 seq
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	GoodsLedger._loaded = false
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
@@ -212,7 +211,7 @@ func test_WP56_A23_trade_desk_reverse_with_arrears() -> void:
 
 func test_WP56_demo_q_afford_124_still_holds() -> void:
 	## 示範 5.1 q_afford＝124（原 TST-SYS05-08 數值釘）保留為補強.
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
@@ -261,7 +260,7 @@ class _Demo124 extends RefCounted:
 
 
 func _boot_pricing_stack() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_ALL).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	var goods_dir := _build_goods(GOODS_ROOT)
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)

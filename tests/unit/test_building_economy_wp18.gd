@@ -3,7 +3,6 @@ extends GutTest
 
 
 ## Use demo params (START_CASH > 0) — same SYS-08 keys as all_keys for land_price.
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const PORT_PT01 := "PT-01"
 const ACTOR := &"ACT-PLAYER"
@@ -316,7 +315,7 @@ func test_WP18_11_07_8_no_population_provider_boot_error() -> void:
 	IntelLedger.set_broker_provider(_DenyBroker.new())
 	var missing_demand := ROOT + "no_demand_dir_wp18/"
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -344,7 +343,7 @@ func test_WP18_11_07_9_warehouse_capacity_empty() -> void:
 
 
 func _setup_core(pop: TestPop) -> void:
-	var perr: Array = Params.load_and_validate(PARAMS_FIXTURE)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params: %s" % str(perr))
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	var gerr: Array = GoodCatalog.load_and_validate(goods_dir)
@@ -522,7 +521,7 @@ func _make_good(
 
 
 func _prepare_sim_fixtures() -> Dictionary:
-	Params.load_and_validate(PARAMS_FIXTURE)
+	Params.load_and_validate(ParamsFixtures.path_demo())
 	var goods := _build_valid_goods(ROOT + "sim_goods/")
 	GoodCatalog.load_and_validate(goods)
 	# SeaLanes FRM-SYS14-01 needs 16 PORT nodes.

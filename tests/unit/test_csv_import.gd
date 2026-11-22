@@ -168,8 +168,8 @@ func test_2_1_04_rule4_tests_use_fixtures_only() -> void:
 		)
 
 
-## 2.1-04 ⑤ / N-09 — no hand-written formal CSV under res://data/ (.tres allowed after formal import).
-func test_2_1_04_rule5_no_formal_data_csv_or_tres() -> void:
+## 2.1-04 ⑤ / N-09／BB4 — no hand-written formal CSV under res://data/ (.tres allowed after formal import).
+func test_2_1_04_rule5_no_formal_data_csv() -> void:
 	for dir_path in DATA_SUBDIRS:
 		assert_true(DirAccess.dir_exists_absolute(dir_path), "data dir exists: %s" % dir_path)
 		var dir: DirAccess = DirAccess.open(dir_path)

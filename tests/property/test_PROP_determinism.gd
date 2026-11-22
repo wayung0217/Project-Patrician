@@ -4,7 +4,6 @@ extends GutTest
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
-const PARAMS_DEMO := "res://tests/fixtures/params_sys05_demo.json"
 const GOODS_FIXTURE_ROOT := "user://prop_determinism_goods/"
 const PORTS_FIXTURE_ROOT := "user://prop_determinism_ports/"
 
@@ -174,7 +173,7 @@ func _state_hashes(good: StringName, market: Dictionary, hold: Dictionary) -> Di
 
 func _boot() -> void:
 	# Cash uses demo params (START_CASH)；goods／ports from all_keys mins via rebuilt fixtures.
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
 	## D-32b 重置輔助.

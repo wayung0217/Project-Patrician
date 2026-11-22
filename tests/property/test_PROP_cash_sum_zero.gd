@@ -2,7 +2,6 @@ extends GutTest
 ## WP-49 property：現金 Σ 全帳戶餘額＝0（SYS-05／FRM-SYS05-01）；失敗過帳不留痕（派工 17-41 D／D-59b）.
 
 
-const PARAMS_DEMO := "res://tests/fixtures/params_sys05_demo.json"
 
 const REQUESTER_SYS04 := &"SYS-04"
 const REQUESTER_SYS13 := &"SYS-13"
@@ -24,7 +23,7 @@ const CHARGE_TARGETS := 3
 
 
 func before_each() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 
