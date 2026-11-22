@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,,,
-狀態：Round 8 至 Round 10 已結案；main 5f00209／GUT 427／427（#38、#40、#41、#42、#43 已合併，R9-42），無開啟中 PR；全倉審計完成（R9-43 至 R9-61，104 項）；通宵包 17-47 待發送｜2026-11-21｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，已合併）｜16 派工單 Round 10（WP-22 SYS-06 居民消費）｜17 派工單 Round 11（WP-33 至 37，草稿）,,,,,,,,
+狀態：Round 8 至 Round 10 已結案；main 5f00209／GUT 427／427（#38、#40、#41、#42、#43 已合併，R9-42），無開啟中 PR；全倉審計完成（R9-43 至 R9-61，104 項）；通宵接力鏈 17-47（WP-52 至 WP-60）待發送｜2026-11-21｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，已合併）｜16 派工單 Round 10（WP-22 SYS-06 居民消費）｜17 派工單 Round 11（WP-33 至 37，草稿）,,,,,,,,
 ,,,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,,,
@@ -685,7 +685,7 @@ D-84,逐行審計第 3 批的裁決與修復包拆分設計（Owner 2026-11-21�
 D-85,WP-59 增加 CI 規範掃描步驟（A35）（Owner 2026-11-21：同意）,在 CI 加一個規範掃描步驟：掃描禁用 API（randi、randf、Time.*、call_deferred、await process_frame 等）、數字字面量（含十六進位與 1 + 1、1.0 + 1.0 寫法）、跨模組私有成員存取（他模組的底線開頭成員）、測試函數名稱缺 TST ID（C-13）。掃描規則的例外只能引用 AI_README 6.2 已登記的 EX 編號。,屬 WP-59 範圍；Cursor 先在 PR 說明提案掃描規則清單與誤報處理，再實作；不得放寬現有 CI 的 GUT 步驟。,WP-59,R9-47 M24,,,
 D-86,R9-56 AB1：GoodsLedger.run_daily_produce（舊港×貨角色格產出）只剩測試在用,Owner 2026-11-21：按建議做。,① 刪除 GoodsLedger.run_daily_produce、daily_produce_qty 及其只為測試保留的狀態；② TST-SYS03-04、TST-SYS03-06 改為驗工坊產出（BuildingEconomy.daily_step 的 PRODUCE：一季合計 = 工坊應產量、單日差 ≤ 1；產地無人買時市場庫存持續增加且無截斷）；③ 更正 sim_loop.gd 第 226 行過期註解；④ 03_Systems FRM-SYS03-03 加註「角色格產出已退役，現行產出來源為 SYS-08 工坊」。,併入 WP-52（規範與資料基線）；不改遊戲行為。,2026-11-21,,,
 D-87,R9-57 AC1：開局資料出錯時 apply_opening_init 是否允許部分寫入,Owner 2026-11-21：按建議做。,開局採全有或全無：BuildingEconomy.apply_opening_init 與 PopulationModel.apply_opening_init 先驗證全部開局輸入（工坊、公共建築、人口、住宅、玩家商館），任何錯誤一律收集列出（C-06）並不做任何寫入；三個 ERR-SYS08-10 測試改為斷言「回報錯誤且住宅、商館、工坊皆未建立」。,併入 WP-54（建設隊列與開局）。,2026-11-21,,,
-D-88,全倉審計後的流程改善（Owner 2026-11-21 要求成因分析與不靠大審計的改善；待裁決）,建議六項（R9-61）：(a) A35 規範掃描從 WP-59 提前，今夜以「只報不擋」上 CI；WP-52 合併後改為新違規即紅燈，既有命中由 WP-52 至 WP-59 逐包清零。(b) 黃金輸出：正式 L1 固定種子 30 日摘要作基準，每個 PR 附前後差異；今夜先在報告產出、不入庫，入庫位置待 Owner 定。(c) 數值例：AI 在工作簿為每條 FRM 寫 1 至 3 例並匯出為 docs/spec CSV，測試期望值只能讀此檔。(d) 每個 PR 小審：Owner 上傳 PR diff，AI 只讀 diff 對照規格；產品碼上限約 600 行。(e) 派工前規格完備檢查：派工單先列要動到的 FRM、ERR、PRM、介面與未決項，未決先裁決。(f) 測試先行：自 WP-59 起試行，先派測試包、後派實作包。,(a)(b) 的今夜部分已寫入派工 17-47（夜-3、夜-1）；Owner 發送 17-47 即視為核准這兩項的今夜部分。(c) 至 (f) 待 Owner 裁決，裁決後寫入 AI_README 工作流程（S9 系列）。,WP-52；WP-59；WP-60；17-47,R9-61；D-85,2026-11-21,,
+D-88,全倉審計後的流程改善（Owner 2026-11-21 要求成因分析與不靠大審計的改善；待裁決）,建議六項（R9-61）：(a) A35 規範掃描從 WP-59 提前，今夜以「只報不擋」上 CI；WP-52 合併後改為新違規即紅燈，既有命中由 WP-52 至 WP-59 逐包清零。(b) 黃金輸出：正式 L1 固定種子 30 日摘要作基準，每個 PR 附前後差異；今夜先在報告產出、不入庫，入庫位置待 Owner 定。(c) 數值例：AI 在工作簿為每條 FRM 寫 1 至 3 例並匯出為 docs/spec CSV，測試期望值只能讀此檔。(d) 每個 PR 小審：Owner 不提供 diff；改由 Cursor 把完整 diff、修改後函數全文、測試完整輸出、黃金輸出 CSV、掃描輸出與規格對照表寫入交付資料夾，Owner 整包上傳，AI 據此審（Owner 2026-11-21 修訂）；產品碼上限約 600 行。(e) 派工前規格完備檢查：派工單先列要動到的 FRM、ERR、PRM、介面與未決項，未決先裁決。(f) 測試先行：自 WP-59 起試行，先派測試包、後派實作包。,(a)(b) 的今夜部分已寫入派工 17-47（夜-3、夜-1）；Owner 發送 17-47 即視為核准這兩項的今夜部分。(c) 至 (f) 待 Owner 裁決，裁決後寫入 AI_README 工作流程（S9 系列）。,WP-52；WP-59；WP-60；17-47,R9-61；D-85,2026-11-21,,
 D-89,今夜通宵接力鏈的特例與預先授權（Owner 2026-11-21：要求審計問題今夜一併修；發送 17-47 即生效）,(a) 今夜特例（同 D-17a）：WP-52 至 WP-60 接力堆疊分支、一律不合併；每個 PR 的 base 設為前一個分支。(b) 預先授權：WP-52 A4 的公開唯讀方法名稱、WP-55 A13 的 Rng.derive_seed 第五維簽章，由 Cursor 依 C-11 命名並實作，列為「待追認」；Owner 早上不追認者，該 commit 回退。(c) 仍不實作：WP-54 A8 只交設計；WP-55 A14（從哪間工坊扣工人）與 A15 的貧民轉乞丐速率、R9-60 G3 的「建材必須是 is_build_material」列缺口，等 Owner 裁決。(d) 中斷規則：某步 GUT 不能全綠或黃金輸出差異對應不到子項 → 鏈條停在該步。,寫入派工 17-47（修訂版）。早上審查依 D-88d 逐 PR 進行；A8 設計、A14、A15、G3 缺口與待追認名稱另行裁決。,WP-52 至 WP-60；17-47,R9-61；D-17a；D-84；D-88,2026-11-21,,
 D-62e,PRM-SYS15 七項試驗值審定為試跑起點（Owner 2026-11-21）,WINDOW_DAYS＝28、DECAY_DAYS＝28、DIVERGENCE_LO_PPM＝100000（10%）、DIVERGENCE_HI_PPM＝300000（30%）、DIRECTION_DEADBAND_PPM＝20000（2%）、WEEKS_SCALE＝100、PUBLIC_DELAY_TICKS＝0（牙行資格特權先關，跑無特權基線）。依據與遊戲用途見 sheet sim_overrides_draft 第 85 至 91 列。,仍為試驗值、非正式值：升正式值須日後逐項裁決（D-45b、OQ-15l）；SYS-23 統計牙行牌價空白率與高分歧出現頻率，必要時調整（例：視窗延長至 45 日）。要開「資格提早看」，延遲 tick 數須另請 Owner 審定。BROKER_MIN_TIER_BY_LADDER 仍無值，留待 WP-41。,WP-40；WP-41,Owner 2026-11-21；R9-29；sim_overrides_draft,,,
 D-59b,今晚通宵包：核准唯讀稽核與屬性測試新增（Owner 2026-11-20）,Owner 指示「能開始做的都開始做」，核准：(1) 全倉唯讀稽核四項（規範合規、介面對照、測試覆蓋、GUT 警告）；(2) 屬性測試新增（只新增 tests/property/，不改任何產品碼）；(3) WP-33 補證、WP-40 階段 2 同夜並行。堆疊接力不核准。,屬性測試只驗規格已明文的性質，反證（臨時注入錯誤）不得 commit；稽核結果由 AI 分類後記為技術債（TD）或判定不成立，技術債只記工作簿。,WP-48；WP-49,Owner 2026-11-20；17-41,,,
@@ -1386,9 +1386,9 @@ B4 乞丐累積診斷（只回報，不改碼）：R9-42 觀察到 30 天內乞�
 
 二、每一步的共同要求
 (1) 範圍＝該 WP 在 05_TechSpec 第 7 節的列（內容、前置、檔案、驗收四欄全部適用），子項做法與證據沿用 17-46 對應段落的原文。
-(2) 黃金輸出：用步 0 的方法跑正式 L1 同種子 30 日，貼本步前後的 sha256；有差異時逐港逐欄列出前 50 筆差異並說明對應哪個子項。WP-52 必須零差異（A1 除外，見下）；WP-53 之後預期有差異，但每一筆都要能對應到本包某個子項，對應不到即停手。
+(2) 黃金輸出：用步 0 的方法跑正式 L1 同種子 30 日，貼本步前後的 sha256；有差異時，完整差異寫入交付資料夾的 golden_diff.csv（不得只取前 N 筆），報告逐類說明每種差異對應哪個子項。WP-52 必須零差異（A1 除外，見下）；WP-53 之後預期有差異，但每一筆都要能對應到本包某個子項，對應不到即停手。
 (3) 規範掃描：用步 1 的腳本，貼本步前後各規則命中數；本包負責的項目命中數必須下降，任何規則命中數上升須逐筆說明。
-(4) 報告依 AI_README S9a 逐點回覆，檔名 wpNN-report；「介面變更」一節列出本包新增或變更的所有公開名稱與簽章（D-89b 需早上追認的項目標「待追認」）。
+(4) 報告依 AI_README S9a 逐點回覆，存成交付資料夾內的 report.md；「介面變更」一節列出本包新增或變更的所有公開名稱與簽章（D-89b 需早上追認的項目標「待追認」）。
 
 三、各步要點（未列者照 WP 列與 17-46 原文）
 步 0 night1-baseline：WP-60 B1 正式 L1 開機探測（預期 0 錯誤，有錯逐條列 ERR 碼、檔、欄、值）；黃金基線：同種子正式 L1 30 日，每日每港的貧民、市民、富人、乞丐、城市錢包現金、各貨庫存、建築數（依類型與等級）存成 CSV（不入庫），貼 sha256、行數及第 1、10、20、30 日完整列，跑兩次貼 cmp 證明逐字相同；WP-55 B4 乞丐診斷（17-46 B4 原文，30 日全列）；WP-60 B3 兩項殘項。開機失敗：只做 B4 以外能做的項目，報告後停止整條鏈。
@@ -1404,7 +1404,23 @@ B4 乞丐累積診斷（只回報，不改碼）：R9-42 觀察到 30 天內乞�
 步 10 wp60（唯讀）：B1 重跑開機探測；B2 scenario_L1_baseline 十年（總耗時、每年耗時、MET、是否 abort；第 1、5、10 年末各港四階人口；城防採購總量；城市公共建築等級分布），並與步 0 基線並列比較。
 
 四、共通禁令：不改 03_Systems 規格與 docs/spec；D-89b 授權範圍以外不得新增公開名稱（C-14）；不合併任何 PR；不得為了讓測試變綠而修改期望值，除非該期望值本身就是本包要修的缺陷，且須在報告逐筆列出；高風險項（介面、金額與取整、私有存取、字面量、註解追溯、信號與 SimLoop 順序）必須貼 diff 或指令輸出，不得截斷。
-早上交付：每一步一份報告與 PR 連結，外加一份 night-summary：鏈條做到第幾步、每步 GUT 數、每步黃金輸出 sha256、各規則掃描命中數變化表、全部「缺口」與「待追認」清單。
-工作報告請依 AI_README S9a 範本逐點回覆。",發送前（Owner）：① 以工作簿 v6.99.106 匯出並 commit docs/spec：AI_README.csv、03_Systems.csv、05_TechSpec.csv、Project Patrician.xlsx、regions.csv（其餘 20 張匯入表與 main 相同，不必動）。② docs/spec/scenario_L1_baseline.json 的 overrides 加 PRM-SYS15 七鍵（sim_overrides_draft 第 85 至 91 列，D-62e）。③ 同一個 commit 推上 main，再發送本則。發送即視為核准 D-89（今夜特例與預先授權）。早上收到各步報告與 night-summary 後，依 D-88d 逐 PR 上傳 diff 交 AI 審。,R9-43 至 R9-61；D-62e；D-83 至 D-89；17-46；S9a；S9b,草稿（修訂版，取代同日第一版），待 Owner 發送,,,
+五、交付資料夾（Owner 不提供 diff，AI 審查只靠這個資料夾；D-88d 修訂）
+所有交付物寫進 repo 以外的資料夾 night-17-47/（不入庫、不 commit），早上 Owner 整個上傳。檔案一律完整、不截斷；單檔過大就分成 part1、part2 並在檔名標明。結構：
+night-17-47/00_night-summary.md：鏈條做到第幾步、停止原因、每步 GUT 通過數／總數、每步黃金輸出 sha256、各規則掃描命中數變化表、全部「缺口」與「待追認」清單。
+night-17-47/00_night-summary.json：同上內容的機器可讀版，鍵為 gate（B9 版本、main SHA）、steps 陣列（每步：step、branch、base_sha、head_sha、pr_url、gut_pass、gut_total、golden_sha256、scan_counts｛R1 至 R7｝、gaps、pending_ratification）。
+night-17-47/step00_baseline/：report.md、boot_probe.txt（開機探測完整輸出）、golden_run1.csv、golden_run2.csv、cmp.txt、b4_beggar.csv、b3.txt、harness.gd（產生黃金輸出的臨時腳本全文，之後每步都用同一支，不得修改；若必須修改，該步報告說明並重跑基線）。
+night-17-47/stepNN_名稱/（步 1 至 10 各一個，例如 step02_wp52）：
+• report.md：S9a 報告。
+• diff.patch：git diff <本步 base>...<本步 head> 全文（產品碼、測試、fixture、data、CI 全部），另附 commits.txt（git log --stat <base>..<head>，逐 commit）。
+• gut_full.txt：本步 head 的完整 GUT 輸出，含每個測試名與結果，不截斷。
+• golden.csv 與 golden_diff.csv：本步 30 日黃金輸出全文，及與上一步的逐港、逐日、逐欄差異全部列（欄位：day、port_id、field、before、after、對應子項）。
+• scan.txt：步 1 掃描腳本對本步 head 的完整輸出（逐筆命中）。
+• trace.csv：本包每條 FRM、ERR、TST、D 裁決與子項 → 實作檔:行 → 測試函數名 → 狀態（已實作／缺口／待追認）。
+• interface.md：新增或變更的公開方法、信號、參數、Autoload 的簽名與前後對照；D-89b 項目標「待追認」。
+• functions_after.md：本包改過的每個函數，貼修改後的完整函數本體（含行號）；被刪的函數貼刪除前全文。這是審查主依據，不得省略。
+• gaps.md：遇到的規格缺口、你建議的處理與理由（未實作）。
+步 10 另加 ten_year_summary.csv（第 1、5、10 年末各港四階人口、城防採購總量、公共建築等級分布）與 runtime.txt。
+
+工作報告請依 AI_README S9a 範本逐點回覆；交付資料夾缺任何一項，該步視為未證實。",發送前（Owner）：① 以工作簿 v6.99.106 匯出並 commit docs/spec：AI_README.csv、03_Systems.csv、05_TechSpec.csv、Project Patrician.xlsx、regions.csv（其餘 20 張匯入表與 main 相同，不必動）。② docs/spec/scenario_L1_baseline.json 的 overrides 加 PRM-SYS15 七鍵（sim_overrides_draft 第 85 至 91 列，D-62e）。③ 同一個 commit 推上 main，再發送本則。發送即視為核准 D-89（今夜特例與預先授權）。早上把 Cursor 產出的 night-17-47 資料夾整個上傳交 AI 審（不必提供 diff）。docs/spec 停在 v6.99.106 即可，本修訂不需要再 commit。,R9-43 至 R9-61；D-62e；D-83 至 D-89；17-46；S9a；S9b,草稿（修訂版 2：加交付資料夾），待 Owner 發送,,,
 17-20,WP-40 SYS-15 船報與牙行行市範圍,"IntelLedger（res://autoload/intel_ledger.gd）；介面 ShipEventObserver（res://core/interfaces/ship_event_observer.gd）；ShipRegistry.set_ship_observer、sail 成功時 on_departed、tick_step 結束時 on_arrivals（每 tick 至多一次）；MarketPricer.stock_weeks（純函數，mid_price 與 FRM-SYS04-01 改呼叫同一函數，不得複製公式）；FRM-SYS15-01 至 10、ERR-SYS15-01 至 07；Params 登錄 PRM-SYS15 六項（無值者缺鍵拒絕啟動，不得填值）；SimLoop 注入觀察者與每日步驟 IntelLedger.daily_step（ShipRegistry 之後、TraderRegistry 之前）。第一步唯讀盤點：ShipRegistry 現有 sail、tick_step、ship_info 簽名與抵港處理位置；MarketPricer.mid_price 現有週數計算位置；貼回後才寫代碼。｜★ D-37c（D-37e 已追認，須盤點回報後才寫碼）：IntelLedger 另含船報公開延遲與特權可見性（FRM-SYS16-04）、board_samples(actor, port, origin, good, requester)（requester 只准 SYS-16）、刪除 grant_base；特別證據加：延遲邊界測試輸出（TST-SYS15 對應新增與 TST-SYS16-13 至 16 的可見性部分）。",不做酒館、逐艘明細、付費調閱、牙行提前一日、商館、船轉手消息；不改任何本地報價、庫存、現金；不得讀他模組 _ 開頭成員；數值只來自已登錄 PRM，測試只用 fixture（TST-SYS15-06 的數字僅為 fixture 值）；不得針對特定 ID 寫 if。,03_Systems 25.1；D-34a 至 d,草稿，未派,,,
 17-21,WP-40 驗收與特別證據,TST-SYS15-01 至 20；紅隊-94 至 98 各一個測試或明示由 SYS-23 驗證；改內容的既有測試（例：test_autoload_order_2_2_01、ShipRegistry 與 MarketPricer 既有測試）逐一列名。特別證據：(a) 盤點報告（第一步）；(b) on_arrivals 恰一次且批次原子（TST-SYS15-05）的程式碼與測試輸出；(c) stock_weeks 單一實作：產品碼搜尋庫存週數公式的完整指令輸出，與 mid_price 改動前後逐值相同的測試輸出（TST-SYS15-19）；(d) 快照內容與 null 週數不填 0（TST-SYS15-02、03）；(e) 行市整數運算：TST-SYS15-06、08 輸出與取整程式碼（不得 int()、round、roundi）；(f) 在場規則與不改狀態（TST-SYS15-11）；(g) SYS-15 不產生現金分錄與貨物轉移（TST-SYS15-20）；(h) ShipRegistry、SimLoop、project.godot 完整 diff（不得截斷）；(i) 標準掃描 E(1)–(6) 與 Obj._member 逐筆列表（D-32b）。,依 AI_README S9a 範本逐點回覆；缺項視為不對；高風險證據不得截斷（C-15、S9a）。,03_Systems 25.1 I；C-15；S9a,草稿，未派,,,
