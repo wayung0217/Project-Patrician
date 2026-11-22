@@ -55,6 +55,10 @@ const CODE_CURVE_MISSING := &"CURVE_MISSING"
 const CODE_CURVE_TYPE := &"CURVE_TYPE"
 const CODE_GOODS_LEDGER := &"GoodsLedger"
 const CODE_UNKNOWN_GOOD := &"UNKNOWN_GOOD"
+## A21：未知港口（避免 make_market／get_qty 順帶登記容器，TD-17 延伸）
+const CODE_UNKNOWN_PORT := &"UNKNOWN_PORT"
+const CODE_BAD_OFFTAKE := &"BAD_OFFTAKE"
+const FIELD_PORT_ID := "port_id"
 
 const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
 const FIELD_WINDOW_QTY := "window_qty"
@@ -269,6 +273,23 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 	var port_s: String = String(port_id)
 	var good_s: String = String(good_id)
 
+	# A21：先驗港口存在，再碰 GoodsLedger.make_market（查詢會登記容器）.
+	if not PortRegistry.is_loaded():
+		return {
+			KEY_ERROR: CODE_UNKNOWN_PORT,
+			"field": FIELD_PORT_ID,
+			"value": port_s,
+			"message": "PortRegistry not loaded",
+		}
+	var port_def: PortDef = PortRegistry.get_port(port_s)
+	if port_def == null:
+		return {
+			KEY_ERROR: CODE_UNKNOWN_PORT,
+			"field": FIELD_PORT_ID,
+			"value": port_s,
+			"message": "unknown port_id",
+		}
+
 	if not GoodCatalog.is_loaded():
 		return {KEY_ERROR: CODE_UNKNOWN_GOOD, "field": "good_id", "value": good_s, "message": "GoodCatalog not loaded"}
 	var good_found := false
@@ -291,15 +312,36 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 			"message": "GoodsLedger not loaded",
 		}
 
-	# FRM-SYS04-01（改）: previous-day offtake snapshot; empty／missing → window_qty 0 (floor).
+	# FRM-SYS04-01（改）: previous-day offtake snapshot; empty → window_qty 0 (floor).
+	# A22／C-06：非空快照缺 window_days 或 <1 不得靜默補 1.
 	var snap: Dictionary = GoodsLedger.offtake_snapshot(port_id, good_id)
 	var window_qty: int = 0
 	var window_days: int = 1
 	if not snap.is_empty():
 		window_qty = int(snap.get(FIELD_WINDOW_QTY, 0))
-		window_days = int(snap.get(FIELD_WINDOW_DAYS, 1))
+		if not snap.has(FIELD_WINDOW_DAYS):
+			return {
+				KEY_ERROR: CODE_BAD_OFFTAKE,
+				"field": FIELD_WINDOW_DAYS,
+				"value": null,
+				"message": "offtake snapshot missing window_days",
+			}
+		var wd_v: Variant = snap[FIELD_WINDOW_DAYS]
+		if typeof(wd_v) != TYPE_INT:
+			return {
+				KEY_ERROR: CODE_BAD_OFFTAKE,
+				"field": FIELD_WINDOW_DAYS,
+				"value": wd_v,
+				"message": "offtake window_days must be int",
+			}
+		window_days = int(wd_v)
 		if window_days < 1:
-			window_days = 1
+			return {
+				KEY_ERROR: CODE_BAD_OFFTAKE,
+				"field": FIELD_WINDOW_DAYS,
+				"value": window_days,
+				"message": "offtake window_days must be >= 1",
+			}
 
 	var weekly_offtake: float = 0.0
 	if window_qty > 0:

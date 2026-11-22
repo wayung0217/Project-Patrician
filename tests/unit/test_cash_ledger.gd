@@ -79,12 +79,16 @@ const TST10_NEW_TOTAL := 160000
 class DemoQuoteProvider extends RefCounted:
 	## Test double for MarketPricer.quote（WP-06 平行未登錄）.
 	## 邊界對齊示範 5.1：total(120)/total(124)/total(125) — xlsx 期望值.
+	## A18：stock_cap ≥ 0 時 qty＞庫存回 error（模擬真實 MarketPricer）.
 	var buy_totals: Dictionary = {}
 	var override_total: int = 0 - 1
+	var stock_cap: int = 0 - 1
 
 	func quote(_port: StringName, _good: StringName, side: int, qty: int) -> Dictionary:
 		if side != CashLedger.SIDE_BUY:
 			return {CashLedger.KEY_TOTAL_LI: 0}
+		if stock_cap >= 0 and qty > stock_cap:
+			return {CashLedger.KEY_TOTAL_LI: 0, CashLedger.KEY_ERROR: &"ERR-SYS04-06"}
 		if override_total >= 0:
 			return {CashLedger.KEY_TOTAL_LI: override_total}
 		if buy_totals.has(qty):
@@ -275,6 +279,7 @@ func test_FRM_SYS05_07_is_single_function() -> void:
 
 func test_TST_SYS05_07_bankruptcy_referred_and_reset() -> void:
 	# TST-SYS05-07: 連續欠款達門檻 → bankruptcy_referred；清償後計數歸 0
+	# A19／M21：達門檻後再過一季不重發
 	# Fixture ARREARS_SEASONS_TO_BANKRUPT = 2（params_sys05_demo.json）
 	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), OK)
 	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_BAL_FOR_CHARGE)
@@ -289,6 +294,12 @@ func test_TST_SYS05_07_bankruptcy_referred_and_reset() -> void:
 	CashLedger.close_season()
 	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 1 + 1)
 	assert_signal_emitted(CashLedger, "bankruptcy_referred")
+	assert_signal_emit_count(CashLedger, "bankruptcy_referred", 1)
+
+	# A19：再過一季仍欠款 → 不重發
+	CashLedger.close_season()
+	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 1 + 1 + 1)
+	assert_signal_emit_count(CashLedger, "bankruptcy_referred", 1)
 
 	# 清償欠款
 	var ar: int = CashLedger.arrears(CashLedger.ACCOUNT_PLAYER)
@@ -304,15 +315,19 @@ func test_TST_SYS05_07_bankruptcy_referred_and_reset() -> void:
 
 
 func test_TST_SYS05_08_max_affordable_qty() -> void:
-	# TST-SYS05-08: q_afford=124；total(124)≤c0 < total(125)
+	# TST-SYS05-08／A18／M20：買量超過庫存時 quote 失敗不得當 total＝0；q_afford ≤ stock
+	# 改用帶庫存上限的報價（對齊真實 MarketPricer ERR-SYS04-06）；示範 124 點仍保留於 WP56 補強測.
 	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), OK)
 	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
 	var qp := DemoQuoteProvider.new()
+	## 庫存 100：若仍把 quote 失敗當 0，倍增會回傳遠大於 100 的荒謬值（H7）.
+	qp.stock_cap = DEMO_HOLD_FREE_TIGHT
 	CashLedger.set_quote_provider(qp)
 	var q: int = CashLedger.max_affordable_qty(CashLedger.ACCOUNT_PLAYER, &"PT-01", &"米")
-	assert_eq(q, DEMO_Q_AFFORD)
-	assert_true(qp.quote(&"PT-01", &"米", CashLedger.SIDE_BUY, DEMO_Q_AFFORD)[CashLedger.KEY_TOTAL_LI] <= DEMO_C0)
-	assert_true(qp.quote(&"PT-01", &"米", CashLedger.SIDE_BUY, DEMO_Q_AFFORD + 1)[CashLedger.KEY_TOTAL_LI] > DEMO_C0)
+	assert_lte(q, DEMO_HOLD_FREE_TIGHT)
+	assert_gt(q, 0)
+	var q_over: Dictionary = qp.quote(&"PT-01", &"米", CashLedger.SIDE_BUY, DEMO_HOLD_FREE_TIGHT + 1)
+	assert_true(q_over.has(CashLedger.KEY_ERROR))
 
 
 func test_TST_SYS05_09_slider_caps() -> void:

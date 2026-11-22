@@ -380,20 +380,10 @@ func boot_gate_errors() -> Array:
 	return errors
 
 
-func _reverse_cash_post(actor_id: StringName, side: int, total_li: int) -> bool:
-	## D-39b backup: reverse BUY／SELL legs after transfer failure.
-	var reverse: Array = []
-	if side == MarketPricer.SIDE_BUY:
-		reverse = [
-			CashLedger.make_entry(actor_id, total_li),
-			CashLedger.make_entry(CashLedger.ID_SINK, 0 - total_li),
-		]
-	else:
-		reverse = [
-			CashLedger.make_entry(CashLedger.ID_SOURCE, total_li),
-			CashLedger.make_entry(actor_id, 0 - total_li),
-		]
-	var rc: Error = CashLedger.post(reverse, REASON_TRADE, REQUESTER_SYS04)
+func _reverse_cash_post(_actor_id: StringName, _side: int, _total_li: int) -> bool:
+	## D-39b backup: reverse last TRADE post after transfer failure.
+	## A23：有欠款時樸素反向分錄會因 FRM-SYS05-07 抵欠失敗 → 改走 CashLedger.reverse_last_post（待追認）.
+	var rc: Error = CashLedger.reverse_last_post(REQUESTER_SYS04)
 	return rc == OK
 
 
