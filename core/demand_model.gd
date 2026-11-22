@@ -121,6 +121,7 @@ func weekly_potential_demand(port_id: StringName, good_id: StringName) -> int:
 	## Exact public name (D-96f)；口径同 weekly_demand。
 	## Test-only override：meta `wp64_test_potential` Dictionary keyed "port|good" → int
 	## （允許在 DemandModel 未 load 時供 EX-04-09 固定示範值）。
+	## int-1750: keep lane A (WP-64) over lane B stub (N-04).
 	if has_meta("wp64_test_potential"):
 		var ov: Variant = get_meta("wp64_test_potential")
 		if typeof(ov) == TYPE_DICTIONARY:

@@ -1,12 +1,15 @@
 class_name SimEngine
 extends RefCounted
-## SYS-23 layer-1 runner core (WP-26). No RELOCATE. Does not touch autoload private state;
-## caller supplies session_reset Callable between combos (tests／CLI).
+## SYS-23 runner core (WP-26 layer-1; WP-27 layer-2 RELOCATE). Does not touch autoload
+## private state; caller supplies session_reset Callable between combos (tests／CLI).
 
 
+const ERR_SYS23_03 := "ERR-SYS23-03"
 const ERR_SYS23_07 := "ERR-SYS23-07"
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+const PRM_PPM_SCALE := "PRM-SYS06-PPM_SCALE"
+const PRM_ROUND_EPS := "PRM-SYS04-ROUND_EPS"
 const MERGED_PARAMS_DIR := "user://sim_merged/"
 
 ## Boot path bundle (formal defaults; tests override with fixtures).
@@ -42,9 +45,6 @@ func run_scenario_dict(scenario: Dictionary) -> Dictionary:
 	## scenario must already be validated／normalized.
 	## Returns {ok, errors, summaries, combo_rows, sampler, out}.
 	var errors: PackedStringArray = PackedStringArray()
-	if bool((scenario.get("layers", {}) as Dictionary).get("RELOCATE", false)):
-		errors.append("WP-26 layer1: layers.RELOCATE must be false (WP-27)")
-		return {"ok": false, "errors": errors}
 
 	var seeds: Array = scenario[SimScenarioValidator.KEY_SEEDS]
 	var grid: Dictionary = scenario[SimScenarioValidator.KEY_GRID]
@@ -74,6 +74,7 @@ func run_scenario_dict(scenario: Dictionary) -> Dictionary:
 			var sm: SimSampler = one["sampler"]
 			all_sampler.season_cells.append_array(sm.season_cells)
 			all_sampler.season_ports.append_array(sm.season_ports)
+			all_sampler.obs_ext_rows.append_array(sm.obs_ext_rows)
 			for pid_v in sm.daily_rows.keys():
 				var pid: String = String(pid_v)
 				if not all_sampler.daily_rows.has(pid):
@@ -134,6 +135,13 @@ func _run_one_job(
 	if not GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.connect(sampler.on_conservation)
 
+	var relocate_on: bool = bool(
+		(scenario.get("layers", {}) as Dictionary).get("RELOCATE", false)
+	)
+	var f_ppm: int = 0
+	## FRM-SYS23-05: enable SIM_RELOCATE before boot when layer 2 on (survives load_and_validate).
+	GoodsLedger.set_sim_relocate_enabled(relocate_on)
+
 	# D-60f／D-63b: sim expects successful boot → inject deny-all fixtures（not formal always-allow）.
 	if not IntelLedger.has_broker_provider():
 		IntelLedger.set_broker_provider(SimBrokerFixture.new())
@@ -156,11 +164,29 @@ func _run_one_job(
 	)
 	if not boot_errors.is_empty() or not SimLoop.is_booted():
 		acc.disconnect_ledger()
+		GoodsLedger.set_sim_relocate_enabled(false)
 		var reason: String = "%s: boot failed: %s" % [ERR_SYS23_07, str(boot_errors)]
 		return {
 			"summary": _abort_summary(run_id, combo_index, seed, combo, reason, t0),
 			"sampler": sampler,
 		}
+
+	if relocate_on:
+		var conv: Dictionary = SimRelocator.f_to_ppm(
+			float(scenario[SimScenarioValidator.KEY_RELOCATE_F]),
+			Params.get_int(PRM_PPM_SCALE),
+			Params.get_float(PRM_ROUND_EPS)
+		)
+		if not bool(conv.get("ok", false)):
+			acc.disconnect_ledger()
+			GoodsLedger.set_sim_relocate_enabled(false)
+			return {
+				"summary": _abort_summary(
+					run_id, combo_index, seed, combo, String(conv.get("error", ERR_SYS23_03)), t0
+				),
+				"sampler": sampler,
+			}
+		f_ppm = SimJsonInt.as_int(conv["f_ppm"], "f_ppm")
 
 	PopulationModel.set_master_seed(seed)
 	Clock.set_paused(false)
@@ -169,12 +195,23 @@ func _run_one_job(
 	var days_per_season: int = Params.get_int(PRM_DAYS_PER_SEASON)
 	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
 	var total_days: int = years * seasons_y * days_per_season
+	var ppm_scale: int = Params.get_int(PRM_PPM_SCALE)
 
-	var aborted := false
-	var abort_reason := ""
+	## Holder so day_ticked lambda can flag abort (GDScript closure).
+	var run_state := {"aborted": false, "abort_reason": ""}
+	## FRM-SYS23-04: relocate on day_ticked (before season_cutoff sample in same step 6).
+	var on_day := func(_day: int) -> void:
+		if bool(run_state["aborted"]) or not relocate_on:
+			return
+		var rr: Dictionary = SimRelocator.run_day(f_ppm, ppm_scale, acc)
+		if not bool(rr.get("ok", false)):
+			run_state["aborted"] = true
+			run_state["abort_reason"] = String(rr.get("error", ERR_SYS23_07))
 	## FRM-SYS23-06: sample after season_cutoff is emitted (SimLoop step 6).
 	var on_cutoff := func(season_index: int) -> void:
 		sampler.sample_season(run_id, seed, season_index)
+	if not Clock.day_ticked.is_connected(on_day):
+		Clock.day_ticked.connect(on_day)
 	if not Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.connect(on_cutoff)
 
@@ -184,27 +221,37 @@ func _run_one_job(
 			_before_day.call(combo_index, day_num)
 		## A31／H8／ERR-SYS23-07: collect tick_day errors; do not discard.
 		var day_errors: Array = SimLoop.tick_day()
+		if bool(run_state["aborted"]):
+			break
 		if sampler.conservation_hits > 0:
-			aborted = true
-			abort_reason = "%s: conservation violated" % ERR_SYS23_07
+			run_state["aborted"] = true
+			run_state["abort_reason"] = "%s: conservation violated" % ERR_SYS23_07
 			break
 		## G／ERR-SYS23-07: any system ERR aborts this combo (WRN does not).
 		var fatal: Array = _fatal_day_errors(day_errors)
 		if not fatal.is_empty():
-			aborted = true
-			abort_reason = "%s: day_errors: %s" % [ERR_SYS23_07, _format_day_errors(fatal)]
+			run_state["aborted"] = true
+			run_state["abort_reason"] = "%s: day_errors: %s" % [
+				ERR_SYS23_07, _format_day_errors(fatal)
+			]
 			break
-		## Daily detail after day's writes／signals.
+		## Daily detail after day's writes／signals (includes same-day relocate).
 		for pid_v in daily_ports:
 			sampler.sample_daily(run_id, seed, Clock.day, String(pid_v))
 
+	if Clock.day_ticked.is_connected(on_day):
+		Clock.day_ticked.disconnect(on_day)
 	if Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.disconnect(on_cutoff)
 	acc.disconnect_ledger()
 	if GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.disconnect(sampler.on_conservation)
+	GoodsLedger.set_sim_relocate_enabled(false)
 
 	var elapsed: int = Time.get_ticks_msec() - t0
+	var sid: String = String(scenario.get(SimScenarioValidator.KEY_SCENARIO_ID, ""))
+	var aborted: bool = bool(run_state["aborted"])
+	var abort_reason: String = String(run_state["abort_reason"])
 	var summary: Dictionary = SimMetrics.compute(
 		sampler,
 		SimScenarioValidator.as_int(scenario[SimScenarioValidator.KEY_WARMUP]),
@@ -216,7 +263,8 @@ func _run_one_job(
 		run_id,
 		combo_index,
 		seed,
-		combo
+		combo,
+		sid
 	)
 	return {"summary": summary, "sampler": sampler}
 

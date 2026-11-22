@@ -1,10 +1,13 @@
 class_name SimMetrics
 extends RefCounted
-## FRM-SYS23-07／08／09 — MET-01..06, OBS-01..03 (WP-26). Missing threshold → pass N/A.
+## FRM-SYS23-07／08／09 — MET-01..06, OBS-01..03 (WP-26); OBS-02／04／05＋TH-01b (WP-27／D-93).
+## Missing threshold → pass N/A. MET-02 stock_weeks already MARKET-only (D-52b／D-93).
 
 
 const PASS_NA := "N/A"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+## D-93／OBS-02: consecutive zero-beggar seasons ≥ this → labour-shortage warning (record only).
+const OBS02_ZERO_STREAK_WARN := 4
 
 
 static func compute(
@@ -18,7 +21,8 @@ static func compute(
 	run_id: int,
 	combo_index: int,
 	seed: int,
-	combo: Dictionary
+	combo: Dictionary,
+	scenario_id: String = ""
 ) -> Dictionary:
 	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
 	var warmup_seasons: int = warmup_years * seasons_y
@@ -40,9 +44,32 @@ static func compute(
 	var met05: Dictionary = _met05(eval_ports, thresholds, seasons_y)
 	var met06: Dictionary = _met06(sampler.conservation_hits, aborted)
 	var obs01: String = _obs01(eval_ports)
-	var obs02: Variant = _obs02(eval_ports)
+	var obs02_pack: Dictionary = _obs02(eval_ports)
+	var obs02: Variant = obs02_pack["max_ratio"]
 	## OBS-03 precise lock definition pending WP-21 (9.5 K) — no value → blank, not "0".
 	var obs03: String = ""
+	var obs_ext: Array = []
+	if not aborted:
+		obs_ext.append_array(
+			_obs02_ext_rows(
+				scenario_id, combo_index, seed, obs02_pack.get("streaks", {})
+			)
+		)
+		obs_ext.append_array(
+			_obs04_rows(
+				scenario_id,
+				combo_index,
+				seed,
+				eval_cells,
+				met02.get("diverged_keys", []),
+				thresholds,
+				seasons_y
+			)
+		)
+		obs_ext.append_array(
+			_obs05_rows(scenario_id, combo_index, seed, eval_ports)
+		)
+		sampler.obs_ext_rows.append_array(obs_ext)
 
 	## Abort path: MET-01..05b no value → blank + pass N/A; MET-06 only if measured hits.
 	var met01_v: Variant = met01["value"]
@@ -104,6 +131,7 @@ static func compute(
 		"OBS-02": obs02,
 		"OBS-03": obs03,
 		"elapsed_ms": elapsed_ms,
+		"obs_ext": obs_ext,
 	}
 
 
@@ -150,6 +178,9 @@ static func aggregate_combos(summaries: Array) -> Array:
 				row["%s_avg" % met_id] = _avg(vals)
 				row["%s_min" % met_id] = _minv(vals)
 				row["%s_max" % met_id] = _maxv(vals)
+			## D-93／WP-27: MET-05b never judges pass — exclude from combo_pass.
+			if met_id == "MET-05b":
+				continue
 			for g2 in group:
 				var gd2: Dictionary = g2 as Dictionary
 				if _json_int(gd2.get("aborted", 0)) == 1:
@@ -178,6 +209,7 @@ static func _json_int(v: Variant) -> int:
 
 static func _met01(cells: Array, th: Dictionary) -> Dictionary:
 	## 9.8 分母＝weekly_offtake>0 的 (港,貨)×評估季格數；無樣本 → 空白（D-52c）。
+	## D-93／WP-27: TH-01 ≤ ratio ≤ TH-01b.
 	var total: int = 0
 	var eq: int = 0
 	for c_v in cells:
@@ -191,11 +223,12 @@ static func _met01(cells: Array, th: Dictionary) -> Dictionary:
 	if total == 0:
 		return {"value": "", "pass": PASS_NA}
 	var ratio: float = float(eq) / float(total)
-	return _pass_ge(ratio, th, "TH-01")
+	return _pass_between(ratio, th, "TH-01", "TH-01b")
 
 
 static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 	## 9.8 分母＝可算比值的 (港,貨) 格（第一評估年平均週數≠0）；無樣本 → 空白（D-52c）。
+	## D-93: stock_weeks from MARKET only (sampler／MarketPricer already MARKET).
 	## Group by port|good; first eval year avg weeks vs last year.
 	var by_cell: Dictionary = {}
 	for c_v in cells:
@@ -207,9 +240,12 @@ static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 			by_cell[k] = []
 		(by_cell[k] as Array).append(c)
 	var diverged: int = 0
+	var diverged_keys: Array = []
 	var sampled: int = 0
 	var th02: Variant = th.get("TH-02", null)
-	for k_v in by_cell.keys():
+	var cell_keys: Array = by_cell.keys()
+	cell_keys.sort()
+	for k_v in cell_keys:
 		var rows: Array = by_cell[k_v]
 		rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			return _json_int(a["season_index"]) < _json_int(b["season_index"])
@@ -246,12 +282,13 @@ static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 		var ratio: float = last_avg / first_avg
 		if th02 != null and ratio > float(th02):
 			diverged = diverged + 1
+			diverged_keys.append(String(k_v))
 	if sampled == 0:
-		return {"value": "", "pass": PASS_NA}
+		return {"value": "", "pass": PASS_NA, "diverged_keys": []}
 	var pass_s := PASS_NA
 	if th.has("TH-02"):
 		pass_s = "1" if diverged == 0 else "0"
-	return {"value": float(diverged), "pass": pass_s}
+	return {"value": float(diverged), "pass": pass_s, "diverged_keys": diverged_keys}
 
 
 static func _met03(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
@@ -373,11 +410,10 @@ static func _met05(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
 		if growth > worst_growth:
 			worst_growth = growth
 	var a_pass := PASS_NA
+	## D-93／WP-27 MET-05(b): value only, never judge pass (TH-05b cancelled).
 	var b_pass := PASS_NA
 	if th.has("TH-05a"):
 		a_pass = "1" if longest_zero <= _json_int(th["TH-05a"]) else "0"
-	if th.has("TH-05b"):
-		b_pass = "1" if worst_growth <= float(th["TH-05b"]) else "0"
 	return {
 		"a": float(longest_zero),
 		"a_pass": a_pass,
@@ -421,24 +457,203 @@ static func _obs01(ports: Array) -> String:
 	return ";".join(parts)
 
 
-static func _obs02(ports: Array) -> Variant:
+static func _obs02(ports: Array) -> Dictionary:
 	## 9.8：評估期每港每季乞丐÷總人口之最大值。無港／無有效人口樣本 → 空白（D-52c）。
+	## D-93／WP-27: also longest consecutive zero-beggar seasons per port.
 	var by_port: Dictionary = _group_ports(ports)
 	var worst: float = 0.0
 	var sampled: int = 0
-	for pid_v in by_port.keys():
-		for r_v in by_port[pid_v]:
+	var streaks: Dictionary = {}
+	var pids: Array = by_port.keys()
+	pids.sort()
+	for pid_v in pids:
+		var pid: String = String(pid_v)
+		var rows: Array = by_port[pid]
+		rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return _json_int(a["season_index"]) < _json_int(b["season_index"])
+		)
+		var streak: int = 0
+		var best_streak: int = 0
+		for r_v in rows:
 			var r: Dictionary = r_v
-			var tot: int = _total_pop(r) + _json_int(r["beggar"])
-			if tot <= 0:
-				continue
-			sampled = sampled + 1
-			var ratio: float = float(r["beggar"]) / float(tot)
-			if ratio > worst:
-				worst = ratio
+			var beggar: int = _json_int(r["beggar"])
+			var tot: int = _total_pop(r) + beggar
+			if tot > 0:
+				sampled = sampled + 1
+				var ratio: float = float(beggar) / float(tot)
+				if ratio > worst:
+					worst = ratio
+			if beggar == 0:
+				streak = streak + 1
+				if streak > best_streak:
+					best_streak = streak
+			else:
+				streak = 0
+		streaks[pid] = best_streak
 	if sampled == 0:
-		return ""
-	return worst
+		return {"max_ratio": "", "streaks": streaks}
+	return {"max_ratio": worst, "streaks": streaks}
+
+
+static func _obs02_ext_rows(
+	scenario_id: String, combo_index: int, seed: int, streaks: Dictionary
+) -> Array:
+	var rows: Array = []
+	var pids: Array = streaks.keys()
+	pids.sort()
+	for pid_v in pids:
+		var pid: String = String(pid_v)
+		var streak_i: int = _json_int(streaks[pid])
+		rows.append(_obs_ext_row(
+			scenario_id, combo_index, seed, -1, pid, "",
+			"OBS-02", "longest_zero_beggar_streak", streak_i
+		))
+		if streak_i >= OBS02_ZERO_STREAK_WARN:
+			rows.append(_obs_ext_row(
+				scenario_id, combo_index, seed, -1, pid, "",
+				"OBS-02", "zero_beggar_warn", 1
+			))
+	return rows
+
+
+static func _obs04_rows(
+	scenario_id: String,
+	combo_index: int,
+	seed: int,
+	cells: Array,
+	diverged_keys: Array,
+	th: Dictionary,
+	seasons_y: int
+) -> Array:
+	## D-93 OBS-04: for each MET-02 diverged (p,g), classify by global R_g vs TH-02.
+	if diverged_keys.is_empty():
+		return []
+	var th02: float = float(th.get("TH-02", 0))
+	## Build per-good per-season S／W from MARKET stock + sampled potential.
+	var by_good_season: Dictionary = {} ## good -> season -> {S, W}
+	for c_v in cells:
+		var c: Dictionary = c_v
+		var gid: String = String(c["good_id"])
+		var si: int = _json_int(c["season_index"])
+		if not by_good_season.has(gid):
+			by_good_season[gid] = {}
+		var by_si: Dictionary = by_good_season[gid]
+		if not by_si.has(si):
+			by_si[si] = {"S": 0, "W": 0}
+		var bucket: Dictionary = by_si[si]
+		bucket["S"] = _json_int(bucket["S"]) + _json_int(c["stock"])
+		bucket["W"] = _json_int(bucket["W"]) + _json_int(c.get("_weekly_potential", 0))
+		by_si[si] = bucket
+		by_good_season[gid] = by_si
+
+	var rows: Array = []
+	var keys_sorted: Array = diverged_keys.duplicate()
+	keys_sorted.sort()
+	for k_v in keys_sorted:
+		var k: String = String(k_v)
+		var parts: PackedStringArray = k.split("|")
+		if parts.size() != 2:
+			continue
+		var pid: String = parts[0]
+		var gid2: String = parts[1]
+		var by_si2: Dictionary = by_good_season.get(gid2, {})
+		var seasons: Array = by_si2.keys()
+		seasons.sort()
+		if seasons.is_empty():
+			continue
+		var first_si: int = _json_int(seasons[0])
+		var last_si: int = _json_int(seasons[seasons.size() - 1])
+		var first_year_end: int = first_si + seasons_y
+		var last_year_start: int = last_si - seasons_y + 1
+		var first_sum: float = 0.0
+		var first_n: int = 0
+		var last_sum: float = 0.0
+		var last_n: int = 0
+		for si_v in seasons:
+			var si2: int = _json_int(si_v)
+			var b: Dictionary = by_si2[si2]
+			var W: int = _json_int(b["W"])
+			if W <= 0:
+				continue
+			var weeks_g: float = float(_json_int(b["S"])) / float(W)
+			if si2 < first_year_end:
+				first_sum = first_sum + weeks_g
+				first_n = first_n + 1
+			if si2 >= last_year_start:
+				last_sum = last_sum + weeks_g
+				last_n = last_n + 1
+		var cause: String = "分配不足（運力或路線）"
+		var r_g: float = 0.0
+		if first_n > 0 and last_n > 0:
+			var first_avg: float = first_sum / float(first_n)
+			if first_avg > 0.0:
+				r_g = (last_sum / float(last_n)) / first_avg
+				if r_g > th02:
+					cause = "供給過剩"
+		rows.append(_obs_ext_row(
+			scenario_id, combo_index, seed, -1, pid, gid2,
+			"OBS-04", "cause", cause
+		))
+		rows.append(_obs_ext_row(
+			scenario_id, combo_index, seed, -1, pid, gid2,
+			"OBS-04", "R_g", r_g
+		))
+	return rows
+
+
+static func _obs05_rows(
+	scenario_id: String, combo_index: int, seed: int, ports: Array
+) -> Array:
+	## D-93 OBS-05: CITY spend breakdown + closing balance.
+	## Spend categories (建設／城防／抽調／其他) require BuildingEconomy public query — gap.
+	## Emit city_balance_li per season; note gap keys once per port.
+	var rows: Array = []
+	var by_port: Dictionary = _group_ports(ports)
+	var pids: Array = by_port.keys()
+	pids.sort()
+	for pid_v in pids:
+		var pid: String = String(pid_v)
+		rows.append(_obs_ext_row(
+			scenario_id, combo_index, seed, -1, pid, "",
+			"OBS-05", "gap_spend_breakdown",
+			"no_public_BuildingEconomy_city_spend_by_category"
+		))
+		var port_rows: Array = by_port[pid]
+		port_rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return _json_int(a["season_index"]) < _json_int(b["season_index"])
+		)
+		for r_v in port_rows:
+			var r: Dictionary = r_v
+			rows.append(_obs_ext_row(
+				scenario_id, combo_index, seed,
+				_json_int(r["season_index"]), pid, "",
+				"OBS-05", "city_balance_li", _json_int(r["city_balance_li"])
+			))
+	return rows
+
+
+static func _obs_ext_row(
+	scenario_id: String,
+	combo_index: int,
+	seed: int,
+	season_index: int,
+	port_id: String,
+	good_id: String,
+	obs_id: String,
+	key: String,
+	value: Variant
+) -> Dictionary:
+	return {
+		"scenario_id": scenario_id,
+		"combo_index": combo_index,
+		"seed": seed,
+		"season_index": season_index,
+		"port_id": port_id,
+		"good_id": good_id,
+		"obs_id": obs_id,
+		"key": key,
+		"value": value,
+	}
 
 
 static func _group_ports(ports: Array) -> Dictionary:
@@ -460,6 +675,23 @@ static func _pass_ge(value: float, th: Dictionary, key: String) -> Dictionary:
 	var pass_s := PASS_NA
 	if th.has(key):
 		pass_s = "1" if value >= float(th[key]) else "0"
+	return {"value": value, "pass": pass_s}
+
+
+static func _pass_between(
+	value: float, th: Dictionary, lo_key: String, hi_key: String
+) -> Dictionary:
+	## D-93 MET-01: TH-01 ≤ value ≤ TH-01b. Missing either bound → N/A for that side.
+	var pass_s := PASS_NA
+	var has_lo: bool = th.has(lo_key)
+	var has_hi: bool = th.has(hi_key)
+	if has_lo or has_hi:
+		var ok := true
+		if has_lo and value < float(th[lo_key]):
+			ok = false
+		if has_hi and value > float(th[hi_key]):
+			ok = false
+		pass_s = "1" if ok else "0"
 	return {"value": value, "pass": pass_s}
 
 
