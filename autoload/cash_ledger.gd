@@ -363,7 +363,7 @@ func post(entries: Array, reason: StringName, requester: StringName) -> Error:
 
 
 func reverse_last_post(requester: StringName) -> Error:
-	## A23／D-89b 待追認: undo last successful post（含 FRM-SYS05-07 抵欠寫入 SINK）.
+	## WP-63 (f)／D-96d: validate-all-then-write；保留原分錄、只追加沖銷分錄.
 	## TradeDesk 步驟 6 備用回滾；不經入帳抵欠路徑，直接還原 balance／arrears／SINK／季統計效應.
 	assert(_loaded, "CashLedger.reverse_last_post before load")
 	_clear_last_error()
@@ -375,9 +375,26 @@ func reverse_last_post(requester: StringName) -> Error:
 		return _fail(ERR_SYS05_04, "seq", null, "GoodsLedger must be loaded for reverse_last_post")
 
 	var sink: Account = _accounts[String(ID_SINK)]
+	## Phase 1: complete validation (all-or-nothing); no writes.
+	var i_v: int = _last_apply_meta.size()
+	while i_v > 0:
+		i_v = i_v - 1
+		var mv: Dictionary = _last_apply_meta[i_v]
+		var aid_v: StringName = mv["id"]
+		var acc_v: Account = _accounts[String(aid_v)]
+		var bal_dv: int = int(mv["balance_delta"])
+		var arr_dv: int = int(mv["arrears_delta"])
+		var sink_cv: int = int(mv["sink_credit"])
+		if bal_dv != 0 and not _add_checked(acc_v.balance, 0 - bal_dv):
+			return _fail(ERR_SYS05_08, FIELD_AMOUNT, bal_dv, "overflow reversing balance")
+		if arr_dv != 0 and acc_v.arrears - arr_dv < 0:
+			return _fail(ERR_SYS05_03, "arrears", acc_v.arrears - arr_dv, "arrears underflow on reverse")
+		if sink_cv > 0 and not _add_checked(sink.balance, 0 - sink_cv):
+			return _fail(ERR_SYS05_08, FIELD_AMOUNT, sink_cv, "overflow reversing SINK")
+
+	## Phase 2: apply undo writes.
 	var signals_cash: Array = []
 	var signals_arr: Array = []
-	## Undo in reverse order of apply.
 	var i: int = _last_apply_meta.size()
 	while i > 0:
 		i = i - 1
@@ -388,8 +405,6 @@ func reverse_last_post(requester: StringName) -> Error:
 		var arr_d: int = int(m["arrears_delta"])
 		var sink_c: int = int(m["sink_credit"])
 		if bal_d != 0:
-			if not _add_checked(acc.balance, 0 - bal_d):
-				return _fail(ERR_SYS05_08, FIELD_AMOUNT, bal_d, "overflow reversing balance")
 			acc.balance = acc.balance - bal_d
 			signals_cash.append({"id": aid, "delta": 0 - bal_d})
 			if bal_d > 0:
@@ -398,20 +413,15 @@ func reverse_last_post(requester: StringName) -> Error:
 				_bump_season_stat(String(aid), SeasonLedgerReport.KEY_SUM_DEBIT, bal_d)
 		if arr_d != 0:
 			acc.arrears = acc.arrears - arr_d
-			if acc.arrears < 0:
-				return _fail(ERR_SYS05_03, "arrears", acc.arrears, "arrears underflow on reverse")
 			signals_arr.append(aid)
 		if sink_c > 0:
-			if not _add_checked(sink.balance, 0 - sink_c):
-				return _fail(ERR_SYS05_08, FIELD_AMOUNT, sink_c, "overflow reversing SINK")
 			sink.balance = sink.balance - sink_c
 			signals_cash.append({"id": ID_SINK, "delta": 0 - sink_c})
 			_bump_season_stat(String(ID_SINK), SeasonLedgerReport.KEY_SUM_CREDIT, 0 - sink_c)
 			_bump_season_stat(String(aid), SeasonLedgerReport.KEY_SUM_DEBIT, 0 - sink_c)
 
-	## Drop original posting；append reverse audit row with new seq.
+	## Keep original posting; append reverse audit row with new seq (D-96d).
 	var orig: Posting = _postings[_postings.size() - 1] as Posting
-	_postings.pop_back()
 	var rev := Posting.new()
 	rev.posting_id = _next_posting_id
 	_next_posting_id = _next_posting_id + 1

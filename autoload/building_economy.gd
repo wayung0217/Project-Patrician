@@ -69,6 +69,10 @@ const PRM_UPGRADE_PER_CAPITA := "PRM-SYS08-UPGRADE_PER_CAPITA"
 const FEAS_UNBOUNDED := 0x7fffffff
 ## EX-03: building level floor (spec enum base).
 const BUILDING_LEVEL_MIN := 1
+## EX-WP63: unset ring sentinel for innermost civil search (was bare 999999).
+const RING_SENTINEL_UNSET := 999999
+## EX-WP63: public upgrade cash failure sentinel（不得回 0 冒充免費）.
+const PUBLIC_UPGRADE_CASH_FAIL := -1
 const PRM_KONTOR_UPGRADE := "PRM-SYS08-KONTOR_UPGRADE"
 const PRM_ACC_SCALE := "PRM-SYS08-ACC_SCALE"
 const PRM_OUTPUT_K := "PRM-SYS08-OUTPUT_PER_WORKER_K"
@@ -1791,7 +1795,10 @@ func apply_opening_init(
 			bld.cb_id = step["cb_id"]
 		if bool(step.get("staff", false)):
 			staffed_ports[port_id3] = true
-	for pid_staff in staffed_ports.keys():
+	## WP-63 (h)／C-08: staffed_ports sorted before staff walk.
+	var staff_ids: Array = staffed_ports.keys()
+	staff_ids.sort()
+	for pid_staff in staff_ids:
 		_opening_staff_port(String(pid_staff))
 	return errors
 
@@ -1877,7 +1884,7 @@ func _find_slot_for_workshop(
 func _find_open_civil_slot(port_id: String, occupied: Dictionary = {}) -> StringName:
 	## Residences: innermost open civil first (FRM-SYS08-21).
 	var best: StringName = &""
-	var best_ring := 999999
+	var best_ring: int = RING_SENTINEL_UNSET
 	var best_id := ""
 	for s_v in _slots_by_port.get(port_id, []):
 		var s: Slot = s_v
@@ -2056,6 +2063,15 @@ func _frm18_price(bld: Building) -> int:
 		Params.get_int(PRM_DAYS_PER_WEEK)
 	)
 	var week_income: int = _weekly_income_estimate(bld)
+	## WP-63 (e)：週毛利 < 0 → 停手回報，不得帶進收購價（C-05；見 gaps）.
+	if week_income < 0:
+		_record_fail(
+			&"GAP-EX-08-18-05",
+			"weekly_income",
+			week_income,
+			"workshop weekly gross < 0; no ERR-SYS08 fits (C-05); do not feed into quote"
+		)
+		return 0
 	var premium: float = Params.get_float(PRM_TRANSFER_PREMIUM)
 	var comp_w: int = Params.get_int(PRM_COMPENSATION_WEEKS)
 	var mid: float = (
@@ -2063,6 +2079,16 @@ func _frm18_price(bld: Building) -> int:
 		+ float(comp_w) * float(week_income)
 	)
 	return ceili(AmountQuantize.quantize_amount(mid))
+
+
+func _base_price_li(good_id: String) -> int:
+	## FRM-SYS08-18／WP-63 (a): always GoodDef.base_price_li, never mid_price.
+	if good_id.is_empty() or not GoodCatalog.is_loaded():
+		return 0
+	var g: GoodDef = GoodCatalog.get_good(good_id)
+	if g == null:
+		return 0
+	return g.base_price_li
 
 
 func _weekly_income_estimate(bld: Building) -> int:
@@ -2077,7 +2103,7 @@ func _weekly_income_estimate(bld: Building) -> int:
 			raw += float(int(occ.get(clazz.to_lower(), 0))) * float(int(spend.get(clazz, 0)))
 		return floori(AmountQuantize.quantize_amount(raw * share * (1.0 - mgmt)))
 	if _is_workshop(bld):
-		## FRM-SYS08-18／D-79: 週毛利＝週產出×基準價 − 週投入 − 週人工；刪 ×10.0。
+		## FRM-SYS08-18／D-79／D-92b／WP-63: 基準價；收入 floori；投入／人工 ceili.
 		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
 		if def == null:
 			return 0
@@ -2089,33 +2115,42 @@ func _weekly_income_estimate(bld: Building) -> int:
 		var wage_base: int = Params.get_int(PRM_WAGE_BASE_LI)
 		var recipe_n: float = Params.get_float(PRM_RECIPE_N)
 		var week_out: float = float(workers) * float(def.base_output_per_worker) * k
-		var out_px: float = 0.0
-		if not def.output_good_id.is_empty():
-			out_px = MarketPricer.mid_price(StringName(bld.port_id), StringName(def.output_good_id))
+		var out_px: float = float(_base_price_li(def.output_good_id))
 		var revenue: float = week_out * out_px
 		var input_cost: float = 0.0
 		for inp_v in _recipe_inputs(def):
 			var inp: Dictionary = inp_v
 			var g: String = String(inp["good"])
-			var px: float = MarketPricer.mid_price(StringName(bld.port_id), StringName(g))
+			var px: float = float(_base_price_li(g))
 			input_cost += week_out * float(inp["qty"]) * recipe_n * px
 		var wage_cost: float = float(workers) * float(wage_base) * pow(k, wage_w)
 		var rev_li: int = floori(AmountQuantize.quantize_amount(revenue))
-		var in_li: int = floori(AmountQuantize.quantize_amount(input_cost))
-		var wag_li: int = floori(AmountQuantize.quantize_amount(wage_cost))
-		## D-79: result < 0 is a spec gap — return as-is, never clamp.
-		return rev_li - in_li - wag_li
+		var in_li: int = ceili(AmountQuantize.quantize_amount(input_cost))
+		var wag_li: int = ceili(AmountQuantize.quantize_amount(wage_cost))
+		var gross: int = rev_li - in_li - wag_li
+		## WP-63 (e)／EX-08-18-05: < 0 → report gap, never clamp; caller must not feed into quote.
+		if gross < 0:
+			_record_fail(
+				&"GAP-EX-08-18-05",
+				"weekly_gross",
+				gross,
+				"workshop weekly gross < 0; no ERR-SYS08 fits (C-05)"
+			)
+		return gross
 	return 0
 
 
 func _step_garrison_procure(_day: int, _errors: Array) -> void:
-	## FRM-14／D-81: demand acc; buy min(floor(acc), market, affordable);
-	## fractional remainder carries; unmet whole units do not.
+	## FRM-14／D-92a: all-int acc；daily += GARRISON×RATE×ACC_SCALE；
+	## 1 擔 = DAYS_PER_WEEK×ACC_SCALE；不得先 ÷7 再量化.
 	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
 	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
 	var garrison: Array = Params.get_value(PRM_GARRISON)
 	var arms_per: float = Params.get_float(PRM_ARMS_PER)
 	var powder_per: float = Params.get_float(PRM_POWDER_PER)
+	var thresh: int = days_pw * acc_scale
+	## SimLoop sets quote provider; unit tests may call daily_step directly.
+	CashLedger.set_quote_provider(MarketPricer)
 	var ports: Array = _slots_by_port.keys()
 	ports.sort()
 	for pid_v in ports:
@@ -2124,66 +2159,64 @@ func _step_garrison_procure(_day: int, _errors: Array) -> void:
 		var soldiers := 0
 		if lv >= 1 and lv <= garrison.size():
 			soldiers = int(garrison[lv - 1])
-		var add_arms: float = float(soldiers) * arms_per / float(days_pw) * float(acc_scale)
-		var add_powder: float = float(soldiers) * powder_per / float(days_pw) * float(acc_scale)
+		var add_arms: float = float(soldiers) * arms_per * float(acc_scale)
+		var add_powder: float = float(soldiers) * powder_per * float(acc_scale)
 		_acc_arms[port_id] = int(_acc_arms.get(port_id, 0)) + floori(
 			AmountQuantize.quantize_amount(add_arms)
 		)
 		_acc_powder[port_id] = int(_acc_powder.get(port_id, 0)) + floori(
 			AmountQuantize.quantize_amount(add_powder)
 		)
-		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, acc_scale)
-		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, acc_scale)
+		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, thresh)
+		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, thresh)
 
 
-func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
-	## FRM-14：q = MIN(FLOOR(acc), MARKET 庫存, CITY 可負擔).
-	## Afford via direct MarketPricer.quote (units 通常很小；避開 max_affordable 對低庫存的擴張誤判).
-	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
+func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, thresh: int) -> void:
+	## FRM-14／WP-63 (d)：q = MIN(FLOOR(acc/thresh), MARKET, CashLedger.max_affordable_qty).
+	var units := 0
+	if thresh > 0:
+		units = int(acc_map.get(port_id, 0) / thresh)
 	if units <= 0:
 		return
 	var city: StringName = CashLedger.make_city_id(port_id)
 	CashLedger.create_account(city, Account.Kind.CITY)
 	var market: Dictionary = GoodsLedger.make_market(port_id)
 	var stock: int = GoodsLedger.get_qty(market, good)
-	var q: int = mini(units, stock)
-	while q > 0:
+	## stock＝0 → q＝0；skip max_affordable（避免無庫存／未知貨的 quote 探針噪音）.
+	var q := 0
+	if stock > 0:
+		var afford: int = CashLedger.max_affordable_qty(city, StringName(port_id), good)
+		q = mini(units, mini(stock, afford))
+	if q > 0:
 		var quote: Dictionary = MarketPricer.quote(
 			StringName(port_id), good, MarketPricer.SIDE_BUY, q
 		)
-		if quote.has(MarketPricer.KEY_ERROR):
-			q = 0
-			break
-		var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
-		if price > CashLedger.balance(city):
-			q = q - 1
-			continue
-		var cash_rc: Error = CashLedger.post(
-			[
-				CashLedger.make_entry(city, 0 - price),
-				CashLedger.make_entry(CashLedger.ID_SINK, price),
-			],
-			REASON_TRADE,
-			REQUESTER_SYS08
-		)
-		if cash_rc != OK:
-			q = 0
-			break
-		var seq: int = GoodsLedger.transfer(
-			market,
-			GoodsLedger.make_external(),
-			good,
-			q,
-			GoodsLedger.REASON_CONSUME,
-			REQUESTER_SYS08
-		)
-		if seq > 0:
-			_note_city_spend(port_id, price)
-		else:
-			q = 0
-		break
-	## D-81: discard unmet whole units; keep fractional remainder (acc % scale).
-	acc_map[port_id] = int(acc_map.get(port_id, 0)) % acc_scale
+		if not quote.has(MarketPricer.KEY_ERROR):
+			var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
+			var cash_rc: Error = CashLedger.post(
+				[
+					CashLedger.make_entry(city, 0 - price),
+					CashLedger.make_entry(CashLedger.ID_SINK, price),
+				],
+				REASON_TRADE,
+				REQUESTER_SYS08
+			)
+			if cash_rc == OK:
+				var seq: int = GoodsLedger.transfer(
+					market,
+					GoodsLedger.make_external(),
+					good,
+					q,
+					GoodsLedger.REASON_CONSUME,
+					REQUESTER_SYS08
+				)
+				if seq > 0:
+					_note_city_spend(port_id, price)
+	## D-81／D-92a: discard unmet whole units; keep fractional remainder (acc % thresh).
+	if thresh > 0:
+		acc_map[port_id] = int(acc_map.get(port_id, 0)) % thresh
+	else:
+		acc_map[port_id] = 0
 
 
 func _step_rent_accrual() -> void:
@@ -2402,6 +2435,8 @@ func _season_city_build_queue(port_id: String) -> void:
 		# Upgrade cost if target_level > 1
 		if step.target_level > 1:
 			cost = _public_upgrade_cash(port_id, step.target_level)
+			if cost < 0:
+				break
 		if CashLedger.balance(city) < cost:
 			break
 		# Mark as started: advance pos (actual order_build needs free public slot — best-effort).
@@ -2413,17 +2448,20 @@ func _season_city_build_queue(port_id: String) -> void:
 
 
 func _public_upgrade_cash(port_id: String, to_level: int) -> int:
-	## FRM-SYS08-07: pop × UPGRADE_PER_CAPITA[級].CASH_LI; idx = to_level - 2 ([0]=L2,[1]=L3).
+	## FRM-SYS08-07／WP-63 (g): pop × UPGRADE_PER_CAPITA[級].CASH_LI;
+	## missing CASH_LI or level OOB → ERR-SYS08-09（不得回 0）.
 	var pop: int = 0
 	if _population != null:
 		pop = _population.population(StringName(port_id))
 	var arr: Array = Params.get_value(PRM_UPGRADE_PER_CAPITA)
 	var idx: int = _upgrade_level_index(to_level)
 	if idx < 0 or idx >= arr.size():
-		return 0
+		_record_fail(ERR_SYS08_09, "level", to_level, "UPGRADE_PER_CAPITA index OOB (WP-63 g)")
+		return PUBLIC_UPGRADE_CASH_FAIL
 	var row: Dictionary = arr[idx] as Dictionary
 	if not row.has("CASH_LI"):
-		return 0
+		_record_fail(ERR_SYS08_09, "UPGRADE_PER_CAPITA", idx, "CASH_LI key missing (WP-63 g)")
+		return PUBLIC_UPGRADE_CASH_FAIL
 	var cash_per: int = int(row["CASH_LI"])
 	return ceili(AmountQuantize.quantize_amount(float(pop) * float(cash_per)))
 
@@ -2442,53 +2480,62 @@ func _recompute_r(port_id: String) -> int:
 
 
 func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
-	# Find free public slot.
-	var slot_id: StringName = &""
-	for s_v in _slots_by_port.get(port_id, []):
-		var s: Slot = s_v
-		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
-			slot_id = s.slot_id
-			break
-	if slot_id == &"":
-		# Still advance? Spec: money enough → start. No slot → cannot start, don't skip.
-		return false
-	# Ensure a PUBLIC def exists for cb_id
+	## WP-65／A8／FRM-SYS08-15: L1 → order_build path；upgrade → in-place order_upgrade.
 	var type_id: String = step.cb_id
-	if not _building_defs.has(type_id):
-		var d := BuildingDef.new()
-		d.type = type_id
-		d.build_class = "PUBLIC"
-		d.tier = 0
-		d.max_workers = 0
-		d.base_output_per_worker = 0.0
-		_building_defs[type_id] = d
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(city, 0 - cost),
-			CashLedger.make_entry(CashLedger.ID_SINK, cost),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
+	if step.target_level <= BUILDING_LEVEL_MIN:
+		if not _building_defs.has(type_id):
+			_record_fail(
+				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (WP-65／C-06)"
+			)
+			return false
+		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+		if not cash_map.has("PUBLIC"):
+			_record_fail(
+				ERR_SYS08_09, PRM_BUILD_CASH_LI, "PUBLIC", "BUILD_CASH_LI PUBLIC missing (A11)"
+			)
+			return false
+		var slot_id: StringName = _find_public_slot(port_id)
+		if slot_id == &"":
+			return false
+		var bid: StringName = order_build(city, slot_id, StringName(type_id))
+		if bid == &"":
+			return false
+		_note_city_spend(port_id, int(cash_map["PUBLIC"]))
+		return true
+	## Upgrade: find city-owned PUBLIC at level == target − 1；no new slot.
+	var target: Building = _find_city_public_upgrade_target(
+		port_id, city, StringName(step.cb_id), step.target_level - 1
 	)
-	if post_err != OK:
+	if target == null:
+		return false
+	var up_id: StringName = order_upgrade(city, target.building_id)
+	if up_id == &"":
 		return false
 	_note_city_spend(port_id, cost)
-	var bld := Building.new()
-	bld.building_id = _next_bld_id(port_id)
-	bld.type = StringName(type_id)
-	bld.build_class = CLASS_PUBLIC
-	bld.cb_id = StringName(step.cb_id)
-	bld.owner = city
-	bld.port_id = port_id
-	bld.slot_id = slot_id
-	bld.level = maxi(BUILDING_LEVEL_MIN, step.target_level)
-	bld.state = Building.State.ACTIVE
-	bld.days_left = 0
-	var slot: Slot = _slot(slot_id)
-	slot.building_id = bld.building_id
-	slot.vacancy_start_day = -1
-	_register_building(bld)
 	return true
+
+
+func _find_city_public_upgrade_target(
+	port_id: String, city: StringName, cb: StringName, need_level: int
+) -> Building:
+	## Prefer lowest building_id among ACTIVE city PUBLIC matching cb_id／level.
+	var best: Building = null
+	var best_id := ""
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		if bld.owner != city or bld.build_class != CLASS_PUBLIC:
+			continue
+		if bld.state != Building.State.ACTIVE:
+			continue
+		if bld.cb_id != cb and bld.type != cb:
+			continue
+		if bld.level != need_level:
+			continue
+		var sid: String = String(bld.building_id)
+		if best == null or sid < best_id:
+			best = bld
+			best_id = sid
+	return best
 
 
 func _season_zone_open(port_id: String) -> void:
