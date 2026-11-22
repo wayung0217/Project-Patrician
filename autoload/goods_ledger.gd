@@ -323,6 +323,15 @@ func get_qty(container: Variant, good: StringName) -> int:
 	return _get_qty_by_key(key, String(good))
 
 
+func container_used(container: Dictionary) -> int:
+	## D-95(d): occupied capacity in 擔 for a container Dictionary.
+	assert(_loaded, "GoodsLedger.container_used before load_and_validate")
+	var key: String = _container_key(container)
+	if key.is_empty() or _is_external_key(key):
+		return 0
+	return _container_used(key)
+
+
 func total(good: StringName) -> int:
 	# 3.4: 容器鍵 Dictionary 彙總先排序鍵再加總
 	assert(_loaded, "GoodsLedger.total before load_and_validate")
