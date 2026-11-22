@@ -82,6 +82,10 @@ const KEY_TOTAL_LI := "total_li"
 const DAY_PLACEHOLDER := 1
 
 var _accounts: Dictionary = {} ## String → Account
+## D-84f: binary-search midpoint divisor (was 1+1).
+const INT_DIV_MID_DENOM := 2
+## D-84f／EX-02: failure sentinel for int APIs.
+const INT_API_FAILURE := -1
 var _postings: Array = [] ## Array[Posting] 本季明細
 var _charges: Array = [] ## Array[ChargeSchedule] 登記序
 var _next_posting_id: int = 1
@@ -341,6 +345,14 @@ func balance(id: StringName) -> int:
 	return (_accounts[key] as Account).balance
 
 
+
+func last_posting_seq() -> int:
+	## D-89b 待追認: readonly last Posting.seq (was _postings cross-module).
+	assert(_loaded, "CashLedger.last_posting_seq before load")
+	if _postings.is_empty():
+		return 0
+	return int((_postings[_postings.size() - 1] as Posting).seq)
+
 func arrears(id: StringName) -> int:
 	assert(_loaded, "CashLedger.arrears before load")
 	var key := String(id)
@@ -536,7 +548,7 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 		hi = next_hi
 	# 二分
 	while lo + 1 < hi:
-		var mid: int = floori((lo + hi) / (1 + 1))
+		var mid: int = floori((lo + hi) / INT_DIV_MID_DENOM)
 		var t_mid: int = _quote_buy_total(port, good, mid)
 		if t_mid < 0:
 			return 0
@@ -654,16 +666,16 @@ func quantize_money(x: float, mode: int) -> int:
 
 func _quote_buy_total(port: StringName, good: StringName, qty: int) -> int:
 	if _quote_provider == null:
-		return 0 - 1
+		return INT_API_FAILURE
 	if not _quote_provider.has_method("quote"):
 		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing quote()")
-		return 0 - 1
+		return INT_API_FAILURE
 	var q: Variant = _quote_provider.call("quote", port, good, SIDE_BUY, qty)
 	if typeof(q) != TYPE_DICTIONARY:
-		return 0 - 1
+		return INT_API_FAILURE
 	var d: Dictionary = q
 	if not d.has(KEY_TOTAL_LI):
-		return 0 - 1
+		return INT_API_FAILURE
 	return int(d[KEY_TOTAL_LI])
 
 

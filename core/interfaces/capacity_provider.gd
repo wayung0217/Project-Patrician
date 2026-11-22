@@ -6,7 +6,7 @@ extends RefCounted
 
 ## Failure sentinel for capacity() — not a real capacity (2.1-03 / 3.7 same rule).
 ## Built from 0／1 only (C-03).
-const CAPACITY_FAILURE := 0 - 1
+const CAPACITY_FAILURE := -1 ## EX-02 failure sentinel
 
 
 func capacity(_container: Variant) -> int:

@@ -41,6 +41,8 @@ const PRM_REPAIR_RATE := "PRM-SYS13-REPAIR_RATE_SEASON"
 const PRM_YARD_CONCURRENT := "PRM-SYS13-YARD_CONCURRENT"
 const PRM_SALVAGE_RATE := "PRM-SYS13-SALVAGE_RATE"
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
+const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
+const HOLD_CHECK_FAILURE := -1 ## EX-02
 
 ## 03_Systems 10.7「無值」keys — missing → ERR-SYS13-12 (D-19f a).
 const NOVALUE_PRMS: Array[String] = [
@@ -451,7 +453,7 @@ func port_draft(port_id: StringName) -> int:
 	var port: PortDef = PortRegistry.get_port(String(port_id))
 	if port == null:
 		_record(ERR_SYS13_01, "port_id", port_id, "unknown port")
-		return 0 - 1
+		return HOLD_CHECK_FAILURE
 	var base: int = int(port.draft_limit_class)
 	var dock_lv: int = 0
 	if BuildingEconomy.is_loaded():
@@ -482,9 +484,7 @@ func hold_transfer_allowed(container: Variant) -> bool:
 		_record(ERR_SYS13_03, "state", s.state, "HOLD transfer while SAILING")
 		return false
 	var hold_id: String = String(s.hold_container_id())
-	var meta_port: String = ""
-	if GoodsLedger._container_meta.has(hold_id):
-		meta_port = String((GoodsLedger._container_meta[hold_id] as Dictionary).get("port_id", ""))
+	var meta_port: String = String(GoodsLedger.get_container_port_id(StringName(hold_id)))
 	if meta_port.is_empty() or meta_port != String(s.port_id):
 		_record(ERR_SYS13_03, "port", meta_port, "HOLD not berthed for trade")
 		return false
@@ -553,7 +553,8 @@ func cutoff_step(_season_index: int) -> Array:
 	for key in keys:
 		var s: Ship = _ships[key]
 		if s.acc_wage > 0:
-			var due_w: int = int(ceili(float(s.acc_wage) / 7.0))
+			var days_pw: int = Params.get_int(StringName(PRM_DAYS_PER_WEEK))
+			var due_w: int = int(ceili(float(s.acc_wage) / float(days_pw)))
 			if due_w > 0:
 				CashLedger.charge_mandatory(s.owner, due_w, REASON_CREW_WAGE, REQUESTER)
 			s.acc_wage = 0

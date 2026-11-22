@@ -410,7 +410,9 @@ static func _obs01(ports: Array) -> String:
 		if be_ready:
 			for r_v in rows:
 				var r: Dictionary = r_v
-				var fee: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(pid), 1 + 1)
+				var fee: Dictionary = BuildingEconomy.public_upgrade_fee(
+					StringName(pid), BuildingEconomy.BUILDING_LEVEL_MIN + 1
+				) ## EX-03 first upgrade target L2
 				var need: int = _json_int(fee.get("CASH_LI", 0))
 				if need > 0 and _json_int(r["city_balance_li"]) >= need:
 					found = str(_json_int(r["season_index"]))

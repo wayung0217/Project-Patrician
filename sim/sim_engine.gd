@@ -122,7 +122,7 @@ func _run_one_job(
 		IntelLedger.set_broker_provider(SimBrokerFixture.new())
 	# Allow re-inject after a prior boot left TradeDesk._loaded true without providers.
 	if not TradeDesk.has_qualification_provider() or not TradeDesk.has_trade_observers():
-		TradeDesk._loaded = false
+		TradeDesk.mark_unloaded()
 	if not TradeDesk.has_qualification_provider():
 		TradeDesk.set_qualification_provider(SimQualificationFixture.new())
 	if not TradeDesk.has_trade_observers():
@@ -148,7 +148,7 @@ func _run_one_job(
 	PopulationModel.set_master_seed(seed)
 	Clock.set_paused(false)
 
-	var years: int = SimScenarioValidator._as_int(scenario[SimScenarioValidator.KEY_YEARS])
+	var years: int = SimScenarioValidator.as_int(scenario[SimScenarioValidator.KEY_YEARS])
 	var days_per_season: int = Params.get_int(PRM_DAYS_PER_SEASON)
 	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
 	var total_days: int = years * seasons_y * days_per_season
@@ -183,7 +183,7 @@ func _run_one_job(
 	var elapsed: int = Time.get_ticks_msec() - t0
 	var summary: Dictionary = SimMetrics.compute(
 		sampler,
-		SimScenarioValidator._as_int(scenario[SimScenarioValidator.KEY_WARMUP]),
+		SimScenarioValidator.as_int(scenario[SimScenarioValidator.KEY_WARMUP]),
 		years,
 		scenario[SimScenarioValidator.KEY_THRESHOLDS],
 		aborted,

@@ -152,7 +152,7 @@ script = ExtResource("2_gckub")
 port_id = "PT-09"
 name_zh = "淡水"
 draft_limit_class = 2
-regime_id = "西班牙→荷蘭"
+regime_id = "西班牙"
 role_cells = {
 "GD-001": SubResource("Resource_2llmx"),
 "GD-002": SubResource("Resource_vcki1"),

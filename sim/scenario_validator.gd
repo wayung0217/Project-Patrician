@@ -339,6 +339,11 @@ static func _is_json_int(v: Variant) -> bool:
 	return false
 
 
+static func as_int(value: Variant) -> int:
+	## D-89b 待追認: public wrapper for scenario int coercion (was _as_int cross-module).
+	return SimJsonInt.as_int(value, "scenario_validator")
+
+
 static func _as_int(v: Variant) -> int:
-	## 乙／C-06：僅在呼叫端已 `_is_json_int` 通過後使用；非整數走 SimJsonInt 報錯。
-	return SimJsonInt.as_int(v, "scenario_validator")
+	## Deprecated thin wrapper; prefer as_int (D-89b).
+	return as_int(v)

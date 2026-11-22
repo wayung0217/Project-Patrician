@@ -65,6 +65,10 @@ const PRM_BUILD_CASH_LI := "PRM-SYS08-BUILD_CASH_LI"
 const PRM_BUILD_MAT := "PRM-SYS08-BUILD_MAT"
 const PRM_BUILD_DAYS := "PRM-SYS08-BUILD_DAYS"
 const PRM_UPGRADE_PER_CAPITA := "PRM-SYS08-UPGRADE_PER_CAPITA"
+## EX-02: feasibility sentinel (unbounded) — not a business output.
+const FEAS_UNBOUNDED := 0x7fffffff
+## EX-03: building level floor (spec enum base).
+const BUILDING_LEVEL_MIN := 1
 const PRM_KONTOR_UPGRADE := "PRM-SYS08-KONTOR_UPGRADE"
 const PRM_ACC_SCALE := "PRM-SYS08-ACC_SCALE"
 const PRM_OUTPUT_K := "PRM-SYS08-OUTPUT_PER_WORKER_K"
@@ -397,9 +401,7 @@ func buy_land(actor: StringName, slot_key: StringName) -> int:
 	# FRM-04 grace clock starts on purchase of empty land.
 	slot.vacancy_start_day = Clock.day if Clock != null else 0
 	_land_held_days[String(slot_key)] = 0
-	var seq: int = 0
-	if CashLedger._postings.size() > 0:
-		seq = int((CashLedger._postings[CashLedger._postings.size() - 1] as Posting).seq)
+	var seq: int = CashLedger.last_posting_seq()
 	land_bought.emit(actor, slot_key, seq)
 	return seq
 
@@ -476,8 +478,11 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 		return StringName(_fail_sn(ERR_SYS08_05, "owner", bld.owner, "not building owner"))
 	if bld.state != Building.State.ACTIVE:
 		return StringName(_fail_sn(ERR_SYS08_03, "state", bld.state, "upgrade only from ACTIVE"))
-	if bld.level >= 3:
-		return StringName(_fail_sn(ERR_SYS08_03, "level", bld.level, "already level 3"))
+	var max_lvl: int = (
+		_kontor_max_level() if bld.build_class == CLASS_KONTOR else _public_max_level()
+	)
+	if bld.level >= max_lvl:
+		return StringName(_fail_sn(ERR_SYS08_03, "level", bld.level, "already max level"))
 
 	var to_level: int = bld.level + 1
 	var cash_li := 0
@@ -490,7 +495,7 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 				_fail_sn(ERR_SYS08_09, PRM_KONTOR_UPGRADE, null, "KONTOR_UPGRADE missing (G-02)")
 			)
 		var arr: Array = Params.get_value(PRM_KONTOR_UPGRADE)
-		var idx: int = to_level - 2
+		var idx: int = _upgrade_level_index(to_level)
 		if idx < 0 or idx >= arr.size():
 			return StringName(_fail_sn(ERR_SYS08_09, "level", to_level, "KONTOR_UPGRADE index"))
 		var row: Dictionary = arr[idx]
@@ -544,12 +549,37 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 	return bld.building_id
 
 
+
+func _public_max_level() -> int:
+	## EX-03: max public level = BUILDING_LEVEL_MIN + len(UPGRADE_PER_CAPITA).
+	var arr: Array = Params.get_value(PRM_UPGRADE_PER_CAPITA)
+	return BUILDING_LEVEL_MIN + arr.size()
+
+
+func _kontor_max_level() -> int:
+	## EX-03: max kontor level = BUILDING_LEVEL_MIN + len(KONTOR_UPGRADE).
+	if not Params.has_prm(PRM_KONTOR_UPGRADE):
+		return BUILDING_LEVEL_MIN
+	var arr: Array = Params.get_value(PRM_KONTOR_UPGRADE)
+	return BUILDING_LEVEL_MIN + arr.size()
+
+
+func _upgrade_level_index(to_level: int) -> int:
+	## EX-03: UPGRADE_PER_CAPITA／KONTOR_UPGRADE row index for target level (L2→0).
+	return to_level - (BUILDING_LEVEL_MIN + 1)
+
+
+func _zone_table_index(next_zone: int) -> int:
+	## EX-03: ZONE_POP_MIN／ZONE_OPEN_COST[0] = zone 2.
+	return next_zone - (BUILDING_LEVEL_MIN + 1)
+
+
 func public_upgrade_fee(port_id: StringName, to_level: int) -> Dictionary:
 	## FRM-07: pop × UPGRADE_PER_CAPITA[level]; cash CEIL to li; mats CEIL to 擔.
 	assert(_loaded, "BuildingEconomy.public_upgrade_fee before load")
 	var pop: int = _population.population(port_id)
 	var arr: Array = Params.get_value(PRM_UPGRADE_PER_CAPITA)
-	var idx: int = to_level - 2
+	var idx: int = _upgrade_level_index(to_level)
 	var out := {"CASH_LI": 0, "MAT": {}}
 	if idx < 0 or idx >= arr.size():
 		return out
@@ -805,7 +835,7 @@ func _produce_workshop(bld: Building, def: BuildingDef, errors: Array) -> void:
 	var out_feas: int = out_pot
 	var inputs: Array = _recipe_inputs(def)
 	if not inputs.is_empty():
-		out_feas = 0x7fffffff
+		out_feas = FEAS_UNBOUNDED ## EX-02 sentinel
 		for inp_variant in inputs:
 			var inp: Dictionary = inp_variant
 			var avail: int = GoodsLedger.get_qty(src, StringName(String(inp["good"])))
@@ -815,7 +845,7 @@ func _produce_workshop(bld: Building, def: BuildingDef, errors: Array) -> void:
 			var feas_i: int = floori(AmountQuantize.quantize_amount(float(avail) / per))
 			if feas_i < out_feas:
 				out_feas = feas_i
-		if out_feas == 0x7fffffff:
+		if out_feas == FEAS_UNBOUNDED:
 			out_feas = out_pot
 
 	# FRM-10 capacity
@@ -1013,6 +1043,12 @@ func get_slot(slot_key: StringName) -> Slot:
 
 func get_building(bld_key: StringName) -> Building:
 	return _building(bld_key)
+
+
+func get_building_def(type_id: StringName) -> BuildingDef:
+	## D-89b 待追認: public readonly BuildingDef lookup (was _building_defs cross-module).
+	assert(_loaded, "BuildingEconomy.get_building_def before load")
+	return _building_defs.get(String(type_id), null) as BuildingDef
 
 
 func buildings_for_port(port_id: String) -> Array:
@@ -1560,8 +1596,6 @@ func apply_opening_init(
 		_opening_staff_port(row.port_id)
 	# 2) Residences = CEIL(pop / HOUSE_CAPACITY) city-owned
 	var house_cap: int = Params.get_int(PopulationModel.PRM_HOUSE_CAP)
-	if house_cap < 1:
-		house_cap = 100
 	for pid_v in PortRegistry.all_ids():
 		var port_id: String = String(pid_v)
 		var pop_n: int = 0
@@ -1575,7 +1609,7 @@ func apply_opening_init(
 			pop_n = _population.population(StringName(port_id))
 		if pop_n <= 0:
 			continue
-		var need_h: int = int(ceil(float(pop_n) / float(house_cap)))
+		var need_h: int = ceili(float(pop_n) / float(house_cap))
 		var city2: StringName = CashLedger.make_city_id(port_id)
 		CashLedger.create_account(city2, Account.Kind.CITY)
 		# Ensure RESIDENCE def
@@ -1605,7 +1639,7 @@ func apply_opening_init(
 			pd.build_class = "PUBLIC"
 			_building_defs[pub.cb_id] = pd
 		var pb: Building = _spawn_active_building(
-			city3, pub.port_id, pslot, StringName(pub.cb_id), CLASS_PUBLIC, maxi(1, pub.level)
+			city3, pub.port_id, pslot, StringName(pub.cb_id), CLASS_PUBLIC, maxi(BUILDING_LEVEL_MIN, pub.level)
 		)
 		pb.cb_id = StringName(pub.cb_id)
 	# 4) Player kontor at 魍港
@@ -1845,9 +1879,7 @@ func buy_city_building(actor: StringName, bld_key: StringName) -> int:
 	if slot != null:
 		slot.land_owner = actor
 	_note_city_spend(bld.port_id, 0) # purchase is income to city, not spend
-	var seq: int = 0
-	if CashLedger._postings.size() > 0:
-		seq = int((CashLedger._postings[CashLedger._postings.size() - 1] as Posting).seq)
+	var seq: int = CashLedger.last_posting_seq()
 	return seq
 
 
@@ -1890,18 +1922,16 @@ func _weekly_income_estimate(bld: Building) -> int:
 		var raw: float = 0.0
 		for clazz in ["POOR", "CITIZEN", "RICH"]:
 			raw += float(int(occ.get(clazz.to_lower(), 0))) * float(int(spend.get(clazz, 0)))
-		return int(floor(AmountQuantize.quantize_amount(raw * share * (1.0 - mgmt))))
+		return floori(AmountQuantize.quantize_amount(raw * share * (1.0 - mgmt)))
 	if _is_workshop(bld):
 		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
 		if def == null:
 			return 0
 		var workers: int = _workers_of(bld.building_id)
 		var k: float = Params.get_float(PRM_OUTPUT_K)
-		return int(
-			floor(
-				AmountQuantize.quantize_amount(
-					float(workers) * float(def.base_output_per_worker) * k * 10.0
-				)
+		return floori(
+			AmountQuantize.quantize_amount(
+				float(workers) * float(def.base_output_per_worker) * k * 10.0
 			)
 		)
 	return 0
@@ -2021,7 +2051,7 @@ func _step_zone_streak() -> void:
 	for pid_v in ports:
 		var port_id: String = String(pid_v)
 		var next_zone: int = int(_max_open_zone.get(port_id, -1)) + 1
-		var idx: int = next_zone - 2 # [0]=zone 2
+		var idx: int = _zone_table_index(next_zone) ## EX-03 [0]=zone 2
 		if idx < 0 or idx >= pop_mins.size():
 			_zone_streak[port_id] = 0
 			continue
@@ -2081,7 +2111,7 @@ func _season_rents(port_id: String) -> void:
 			continue
 		if bld.acc_rent_li <= 0:
 			continue
-		var r: int = int(floor(float(bld.acc_rent_li) / float(denom)))
+		var r: int = floori(float(bld.acc_rent_li) / float(denom))
 		if r <= 0:
 			bld.acc_rent_li = 0
 			continue
@@ -2219,7 +2249,7 @@ func _public_upgrade_cash(port_id: String, to_level: int) -> int:
 	if _population != null:
 		pop = _population.population(StringName(port_id))
 	var arr: Array = Params.get_value(PRM_UPGRADE_PER_CAPITA)
-	var idx: int = to_level - 2
+	var idx: int = _upgrade_level_index(to_level)
 	if idx < 0 or idx >= arr.size():
 		return 0
 	var row: Dictionary = arr[idx] as Dictionary
@@ -2280,7 +2310,7 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 	bld.owner = city
 	bld.port_id = port_id
 	bld.slot_id = slot_id
-	bld.level = maxi(1, step.target_level)
+	bld.level = maxi(BUILDING_LEVEL_MIN, step.target_level)
 	bld.state = Building.State.ACTIVE
 	bld.days_left = 0
 	var slot: Slot = _slot(slot_id)
@@ -2296,7 +2326,7 @@ func _season_zone_open(port_id: String) -> void:
 		return
 	var next_zone: int = int(_max_open_zone.get(port_id, -1)) + 1
 	var costs: Array = Params.get_value(PRM_ZONE_OPEN_COST)
-	var idx: int = next_zone - 2
+	var idx: int = _zone_table_index(next_zone) ## EX-03 [0]=zone 2
 	if idx < 0 or idx >= costs.size():
 		return
 	var cost: int = int(costs[idx])
@@ -2351,7 +2381,7 @@ func _season_levy(port_id: String) -> void:
 	if bal <= thr:
 		return
 	var rate: float = Params.get_float(PRM_LEVY_RATE)
-	var levy: int = int(floor(float(bal - thr) * rate))
+	var levy: int = floori(float(bal - thr) * rate)
 	if levy <= 0:
 		return
 	CashLedger.post(

@@ -4,7 +4,7 @@ extends RefCounted
 ## Formal implementation is PopulationModel (WP-21); WP-18 uses test doubles only.
 
 ## Failure sentinel — not a real population (2.1-03).
-const POPULATION_FAILURE := 0 - 1
+const POPULATION_FAILURE := -1 ## EX-02 failure sentinel
 
 
 func population(_port_id: StringName) -> int:
