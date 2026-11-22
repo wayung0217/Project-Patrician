@@ -177,7 +177,7 @@ func _run_one_job(
 		)
 		if not bool(conv.get("ok", false)):
 			acc.disconnect_ledger()
-				return {
+			return {
 				"summary": _abort_summary(
 					run_id, combo_index, seed, combo, String(conv.get("error", ERR_SYS23_03)), t0
 				),
