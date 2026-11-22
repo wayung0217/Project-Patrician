@@ -382,6 +382,7 @@ func test_WP59_D01_quantize_amount_snaps_near_integer() -> void:
 
 func test_TST_SYS04_11_zero_window_qty_floor() -> void:
 	# TST-SYS04-11／AB2: window_qty＝0 with normal window_days（≠ SYS04-07 C=0 via weekly inject）.
+	# D-96(a)：地板僅在 stock>0 且 weekly_basis＝0；強制潛在需求 0。
 	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
 	_seed_market(PORT_DEMO, DEMO_STOCK)
 	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
@@ -397,6 +398,7 @@ func test_TST_SYS04_11_zero_window_qty_floor() -> void:
 			GoodsLedger.seed_offtake_snapshot(
 				StringName(PORT_DEMO), StringName(gid), 0, 0, days_pw, 0
 			)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 0})
 	var snap: Dictionary = GoodsLedger.offtake_snapshot(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO)
 	)
@@ -416,6 +418,7 @@ func test_TST_SYS04_12_transit_uses_base_price_li() -> void:
 	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_eq(errors.size(), 0)
 	_inject_offtake_weekly(PORT_TRANSIT, GOOD_DEMO, DEMO_WEEKLY_C)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_TRANSIT, GOOD_DEMO]: 0})
 	var mid: float = MarketPricer.mid_price(StringName(PORT_TRANSIT), StringName(GOOD_DEMO))
 	assert_gt(mid, 0.0)
 	assert_true(MarketPricer.last_error().is_empty())
@@ -435,6 +438,7 @@ func test_TST_SYS04_13_offtake_weeks_fixture() -> void:
 	GoodsLedger.seed_offtake_snapshot(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), 70, 70, 7, 0
 	)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 0})
 	var mid: float = MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))
 	# w=3 → m=M3=1.0 on fixture curve; mid = 1000 × 1.0
 	assert_eq(mid, float(DEMO_ANCHOR_LI) * 1.0)
@@ -727,3 +731,92 @@ func _wipe_dir(dir: String) -> void:
 				fn = d.get_next()
 			d.list_dir_end()
 	DirAccess.make_dir_recursive_absolute(abs_path)
+
+
+## --- WP-64／D-96(a) EX-04-09-01…06 ---
+
+
+func after_each() -> void:
+	if DemandModel.has_meta("wp64_test_potential"):
+		DemandModel.remove_meta("wp64_test_potential")
+
+
+func test_EX_04_09_01_stock0_potential_ceiling() -> void:
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, 0)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 188})
+	assert_eq(float(MarketPricer.stock_weeks(StringName(PORT_DEMO), StringName(GOOD_DEMO))), 0.0)
+	assert_eq(floori(MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))), DEMO_ANCHOR_LI * TWO)
+
+
+func test_EX_04_09_02_stock940_potential188_platform() -> void:
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	_seed_market(PORT_DEMO, 940)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, 0)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 188})
+	assert_almost_eq(float(MarketPricer.stock_weeks(StringName(PORT_DEMO), StringName(GOOD_DEMO))), 5.0, 1e-9)
+	assert_eq(floori(MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))), DEMO_ANCHOR_LI)
+
+
+func test_EX_04_09_03_max_of_offtake_and_potential() -> void:
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	_seed_market(PORT_DEMO, 400)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, 70)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 188})
+	var expect_w: float = 400.0 / 188.0
+	assert_almost_eq(float(MarketPricer.stock_weeks(StringName(PORT_DEMO), StringName(GOOD_DEMO))), expect_w, 1e-9)
+	var m: float = 1.4 + (1.0 - 1.4) * (expect_w - 1.0) / (3.0 - 1.0)
+	assert_almost_eq(
+		MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO)),
+		float(DEMO_ANCHOR_LI) * m,
+		1e-6
+	)
+
+
+func test_EX_04_09_04_stock0_zero_potential_ceiling() -> void:
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, 0)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 0})
+	assert_eq(float(MarketPricer.stock_weeks(StringName(PORT_DEMO), StringName(GOOD_DEMO))), 0.0)
+	assert_eq(floori(MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))), DEMO_ANCHOR_LI * TWO)
+
+
+func test_EX_04_09_05_stock_positive_zero_basis_floor() -> void:
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	_seed_market(PORT_DEMO, 300)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, 0)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 0})
+	assert_true(MarketPricer.stock_weeks(StringName(PORT_DEMO), StringName(GOOD_DEMO)) == null)
+	assert_eq(
+		floori(MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))),
+		floori(float(DEMO_ANCHOR_LI) * TST03_M_FLOOR)
+	)
+	var buy: Dictionary = MarketPricer.quote(
+		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, TST07_Q
+	)
+	assert_eq(int(buy[MarketPricer.KEY_TOTAL_LI]), TST07_BUY_TOTAL)
+
+
+func test_EX_04_09_06_offtake_dominates_potential() -> void:
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	_seed_market(PORT_DEMO, 940)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0)
+	_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, 280)
+	DemandModel.set_meta("wp64_test_potential", {"%s|%s" % [PORT_DEMO, GOOD_DEMO]: 188})
+	assert_almost_eq(
+		float(MarketPricer.stock_weeks(StringName(PORT_DEMO), StringName(GOOD_DEMO))),
+		940.0 / 280.0,
+		1e-9
+	)
+	assert_eq(floori(MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))), DEMO_ANCHOR_LI)
