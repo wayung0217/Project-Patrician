@@ -95,6 +95,9 @@ const PRM_ZONE_SAT_DAYS := "PRM-SYS08-ZONE_SAT_DAYS"
 const PRM_ZONE_OPEN_COST := "PRM-SYS08-ZONE_OPEN_COST_LI"
 const PRM_TRANSFER_PREMIUM := "PRM-SYS08-TRANSFER_PREMIUM"
 const PRM_COMPENSATION_WEEKS := "PRM-SYS08-COMPENSATION_WEEKS"
+## D-97(c)／WP-62b: opening MARKET stock weeks（Owner-approved 4／2）.
+const PRM_OPENING_STOCK_DEMAND_WEEKS := "PRM-SYS08-OPENING_STOCK_DEMAND_WEEKS"
+const PRM_OPENING_STOCK_OUTPUT_WEEKS := "PRM-SYS08-OPENING_STOCK_OUTPUT_WEEKS"
 const BUILD_QUEUE_DIR := "res://data/build_queue/"
 const OPENING_DIR := "res://data/opening/"
 const OPENING_PUBLIC_DIR := "res://data/opening_public/"
@@ -1793,6 +1796,105 @@ func apply_opening_init(
 			staffed_ports[port_id3] = true
 	for pid_staff in staffed_ports.keys():
 		_opening_staff_port(String(pid_staff))
+	return errors
+
+
+func apply_opening_market_stock() -> Array:
+	## FRM-SYS08-21／D-97(c)／WP-62b: last opening step — GENESIS into MARKET.
+	## q = DEMAND_WEEKS × weekly_potential_demand + floori(OUTPUT_WEEKS × Σ full-staff W).
+	## Order (port_id, good_id) ascending; q=0 skip（no GENESIS event）.
+	assert(_loaded, "BuildingEconomy.apply_opening_market_stock before load")
+	var errors: Array = []
+	if not DemandModel.is_loaded():
+		errors.append(
+			_err(
+				ERR_SYS08_09,
+				"DemandModel",
+				null,
+				"DemandModel must be loaded before opening market stock (D-97c)"
+			)
+		)
+		_emit_errors(errors)
+		return errors
+	if not Params.has_prm(PRM_OPENING_STOCK_DEMAND_WEEKS) or not Params.has_prm(
+		PRM_OPENING_STOCK_OUTPUT_WEEKS
+	):
+		errors.append(
+			_err(
+				ERR_SYS08_09,
+				PRM_OPENING_STOCK_DEMAND_WEEKS,
+				null,
+				"opening stock PRMs missing (D-97c)"
+			)
+		)
+		_emit_errors(errors)
+		return errors
+	if not GoodsLedger.is_loaded():
+		errors.append(
+			_err(ERR_SYS08_09, "GoodsLedger", null, "GoodsLedger required for opening stock")
+		)
+		_emit_errors(errors)
+		return errors
+
+	var demand_w: int = Params.get_int(PRM_OPENING_STOCK_DEMAND_WEEKS)
+	var output_w: int = Params.get_int(PRM_OPENING_STOCK_OUTPUT_WEEKS)
+	var k: float = Params.get_float(PRM_OUTPUT_K)
+	## Σ full-staff weekly output W per (port, good) from opening workshops.
+	var out_sum: Dictionary = {}
+	var ports_b: Array = _buildings_by_port.keys()
+	ports_b.sort()
+	for pid_v in ports_b:
+		var port_id: String = String(pid_v)
+		for bld_v in _buildings_by_port.get(port_id, []):
+			var bld: Building = bld_v
+			if not _is_workshop(bld):
+				continue
+			var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
+			if def == null or def.output_good_id.is_empty():
+				continue
+			## 满编 W = max_workers × BASE_OUTPUT_PER_WORKER × K（FRM-SYS08-08）.
+			var w_full: float = float(def.max_workers) * float(def.base_output_per_worker) * k
+			var key: String = "%s|%s" % [port_id, def.output_good_id]
+			out_sum[key] = float(out_sum.get(key, 0.0)) + w_full
+
+	var ports: Array = []
+	for pv in PortRegistry.all_ids():
+		ports.append(String(pv))
+	ports.sort()
+	var goods: Array = []
+	for gv in GoodCatalog.all_ids():
+		goods.append(String(gv))
+	goods.sort()
+
+	for port_id2 in ports:
+		var mkt: Dictionary = GoodsLedger.make_market(String(port_id2))
+		for good_id in goods:
+			var pot: int = DemandModel.weekly_potential_demand(
+				StringName(String(port_id2)), StringName(String(good_id))
+			)
+			var w_sum: float = float(out_sum.get("%s|%s" % [String(port_id2), String(good_id)], 0.0))
+			var q: int = demand_w * pot + floori(float(output_w) * w_sum)
+			if q <= 0:
+				continue
+			var seq: int = GoodsLedger.transfer(
+				GoodsLedger.make_external(),
+				mkt,
+				StringName(String(good_id)),
+				q,
+				GoodsLedger.REASON_GENESIS,
+				REQUESTER_SYS08
+			)
+			if seq <= 0:
+				errors.append(
+					_err(
+						ERR_SYS08_10,
+						"opening_stock",
+						{"port_id": port_id2, "good_id": good_id, "q": q},
+						"GENESIS opening stock transfer failed"
+					)
+				)
+	if not errors.is_empty():
+		_emit_errors(errors)
 	return errors
 
 
