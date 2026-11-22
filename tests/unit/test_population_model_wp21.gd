@@ -4,7 +4,6 @@ extends GutTest
 
 const CsvImport := preload("res://tools/csv_import.gd")
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp21_pop/"
 const PORT := "PT-01"
@@ -44,10 +43,7 @@ class TestCons extends ConsumptionProvider:
 
 func before_each() -> void:
 	_wipe(ROOT)
-	PopulationModel._loaded = false
-	PopulationModel._sat_input = null
-	PopulationModel._ports = {}
-	PopulationModel._workers = {}
+	PopulationModel.reset_runtime_state()
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null
@@ -58,8 +54,13 @@ func before_each() -> void:
 	MarketPricer._loaded = false
 
 
+func after_each() -> void:
+	## U3: restore Params so overrides／erasures do not leak across tests.
+	Params.load_and_validate(ParamsFixtures.path_demo())
+
+
 func test_WP21_14_04_1_missing_sat_provider_boot_error() -> void:
-	Params.load_and_validate(PARAMS_FIXTURE)
+	Params.load_and_validate(ParamsFixtures.path_demo())
 	var errs: Array = PopulationModel.load_and_validate()
 	assert_gt(errs.size(), 0)
 	var found := false
@@ -127,28 +128,60 @@ func test_TST_SYS07_01_weighted_avg_no_inflow() -> void:
 
 
 func test_TST_SYS07_02_pf3_integer_flow_accum() -> void:
-	## Long-run moved ≈ Σ base×rate ÷ (RATE_SCALE×DAYS) (OQ-13h); day-1 floor 0.
+	## TST-SYS07-02／U4／OQ-13h: day-1 floor 0; day 8 first rich (7.8.1); long-run total bound.
 	var sat := TestSat.new()
 	sat.set_input(PORT, "CITIZEN", 0.9)
+	sat.set_input(PORT, "RICH", 0.9)
 	_boot_pop(sat)
 	_setup_be_with_workshops(3)
-	PopulationModel.set_port_state(PORT, 0, 180, 0, 0, 0, 900, 0)
-	PopulationModel._ports[PORT].streak_up2 = 999
-	# Force one active tier-3 workshop
-	var ids: Array = []
+	## Isolate PF-3 so long-run rich count is attributable to the accumulator path.
+	Params._values["PRM-SYS07-PF1_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF2_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF4_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF5_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF6_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF6_BEGGAR_RATE_WK"] = 0
+	PopulationModel.set_port_state(PORT, 0, 180, 0, 0, 0, 900, 900)
+	PopulationModel.set_upgrade_streaks(PORT, 0, 999)
 	for b in BuildingEconomy.workplaces(StringName(PORT)):
 		var bid: StringName = (b as Building).building_id
-		ids.append(bid)
 		var def: BuildingDef = BuildingEconomy._building_defs[String((b as Building).type)]
 		if def.tier == 3:
 			PopulationModel.set_workers(bid, 1)
 		else:
 			PopulationModel.set_workers(bid, 0)
-	var rich0: int = PopulationModel.population(StringName(PORT), &"RICH")
+	var rate_wk: int = Params.get_int("PRM-SYS07-PF3_RATE_WK")
+	var rate_scale: int = Params.get_int("PRM-SYS07-RATE_SCALE")
+	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	var denom: int = rate_scale * days_pw
+	var cit: int = 180
+	var expect_rich := 0
+	var acc := 0
+	## Day 1: floor(180×5000／7e6)=0 (OQ-13h); first rich on day 8 (7.8.1).
 	PopulationModel.daily_step(1)
-	# rate 5000 ppm/wk, denom 7e6 → day1 moved = floor(180*5000/7e6)=0
-	assert_eq(PopulationModel.population(StringName(PORT), &"RICH"), rich0)
-	assert_gt(int(PopulationModel._ports[PORT].acc.get("acc_up2", 0)), 0)
+	acc = acc + cit * rate_wk
+	var moved1: int = mini(cit, acc / denom)
+	acc = acc - moved1 * denom
+	cit = cit - moved1
+	expect_rich = expect_rich + moved1
+	assert_eq(moved1, 0)
+	assert_eq(PopulationModel.population(StringName(PORT), &"RICH"), 0)
+	var first_rich_day := 0
+	for day in range(2, 71):
+		PopulationModel.daily_step(day)
+		acc = acc + cit * rate_wk
+		var moved: int = mini(cit, acc / denom)
+		acc = acc - moved * denom
+		cit = cit - moved
+		expect_rich = expect_rich + moved
+		if first_rich_day == 0 and PopulationModel.population(StringName(PORT), &"RICH") >= 1:
+			first_rich_day = day
+	assert_eq(first_rich_day, 8)
+	assert_eq(PopulationModel.population(StringName(PORT), &"RICH"), expect_rich)
+	assert_eq(PopulationModel.population(StringName(PORT), &"CITIZEN"), cit)
+	## Rate bound: 70-day total must match Σ base×rate÷denom with shrinking base (not ±10×).
+	assert_eq(expect_rich, 8)
+	assert_gt(expect_rich, 0)
 
 
 func test_TST_SYS07_03_sat_inertia_step() -> void:
@@ -176,11 +209,11 @@ func test_TST_SYS07_05_streak_resets() -> void:
 	PopulationModel.set_port_state(PORT, 100, 0, 0, 0, 600, 0, 0)
 	sat.set_input(PORT, "POOR", 0.6)
 	PopulationModel.daily_step(1)
-	assert_gt(PopulationModel._ports[PORT].streak_up1, 0)
+	assert_gt(PopulationModel.get_upgrade_streak(PORT, &"UP1"), 0)
 	sat.set_input(PORT, "POOR", 0.3)
 	for _i in range(50):
 		PopulationModel.daily_step(_i + 2)
-	assert_eq(PopulationModel._ports[PORT].streak_up1, 0)
+	assert_eq(PopulationModel.get_upgrade_streak(PORT, &"UP1"), 0)
 
 
 func test_TST_SYS07_06_tier2_needs_active_workers() -> void:
@@ -188,7 +221,7 @@ func test_TST_SYS07_06_tier2_needs_active_workers() -> void:
 	_boot_pop(sat)
 	_setup_be_with_workshops(2)
 	PopulationModel.set_port_state(PORT, 100, 0, 0, 0, 700, 0, 0)
-	PopulationModel._ports[PORT].streak_up1 = 999
+	PopulationModel.set_upgrade_streaks(PORT, 999, 0)
 	var ids: Array = []
 	for b in BuildingEconomy.workplaces(StringName(PORT)):
 		ids.append((b as Building).building_id)
@@ -264,15 +297,45 @@ func test_TST_SYS07_09_outflow_beggars_first() -> void:
 
 
 func test_TST_SYS07_10_housing_overflow_gradual() -> void:
+	## TST-SYS07-10／U4: PF-6 day rate bound; long-run clears overflow without day-1 wipe.
 	var sat := TestSat.new()
 	_boot_pop(sat)
 	Params._values["PRM-SYS07-PF6_RATE_WK"] = 1000000
+	Params._values["PRM-SYS07-PF1_RATE_WK"] = 0
+	Params._values["PRM-SYS07-PF6_BEGGAR_RATE_WK"] = 0
 	# No residences → beds=0; 200 residents overflow via PF-6, not instant wipe.
 	PopulationModel.set_port_state(PORT, 200, 0, 0, 0, 500, 0, 0)
+	var rate_wk: int = Params.get_int("PRM-SYS07-PF6_RATE_WK")
+	var rate_scale: int = Params.get_int("PRM-SYS07-RATE_SCALE")
+	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	var denom: int = rate_scale * days_pw
+	var poor: int = 200
+	var acc := 0
 	PopulationModel.daily_step(1)
+	acc = acc + poor * rate_wk
+	var leave1: int = mini(poor, acc / denom)
+	acc = acc - leave1 * denom
+	poor = poor - leave1
 	var poor1: int = PopulationModel.population(StringName(PORT), &"POOR")
+	assert_eq(poor1, poor)
+	assert_eq(leave1, 28) # 200×1e6／7e6 → 28; 10× rate would wipe all 200
 	assert_gt(poor1, 0)
 	assert_lt(poor1, 200)
+	var day := 2
+	while poor > 0 and day < 80:
+		PopulationModel.daily_step(day)
+		var before: int = poor
+		acc = acc + poor * rate_wk
+		var leave: int = mini(poor, acc / denom)
+		acc = acc - leave * denom
+		poor = poor - leave
+		assert_eq(PopulationModel.population(StringName(PORT), &"POOR"), poor)
+		## Daily leave bounded by PF-6 rate (never wipe remaining in one tick at this rate).
+		assert_lte(leave, maxi(1, (before * rate_wk) / denom + 1))
+		day += 1
+	assert_eq(poor, 0)
+	assert_eq(PopulationModel.population(StringName(PORT), &"POOR"), 0)
+	assert_lt(day, 50) # ~38 days at 1e6 ppm／wk; 10× slower would miss this bound
 
 
 func test_TST_SYS07_11_port_iteration_order_independent() -> void:
@@ -303,19 +366,19 @@ func test_TST_SYS07_12_same_seed_placement_replay() -> void:
 	PopulationModel.set_master_seed(99)
 	PopulationModel.set_port_state(PORT, 30, 10, 0, 0, 500, 500, 500)
 	PopulationModel.daily_step(5)
-	var r1: Dictionary = PopulationModel._residents.duplicate(true)
+	var r1: Dictionary = _snap_occ_public(PORT)
 	before_each()
 	_boot_pop(sat)
 	_setup_be_with_workshops(2)
 	PopulationModel.set_master_seed(99)
 	PopulationModel.set_port_state(PORT, 30, 10, 0, 0, 500, 500, 500)
 	PopulationModel.daily_step(5)
-	assert_eq(PopulationModel._residents.hash(), r1.hash())
+	assert_eq(_snap_occ_public(PORT), r1)
 
 
 func test_TST_SYS07_13_boot_param_errors() -> void:
 	var sat := TestSat.new()
-	Params.load_and_validate(PARAMS_FIXTURE)
+	Params.load_and_validate(ParamsFixtures.path_demo())
 	PopulationModel.set_satisfaction_input_provider(sat)
 	Params._values.erase("PRM-SYS07-SAT_MAX_STEP")
 	Params._values["PRM-SYS07-SAT_OUT_MAX"] = 900 # break OUT < DOWN
@@ -373,7 +436,7 @@ func test_TST_SYS07_15_hire_capped_by_free_beds() -> void:
 
 
 func test_TST_SYS07_17_temple_bonus_caps_at_sat_scale() -> void:
-	## TST-SYS07-17: citizen supply 98% + temple L3 → T = SAT_SCALE, never above (Q-07b).
+	## TST-SYS07-17／U4／Q-07b: citizen 98% + temple L3 → sat hits SAT_SCALE and stays capped.
 	var sat := TestSat.new()
 	sat.set_input(PORT, "CITIZEN", 0.98)
 	_boot_pop(sat)
@@ -390,16 +453,21 @@ func test_TST_SYS07_17_temple_bonus_caps_at_sat_scale() -> void:
 	BuildingEconomy._register_building(temple)
 	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-04"), 3)
 	var scale: int = Params.get_int("PRM-SYS07-SAT_SCALE")
-	var sat_errs: Array = []
-	var t: int = PopulationModel._target_sat(PORT, &"CITIZEN", false, sat_errs)
-	assert_eq(t, scale)
-	assert_lte(t, scale)
-	# Uncapped would be quantize(980)+70 = 1050; must clamp.
 	var temple_bonus: Array = Params.get_value("PRM-SYS07-TEMPLE_BONUS")
 	var raw: int = (
 		floori(AmountQuantize.quantize_amount(0.98 * float(scale))) + int(temple_bonus[2])
 	)
-	assert_gt(raw, scale)
+	assert_gt(raw, scale) # uncapped would be 1050; production must clamp
+	## Leave sat at −1 so OQ-13l first-day jump applies (not inertia from 0).
+	PopulationModel.set_port_state(PORT, 0, 50, 0, 0)
+	PopulationModel.daily_step(1)
+	## OQ-13l: first-day sat jumps to T; must equal SAT_SCALE, never above.
+	assert_eq(PopulationModel.satisfaction(StringName(PORT), &"CITIZEN"), scale)
+	for day in range(2, 31):
+		PopulationModel.daily_step(day)
+		var s: int = PopulationModel.satisfaction(StringName(PORT), &"CITIZEN")
+		assert_eq(s, scale)
+		assert_lte(s, scale)
 
 
 func test_TST_SYS07_18_job_cap_overflow_gradual_citizen() -> void:
@@ -432,7 +500,9 @@ func test_TST_SYS07_18_job_cap_overflow_gradual_citizen() -> void:
 		]
 		def2.max_workers = 25
 		PopulationModel.set_workers(bid2, 25)
-	PopulationModel._ports[PORT].pending_release_workers = 200
+	## Public release hook queues pending workers (F11: avoid writing PortPop.pending_*).
+	PopulationModel.set_workers(&"BLD:WP21_RELEASE", 200)
+	PopulationModel.release_workshop_workers(StringName(PORT), &"BLD:WP21_RELEASE")
 	PopulationModel.daily_step(1)
 	# All 600 poor → beggar; same-day PF-5 may move a few citizens, but not the full excess.
 	assert_eq(PopulationModel.population(StringName(PORT), &"POOR"), 0)
@@ -539,8 +609,22 @@ func test_WP21_D18a_negative_qty_rejected() -> void:
 # --- helpers ---
 
 
+func _snap_occ_public(port_id: String) -> Dictionary:
+	## F11: occupant snap via BuildingEconomy.residences + residence_occupants.
+	var out := {}
+	var ids: Array = []
+	for bld_v in BuildingEconomy.residences(StringName(port_id)):
+		ids.append(String((bld_v as Building).building_id))
+	ids.sort()
+	for rid_v in ids:
+		var rid: String = String(rid_v)
+		var occ: Dictionary = PopulationModel.residence_occupants(StringName(rid))
+		out[rid] = "%s,%s,%s" % [str(occ["poor"]), str(occ["citizen"]), str(occ["rich"])]
+	return out
+
+
 func _boot_pop(sat: SatisfactionInputProvider) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	PopulationModel.set_satisfaction_input_provider(sat)
 	assert_eq(PopulationModel.load_and_validate().size(), 0)
 	PopulationModel.set_master_seed(1)

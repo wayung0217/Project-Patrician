@@ -5,7 +5,6 @@ extends GutTest
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
-const PARAMS_BE_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const GOODS_FIXTURE_ROOT := "user://goods_ledger_goods/"
 const PORTS_FIXTURE_ROOT := "user://goods_ledger_ports/"
@@ -100,7 +99,7 @@ class TestCapacityProvider extends CapacityProvider:
 
 
 func before_each() -> void:
-	var params_errors: Array = Params.load_and_validate(PARAMS_FIXTURE)
+	var params_errors: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(params_errors.size(), 0, "params fixture must load")
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
@@ -118,14 +117,14 @@ func before_each() -> void:
 	assert_eq(gl_errors.size(), 0, "GoodsLedger must load")
 
 
-func test_next_seq_starts_at_1_and_increments() -> void:
+func test_WP59_next_seq_starts_at_1_and_increments() -> void:
 	# D101 / WP-05 acceptance: next_seq() 從 1 起每次 +1
 	assert_eq(GoodsLedger.next_seq(), 1)
 	assert_eq(GoodsLedger.next_seq(), 2)
 	assert_eq(GoodsLedger.next_seq(), 3)
 
 
-func test_capacity_provider_base_push_error() -> void:
+func test_WP59_capacity_provider_base_push_error() -> void:
 	# 2.1-03: 基底方法一律 push_error 並回失敗值
 	var base := CapacityProvider.new()
 	var cap: int = base.capacity(GoodsLedger.make_hold("SHIP-1", "ACTOR-1"))
@@ -231,7 +230,7 @@ func test_TST_SYS03_03_no_provider_is_capacity_error() -> void:
 	assert_push_error_count(1)
 
 
-func test_D05_consume_shortage_err_sys03_02_all_or_nothing() -> void:
+func test_WP59_D05_consume_shortage_err_sys03_02_all_or_nothing() -> void:
 	# D-05(d): CONSUME 庫存不足 = ERR-SYS03-02、全有或全無、收進 last_error（不得只 push_error／clamp）
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	var market: Dictionary = GoodsLedger.make_market("PT-01")
@@ -319,7 +318,7 @@ func test_TST_SYS03_06_market_unbounded_over_ten_seasons() -> void:
 	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 
-func test_transfer_seq_and_timestamp_match() -> void:
+func test_WP59_transfer_seq_and_timestamp_match() -> void:
 	# D101: timestamp 欄位填與 seq 相同
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	watch_signals(GoodsLedger)
@@ -339,7 +338,7 @@ func test_transfer_seq_and_timestamp_match() -> void:
 	assert_eq(event.timestamp, seq)
 
 
-func test_transfer_event_day_uses_injected_set_day() -> void:
+func test_WP59_transfer_event_day_uses_injected_set_day() -> void:
 	# 缺口：無 Clock；set_day 可測注入（D-05／D-07：不發明子日公開 API）
 	var inject_day: int = 1
 	GoodsLedger.set_day(inject_day)
@@ -358,7 +357,7 @@ func test_transfer_event_day_uses_injected_set_day() -> void:
 	assert_eq(event.day, inject_day)
 
 
-func test_qty_zero_is_err_01() -> void:
+func test_WP59_qty_zero_is_err_01() -> void:
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	var err: int = GoodsLedger.transfer(
 		GoodsLedger.make_external(),
@@ -373,7 +372,7 @@ func test_qty_zero_is_err_01() -> void:
 	assert_push_error_count(1)
 
 
-func test_D08d_container_id_unique_formats() -> void:
+func test_WP59_D08d_container_id_unique_formats() -> void:
 	# D-08d／TST: sole address producer; MARKET／WAREHOUSE／HOLD／CONFISCATED formats
 	var m1: StringName = GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01")
 	var m2: StringName = GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), "PT-01")
@@ -402,7 +401,7 @@ func test_D08d_container_id_unique_formats() -> void:
 	assert_eq(String(GoodsLedger._kind_by_id[String(m1)]), GoodsLedger.KIND_MARKET)
 
 
-func test_D08e_duplicate_provider_err_sys03_06() -> void:
+func test_WP59_D08e_duplicate_provider_err_sys03_06() -> void:
 	# D-08e／TST: same kind registered twice → ERR-SYS03-06
 	var provider_a := TestCapacityProvider.new()
 	var provider_b := TestCapacityProvider.new()
@@ -422,7 +421,7 @@ func test_D08e_duplicate_provider_err_sys03_06() -> void:
 	)
 
 
-func test_D08e_unregistered_kind_err_sys03_03() -> void:
+func test_WP59_D08e_unregistered_kind_err_sys03_03() -> void:
 	# D-08e／TST: WAREHOUSE／HOLD without provider → ERR-SYS03-03 (not infinite)
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	var market: Dictionary = GoodsLedger.make_market("PT-01")
@@ -436,7 +435,7 @@ func test_D08e_unregistered_kind_err_sys03_03() -> void:
 	assert_push_error_count(1)
 
 
-func test_D08f_conservation_violated_signal_params() -> void:
+func test_WP59_D08f_conservation_violated_signal_params() -> void:
 	# D-08f／TST: conservation_violated(good_id, expected, actual)
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	var market: Dictionary = GoodsLedger.make_market("PT-01")
@@ -460,7 +459,7 @@ func test_D08f_conservation_violated_signal_params() -> void:
 	assert_eq(params[2], expected_before + 1)
 
 
-func test_D08f_goods_transferred_event_param() -> void:
+func test_WP59_D08f_goods_transferred_event_param() -> void:
 	# D-08f／TST: goods_transferred(event: TransferEvent)
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
 	watch_signals(GoodsLedger)
@@ -537,7 +536,7 @@ func _boot_city_workshop(wf: TestWorkforce, workers_n: int, base_out: float) -> 
 	BuildingEconomy._pending_shortfalls = []
 	var pop := TestPop.new()
 	pop.set_pop(PORT_PT01, 1000)
-	var perr: Array = Params.load_and_validate(PARAMS_BE_FIXTURE)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params: %s" % str(perr))
 	var goods_dir := _build_be_goods(BE_ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)

@@ -2,7 +2,6 @@ extends GutTest
 ## WP-08 SimLoop + ConsumptionProvider — TechSpec 2.2／2.3／2.1-03／3.7; Owner D-05／D-03／D-07／D-08e／D-08j.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 ## R2-13 / 2.1-04 ⑤: curve from fixtures (PRM-SYS04-CURVE_W1–W5 / M1–M5). Formal path after Owner csv_import.
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const DEMAND_CSV_OK := "res://tests/fixtures/demand/ok/"
@@ -127,7 +126,7 @@ func after_each() -> void:
 	_wipe_formal_opening_layout()
 
 
-func test_consumption_provider_base_push_error_2_1_03() -> void:
+func test_WP59_consumption_provider_base_push_error_2_1_03() -> void:
 	# 2.1-03／3.7: 基底方法一律 push_error 並回失敗值（不得回 0）
 	# WP-32／15-05: weekly_consumption removed; only consume_qty remains on base.
 	var base := ConsumptionProvider.new()
@@ -136,10 +135,10 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 	assert_push_error_count(1)
 
 
-func test_autoload_order_2_2_01() -> void:
-	# 2.2-01／D-14c／D-26b／D-09a／D-34d:
+func test_WP59_autoload_order_2_2_01() -> void:
+	# W1／2.2-01／D-14c／D-26b／D-09a／D-34d:
+	# Compare actual Autoload order in project.godot (not merely has_setting).
 	# … → CashLedger → TradeDesk → BuildingEconomy → … → ShipRegistry → IntelLedger → SimLoop
-	# (TierRegistry／ReputationLedger／TaxLedger／BrokerDesk／TraderRegistry not yet registered — relative order kept)
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -157,32 +156,31 @@ func test_autoload_order_2_2_01() -> void:
 		"IntelLedger",
 		"SimLoop",
 	]
-	for name_variant in expected:
-		var name: String = String(name_variant)
-		assert_true(
-			ProjectSettings.has_setting("autoload/%s" % name),
-			"missing Autoload %s" % name
-		)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/SimLoop")),
-		"*res://autoload/sim_loop.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/CashLedger")),
-		"*res://autoload/cash_ledger.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/TradeDesk")),
-		"*res://autoload/trade_desk.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/Clock")),
-		"*res://autoload/clock.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/DemandModel")),
-		"*res://core/demand_model.gd"
-	)
+	var text: String = FileAccess.get_file_as_string("res://project.godot")
+	assert_false(text.is_empty(), "project.godot readable")
+	var actual: Array = []
+	var paths: Dictionary = {}
+	var in_autoload := false
+	for line_v in text.split("\n"):
+		var line: String = String(line_v).strip_edges()
+		if line.begins_with("["):
+			in_autoload = line == "[autoload]"
+			continue
+		if not in_autoload or line.is_empty() or line.begins_with(";"):
+			continue
+		if not line.contains("="):
+			continue
+		var eq: int = line.find("=")
+		var name: String = line.substr(0, eq).strip_edges()
+		var path: String = line.substr(eq + 1).strip_edges().trim_prefix("\"").trim_suffix("\"")
+		actual.append(name)
+		paths[name] = path
+	assert_eq(actual, expected, "project.godot [autoload] order mismatch")
+	assert_eq(String(paths.get("SimLoop", "")), "*res://autoload/sim_loop.gd")
+	assert_eq(String(paths.get("CashLedger", "")), "*res://autoload/cash_ledger.gd")
+	assert_eq(String(paths.get("TradeDesk", "")), "*res://autoload/trade_desk.gd")
+	assert_eq(String(paths.get("Clock", "")), "*res://autoload/clock.gd")
+	assert_eq(String(paths.get("DemandModel", "")), "*res://core/demand_model.gd")
 
 
 func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
@@ -200,7 +198,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	_inject_trade_desk_fixtures()
 	assert_false(PopulationModel.has_satisfaction_input_provider())
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -224,7 +222,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	_inject_trade_desk_fixtures()
 	assert_true(PopulationModel.has_satisfaction_input_provider())
 	var errors2: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -237,7 +235,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	assert_true(PopulationModel.has_satisfaction_input_provider())
 
 
-func test_D30a_missing_demand_refuses_boot() -> void:
+func test_WP59_D30a_missing_demand_refuses_boot() -> void:
 	## D-30a: no demand dir + no injected consumption → ERR-SYS06-01 refuse boot.
 	var fixtures := _prepare_fixtures()
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
@@ -246,7 +244,7 @@ func test_D30a_missing_demand_refuses_boot() -> void:
 	_inject_broker_fixture()
 	var missing := GOODS_FIXTURE_ROOT + "missing_demand/"
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -262,7 +260,7 @@ func test_D30a_missing_demand_refuses_boot() -> void:
 	assert_push_error_count(errors.size())
 
 
-func test_D30a_complete_demand_boots() -> void:
+func test_WP59_D30a_complete_demand_boots() -> void:
 	## D-30a: complete demand fixtures → boot without injected ConsumptionProvider.
 	var fixtures := _prepare_fixtures()
 	BuildingEconomy.set_population_provider(_TestPopulationProvider.new())
@@ -272,7 +270,7 @@ func test_D30a_complete_demand_boots() -> void:
 	_inject_broker_fixture()
 	_inject_trade_desk_fixtures()
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -287,7 +285,7 @@ func test_D30a_complete_demand_boots() -> void:
 	assert_true(PopulationModel.has_satisfaction_input_provider())
 
 
-func test_boot_requires_consumption_provider_2_3_03() -> void:
+func test_WP59_boot_requires_consumption_provider_2_3_03() -> void:
 	# 2.3-03: 未注入 provider → boot() 回錯誤且不啟動時鐘
 	var fixtures := _prepare_fixtures()
 	var errors: Array = _boot_with_fixtures(fixtures)
@@ -299,7 +297,7 @@ func test_boot_requires_consumption_provider_2_3_03() -> void:
 	assert_push_error_count(errors.size() + 1)
 
 
-func test_boot_collects_all_module_errors_2_2_02() -> void:
+func test_WP59_boot_collects_all_module_errors_2_2_02() -> void:
 	# 2.2-02: 不得在第一個錯誤就停止收集 — empty goods／ports still run later loads
 	var cons := _full_zero_provider()
 	SimLoop.set_consumption_provider(cons)
@@ -313,7 +311,7 @@ func test_boot_collects_all_module_errors_2_2_02() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "lanes/"))
 	_inject_broker_fixture()
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		empty_goods,
 		empty_ports,
 		CURVE_FIXTURE,
@@ -324,11 +322,19 @@ func test_boot_collects_all_module_errors_2_2_02() -> void:
 	assert_gt(errors.size(), 1, "must collect errors from multiple modules")
 	assert_false(SimLoop.is_booted())
 	assert_push_error_count(errors.size())
-	assert_true(_has_code(errors, "ERR-SYS01-04") or _has_code(errors, "ERR-SYS01-05"))
-	assert_true(_has_code(errors, "GOOD_CATALOG_NOT_LOADED") or _has_code(errors, "PORT_REGISTRY_NOT_LOADED") or errors.size() > 1)
+	## W2: per-module collection (no tautology or); empty goods → catalog, then ports／sea continue.
+	assert_true(_has_code(errors, "ERR-SYS01-04"), "GoodCatalog empty count → ERR-SYS01-04")
+	assert_true(
+		_has_code(errors, "GOOD_CATALOG_NOT_LOADED"),
+		"PortRegistry must still run and report GOOD_CATALOG_NOT_LOADED"
+	)
+	assert_true(
+		_has_code(errors, "PORT_REGISTRY_NOT_LOADED"),
+		"SeaLanes must still run and report PORT_REGISTRY_NOT_LOADED"
+	)
 
 
-func test_boot_day_zero_and_genesis_grant_D03_D05() -> void:
+func test_WP59_boot_day_zero_and_genesis_grant_D03_D05() -> void:
 	# D-05(b): boot day=0；D-03: genesis_grant once after validation
 	var cons := _boot_ready_provider()
 	assert_true(SimLoop.is_booted())
@@ -340,7 +346,7 @@ func test_boot_day_zero_and_genesis_grant_D03_D05() -> void:
 	assert_eq(CashLedger.balance(CashLedger.ID_SOURCE), 0 - start)
 
 
-func test_first_tick_runs_k0_produce_D05() -> void:
+func test_WP59_first_tick_runs_k0_produce_D05() -> void:
 	# D-05(b)／D-12d／D-09g: first tick → day=1；role-cell PRODUCE removed (WP-20).
 	var cons := _boot_ready_provider()
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
@@ -353,7 +359,7 @@ func test_first_tick_runs_k0_produce_D05() -> void:
 	assert_eq(GoodsLedger.get_qty(market, StringName(GOOD_DEMO)), before)
 
 
-func test_boot_success_and_tick_advances_clock_2_3_01() -> void:
+func test_WP59_boot_success_and_tick_advances_clock_2_3_01() -> void:
 	# 2.3-01／D-05: boot day=0 → tick → day=1
 	_boot_ready_provider()
 	assert_eq(Clock.day, 0)
@@ -361,9 +367,9 @@ func test_boot_success_and_tick_advances_clock_2_3_01() -> void:
 	assert_eq(Clock.day, 1)
 
 
-func test_tick_produce_then_consume_order_2_3_02_03() -> void:
-	# 2.3-03／D-12d／D-09g: daily_step (workshop PRODUCE) then CONSUME; consume asc.
-	# Role-cell Q no longer feeds MARKET; with empty workshops only CONSUME runs.
+func test_WP59_tick_consume_ascending_order_no_role_cell_produce_2_3_03() -> void:
+	# W3／2.3-03／D-12d／D-09g: with empty workshops, tick runs CONSUME ascending (port, good);
+	# role-cell Q no longer feeds MARKET (no PRODUCE events). Name matches behaviour.
 	var cons := _boot_ready_provider()
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
 	_seed_market(PORT_DEMO, GOOD_DEMO, SEED_STOCK)
@@ -395,7 +401,7 @@ func test_tick_produce_then_consume_order_2_3_02_03() -> void:
 		assert_true(ok, "consume order must be ascending (port, good)")
 
 
-func test_step6_emits_day_ticked_after_writes_D05() -> void:
+func test_WP59_step6_emits_day_ticked_after_writes_D05() -> void:
 	# D-05(a)／2.3-06: day_ticked only after step writes；Clock.advance does not emit
 	_boot_ready_provider()
 	var ticked: Array = []
@@ -410,7 +416,7 @@ func test_step6_emits_day_ticked_after_writes_D05() -> void:
 	assert_eq(saw_day_at_signal[0], 1)
 
 
-func test_tick_paused_push_error_no_progress() -> void:
+func test_WP59_tick_paused_push_error_no_progress() -> void:
 	# GP-01 via SimLoop: paused → push_error, day unchanged
 	_boot_ready_provider()
 	Clock.set_paused(true)
@@ -421,7 +427,7 @@ func test_tick_paused_push_error_no_progress() -> void:
 	Clock.set_paused(false)
 
 
-func test_season_cutoff_close_season_index_zero_D05() -> void:
+func test_WP59_season_cutoff_close_season_index_zero_D05() -> void:
 	# 2.3-05／D-05(c): day_in_season == D → close_season；首季 season_index=0（非 −1）
 	_boot_ready_provider()
 	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
@@ -444,7 +450,7 @@ func test_season_cutoff_close_season_index_zero_D05() -> void:
 	assert_eq(cutoffs[0], 0, "D-05(c): first season_cutoff index must be 0")
 
 
-func test_consume_shortage_err_sys03_02_into_day_errors_D05() -> void:
+func test_WP59_consume_shortage_err_sys03_02_into_day_errors_D05() -> void:
 	# D-05(d): CONSUME 不足 → ERR-SYS03-02、全有或全無、進當日錯誤清單
 	var cons := _boot_ready_provider()
 	# No seed stock; demand > 0 → shortage
@@ -460,14 +466,36 @@ func test_consume_shortage_err_sys03_02_into_day_errors_D05() -> void:
 	assert_eq(GoodsLedger.get_qty(market, StringName(GOOD_DEMO)), 0)
 
 
-func test_conservation_runs_on_tick_when_debug_prm() -> void:
-	# 2.3-04: debug fixture CONSERVATION_CHECK_EVERY_TICK=true → check does not violate after clean tick
+func test_WP59_conservation_runs_on_tick_when_debug_prm() -> void:
+	# T3／2.3-04: prove SimLoop.tick_day invokes maybe_check_conservation_on_tick
+	# (manual post-tick check_conservation would pass even if SimLoop forgot the call).
 	_boot_ready_provider()
+	assert_true(
+		Params.get_bool(GoodsLedger.PRM_CONSERVATION_CHECK_EVERY_TICK),
+		"fixture debug PRM must enable per-tick conservation"
+	)
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	var key: String = String(
+		GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), PORT_DEMO)
+	)
+	if not GoodsLedger._stock.has(key):
+		GoodsLedger._stock[key] = {}
+	var bucket: Dictionary = GoodsLedger._stock[key]
+	bucket[String(good)] = int(bucket.get(String(good), 0)) + 1
+	GoodsLedger._stock[key] = bucket
+	var hits: Array = [0]
+	var on_hit := func(_g: StringName, _e: int, _a: int) -> void:
+		hits[0] = int(hits[0]) + 1
+	GoodsLedger.conservation_violated.connect(on_hit)
 	SimLoop.tick_day()
-	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
+	if GoodsLedger.conservation_violated.is_connected(on_hit):
+		GoodsLedger.conservation_violated.disconnect(on_hit)
+	assert_eq(int(hits[0]), 1, "SimLoop.tick_day must call conservation check when PRM true")
+	## ERR-SYS03-05 push_error from the check invoked inside tick_day (not post-hoc).
+	assert_push_error_count(1)
 
 
-func test_no_public_subday_methods_D07() -> void:
+func test_WP59_no_public_subday_methods_D07() -> void:
 	# D-07（SimLoop 仍無公開子日推進）／D-14d（Clock.advance_one_tick 已撤銷禁令）
 	assert_false(SimLoop.has_method("advance_one_tick"))
 	assert_false(SimLoop.has_method("tick_subday"))
@@ -477,8 +505,9 @@ func test_no_public_subday_methods_D07() -> void:
 	assert_true(SimLoop.has_method("_run_tick_steps"))
 
 
-func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
-	# 13-03／TST-SYS13-16／D-09g: tick_day vs TPD×tick + BuildingEconomy.daily_step settle.
+func test_TST_SYS13_16_tick_day_clock_matches_advance_one_day() -> void:
+	# W3／13-03／TST-SYS13-16／D-09g／D-12d: tick_day clock (tick/day) matches advance_one_day
+	# and TPD×advance_one_tick; with no workshops both paths leave market qty unchanged.
 	_boot_ready_provider()
 	var tpd: int = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
@@ -512,9 +541,10 @@ func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
 		GoodsLedger.make_market(PORT_DEMO), StringName(GOOD_DEMO)
 	)
 	assert_eq(qty_via_ticks, qty_via_loop)
+	assert_eq(qty_via_ticks, before, "no workshops → market unchanged on both paths")
 
 
-func test_D08j_public_api_names_match_ruling() -> void:
+func test_WP59_D08j_public_api_names_match_ruling() -> void:
 	# D-08j／TST: five public APIs; #11 names already matched — no rename beyond ruling.
 	assert_true(SimLoop.has_method("boot"))
 	assert_true(SimLoop.has_method("tick_day"))
@@ -523,7 +553,7 @@ func test_D08j_public_api_names_match_ruling() -> void:
 	assert_true(SimLoop.has_method("register_capacity_provider"))
 
 
-func test_D08j_set_consumption_provider_ignored_after_boot() -> void:
+func test_WP59_D08j_set_consumption_provider_ignored_after_boot() -> void:
 	# D-08j／TST: set_consumption_provider after boot → push_error, no effect
 	var first := _boot_ready_provider()
 	var second := TestConsumptionProvider.new()
@@ -532,7 +562,7 @@ func test_D08j_set_consumption_provider_ignored_after_boot() -> void:
 	assert_eq(SimLoop._consumption, first)
 
 
-func test_D08e_register_capacity_provider_before_boot_applies() -> void:
+func test_WP59_D08e_register_capacity_provider_before_boot_applies() -> void:
 	# D-08e／TST: register before boot; applied after GoodsLedger.load_and_validate
 	var fixtures := _prepare_fixtures()
 	var cons := _full_zero_provider()
@@ -569,7 +599,7 @@ func test_D08e_register_capacity_provider_before_boot_applies() -> void:
 	assert_push_error_count(1)
 
 
-func test_D08e_register_capacity_provider_ignored_after_boot() -> void:
+func test_WP59_D08e_register_capacity_provider_ignored_after_boot() -> void:
 	# D-08e／D-08j／TST: register after boot → push_error, no effect
 	# WP-30: HOLD may already be registered from ShipRegistry at boot; use a fresh kind.
 	_boot_ready_provider()
@@ -584,7 +614,7 @@ func test_D08e_register_capacity_provider_ignored_after_boot() -> void:
 	assert_ne(SimLoop._capacity_by_kind.get(GoodsLedger.KIND_HOLD, null), cap)
 
 
-func test_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
+func test_WP59_D08e_duplicate_kind_err_sys03_06_blocks_boot() -> void:
 	# D-08e／TST: duplicate kind → ERR-SYS03-06；boot collects and refuses
 	var fixtures := _prepare_fixtures()
 	var cons := _full_zero_provider()
@@ -625,7 +655,7 @@ func _boot_with_fixtures(fixtures: Dictionary) -> Array:
 	_inject_broker_fixture()
 	_inject_trade_desk_fixtures()
 	return SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -780,7 +810,7 @@ func _full_zero_provider() -> TestConsumptionProvider:
 
 
 func _prepare_fixtures() -> Dictionary:
-	var perr: Array = Params.load_and_validate(PARAMS_FIXTURE)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params fixture")
 	var goods_dir := _build_valid_goods(GOODS_FIXTURE_ROOT + "base/", ANCHOR_LI)
 	var gerr: Array = GoodCatalog.load_and_validate(goods_dir)

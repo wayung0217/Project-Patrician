@@ -2,7 +2,6 @@ extends GutTest
 ## WP-55: A13 draw_seq、A16 PF-3／hire、A17／D-87 opening all-or-nothing.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp55_pop/"
 const PORT_A := "PT-01"
@@ -37,15 +36,7 @@ class TestSat extends SatisfactionInputProvider:
 
 func before_each() -> void:
 	_wipe(ROOT)
-	PopulationModel._loaded = false
-	PopulationModel._sat_input = null
-	PopulationModel._ports = {}
-	PopulationModel._workers = {}
-	PopulationModel._residents = {}
-	PopulationModel._port_res_ids = {}
-	PopulationModel._opening_placed = {}
-	PopulationModel._wp51_rng_calls = 0
-	PopulationModel._draw_seq_by_purpose = {}
+	PopulationModel.reset_runtime_state()
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null
@@ -54,6 +45,11 @@ func before_each() -> void:
 	GoodsLedger._loaded = false
 	CashLedger._loaded = false
 	MarketPricer._loaded = false
+
+
+func after_each() -> void:
+	## U3: restore Params so rate／streak overrides do not leak across tests.
+	Params.load_and_validate(ParamsFixtures.path_demo())
 
 
 func test_WP55_A13_derive_seed_draw_seq_changes_hash() -> void:
@@ -75,25 +71,18 @@ func test_WP55_A13_same_day_repeat_draw_differs() -> void:
 
 
 func test_WP55_A13_movers_disperse_across_residences() -> void:
-	## FRM-SYS07-12／A13: with draw_seq, movers do not all pile into the same best house.
+	## FRM-SYS07-12／A13: opening place with draw_seq does not pile all into one house.
 	var sat := TestSat.new()
 	_boot_two_ports(sat)
 	_zero_all_flow_rates()
 	PopulationModel.set_master_seed(99)
 	_clear_residences(PORT_A)
 	_force_residences_port(PORT_A, 4)
-	var sync_errs: Array = []
-	PopulationModel._sync_port_residences(PORT_A, 1, sync_errs)
-	var ids: Array = PopulationModel._port_res_ids[PORT_A].duplicate()
-	ids.sort()
-	for i in range(ids.size()):
-		PopulationModel._residents[String(ids[i])]["ring"] = i + 1
-	PopulationModel._draw_seq_by_purpose = {}
-	for _n in range(16):
-		assert_true(PopulationModel._place_one_in(PORT_A, 3, "poor"))
+	PopulationModel.set_port_state(PORT_A, 16, 0, 0, 0, 500, 500, 500)
+	PopulationModel.daily_step(1)
 	var occupied := 0
-	for rid_v in ids:
-		var occ: Dictionary = PopulationModel.residence_occupants(StringName(String(rid_v)))
+	for bld_v in BuildingEconomy.residences(StringName(PORT_A)):
+		var occ: Dictionary = PopulationModel.residence_occupants((bld_v as Building).building_id)
 		if int(occ["poor"]) > 0:
 			occupied += 1
 	assert_gt(occupied, 1)
@@ -117,7 +106,7 @@ func test_WP55_A16_pf3_academy_lv0_uses_unit_mult() -> void:
 	def.max_workers = 250
 	PopulationModel.set_workers(StringName("BLD:%s:WS-T3" % PORT_A), 250)
 	PopulationModel.set_port_state(PORT_A, 0, 700, 0, 0, 900, 900, 900)
-	PopulationModel._ports[PORT_A].streak_up2 = 99
+	PopulationModel.set_upgrade_streaks(PORT_A, 0, 99)
 	assert_eq(BuildingEconomy.public_level(StringName(PORT_A), &"CB-12"), 0)
 	var errs: Array = PopulationModel.daily_step(1)
 	assert_eq(errs.size(), 0, str(errs))
@@ -142,7 +131,7 @@ func test_WP55_D87_partial_opening_writes_nothing() -> void:
 	assert_gt(errs.size(), 0)
 	assert_push_error_count(errs.size())
 	assert_eq(PopulationModel.population(StringName(PORT_A), &"POOR"), 0)
-	assert_false(PopulationModel._ports.has("PT-99"))
+	assert_false(PopulationModel.has_port(&"PT-99"))
 
 
 func test_WP55_A17_unknown_port_no_silent_create() -> void:
@@ -162,7 +151,7 @@ func test_WP55_A17_unknown_port_no_silent_create() -> void:
 	assert_gt(errs.size(), 0)
 	assert_push_error_count(errs.size())
 	assert_eq(PopulationModel.population(StringName(PORT_A), &"POOR"), 0)
-	assert_false(PopulationModel._ports.has("PT-99"))
+	assert_false(PopulationModel.has_port(&"PT-99"))
 	var found := false
 	for e in errs:
 		var detail: Dictionary = (e as Dictionary).get("detail", {})
@@ -178,7 +167,7 @@ func _u_at(draw_seq: int) -> float:
 
 
 func _boot_two_ports(sat: SatisfactionInputProvider) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	PopulationModel.set_satisfaction_input_provider(sat)
 	assert_eq(PopulationModel.load_and_validate().size(), 0)
 	PopulationModel.set_master_seed(1)
@@ -199,7 +188,7 @@ func _boot_two_ports(sat: SatisfactionInputProvider) -> void:
 
 
 func _boot_modules_ports_only() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
 	_setup_core_ledgers()
 	PopulationModel.set_satisfaction_input_provider(TestSat.new())
@@ -242,18 +231,17 @@ func _add_tier3_workshop(port_id: String) -> void:
 
 
 func _clear_residences(port_id: String) -> void:
+	## Residual F11: BuildingEconomy private building maps (bld lane owns those).
 	var arr: Array = BuildingEconomy._buildings_by_port.get(port_id, [])
 	var keep: Array = []
 	for bld_v in arr:
 		var bld: Building = bld_v
 		if bld.build_class == &"RESIDENCE":
 			BuildingEconomy._buildings.erase(String(bld.building_id))
-			PopulationModel._residents.erase(String(bld.building_id))
 		else:
 			keep.append(bld)
 	BuildingEconomy._buildings_by_port[port_id] = keep
-	PopulationModel._port_res_ids[port_id] = []
-	PopulationModel._opening_placed.erase(port_id)
+	PopulationModel.clear_port_residence_tracking(StringName(port_id))
 
 
 func _force_residences_port(port_id: String, n: int) -> void:

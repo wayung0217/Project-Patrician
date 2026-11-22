@@ -2,7 +2,6 @@ extends GutTest
 ## WP-19 / TechSpec 12-08 BuildingEconomy construction acceptance.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const PORT_PT01 := "PT-01"
 const ACTOR := &"ACT-PLAYER"
@@ -483,6 +482,7 @@ func test_WP19_12_08_6_signals_flush_only() -> void:
 
 
 func test_WP19_12_08_7_public_upgrade_fee() -> void:
+	## V2／FRM-SYS08-07: pop=1000 × UPGRADE_PER_CAPITA[L2].CASH_LI=10000 → 10_000_000.
 	var pop := TestPop.new()
 	pop.set_pop(PORT_PT01, 1000)
 	_setup_core(pop)
@@ -490,10 +490,7 @@ func test_WP19_12_08_7_public_upgrade_fee() -> void:
 	_write_defs()
 	_load_be()
 	var fee: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT_PT01), 2)
-	var arr: Array = Params.get_value("PRM-SYS08-UPGRADE_PER_CAPITA")
-	var cash_per: int = int((arr[0] as Dictionary).get("CASH_LI", 0))
-	var expect: int = ceili(AmountQuantize.quantize_amount(1000.0 * float(cash_per)))
-	assert_eq(int(fee["CASH_LI"]), expect)
+	assert_eq(int(fee["CASH_LI"]), 10_000_000)
 
 
 func test_WP19_12_08_8_pause_resume_demolish() -> void:
@@ -589,7 +586,7 @@ func test_WP19_12_08_simloop_hooks() -> void:
 # --- helpers ---
 
 func _setup_core(pop: TestPop) -> void:
-	var perr: Array = Params.load_and_validate(PARAMS_FIXTURE)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params: %s" % str(perr))
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
@@ -655,7 +652,8 @@ func _load_be() -> void:
 
 
 func _seed_market_mats(qty: int) -> void:
-	for g in ["GD-001", "GD-002", "GD-003"]:
+	## G3: BUILD_MAT uses GD-003／GD-004; keep GD-001 for tests that override mats.
+	for g in ["GD-001", "GD-002", "GD-003", "GD-004"]:
 		_seed_good_market(g, qty)
 
 

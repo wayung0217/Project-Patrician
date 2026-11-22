@@ -48,6 +48,10 @@ const TST06_MID_NEW := 70
 const TST06_AGE_OLD := 5
 const TST06_AGE_NEW := 2
 const TST06_CONSENSUS := 81
+
+## T7 named consts (no 1+1 evasions)
+const TWO := 2
+const CONTACT_LEVEL_KONTOR := 2
 ## TST-SYS15-08: (100-70)*PPM / 81
 const TST08_SPAN := 30
 
@@ -134,7 +138,7 @@ func test_TST_SYS15_01_missing_prm() -> void:
 	Params._values.erase(PRM_DECAY)
 	var e1: Array = IntelLedger.load_and_validate()
 	assert_true(_has_code(e1, IntelLedger.ERR_SYS15_01))
-	assert_eq(e1.size(), 1 + 1)
+	assert_eq(e1.size(), TWO)
 	assert_false(IntelLedger.is_loaded())
 	assert_push_error_count(e1.size())
 
@@ -310,14 +314,14 @@ func test_TST_SYS15_11_12_13_14_presence_contact_samples() -> void:
 	# Level 2 via fixture BrokerProvider.has_kontor（D-60f／D-37e）.
 	_install_broker()
 	_broker.kontor["%s|%s" % [String(ACTOR), PT_B]] = true
-	assert_eq(IntelLedger.contact_level(ACTOR, StringName(PT_B)), 1 + 1)
+	assert_eq(IntelLedger.contact_level(ACTOR, StringName(PT_B)), CONTACT_LEVEL_KONTOR)
 	# Presence ERR already pushed once; board_samples unauthorized → ERR-SYS15-03.
 	var samples: Array = IntelLedger.board_samples(
 		ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD), &"SYS-99"
 	)
 	assert_eq(samples.size(), 0)
 	assert_eq(StringName(IntelLedger.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), IntelLedger.ERR_SYS15_03)
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 	samples = IntelLedger.board_samples(
 		ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD), IntelLedger.REQUESTER_SYS16
 	)
@@ -374,7 +378,7 @@ func test_TST_SYS15_15_16_snapshot_fail_and_no_observer() -> void:
 	assert_true(_has_code(gate, IntelLedger.ERR_SYS15_06))
 	assert_true(_gate_field(gate, "ShipEventObserver"))
 	# Absorb all expected pushes from this test (MarketPricer + ERR-05 + ERR-06).
-	assert_push_error_count(1 + 1 + gate.size())
+	assert_push_error_count(TWO + gate.size())
 
 
 func test_TST_SYS15_16_D60f_broker_provider_required() -> void:
@@ -441,7 +445,7 @@ func test_TST_SYS15_19_stock_weeks_single_site_and_regression() -> void:
 	assert_true(MarketPricer.stock_weeks(StringName(PT_A), StringName(GOOD)) == null)
 
 
-func test_D37c_public_delay_visibility() -> void:
+func test_WP59_D37c_public_delay_visibility() -> void:
 	## D-37c／FRM-SYS16-04：PUBLIC_DELAY 與 is_broker_qualified 特權可見性.
 	_boot_intel(false)
 	_add_building(ACTOR, PT_B)
@@ -462,7 +466,7 @@ func test_D37c_public_delay_visibility() -> void:
 	assert_eq(int(board[IntelLedger.KEY_N]), 1)
 
 
-func test_red_team_94_same_ship_dedupe() -> void:
+func test_WP59_red_team_94_same_ship_dedupe() -> void:
 	## 紅隊-94：同一艘船同一起航港只算最新一筆（依 TST-SYS15-07）.
 	_boot_intel(false)
 	_add_building(ACTOR, PT_B)
@@ -473,7 +477,7 @@ func test_red_team_94_same_ship_dedupe() -> void:
 	assert_eq(int(board[IntelLedger.KEY_CONSENSUS_MID]), 55)
 
 
-func test_red_team_96_batch_atomic_before_read() -> void:
+func test_WP59_red_team_96_batch_atomic_before_read() -> void:
 	## 紅隊-96／Z1：同 tick 批次寫完才公開；arrival 由正式 sail 產生.
 	_boot_intel(true)
 	_seed_market(PT_A, GOOD, DEMO_STOCK, DEMO_WEEKLY_C)
@@ -495,7 +499,7 @@ func test_red_team_96_batch_atomic_before_read() -> void:
 	assert_eq(int(board[IntelLedger.KEY_N]), 2)
 
 
-func test_red_team_97_registry_not_live_price() -> void:
+func test_WP59_red_team_97_registry_not_live_price() -> void:
 	## 紅隊-97：商籍／接觸不給即時遠港價；遠端行情靠船報（TST-SYS15-11／18）.
 	_boot_intel(false)
 	# Never present at PT_B → ERR-SYS15-04；無行市.
@@ -506,11 +510,11 @@ func test_red_team_97_registry_not_live_price() -> void:
 	assert_push_error_count(1)
 
 
-func test_ship_event_observer_base_2_1_03() -> void:
+func test_WP59_ship_event_observer_base_2_1_03() -> void:
 	var base := ShipEventObserver.new()
 	base.on_departed(&"S", &"A", &"P", 0)
 	base.on_arrivals(0, [])
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 
 
 func test_WP40_D60f_broker_provider_base_2_1_03() -> void:
@@ -520,7 +524,7 @@ func test_WP40_D60f_broker_provider_base_2_1_03() -> void:
 	assert_false(base.last_error().is_empty())
 	assert_false(base.is_broker_qualified(ACTOR, StringName(PT_A)))
 	assert_false(base.last_error().is_empty())
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 
 
 # --- helpers ---
@@ -644,16 +648,14 @@ func _seed_market(port: String, good: String, stock: int, weekly_offtake: float)
 
 
 func _inject_offtake_weekly(port_id: String, good_id: String, weekly_offtake: int) -> void:
-	var window_qty: int = weekly_offtake
-	if not GoodsLedger._offtake_snapshot.has(port_id):
-		GoodsLedger._offtake_snapshot[port_id] = {}
-	var by_good: Dictionary = GoodsLedger._offtake_snapshot[port_id]
-	by_good[good_id] = {
-		"window_qty": window_qty,
-		"local_qty": window_qty,
-		"window_days": Params.get_int(PRM_DPW),
-	}
-	GoodsLedger._offtake_snapshot[port_id] = by_good
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(port_id),
+		StringName(good_id),
+		weekly_offtake,
+		weekly_offtake,
+		Params.get_int(PRM_DPW),
+		0
+	)
 
 
 func _set_offtake(port: String, good: String, window_qty: int, _window_days: int) -> void:
@@ -752,34 +754,8 @@ func _build_valid_goods(dir: String) -> String:
 
 
 func _build_valid_ports(port_count: int, dir: String) -> String:
-	_wipe_dir(dir)
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	var free_count: int = _valid_free_count(port_count)
-	var good_ids: PackedStringArray = GoodCatalog.all_ids()
-	for i in range(port_count):
-		var n: int = i + 1
-		var port_id := "PT-%02d" % n
-		var def := PortDef.new()
-		def.port_id = port_id
-		def.name_zh = "港%d" % n
-		def.is_free_port = i < free_count
-		def.draft_limit_class = 2
-		def.regime_id = "RG-TEST"
-		def.role_cells = {}
-		for good_variant in good_ids:
-			var good_id: String = String(good_variant)
-			var cell := RoleCell.new()
-			if i == 0:
-				cell.role = PortRegistry.ROLE_PRODUCER
-				cell.base_output_per_season = 1
-				cell.downstream_terminals = PackedStringArray()
-			else:
-				cell.role = PortRegistry.ROLE_TERMINAL
-				cell.base_output_per_season = 0
-				cell.downstream_terminals = PackedStringArray()
-			def.role_cells[good_id] = cell
-		ResourceSaver.save(def, dir + "%s.tres" % port_id)
-	return dir
+	## T6: shared builder; intel fixtures need deep draft (class 2).
+	return FixtureBuilders.build_valid_ports(port_count, dir, -1, 2)
 
 
 func _make_good(
@@ -790,28 +766,9 @@ func _make_good(
 	is_build_material: bool,
 	is_strategic: bool
 ) -> GoodDef:
-	var def := GoodDef.new()
-	def.good_id = good_id
-	def.name_zh = name_zh
-	def.tier = tier
-	def.is_staple = is_staple
-	def.is_build_material = is_build_material
-	def.is_strategic = is_strategic
-	def.base_price_li = DEMO_ANCHOR
-	def.season_mask = (1 << Params.get_int(PRM_SEASONS)) - 1
-	return def
-
-
-func _valid_free_count(port_count: int) -> int:
-	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
-	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
-	var free_count: int = 0
-	while free_count <= port_count:
-		var ratio: float = float(free_count) / float(port_count)
-		if ratio >= ratio_min and ratio <= ratio_max:
-			return free_count
-		free_count += 1
-	return 0
+	return FixtureBuilders.make_good(
+		good_id, name_zh, tier, is_staple, is_build_material, is_strategic, DEMO_ANCHOR
+	)
 
 
 func _reset_runtime() -> void:

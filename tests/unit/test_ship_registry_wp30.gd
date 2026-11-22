@@ -37,6 +37,10 @@ const PRM_PRICE := "PRM-SYS13-PRICE_CASH"
 const PRM_REPAIR := "PRM-SYS13-REPAIR_RATE_SEASON"
 const PRM_CAPACITY := "PRM-SYS13-CAPACITY"
 
+## Z4／TST-SYS13-09: mid-season hold = 2／3 of PRM-SYS00-DAYS_PER_SEASON (spec 60 of 90).
+const TST_SYS13_09_HELD_NUMER := 2
+const TST_SYS13_09_HELD_DENOM := 3
+
 
 class FixtureSailorPool extends SailorPoolProvider:
 	var pool: Dictionary = {} ## port → beggars
@@ -163,10 +167,13 @@ func test_TST_SYS14_05_fuzhou_naha_arrival_tick() -> void:
 	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
 	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_FUZHOU), cap)
 	var depart: int = Clock.tick
+	var tpw: int = int(Params.get_value(StringName(PRM_TPW))["SH-01"])
+	var path: Array = SeaLanes.path(PT_FUZHOU, PT_NAHA)
+	var total_wp: int = _path_waypoint_sum(path)
 	var arrival: int = ShipRegistry.sail(ACTOR, sid, StringName(PT_NAHA))
 	assert_gt(arrival, 0)
-	# Fixture TPW[SH-01]=12；福州→那霸 16 waypoints → 192.
-	assert_eq(arrival, depart + 192)
+	## Z4: expect depart + TPW[type] × Σwaypoints (PRM／path — not magic 192).
+	assert_eq(arrival, depart + tpw * total_wp)
 	assert_eq(String(ShipRegistry.ship_info(sid)["state"]), "SAILING")
 
 
@@ -188,18 +195,25 @@ func test_TST_SYS14_06_reroute_next_waypoint() -> void:
 	_boot_ship_registry()
 	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
 	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_FUZHOU), cap)
+	var sail_path: Array = SeaLanes.path(PT_FUZHOU, PT_NAHA)
 	var arrival1: int = ShipRegistry.sail(ACTOR, sid, StringName(PT_NAHA))
 	assert_gt(arrival1, 0)
 	var tpw: int = int(Params.get_value(StringName(PRM_TPW))["SH-01"])
-	# Advance into first leg but before next waypoint boundary effect time.
-	Clock._tick = Clock.tick + (tpw / 2)
+	var leg_start: int = Clock.tick
+	## Advance into first leg but before next waypoint boundary (FRM-SYS14-05).
+	var advance: int = tpw / 2
+	for _i in range(advance):
+		Clock.advance_one_tick()
+	## Z2: numeric arrival_tick from next-waypoint effect (integer FRM-SYS14-05).
+	var expect2: int = _expected_reroute_arrival(
+		sail_path, leg_start, 0, tpw, Clock.tick, PT_WANG
+	)
 	var arrival2: int = ShipRegistry.reroute(ACTOR, sid, StringName(PT_WANG))
 	assert_gt(arrival2, 0)
-	assert_ne(arrival2, arrival1)
+	assert_eq(arrival2, expect2, "Z2: reroute arrival_tick must match FRM-SYS14-05")
 	var info: Dictionary = ShipRegistry.ship_info(sid)
 	assert_eq(String(info["dest_port"]), PT_WANG)
 	# Reroute while DOCKED → ERR-SYS14-05
-	# Finish by forcing dock then retry:
 	ShipRegistry.tick_step(int(info["arrival_tick"]))
 	assert_eq(ShipRegistry.reroute(ACTOR, sid, StringName(PT_FUZHOU)), 0)
 	assert_eq(StringName(ShipRegistry.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), ShipRegistry.ERR_SYS14_05)
@@ -282,6 +296,7 @@ func test_TST_SYS13_14_songjiang_dock_draft_ladder() -> void:
 
 
 func test_TST_SYS13_08_season_wage_arrears() -> void:
+	## TST-SYS13-08／Z3: due ＝ CEIL(n × WAGE × DAYS ÷ DAYS_PER_WEEK) with A3 integer ceil.
 	_boot_ship_registry()
 	CashLedger.create_account(ACTOR, Account.Kind.ACTOR)
 	# Low balance so arrears record.
@@ -293,22 +308,25 @@ func test_TST_SYS13_08_season_wage_arrears() -> void:
 		),
 		OK
 	)
+	## Spec numeric example crew count (TST-SYS13-08).
 	var n: int = 5
 	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_WANG), n)
 	var wage: int = Params.get_int(StringName(PRM_WAGE))
 	var days: int = Params.get_int(StringName(PRM_DAYS))
+	var tpd: int = Params.get_int(StringName(PRM_TICKS))
 	for _i in range(days):
 		ShipRegistry.daily_step(Clock.day)
-		Clock._tick = Clock.tick + Params.get_int(StringName(PRM_TICKS))
+		for _t in range(tpd):
+			Clock.advance_one_tick()
 		GoodsLedger.set_day(Clock.day)
 		CashLedger.set_day(Clock.day)
 	# Isolate wage from repair: no hold-days this season end.
 	var s: Ship = ShipRegistry._ships[String(sid)]
 	s.held_from_day = Clock.day + 1
 	var days_pw: int = Params.get_int(StringName("PRM-SYS04-DAYS_PER_WEEK"))
-	var expect: int = ceili(
-		AmountQuantize.quantize_amount(float(n * wage * days) / float(days_pw))
-	)
+	## A3／C-09: integer CEIL(n×WAGE×DAYS ÷ DAYS_PW) — spec example, not float mirror.
+	var numer: int = n * wage * days
+	var expect: int = (numer + days_pw - 1) / days_pw
 	var bal_before: int = CashLedger.balance(ACTOR)
 	ShipRegistry.cutoff_step(0)
 	var paid: int = bal_before - CashLedger.balance(ACTOR)
@@ -332,23 +350,27 @@ func test_TST_SYS13_09_repair_prorata_mid_season() -> void:
 	)
 	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_WANG), 1)
 	var s: Ship = ShipRegistry._ships[String(sid)]
-	s.held_from_day = 31
-	Clock._tick = 90 * Params.get_int(StringName(PRM_TICKS))
+	var days_d: int = Params.get_int(StringName(PRM_DAYS))
+	var tpd: int = Params.get_int(StringName(PRM_TICKS))
+	## Z4: mid-season hold span from fixture const × PRM days (spec 60 of 90).
+	var held_days: int = days_d * TST_SYS13_09_HELD_NUMER / TST_SYS13_09_HELD_DENOM
+	s.held_from_day = days_d - held_days + 1
+	for _t in range(days_d * tpd):
+		Clock.advance_one_tick()
 	GoodsLedger.set_day(Clock.day)
 	CashLedger.set_day(Clock.day)
-	assert_eq(Clock.day, 90)
+	assert_eq(Clock.day, days_d)
 	var price: int = int(Params.get_value(StringName(PRM_PRICE))["SH-01"])
 	var rate: float = float(Params.get_value(StringName(PRM_REPAIR)))
-	var days_d: int = Params.get_int(StringName(PRM_DAYS))
 	var expect: int = ceili(
-		AmountQuantize.quantize_amount(float(price) * rate * float(60) / float(days_d))
+		AmountQuantize.quantize_amount(float(price) * rate * float(held_days) / float(days_d))
 	)
 	var bal_before: int = CashLedger.balance(ACTOR)
 	ShipRegistry.cutoff_step(0)
 	assert_eq(bal_before - CashLedger.balance(ACTOR), expect)
 
 
-func test_D20a_sail_depart_arrive_container_port() -> void:
+func test_WP59_D20a_sail_depart_arrive_container_port() -> void:
 	_boot_ship_registry()
 	ShipRegistry.ship_departed.connect(_on_departed)
 	ShipRegistry.ship_arrived.connect(_on_arrived)
@@ -571,38 +593,19 @@ func _build_valid_goods(dir: String) -> String:
 
 
 func _build_valid_ports(port_count: int, dir: String) -> String:
-	_wipe_dir(dir)
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	var free_count: int = _valid_free_count(port_count)
-	var good_ids: PackedStringArray = GoodCatalog.all_ids()
+	## T6: shared builder + ship-specific draft ladder overrides.
+	FixtureBuilders.build_valid_ports(port_count, dir)
 	for i in range(port_count):
-		var n: int = i + 1
-		var port_id := "PT-%02d" % n
-		var def := PortDef.new()
-		def.port_id = port_id
-		def.name_zh = "港%d" % n
-		def.is_free_port = i < free_count
+		var port_id := "PT-%02d" % (i + 1)
+		var path := dir + "%s.tres" % port_id
+		var def: PortDef = load(path) as PortDef
 		if port_id == PT_SONG or port_id == PT_WANG:
 			def.draft_limit_class = 0
 		elif port_id == PT_NAHA:
 			def.draft_limit_class = 2
 		else:
 			def.draft_limit_class = 1
-		def.regime_id = "RG-TEST"
-		def.role_cells = {}
-		for good_variant in good_ids:
-			var good_id: String = String(good_variant)
-			var cell := RoleCell.new()
-			if i == 0:
-				cell.role = PortRegistry.ROLE_PRODUCER
-				cell.base_output_per_season = 1
-				cell.downstream_terminals = PackedStringArray()
-			else:
-				cell.role = PortRegistry.ROLE_TERMINAL
-				cell.base_output_per_season = 0
-				cell.downstream_terminals = PackedStringArray()
-			def.role_cells[good_id] = cell
-		ResourceSaver.save(def, dir + "%s.tres" % port_id)
+		ResourceSaver.save(def, path)
 	return dir
 
 
@@ -614,28 +617,95 @@ func _make_good(
 	is_build_material: bool,
 	is_strategic: bool
 ) -> GoodDef:
-	var def := GoodDef.new()
-	def.good_id = good_id
-	def.name_zh = name_zh
-	def.tier = tier
-	def.is_staple = is_staple
-	def.is_build_material = is_build_material
-	def.is_strategic = is_strategic
-	def.base_price_li = 1000
-	def.season_mask = (1 << Params.get_int(PRM_SEASONS)) - 1
-	return def
+	return FixtureBuilders.make_good(
+		good_id, name_zh, tier, is_staple, is_build_material, is_strategic, 1000
+	)
 
 
-func _valid_free_count(port_count: int) -> int:
-	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
-	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
-	var free_count: int = 0
-	while free_count <= port_count:
-		var ratio: float = float(free_count) / float(port_count)
-		if ratio >= ratio_min and ratio <= ratio_max:
-			return free_count
-		free_count += 1
-	return 0
+func _path_waypoint_sum(path: Array) -> int:
+	var total: int = 0
+	for hop_variant in path:
+		var hop: Dictionary = hop_variant
+		total += SeaLanes.waypoints(String(hop["lane_id"]))
+	return total
+
+
+func _expected_reroute_arrival(
+	path: Array,
+	leg_start_tick: int,
+	wp_offset: int,
+	tpw: int,
+	t_now: int,
+	dest: String
+) -> int:
+	## Mirror FRM-SYS14-05 with public SeaLanes APIs (Z2／C-09 integer math).
+	var elapsed: int = t_now - leg_start_tick
+	if elapsed < 0:
+		elapsed = 0
+	var k: int = elapsed / tpw
+	var t_next: int = leg_start_tick + (k + 1) * tpw
+	var completed: int = wp_offset + (k + 1)
+	var remaining_find: int = completed
+	var hop_index: int = 0
+	var lane_id: String = ""
+	var node_a: String = ""
+	var node_b: String = ""
+	var n_wp: int = 0
+	var j_wp: int = 0
+	while hop_index < path.size():
+		var hop: Dictionary = path[hop_index]
+		lane_id = String(hop["lane_id"])
+		var from_n: String = String(hop["from_node"])
+		var ends: PackedStringArray = SeaLanes.lane_endpoints(lane_id)
+		node_a = from_n
+		node_b = ends[1] if ends[0] == from_n else ends[0]
+		n_wp = SeaLanes.waypoints(lane_id)
+		if remaining_find <= n_wp:
+			j_wp = remaining_find
+			break
+		remaining_find -= n_wp
+		hop_index += 1
+	var forward_cost: int = (n_wp - j_wp) + _dist_waypoints(node_b, dest)
+	var back_allowed: bool = not (_is_port_node(node_a) and node_a != dest)
+	var back_cost: int = j_wp + _dist_waypoints(node_a, dest)
+	var go_forward: bool = true
+	if back_allowed and back_cost < forward_cost:
+		go_forward = false
+	var new_path: Array = []
+	var new_offset: int = 0
+	if go_forward:
+		new_path = [{"lane_id": lane_id, "from_node": node_a}]
+		if node_b != dest:
+			var tail: Array = SeaLanes.path(node_b, dest)
+			for hop2 in tail:
+				new_path.append(hop2)
+		new_offset = j_wp
+	else:
+		new_path = [{"lane_id": lane_id, "from_node": node_b}]
+		if node_a != dest:
+			var tail_b: Array = SeaLanes.path(node_a, dest)
+			for hop3 in tail_b:
+				new_path.append(hop3)
+		new_offset = n_wp - j_wp
+	var remaining: int = _path_waypoint_sum(new_path) - new_offset
+	return t_next + remaining * tpw
+
+
+func _dist_waypoints(from_node: String, to_node: String) -> int:
+	if from_node == to_node:
+		return 0
+	var p: Array = SeaLanes.path(from_node, to_node)
+	if p.is_empty():
+		return 1000000
+	return _path_waypoint_sum(p)
+
+
+func _is_port_node(node_id: String) -> bool:
+	for node_variant in SeaLanes.nodes():
+		var node: SeaNode = node_variant
+		if node.node_id == node_id:
+			return node.kind == SeaNode.KIND_PORT
+	return PortRegistry.get_port(node_id) != null
 
 
 func _set_dock_level(port_id: String, level: int) -> void:
@@ -679,22 +749,5 @@ func _has_code(errors: Array, code: StringName) -> bool:
 
 
 func _wipe_dir(rel: String) -> void:
-	var abs := ProjectSettings.globalize_path(rel)
-	if DirAccess.dir_exists_absolute(abs):
-		var dir := DirAccess.open(abs)
-		if dir != null:
-			dir.list_dir_begin()
-			while true:
-				var n := dir.get_next()
-				if n == "":
-					break
-				if n == "." or n == "..":
-					continue
-				var path := abs.path_join(n)
-				if dir.current_is_dir():
-					_wipe_dir(rel.path_join(n))
-					DirAccess.remove_absolute(path)
-				else:
-					DirAccess.remove_absolute(path)
-			dir.list_dir_end()
-	DirAccess.make_dir_recursive_absolute(abs)
+	FixtureBuilders.wipe_dir(rel)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(rel))

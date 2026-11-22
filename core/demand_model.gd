@@ -165,6 +165,53 @@ func consume_qty(port_id: StringName, good_id: StringName, day: int) -> int:
 	return _to_int(_consume_plan.get(key, 0))
 
 
+func rate_scaled(clazz: StringName, good_id: StringName) -> int:
+	## Loaded per-class rate (RATE_SCALE × jin／week); 0 if missing.
+	assert(_loaded, "DemandModel.rate_scaled before load")
+	var cls: String = String(_norm_class(clazz))
+	var by_good: Dictionary = _rate_cj.get(cls, {})
+	return _to_int(by_good.get(String(good_id), 0))
+
+
+func sat_weight_pct(clazz: StringName, good_id: StringName) -> int:
+	## Loaded satisfaction weight pct points for class×good; 0 if missing.
+	assert(_loaded, "DemandModel.sat_weight_pct before load")
+	var cls: String = String(_norm_class(clazz))
+	var by_good: Dictionary = _sat_pct.get(cls, {})
+	return _to_int(by_good.get(String(good_id), 0))
+
+
+func sat_weight_sum(clazz: StringName) -> int:
+	## Sum of loaded sat weights for a class (FRM-SYS06-09／TST-SYS06-04).
+	assert(_loaded, "DemandModel.sat_weight_sum before load")
+	var cls: String = String(_norm_class(clazz))
+	var by_good: Dictionary = _sat_pct.get(cls, {})
+	var s := 0
+	for g in by_good.keys():
+		s = s + _to_int(by_good[g])
+	return s
+
+
+func substitution_cap_ppm(from_good: StringName, to_good: StringName) -> int:
+	## Cap ppm for from→to substitution rule; 0 if none.
+	assert(_loaded, "DemandModel.substitution_cap_ppm before load")
+	for row_v in _subst:
+		var row: Dictionary = row_v
+		if String(row.get("from", "")) == String(from_good) and String(row.get("to", "")) == String(to_good):
+			return _to_int(row.get("cap_ppm", 0))
+	return 0
+
+
+func substitution_util_ppm(from_good: StringName, to_good: StringName) -> int:
+	## Utility ppm for from→to substitution rule; 0 if none.
+	assert(_loaded, "DemandModel.substitution_util_ppm before load")
+	for row_v in _subst:
+		var row: Dictionary = row_v
+		if String(row.get("from", "")) == String(from_good) and String(row.get("to", "")) == String(to_good):
+			return _to_int(row.get("util_ppm", 0))
+	return 0
+
+
 func flush_signals() -> void:
 	## D-05: emit demand_unmet only after SimLoop step-6 call; once each, sorted.
 	_pending_unmet.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:

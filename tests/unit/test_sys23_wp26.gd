@@ -3,8 +3,7 @@ extends GutTest
 
 
 const CsvImport := preload("res://tools/csv_import.gd")
-## params_sys05_demo has all schema keys + non-zero START_CASH (boot requires genesis_grant).
-const PARAMS_ALL := "res://tests/fixtures/params_sys05_demo.json"
+## G3: ParamsFixtures.path_demo() = baseline + non-zero START_CASH (boot requires genesis_grant).
 const PARAMS_FORMAL := "res://data/params/params.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const SEA_CSV := "res://tests/fixtures/wp29_sea_ok/"
@@ -75,22 +74,42 @@ func test_WP26_bad_override_grid_clash_errors() -> void:
 
 
 func test_TST_SYS23_04_grid_cartesian_run_id_order() -> void:
-	## grid two keys 3×2 values, seeds 2 → 12 jobs; FRM-02 order.
+	## Y4／TST-SYS23-04／FRM-SYS23-02: grid two keys 3×2 values, seeds 2 → 12 jobs;
+	## keys string-ascending (ARREARS before START); values in list order; seeds nested.
 	var grid := {
 		"PRM-SYS05-START_CASH": [1, 0, 1],
 		"PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": [1, 0],
 	}
-	## Force key order: ARREARS before START when sorted → A first then S.
 	var seeds: Array = [1, 0]
 	var jobs: Array = SimGridExpand.expand(grid, seeds)
 	assert_eq(jobs.size(), 12)
+	var k_arrears := "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT"
+	var k_start := "PRM-SYS05-START_CASH"
+	## Expected combos: ARREARS × START cartesian in list order.
+	var expected_combos: Array = [
+		{k_arrears: 1, k_start: 1},
+		{k_arrears: 1, k_start: 0},
+		{k_arrears: 1, k_start: 1},
+		{k_arrears: 0, k_start: 1},
+		{k_arrears: 0, k_start: 0},
+		{k_arrears: 0, k_start: 1},
+	]
 	print("TST-SYS23-04 jobs:")
-	for j_v in jobs:
-		var j: Dictionary = j_v
+	for i in range(jobs.size()):
+		var j: Dictionary = jobs[i]
+		var combo_index: int = int(j["combo_index"])
+		var seed_index: int = i % seeds.size()
+		var expect_combo: Dictionary = expected_combos[combo_index]
 		print(
 			"run_id=%s combo_index=%s seed=%s combo=%s"
 			% [str(j["run_id"]), str(j["combo_index"]), str(j["seed"]), str(j["combo"])]
 		)
+		assert_eq(combo_index, int(i / seeds.size()))
+		assert_eq(int(j["seed"]), int(seeds[seed_index]))
+		assert_eq(int(j["run_id"]), combo_index * seeds.size() + seed_index)
+		var combo: Dictionary = j["combo"]
+		assert_eq(int(combo[k_arrears]), int(expect_combo[k_arrears]), "job %s arrears" % i)
+		assert_eq(int(combo[k_start]), int(expect_combo[k_start]), "job %s start" % i)
 	assert_eq(int((jobs[0] as Dictionary)["run_id"]), 0)
 	assert_eq(int((jobs[0] as Dictionary)["combo_index"]), 0)
 	assert_eq(int((jobs[11] as Dictionary)["run_id"]), 11)
@@ -121,7 +140,7 @@ func test_TST_SYS23_11_missing_threshold_pass_na() -> void:
 		"produced": 0, "consumed": 0, "relocated_in": 0, "relocated_out": 0,
 	})
 	## Params must be loaded for seasons_per_year in metrics.
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var summary: Dictionary = SimMetrics.compute(
 		sampler, 0, 1, {"TH-01": 0.0}, false, "", 0, 0, 0, 1, {}
@@ -133,7 +152,7 @@ func test_TST_SYS23_11_missing_threshold_pass_na() -> void:
 
 func test_WP26_obs03_blank_not_zero() -> void:
 	## OBS-03 undefined until WP-21 — must be blank string, never "0" (C-15 / Owner).
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var sampler := SimSampler.new()
 	sampler.acc = SimTransferAcc.new()
@@ -170,7 +189,7 @@ func test_WP26_obs03_blank_not_zero() -> void:
 
 func test_TST_SYS23_10_met_hand_fixture() -> void:
 	## Hand fixture: 2 eval cells, both band equilibrium with stock_weeks set → MET-01 = 1.
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var sampler := SimSampler.new()
 	sampler.acc = SimTransferAcc.new()
@@ -199,7 +218,7 @@ func test_TST_SYS23_02_formal_params_unchanged_sha256() -> void:
 	## Boot via SimEngine must succeed; formal file bytes unchanged (TST-SYS23-02).
 	var sha_before: String = FileAccess.get_sha256(PARAMS_FORMAL)
 	assert_false(sha_before.is_empty())
-	var all_raw: String = FileAccess.get_file_as_string(PARAMS_ALL)
+	var all_raw: String = FileAccess.get_file_as_string(ParamsFixtures.path_demo())
 	var overrides: Dictionary = JSON.parse_string(all_raw)
 	## Short run for sha256／boot proof (years from fixture).
 	var short_raw: String = FileAccess.get_file_as_string(
@@ -260,7 +279,7 @@ func test_TST_SYS23_09_one_combo_aborts_on_conservation() -> void:
 	scenario["seeds"] = [1]
 	var engine := _make_engine()
 	engine.session_reset = _session_reset
-	engine.before_day = func(combo_index: int, day: int) -> void:
+	engine.set_before_day_hook(func(combo_index: int, day: int) -> void:
 		if combo_index == 1 and day == 1 and GoodCatalog.is_loaded() and GoodsLedger.is_loaded():
 			## Artificial conservation break (TST-SYS03-01 Given / 紅隊-03).
 			var good: StringName = StringName(GoodCatalog.all_ids()[0])
@@ -272,6 +291,7 @@ func test_TST_SYS23_09_one_combo_aborts_on_conservation() -> void:
 			var bucket: Dictionary = GoodsLedger._stock[key]
 			bucket[String(good)] = int(bucket.get(String(good), 0)) + 1
 			GoodsLedger._stock[key] = bucket
+	)
 	var result: Dictionary = engine.run_scenario_dict(scenario)
 	assert_true(result["ok"])
 	var summaries: Array = result["summaries"]
@@ -296,13 +316,15 @@ func test_TST_SYS23_09_one_combo_aborts_on_conservation() -> void:
 
 func test_WP58_Y1_A31_day_error_aborts_summary() -> void:
 	## R9-54 Y1／A31: non-conservation tick_day ErrorInfo → summary aborted + reason.
+	## Day hook via Y5 set_before_day_hook. Day-error payload still staged on TradeDesk
+	## buffer drained by public take_day_errors (no public inject API yet).
 	var scenario: Dictionary = _fast_scenario("sys23_wp58_y1")
 	scenario["seeds"] = [1]
 	var engine := _make_engine()
 	engine.session_reset = _session_reset
-	engine.before_day = func(combo_index: int, day: int) -> void:
+	engine.set_before_day_hook(func(combo_index: int, day: int) -> void:
 		if combo_index == 0 and day == 1:
-			## Inject via TradeDesk day-error buffer (picked up at SimLoop step 6).
+			## Stage ErrorInfo for SimLoop step 6 take_day_errors drain.
 			TradeDesk._day_errors.append(
 				ErrorInfoUtil.make(
 					&"ERR-SYS05-01",
@@ -310,6 +332,7 @@ func test_WP58_Y1_A31_day_error_aborts_summary() -> void:
 					{ErrorInfoUtil.DETAIL_MESSAGE: "WP-58 Y1 injected day error"}
 				)
 			)
+	)
 	var result: Dictionary = engine.run_scenario_dict(scenario)
 	assert_true(result["ok"], str(result.get("errors", [])))
 	var summaries: Array = result["summaries"]
@@ -419,18 +442,16 @@ func test_WP58_A34_write_failure_reports_ok_false() -> void:
 
 
 func test_WP26_evidence_bad_triple_all_at_once() -> void:
-	## missing required + unknown key + type error → all listed (C-06).
+	## Y3／C-06: missing required + unknown key + type error → all listed (tight asserts).
 	var path := "res://tests/fixtures/sys23/scenario_bad_triple.json"
 	var r: Dictionary = SimScenarioValidator.validate_file(path)
 	assert_false(r["ok"])
 	var errs: PackedStringArray = r["errors"]
 	print("bad_triple errors (%s):\n%s" % [str(errs.size()), "\n".join(errs)])
 	var joined: String = " ".join(errs)
-	assert_true(joined.find("ERR-SYS23-02") >= 0)
-	assert_true(joined.find("ERR-SYS23-03") >= 0)
-	assert_true(joined.find("extra_forbidden") >= 0 or joined.find("unknown") >= 0)
-	assert_true(joined.find("warmup_years") >= 0 or joined.find("missing") >= 0)
-	assert_true(joined.find("years") >= 0)
+	assert_true(joined.find("ERR-SYS23-02: unknown scenario key 'extra_forbidden'") >= 0, joined)
+	assert_true(joined.find("ERR-SYS23-02: missing required key 'warmup_years'") >= 0, joined)
+	assert_true(joined.find("ERR-SYS23-03: years must be int") >= 0, joined)
 
 
 func test_WP26_evidence_ERR_SYS23_01_missing_file() -> void:
@@ -512,7 +533,7 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 			"reason": reason_s,
 			"balance": new_balance,
 		})
-	engine.before_day = func(combo_index: int, day: int) -> void:
+	engine.set_before_day_hook(func(combo_index: int, day: int) -> void:
 		if combo_index == 0 and day == 1 and bal_day1[0] < 0:
 			if not CashLedger.cash_changed.is_connected(on_cash):
 				CashLedger.cash_changed.connect(on_cash)
@@ -530,6 +551,7 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 				"xfer season=-1 day=0 account=ACT-PLAYER delta_li=%s reason=GENESIS_CASH balance_after=%s counterparty=SOURCE emitting=CashLedger.genesis_grant/PRM-SYS05-START_CASH"
 				% [str(bal_day1[0]), str(bal_day1[0])]
 			)
+	)
 	var result: Dictionary = engine.run_scenario_dict(scenario)
 	if CashLedger.cash_changed.is_connected(on_cash):
 		CashLedger.cash_changed.disconnect(on_cash)
@@ -569,16 +591,24 @@ func test_WP26_evidence_accounts_after_boot_layer1() -> void:
 			str(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER)),
 		]
 	)
-	## Day-1 balance equals START_CASH (genesis only so far that calendar day start).
+	## Y2: regression — day-1 genesis, player account present, layer1 ends with arrears 0.
 	assert_eq(int(bal_day1[0]), start_cash)
 	assert_eq(int(arr_day1[0]), 0)
+	assert_true(CashLedger.has_account(CashLedger.ACCOUNT_PLAYER))
+	var found_player := false
+	for id_v in ids:
+		if String(id_v) == String(CashLedger.ACCOUNT_PLAYER):
+			found_player = true
+			break
+	assert_true(found_player, "ACT-PLAYER must appear in account dump")
 	assert_eq(CashLedger.arrears(CashLedger.ACCOUNT_PLAYER), 0)
 	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 0)
+	assert_gt(xfer_log.size(), 0, "layer1 must record at least one cash move (charges／genesis)")
 
 
 func test_WP26_abort_summary_mets_blank() -> void:
 	## Abort path MET-01..05b blank (not 0.0); pass N/A; MET-06 blank when no hits.
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0)
 	var eng := SimEngine.new()
 	var s: Dictionary = eng._abort_summary(0, 0, 1, {}, "ERR-SYS23-07: boot failed: []", Time.get_ticks_msec())
@@ -670,20 +700,24 @@ func test_WP26_evidence_years10_player_arrears() -> void:
 			hit_zero[0] = true
 		if bankrupt_lim[0] >= 0 and arr_s >= bankrupt_lim[0]:
 			hit_bankrupt[0] = true
-	engine.before_day = func(combo_index: int, day: int) -> void:
+	engine.set_before_day_hook(func(combo_index: int, day: int) -> void:
 		if combo_index == 0 and day == 1:
 			bankrupt_lim[0] = Params.get_int("PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT")
 			if not Clock.season_cutoff.is_connected(on_cutoff):
 				Clock.season_cutoff.connect(on_cutoff)
+	)
 	var result: Dictionary = engine.run_scenario_dict(scenario)
 	if Clock.is_loaded() and Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.disconnect(on_cutoff)
 	assert_true(result["ok"])
 	var summary: Dictionary = result["summaries"][0]
+	var seasons_y: int = Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")
+	var expect_seasons: int = 10 * seasons_y
 	print(
-		"Y10_DONE seasons_logged=%s hit_zero=%s hit_bankrupt=%s aborted=%s reason=%s MET-06=%s"
+		"Y10_DONE seasons_logged=%s expect=%s hit_zero=%s hit_bankrupt=%s aborted=%s reason=%s MET-06=%s"
 		% [
 			str(season_rows.size()),
+			str(expect_seasons),
 			str(hit_zero[0]),
 			str(hit_bankrupt[0]),
 			str(summary.get("aborted")),
@@ -692,9 +726,15 @@ func test_WP26_evidence_years10_player_arrears() -> void:
 		]
 	)
 	print(
-		"Y10_BANKRUPTCY_CODE cash_ledger.gd close_season lines ~601-602: if arrears_seasons >= bankrupt_lim: bankruptcy_referred.emit(acc.id) — no sim abort/ERR-SYS23"
+		"Y10_BANKRUPTCY_CODE cash_ledger.gd close_season: arrears_seasons >= bankrupt_lim → bankruptcy_referred.emit — no sim abort/ERR-SYS23 (GAP: bankruptcy-unhandled)"
 	)
-	assert_gt(season_rows.size(), 0)
+	## Y2: real regression — full 10y season cutoffs logged; layer1 does not abort on bankruptcy_referred.
+	assert_eq(season_rows.size(), expect_seasons)
+	assert_eq(int(summary.get("aborted")), 0)
+	assert_eq(String(summary.get("abort_reason", "")), "")
+	## GAP bankruptcy-unhandled: even if arrears hit threshold, SimEngine does not abort.
+	if hit_bankrupt[0]:
+		assert_eq(int(summary.get("aborted")), 0, "bankruptcy_referred must not abort sim (gap)")
 
 
 func test_TST_SYS23_09_print_summary_csv() -> void:
@@ -704,7 +744,7 @@ func test_TST_SYS23_09_print_summary_csv() -> void:
 	scenario["seeds"] = [1]
 	var engine := _make_engine()
 	engine.session_reset = _session_reset
-	engine.before_day = func(combo_index: int, day: int) -> void:
+	engine.set_before_day_hook(func(combo_index: int, day: int) -> void:
 		if combo_index == 1 and day == 1 and GoodCatalog.is_loaded() and GoodsLedger.is_loaded():
 			var good: StringName = StringName(GoodCatalog.all_ids()[0])
 			var key: String = String(
@@ -715,6 +755,7 @@ func test_TST_SYS23_09_print_summary_csv() -> void:
 			var bucket: Dictionary = GoodsLedger._stock[key]
 			bucket[String(good)] = int(bucket.get(String(good), 0)) + 1
 			GoodsLedger._stock[key] = bucket
+	)
 	var result: Dictionary = engine.run_scenario_dict(scenario)
 	assert_true(result["ok"])
 	var path: String = SimCsvOut.out_dir(String(scenario["scenario_id"])) + "summary.csv"
@@ -723,6 +764,22 @@ func test_TST_SYS23_09_print_summary_csv() -> void:
 	print(
 		"TST09_ERR07_STATE_NOTE: ERR-SYS23-07 abort_reason lands in summary.abort_reason; season/daily rows sampled before abort remain in CSVs; MET-01..05b blank on aborted row; MET-06=conservation hits"
 	)
+	## Y2: aborted+ok summaries; CSV carries ERR-SYS23-07 (combo JSON may contain commas).
+	var summaries: Array = result["summaries"]
+	assert_eq(summaries.size(), 2)
+	var aborted_rows := 0
+	var ok_rows := 0
+	for s_v in summaries:
+		var s: Dictionary = s_v
+		if int(s["aborted"]) == 1:
+			aborted_rows = aborted_rows + 1
+			assert_true(String(s["abort_reason"]).find("ERR-SYS23-07") >= 0, str(s["abort_reason"]))
+		else:
+			ok_rows = ok_rows + 1
+	assert_eq(aborted_rows, 1)
+	assert_eq(ok_rows, 1)
+	assert_eq(text.strip_edges().split("\n").size(), 3, "header + 2 summary rows")
+	assert_true(text.find("ERR-SYS23-07") >= 0, text)
 	assert_push_error_count(1)
 
 
@@ -755,22 +812,22 @@ func test_WP26_evidence_cli_twice_cmp() -> void:
 	assert_eq(rc_a, 0)
 	var snap_a: Dictionary = _snapshot_outputs_five("sys23_cli_cmp")
 	assert_gt(String(snap_a["summary.csv"]).length(), 1)
-	assert_true(
-		String(snap_a["summary.csv"]).find("aborted,") >= 0
-		or String(snap_a["summary.csv"]).find("\n0,") >= 0
-	)
-	## Must not be an aborted-only empty run: expect season rows.
-	assert_gt(String(snap_a["season_cells.csv"]).split("\n").size(), 1)
-	## OBS-03 blank (success rows have no commas in OBS-01, so split is safe).
+	## Y3: assert success row aborted=0 (not tautology on header "aborted,").
 	var sum_body: String = String(snap_a["summary.csv"])
 	assert_true(sum_body.find("boot failed") < 0, "CLI must boot successfully")
 	var sum_hdr: PackedStringArray = sum_body.get_slice("\n", 0).split(",")
 	var sum_row: PackedStringArray = sum_body.get_slice("\n", 1).split(",")
+	var abort_i := -1
 	var obs03_i := -1
 	for i in range(sum_hdr.size()):
-		if String(sum_hdr[i]) == "OBS-03":
+		if String(sum_hdr[i]) == "aborted":
+			abort_i = i
+		elif String(sum_hdr[i]) == "OBS-03":
 			obs03_i = i
-			break
+	assert_gt(abort_i, -1)
+	assert_eq(String(sum_row[abort_i]), "0", "CLI success row must have aborted=0")
+	## Must not be an aborted-only empty run: expect season rows.
+	assert_gt(String(snap_a["season_cells.csv"]).split("\n").size(), 1)
 	assert_gt(obs03_i, -1)
 	assert_eq(String(sum_row[obs03_i]), "", "CLI summary OBS-03 must be blank")
 	_wipe_dir(SimCsvOut.out_dir("sys23_cli_cmp"))
@@ -860,7 +917,7 @@ func _fast_scenario(scenario_id: String) -> Dictionary:
 		"res://tests/fixtures/sys23/scenario_run_meta.json"
 	)
 	var meta: Dictionary = JSON.parse_string(meta_raw)
-	var all_raw: String = FileAccess.get_file_as_string(PARAMS_ALL)
+	var all_raw: String = FileAccess.get_file_as_string(ParamsFixtures.path_demo())
 	var all_params: Dictionary = JSON.parse_string(all_raw)
 	return {
 		"scenario_id": scenario_id,
@@ -884,7 +941,7 @@ func _run_full(scenario: Dictionary) -> Dictionary:
 func _make_engine() -> SimEngine:
 	_prepare_world()
 	var engine := SimEngine.new()
-	engine.params_formal_path = PARAMS_ALL
+	engine.params_formal_path = ParamsFixtures.path_demo()
 	engine.goods_dir = GOODS_ROOT + "base/"
 	engine.ports_dir = PORTS_ROOT + "base/"
 	engine.curve_path = CURVE_FIXTURE
@@ -897,7 +954,7 @@ func _make_engine() -> SimEngine:
 
 
 func _prepare_world() -> void:
-	var perr: Array = Params.load_and_validate(PARAMS_ALL)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params_all_keys")
 	_build_goods(GOODS_ROOT + "base/")
 	var gerr: Array = GoodCatalog.load_and_validate(GOODS_ROOT + "base/")

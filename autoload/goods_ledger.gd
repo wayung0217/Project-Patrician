@@ -154,6 +154,35 @@ func register_capacity_provider(kind: StringName, provider: CapacityProvider) ->
 	return CODE_OK
 
 
+func current_day() -> int:
+	## Public day cursor (tests／SimLoop); replaces reading private `_day`.
+	return _day
+
+
+func seed_offtake_snapshot(
+	port_id: StringName,
+	good_id: StringName,
+	window_qty: int,
+	local_qty: int,
+	window_days: int,
+	day: int = 0
+) -> void:
+	## Test／fixture seed for previous-day offtake (F11); replaces writing `_offtake_snapshot`.
+	assert(_loaded, "GoodsLedger.seed_offtake_snapshot before load_and_validate")
+	var port_s: String = String(port_id)
+	var good_s: String = String(good_id)
+	if not _offtake_snapshot.has(port_s):
+		_offtake_snapshot[port_s] = {}
+	var by_good: Dictionary = _offtake_snapshot[port_s]
+	by_good[good_s] = {
+		FIELD_WINDOW_QTY: window_qty,
+		FIELD_LOCAL_QTY: local_qty,
+		FIELD_WINDOW_DAYS: window_days,
+		FIELD_DAY: day,
+	}
+	_offtake_snapshot[port_s] = by_good
+
+
 func set_day(day: int) -> void:
 	## 缺口：應由 Clock.day 驅動；無 Clock 時測試／呼叫端可 set_day。不新增子日公開 API（D-07）。
 	_day = day

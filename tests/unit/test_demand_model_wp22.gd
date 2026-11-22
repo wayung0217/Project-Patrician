@@ -4,13 +4,10 @@ extends GutTest
 
 const CsvImport := preload("res://tools/csv_import.gd")
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const DEMAND_CSV_OK := "res://tests/fixtures/demand/ok/"
 const DEMAND_OUT := "res://tests/fixtures/demand/out/"
 const TABLES_OK := DEMAND_OUT ## demand dir after csv_import
-const PARAMS_MISSING_WEIGHT := "res://tests/fixtures/params_sys06_missing_weight.json"
-const PARAMS_MISSING_DPW := "res://tests/fixtures/params_sys06_missing_days_per_week.json"
 
 const ROOT := "user://wp22_demand/"
 const PORT := "PT-01"
@@ -34,6 +31,16 @@ const STAPLE_SALT := "鹽"
 const STAPLE_FISH := "魚乾"
 const STAPLE_TIMBER := "木材"
 const ANCHOR_LI := 1000
+## 03_Systems 6.2／6.3：木炭基準價 1.5 两 × 目標週需求 125 ＝市場規模 187.5
+const CHARCOAL_GOOD := "GD-013"
+const CHARCOAL_BASE_LIANG := 1.5
+const MARKET_SIZE_TARGET := 187.5
+const MARKET_SIZE_EPS := 0.01
+const NEG_SENTINEL := -1
+const TEA_GOOD := "GD-011"
+const RICE_GOOD := "GD-001"
+const FISH_GOOD := "GD-014"
+const BROCADE_GOOD := "GD-028"
 
 const TYPE_KONTOR := "CB-17"
 const TYPE_HEMP := "IB-HEMP"
@@ -121,7 +128,7 @@ func test_ERR_SYS06_01_negative_rate_rejects_boot() -> void:
 	_install_demand_ok()
 	## Mutate one rate tres to negative (DemandModel ERR path; import already rejects).
 	var def: DemandRate = load(DEMAND_OUT.path_join("rates/GD-001.tres")) as DemandRate
-	def.poor_rate_cj = 0 - 1
+	def.poor_rate_cj = NEG_SENTINEL
 	ResourceSaver.save(def, DEMAND_OUT.path_join("rates/GD-001.tres"))
 	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
 	assert_gt(errs.size(), 0)
@@ -143,7 +150,7 @@ func test_ERR_SYS06_01_missing_demand_dir_rejects() -> void:
 	assert_push_error_count(errs.size())
 
 
-func test_D40c_bad_tres_load_collects_filename() -> void:
+func test_WP59_D40c_bad_tres_load_collects_filename() -> void:
 	## D-40c: corrupt .tres → ERR-SYS06-01 with filename.
 	_boot_params_ports_goods()
 	_boot_pop_sat()
@@ -170,7 +177,7 @@ func test_D40c_bad_tres_load_collects_filename() -> void:
 	assert_push_error_count(errs.size())
 
 
-func test_D40c_missing_substitutions_dir_fails() -> void:
+func test_WP59_D40c_missing_substitutions_dir_fails() -> void:
 	## D-40c: substitutions subdir must exist.
 	_boot_params_ports_goods()
 	_boot_pop_sat()
@@ -186,7 +193,7 @@ func test_D40c_missing_substitutions_dir_fails() -> void:
 	assert_push_error_count(errs.size())
 
 
-func test_D40c_empty_substitutions_dir_passes() -> void:
+func test_WP59_D40c_empty_substitutions_dir_passes() -> void:
 	## D-40c: empty substitutions OK when dir exists.
 	_boot_params_ports_goods()
 	_boot_pop_sat()
@@ -240,8 +247,8 @@ func test_ERR_SYS06_04_negative_population() -> void:
 	assert_eq(DemandModel.load_and_validate(TABLES_OK).size(), 0)
 	# Force negative via direct PortPop (boot-time path covered by validate; runtime record).
 	var p: Object = PopulationModel._ports[PORT]
-	p.poor = 0 - 1
-	var w: int = DemandModel.weekly_demand(StringName(PORT), &"GD-001")
+	p.poor = NEG_SENTINEL
+	var w: int = DemandModel.weekly_demand(StringName(PORT), StringName(RICE_GOOD))
 	assert_eq(w, 0)
 	assert_eq(String(DemandModel.last_error().get("code", "")), String(DemandModel.ERR_SYS06_04))
 	assert_push_error_count(1)
@@ -251,35 +258,50 @@ func test_ERR_SYS06_04_negative_population() -> void:
 
 
 func test_TST_SYS06_01_rice_week_demand_calibration_port() -> void:
-	## 6.3 米列：3000＠70／20／10 → W＝178 擔；貧民人均 5.94 斤／週（非 187.5 市場規模）。
+	## 6.3 米列：3000＠70／20／10 → W＝178 擔；貧民人均從載入表讀取（非寫死 594）。
 	_boot_demand_world(2100, 600, 300, 0)
-	var w: int = DemandModel.weekly_demand(StringName(PORT), &"GD-001")
+	var w: int = DemandModel.weekly_demand(StringName(PORT), StringName(RICE_GOOD))
 	assert_eq(w, 178)
-	var rate_cj: int = int(DemandModel._rate_cj["POOR"]["GD-001"])
-	assert_eq(rate_cj, 594)
+	var rate_cj: int = DemandModel.rate_scaled(DemandModel.CLASS_POOR, StringName(RICE_GOOD))
+	assert_gt(rate_cj, 0)
+	## Cross-check loaded tres matches public accessor.
+	var def: DemandRate = load(DEMAND_OUT.path_join("rates/%s.tres" % RICE_GOOD)) as DemandRate
+	assert_eq(rate_cj, def.poor_rate_cj)
 
 
 func test_TST_SYS06_02_market_size_target() -> void:
-	## 基準價 × 目標週總需求 ≈ 187.5（6.2）；木炭 1.5 × 125.0。
+	## TST-SYS06-02: DemandModel weekly_demand(木炭) × 基準價 ≈ 187.5（6.2）.
 	_boot_demand_world(2100, 600, 300, 0)
-	var product: float = 1.5 * 125.0
-	assert_true(abs(product - 187.5) < 0.01)
+	var w: int = DemandModel.weekly_demand(StringName(PORT), StringName(CHARCOAL_GOOD))
+	assert_gt(w, 0)
+	var rate_p: int = DemandModel.rate_scaled(DemandModel.CLASS_POOR, StringName(CHARCOAL_GOOD))
+	var rate_c: int = DemandModel.rate_scaled(DemandModel.CLASS_CITIZEN, StringName(CHARCOAL_GOOD))
+	var rate_r: int = DemandModel.rate_scaled(DemandModel.CLASS_RICH, StringName(CHARCOAL_GOOD))
+	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
+	var w_num: int = 2100 * rate_p + 600 * rate_c + 300 * rate_r
+	assert_eq(w, floori(float(w_num) / float(s)))
+	var product: float = CHARCOAL_BASE_LIANG * float(w)
+	assert_true(
+		abs(product - MARKET_SIZE_TARGET) < MARKET_SIZE_EPS,
+		"market size %s vs target %s (w=%s)" % [product, MARKET_SIZE_TARGET, w]
+	)
 
 
 func test_TST_SYS06_03_daily_share_sums_to_week() -> void:
 	## FRM-SYS06-10: 7-day accumulator sum vs theory week within <1 dan; max−min ≤1;
-	## N weeks vs N×theory within <1 dan.
+	## N weeks vs N×theory within <1 dan. Rates from loaded tables (AC2).
 	_boot_demand_world(2100, 600, 300, 0)
-	var w_num: int = (
-		2100 * 594 + 600 * 594 + 300 * 594
-	)
+	var rate_p: int = DemandModel.rate_scaled(DemandModel.CLASS_POOR, StringName(RICE_GOOD))
+	var rate_c: int = DemandModel.rate_scaled(DemandModel.CLASS_CITIZEN, StringName(RICE_GOOD))
+	var rate_r: int = DemandModel.rate_scaled(DemandModel.CLASS_RICH, StringName(RICE_GOOD))
+	var w_num: int = 2100 * rate_p + 600 * rate_c + 300 * rate_r
 	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
 	var theory: float = float(w_num) / float(s)
 	var sum := 0
 	var lo := 0x7fffffff
 	var hi := 0
 	for day in range(1, 8):
-		var d: int = DemandModel.daily_demand(StringName(PORT), &"GD-001", day)
+		var d: int = DemandModel.daily_demand(StringName(PORT), StringName(RICE_GOOD), day)
 		sum = sum + d
 		if d < lo:
 			lo = d
@@ -293,39 +315,45 @@ func test_TST_SYS06_03_daily_share_sums_to_week() -> void:
 	for week in range(1, n):
 		for day_i in range(1, 8):
 			var day2: int = week * 7 + day_i
-			sum_n = sum_n + DemandModel.daily_demand(StringName(PORT), &"GD-001", day2)
+			sum_n = sum_n + DemandModel.daily_demand(StringName(PORT), StringName(RICE_GOOD), day2)
 	assert_lt(abs(float(sum_n) - float(n) * theory), 1.0)
 
 
 func test_TST_SYS06_04_sat_weights_sum_100() -> void:
 	_boot_demand_world(100, 50, 10, 0)
 	assert_true(DemandModel.is_loaded())
-	for cls in ["POOR", "CITIZEN", "RICH"]:
-		var s := 0
-		for g in DemandModel._sat_pct[cls].keys():
-			s = s + int(DemandModel._sat_pct[cls][g])
-		assert_eq(s, Params.get_int("PRM-SYS06-WEIGHT_SUM"), cls)
+	for cls in [DemandModel.CLASS_POOR, DemandModel.CLASS_CITIZEN, DemandModel.CLASS_RICH]:
+		assert_eq(
+			DemandModel.sat_weight_sum(cls),
+			Params.get_int("PRM-SYS06-WEIGHT_SUM"),
+			String(cls)
+		)
 
 
 func test_TST_SYS06_05_rice_shortage_triggers_fish_subst() -> void:
 	_boot_demand_world(2100, 600, 300, 0)
 	# Seed fish only; rice = 0.
-	_seed_market("GD-014", 5000)
+	_seed_market(FISH_GOOD, 5000)
 	var day := 1
-	var rice_need: int = DemandModel.daily_demand(StringName(PORT), &"GD-001", day)
+	var rice_need: int = DemandModel.daily_demand(StringName(PORT), StringName(RICE_GOOD), day)
 	assert_gt(rice_need, 0)
-	var fish_base: int = DemandModel.daily_demand(StringName(PORT), &"GD-014", day)
-	var rice_take: int = DemandModel.consume_qty(StringName(PORT), &"GD-001", day)
+	var fish_base: int = DemandModel.daily_demand(StringName(PORT), StringName(FISH_GOOD), day)
+	var rice_take: int = DemandModel.consume_qty(StringName(PORT), StringName(RICE_GOOD), day)
 	assert_eq(rice_take, 0)
-	var fish_take: int = DemandModel.consume_qty(StringName(PORT), &"GD-014", day)
-	var subst: int = DemandModel.substitution_applied(StringName(PORT), &"GD-014")
+	var fish_take: int = DemandModel.consume_qty(StringName(PORT), StringName(FISH_GOOD), day)
+	var subst: int = DemandModel.substitution_applied(StringName(PORT), StringName(FISH_GOOD))
 	assert_gt(subst, 0)
 	assert_eq(fish_take, fish_base + subst)
-	# Cap 30% of rice need; util 0.7 → subst ≤ ceil(0.3*need/0.7)
-	var max_u: int = int(rice_need * 300000 / 1000000)
-	var max_b: int = int((max_u * 1000000 + 700000 - 1) / 700000)
+	# Cap／util from loaded substitution table (AC2).
+	var cap_ppm: int = DemandModel.substitution_cap_ppm(StringName(RICE_GOOD), StringName(FISH_GOOD))
+	var util_ppm: int = DemandModel.substitution_util_ppm(StringName(RICE_GOOD), StringName(FISH_GOOD))
+	var ppm: int = Params.get_int("PRM-SYS06-PPM_SCALE")
+	assert_gt(cap_ppm, 0)
+	assert_gt(util_ppm, 0)
+	var max_u: int = int(rice_need * cap_ppm / ppm)
+	var max_b: int = int((max_u * ppm + util_ppm - 1) / util_ppm)
 	assert_lte(subst, max_b)
-	var sat_poor: float = DemandModel.satisfaction_input(StringName(PORT), &"POOR")
+	var sat_poor: float = DemandModel.satisfaction_input(StringName(PORT), DemandModel.CLASS_POOR)
 	assert_gt(sat_poor, 0.0)
 	assert_lt(sat_poor, 1.0)
 
@@ -363,17 +391,25 @@ func test_TST_SYS06_06_paused_workshops_zero_input_consume() -> void:
 
 
 func test_TST_SYS06_07_double_pop_doubles_citizen_demand() -> void:
-	## D-22b: DemandModel citizen demand ×2; SYS-08 production inputs unchanged (existing BE).
+	## D-22b／AC3: population ×2 → citizen tea demand scales (rates from loaded tables).
 	_boot_demand_world(700, 200, 100, 0)
-	var tea1: int = DemandModel.weekly_demand(StringName(PORT), &"GD-011")
+	var rate_p: int = DemandModel.rate_scaled(DemandModel.CLASS_POOR, StringName(TEA_GOOD))
+	var rate_c: int = DemandModel.rate_scaled(DemandModel.CLASS_CITIZEN, StringName(TEA_GOOD))
+	var rate_r: int = DemandModel.rate_scaled(DemandModel.CLASS_RICH, StringName(TEA_GOOD))
+	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
+	var expect1: int = floori(float(700 * rate_p + 200 * rate_c + 100 * rate_r) / float(s))
+	var tea1: int = DemandModel.weekly_demand(StringName(PORT), StringName(TEA_GOOD))
+	assert_eq(tea1, expect1)
 	PopulationModel.set_port_state(PORT, 1400, 400, 200, 0)
 	# weekly_demand is display-only (no plan invalidate); pop change visible immediately.
-	var tea2: int = DemandModel.weekly_demand(StringName(PORT), &"GD-011")
-	# Integer floor (C-09): doubling pop need not yield exact 2× when remainders exist.
-	assert_eq(tea1, 7)
-	assert_eq(tea2, 15)
-	# SYS-08 existing BE: paused workshops consume no inputs (separate boot).
-	before_each()
+	var expect2: int = floori(float(1400 * rate_p + 400 * rate_c + 200 * rate_r) / float(s))
+	var tea2: int = DemandModel.weekly_demand(StringName(PORT), StringName(TEA_GOOD))
+	assert_eq(tea2, expect2)
+	assert_gt(tea2, tea1)
+
+
+func test_TST_SYS06_07b_paused_workshops_no_input_after_double_pop_setup() -> void:
+	## AC3 split: former SYS06-07 second half（工坊暫停不耗原料）— overlaps SYS06-06 path.
 	var wf := TestWorkforce.new()
 	_boot_be_with_input_workshops(wf)
 	for bld_v in BuildingEconomy.buildings_for_port(PORT):
@@ -443,15 +479,18 @@ func test_TST_SYS06_09_brocade_zero_only_rich_sat_drops() -> void:
 func test_TST_SYS06_10_consume_equals_min_demand_stock() -> void:
 	## Seed before first plan for the day (FRM-SYS06-10 locks stock at plan time).
 	_boot_demand_world(2100, 600, 300, 0)
-	var w_num: int = 2100 * 594 + 600 * 594 + 300 * 594
+	var rate_p: int = DemandModel.rate_scaled(DemandModel.CLASS_POOR, StringName(RICE_GOOD))
+	var rate_c: int = DemandModel.rate_scaled(DemandModel.CLASS_CITIZEN, StringName(RICE_GOOD))
+	var rate_r: int = DemandModel.rate_scaled(DemandModel.CLASS_RICH, StringName(RICE_GOOD))
+	var w_num: int = 2100 * rate_p + 600 * rate_c + 300 * rate_r
 	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
 	var d_period: int = s * Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
 	var need: int = floori(float(w_num) / float(d_period)) # day-1 q from empty acc
 	assert_gt(need, 1)
-	_seed_market("GD-001", need - 1)
+	_seed_market(RICE_GOOD, need - 1)
 	var day := 1
-	var stock: int = GoodsLedger.get_qty(GoodsLedger.make_market(PORT), &"GD-001")
-	var take: int = DemandModel.consume_qty(StringName(PORT), &"GD-001", day)
+	var stock: int = GoodsLedger.get_qty(GoodsLedger.make_market(PORT), StringName(RICE_GOOD))
+	var take: int = DemandModel.consume_qty(StringName(PORT), StringName(RICE_GOOD), day)
 	var expect: int = need if need < stock else stock
 	assert_eq(take, expect)
 	assert_eq(take, stock)
@@ -484,10 +523,13 @@ func test_TST_SYS07_16_beggar_sat_necessities_only() -> void:
 
 func test_TST_SYS06_11_small_port_low_volume_averages() -> void:
 	## 1000-person port; brocade week demand <1 dan; N seasons total ≈ N×theory, ≠0.
+	## Rich rate from loaded tables (AC2), not hardcoded 27.
 	_boot_demand_world(700, 200, 100, 0)
-	var w_disp: int = DemandModel.weekly_demand(StringName(PORT), &"GD-028")
+	var w_disp: int = DemandModel.weekly_demand(StringName(PORT), StringName(BROCADE_GOOD))
 	assert_eq(w_disp, 0) # floor display <1
-	var w_num: int = 100 * 27 # rich only
+	var rate_r: int = DemandModel.rate_scaled(DemandModel.CLASS_RICH, StringName(BROCADE_GOOD))
+	assert_gt(rate_r, 0)
+	var w_num: int = 100 * rate_r # rich only (poor／citizen rates 0 for brocade)
 	var s: int = Params.get_int("PRM-SYS06-RATE_SCALE") * Params.get_int("PRM-SYS06-JIN_PER_DAN")
 	var theory_week: float = float(w_num) / float(s)
 	assert_lt(theory_week, 1.0)
@@ -497,7 +539,7 @@ func test_TST_SYS06_11_small_port_low_volume_averages() -> void:
 	var total_days: int = n_seasons * days_season
 	var total := 0
 	for day in range(1, total_days + 1):
-		total = total + DemandModel.daily_demand(StringName(PORT), &"GD-028", day)
+		total = total + DemandModel.daily_demand(StringName(PORT), StringName(BROCADE_GOOD), day)
 	var weeks: float = float(total_days) / float(Params.get_int("PRM-SYS04-DAYS_PER_WEEK"))
 	var theory_total: float = weeks * theory_week
 	assert_ne(total, 0)
@@ -553,7 +595,7 @@ func test_TST_SYS06_13_unmet_only_after_flush() -> void:
 
 func test_TST_SYS06_14_missing_prm_refuses_boot() -> void:
 	## Missing PRM-SYS04-DAYS_PER_WEEK or PRM-SYS06-* → ERR-SYS06-06; no defaults.
-	var perr: Array = Params.load_and_validate(PARAMS_MISSING_WEIGHT)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_missing_weight_sum())
 	assert_gt(perr.size(), 0)
 	assert_false(Params.is_loaded())
 	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
@@ -561,7 +603,7 @@ func test_TST_SYS06_14_missing_prm_refuses_boot() -> void:
 	assert_true(_has_code(errs, DemandModel.ERR_SYS06_06))
 	assert_false(DemandModel.is_loaded())
 	before_each()
-	var perr2: Array = Params.load_and_validate(PARAMS_MISSING_DPW)
+	var perr2: Array = Params.load_and_validate(ParamsFixtures.path_missing_days_per_week())
 	assert_gt(perr2.size(), 0)
 	assert_false(Params.is_loaded())
 	var errs2: Array = DemandModel.load_and_validate(TABLES_OK)
@@ -582,7 +624,7 @@ func _daily_seq_rice(poor: int, cit: int, rich: int, days: int) -> Array:
 	_boot_demand_world(poor, cit, rich, 0)
 	var out: Array = []
 	for day in range(1, days + 1):
-		out.append(DemandModel.daily_demand(StringName(PORT), &"GD-001", day))
+		out.append(DemandModel.daily_demand(StringName(PORT), StringName(RICE_GOOD), day))
 	return out
 
 
@@ -617,7 +659,7 @@ func _wipe_demand_out() -> void:
 
 
 func _boot_params_ports_goods() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_valid_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")

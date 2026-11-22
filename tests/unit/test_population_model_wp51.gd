@@ -2,7 +2,6 @@ extends GutTest
 ## WP-51 incremental placement — FRM-SYS07-12、OQ-13j、TST-SYS07-11／12、C-13／D-63e.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp51_pop/"
 const PORT_A := "PT-01"
@@ -37,14 +36,7 @@ class TestSat extends SatisfactionInputProvider:
 
 func before_each() -> void:
 	_wipe(ROOT)
-	PopulationModel._loaded = false
-	PopulationModel._sat_input = null
-	PopulationModel._ports = {}
-	PopulationModel._workers = {}
-	PopulationModel._residents = {}
-	PopulationModel._port_res_ids = {}
-	PopulationModel._opening_placed = {}
-	PopulationModel._wp51_rng_calls = 0
+	PopulationModel.reset_runtime_state()
 	BuildingEconomy._loaded = false
 	BuildingEconomy._population = null
 	BuildingEconomy._workforce = null
@@ -55,8 +47,13 @@ func before_each() -> void:
 	MarketPricer._loaded = false
 
 
+func after_each() -> void:
+	## U3: restore Params so rate overrides do not leak across tests.
+	Params.load_and_validate(ParamsFixtures.path_demo())
+
+
 func test_WP51_occupants_stable_when_no_movers() -> void:
-	## FRM-SYS07-12／OQ-13j: no movers → occupants unchanged day-to-day.
+	## FRM-SYS07-12／OQ-13j／U1: no movers → occupants unchanged (observable; no rng counter).
 	var sat := TestSat.new()
 	_boot_two_ports(sat)
 	_zero_all_flow_rates()
@@ -64,35 +61,46 @@ func test_WP51_occupants_stable_when_no_movers() -> void:
 	PopulationModel.set_port_state(PORT_A, 40, 20, 10, 0, 500, 500, 500)
 	PopulationModel.daily_step(1) # opening place
 	var snap1: Dictionary = _snap_occ(PORT_A)
-	PopulationModel._wp51_rng_calls = 0
 	PopulationModel.daily_step(2)
 	var snap2: Dictionary = _snap_occ(PORT_A)
 	assert_eq(snap1, snap2)
-	assert_eq(PopulationModel._wp51_rng_calls, 0)
 
 
-func test_WP51_only_movers_draw_rng() -> void:
-	## OQ-13j: only movers draw; zero movers → zero Rng.derive_seed in placement.
+func test_WP51_movers_change_occupants() -> void:
+	## OQ-13j／U1: zero-mover days keep snap; hire movers change residence occupants.
 	var sat := TestSat.new()
 	_boot_two_ports(sat)
 	_zero_all_flow_rates()
 	PopulationModel.set_master_seed(22)
 	PopulationModel.set_port_state(PORT_A, 30, 10, 5, 0, 500, 500, 500)
 	PopulationModel.daily_step(1)
-	PopulationModel._wp51_rng_calls = 0
+	var snap_quiet: Dictionary = _snap_occ(PORT_A)
 	PopulationModel.daily_step(2)
-	assert_eq(PopulationModel._wp51_rng_calls, 0)
-	# Force one hire-like in by directly calling place movers path: raise beggars＋beds.
-	Params._values["PRM-SYS07-PF1_RATE_WK"] = 0
-	PopulationModel.set_port_state(PORT_A, 30, 10, 5, 20, 900, 900, 900)
-	# Ensure free beds: capacity 5*100=500, residents 45.
-	PopulationModel._wp51_rng_calls = 0
-	# Inject one immigration via _place_movers directly after sync.
-	var sync_errs: Array = []
-	PopulationModel._sync_port_residences(PORT_A, 3, sync_errs)
-	PopulationModel._draw_seq_by_purpose = {}
-	PopulationModel._place_movers(PORT_A, 3, 0, 0, 0, 0, 0, 0, 1)
-	assert_gt(PopulationModel._wp51_rng_calls, 0)
+	assert_eq(_snap_occ(PORT_A), snap_quiet)
+	## Public hire path places beggars into residences (movers); occupants must change.
+	_save_def(ROOT + "buildings/", "IB-HIRE", "IND2", "GD-001", 2, 1.0)
+	## Reload defs map entry without full reboot: register BuildingDef into private map.
+	var def := BuildingDef.new()
+	def.type = "IB-HIRE"
+	def.build_class = "IND2"
+	def.output_good_id = "GD-001"
+	def.tier = 2
+	def.max_workers = 20
+	def.base_output_per_worker = 1.0
+	BuildingEconomy._building_defs["IB-HIRE"] = def
+	var ws := Building.new()
+	ws.building_id = StringName("BLD:%s:WS-HIRE" % PORT_A)
+	ws.type = &"IB-HIRE"
+	ws.build_class = &"IND2"
+	ws.owner = ACTOR
+	ws.port_id = PORT_A
+	ws.state = Building.State.ACTIVE
+	BuildingEconomy._register_building(ws)
+	PopulationModel.set_workers(ws.building_id, 0)
+	PopulationModel.set_port_state(PORT_A, 30, 10, 5, 40, 900, 900, 900)
+	PopulationModel.daily_step(3)
+	assert_gt(PopulationModel.population(StringName(PORT_A), &"POOR"), 30)
+	assert_ne(_snap_occ(PORT_A), snap_quiet)
 
 
 func test_WP51_no_cross_port_placement() -> void:
@@ -110,22 +118,18 @@ func test_WP51_no_cross_port_placement() -> void:
 	PopulationModel.set_port_state(PORT_A, 10, 0, 0, 0, 500, 500, 500)
 	PopulationModel.set_port_state(PORT_B, 150, 0, 0, 0, 500, 500, 500)
 	PopulationModel.daily_step(1)
-	var a_ids: Array = PopulationModel._port_res_ids.get(PORT_A, [])
-	for rid_v in a_ids:
-		var occ: Dictionary = PopulationModel.residence_occupants(StringName(String(rid_v)))
+	var sum_a := 0
+	for bld_a in BuildingEconomy.residences(StringName(PORT_A)):
+		var occ: Dictionary = PopulationModel.residence_occupants((bld_a as Building).building_id)
 		var total: int = int(occ["poor"]) + int(occ["citizen"]) + int(occ["rich"])
 		# A's houses only hold A's 10 (or less); never B's overflow.
 		assert_lte(total, 10)
+		sum_a += total
 	var sum_b := 0
-	for rid2_v in PopulationModel._port_res_ids.get(PORT_B, []):
-		var occ2: Dictionary = PopulationModel.residence_occupants(StringName(String(rid2_v)))
+	for bld_b in BuildingEconomy.residences(StringName(PORT_B)):
+		var occ2: Dictionary = PopulationModel.residence_occupants((bld_b as Building).building_id)
 		sum_b += int(occ2["poor"]) + int(occ2["citizen"]) + int(occ2["rich"])
 	assert_lte(sum_b, 100)
-	# No B occupants stored under A's res_ids beyond A's own pop.
-	var sum_a := 0
-	for rid3_v in a_ids:
-		var occ3: Dictionary = PopulationModel.residence_occupants(StringName(String(rid3_v)))
-		sum_a += int(occ3["poor"]) + int(occ3["citizen"]) + int(occ3["rich"])
 	assert_eq(sum_a, 10)
 
 
@@ -140,8 +144,8 @@ func test_WP51_sum_occupants_equals_st_pop() -> void:
 	PopulationModel.set_port_state(PORT_A, 120, 80, 40, 0, 500, 500, 500)
 	PopulationModel.daily_step(1)
 	var sum_occ := 0
-	for rid_v in PopulationModel._port_res_ids.get(PORT_A, []):
-		var occ: Dictionary = PopulationModel.residence_occupants(StringName(String(rid_v)))
+	for bld_v in BuildingEconomy.residences(StringName(PORT_A)):
+		var occ: Dictionary = PopulationModel.residence_occupants((bld_v as Building).building_id)
 		sum_occ += int(occ["poor"]) + int(occ["citizen"]) + int(occ["rich"])
 	var st: int = (
 		PopulationModel.population(StringName(PORT_A), &"POOR")
@@ -199,6 +203,24 @@ func test_WP51_same_seed_same_result() -> void:
 	assert_eq(_snap_occ(PORT_A), s1)
 
 
+func test_WP51_T2_different_seeds_differ_placement() -> void:
+	## T2 residual: different master seeds → different residence occupants.
+	var sat := TestSat.new()
+	_boot_two_ports(sat)
+	_zero_all_flow_rates()
+	PopulationModel.set_master_seed(11)
+	PopulationModel.set_port_state(PORT_A, 50, 25, 12, 0, 500, 500, 500)
+	PopulationModel.daily_step(1)
+	var s11: Dictionary = _snap_occ(PORT_A)
+	before_each()
+	_boot_two_ports(sat)
+	_zero_all_flow_rates()
+	PopulationModel.set_master_seed(99)
+	PopulationModel.set_port_state(PORT_A, 50, 25, 12, 0, 500, 500, 500)
+	PopulationModel.daily_step(1)
+	assert_ne(_snap_occ(PORT_A), s11)
+
+
 func test_WP51_opening_full_placement() -> void:
 	## FRM-SYS07-14: first daily_step performs full local placement.
 	var sat := TestSat.new()
@@ -208,12 +230,12 @@ func test_WP51_opening_full_placement() -> void:
 	_clear_residences(PORT_A)
 	_force_residences_port(PORT_A, 3)
 	PopulationModel.set_port_state(PORT_A, 100, 50, 20, 0, 500, 500, 500)
-	assert_false(bool(PopulationModel._opening_placed.get(PORT_A, false)))
+	assert_false(PopulationModel.is_opening_placed(StringName(PORT_A)))
 	PopulationModel.daily_step(1)
-	assert_true(bool(PopulationModel._opening_placed.get(PORT_A, false)))
+	assert_true(PopulationModel.is_opening_placed(StringName(PORT_A)))
 	var sum_occ := 0
-	for rid_v in PopulationModel._port_res_ids.get(PORT_A, []):
-		var occ: Dictionary = PopulationModel.residence_occupants(StringName(String(rid_v)))
+	for bld_v in BuildingEconomy.residences(StringName(PORT_A)):
+		var occ: Dictionary = PopulationModel.residence_occupants((bld_v as Building).building_id)
 		sum_occ += int(occ["poor"]) + int(occ["citizen"]) + int(occ["rich"])
 		assert_lte(
 			int(occ["poor"]) + int(occ["citizen"]) + int(occ["rich"]),
@@ -226,7 +248,7 @@ func test_WP51_opening_full_placement() -> void:
 
 
 func _boot_two_ports(sat: SatisfactionInputProvider) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	PopulationModel.set_satisfaction_input_provider(sat)
 	assert_eq(PopulationModel.load_and_validate().size(), 0)
 	PopulationModel.set_master_seed(1)
@@ -256,11 +278,13 @@ func _zero_all_flow_rates() -> void:
 
 
 func _snap_occ(port_id: String) -> Dictionary:
+	## F11: snap via public residences list + residence_occupants.
 	var out := {}
-	var ids: Array = PopulationModel._port_res_ids.get(port_id, [])
-	var sorted_ids: Array = ids.duplicate()
-	sorted_ids.sort()
-	for rid_v in sorted_ids:
+	var ids: Array = []
+	for bld_v in BuildingEconomy.residences(StringName(port_id)):
+		ids.append(String((bld_v as Building).building_id))
+	ids.sort()
+	for rid_v in ids:
 		var rid: String = String(rid_v)
 		var occ: Dictionary = PopulationModel.residence_occupants(StringName(rid))
 		out[rid] = "%s,%s,%s" % [str(occ["poor"]), str(occ["citizen"]), str(occ["rich"])]
@@ -268,18 +292,17 @@ func _snap_occ(port_id: String) -> Dictionary:
 
 
 func _clear_residences(port_id: String) -> void:
+	## Residual F11: BuildingEconomy private building maps (bld lane owns those).
 	var arr: Array = BuildingEconomy._buildings_by_port.get(port_id, [])
 	var keep: Array = []
 	for bld_v in arr:
 		var bld: Building = bld_v
 		if bld.build_class == &"RESIDENCE":
 			BuildingEconomy._buildings.erase(String(bld.building_id))
-			PopulationModel._residents.erase(String(bld.building_id))
 		else:
 			keep.append(bld)
 	BuildingEconomy._buildings_by_port[port_id] = keep
-	PopulationModel._port_res_ids[port_id] = []
-	PopulationModel._opening_placed.erase(port_id)
+	PopulationModel.clear_port_residence_tracking(StringName(port_id))
 
 
 func _force_residences_port(port_id: String, n: int) -> void:

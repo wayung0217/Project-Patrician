@@ -2,7 +2,6 @@ extends GutTest
 ## WP-23 / TechSpec 14-07 city + quarter-end (FRM-03／04／12–18).
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp23_city/"
 const PORT := "PT-01"
@@ -366,9 +365,82 @@ func test_WP53_A12_upgrade_waiting_keeps_upgrade_days() -> void:
 	assert_eq(b2.days_left, up_days)
 
 
-func _seed_market_enough() -> void:
+func test_WP59_V1_TD16_upgrade_keeps_prior_kontor_cap() -> void:
+	## V1／TD-16／D-84b: order_upgrade WAITING／BUILDING keeps prior kontor warehouse cap.
+	_boot_world()
+	_top_up(ACTOR, 50_000_000)
+	var kslot: StringName = &""
+	for s_v in BuildingEconomy.slots_for_port(PORT):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.KONTOR and s.building_id == &"":
+			kslot = s.slot_id
+			break
+	assert_ne(kslot, &"")
+	assert_gt(BuildingEconomy.buy_land(ACTOR, kslot), 0)
+	(Params._values["PRM-SYS08-BUILD_MAT"] as Dictionary)["KONTOR"] = {"GD-001": 0}
+	var bid: StringName = BuildingEconomy.order_build(ACTOR, kslot, &"CB-17")
+	assert_ne(bid, &"")
+	var b0: Building = BuildingEconomy.get_building(bid)
+	b0.state = Building.State.ACTIVE
+	b0.days_left = 0
+	b0.level = 1
+	b0.missing_materials = {}
+	b0.locked_materials = {}
+	## FRM-SYS08／PRM-SYS08-KONTOR_CAP[0] = 2000 at L1.
+	var caps: Array = Params.get_value("PRM-SYS08-KONTOR_CAP")
+	var cap_l1: int = int(caps[0])
+	assert_eq(BuildingEconomy.warehouse_capacity(ACTOR, StringName(PORT)), cap_l1)
+	var arr: Array = Params.get_value("PRM-SYS08-KONTOR_UPGRADE")
+	var row0: Dictionary = (arr[0] as Dictionary).duplicate(true)
+	row0["GD-001"] = 9999
+	Params._values["PRM-SYS08-KONTOR_UPGRADE"] = [row0, arr[1]]
+	assert_eq(BuildingEconomy.order_upgrade(ACTOR, bid), bid)
+	var b1: Building = BuildingEconomy.get_building(bid)
+	assert_eq(b1.state, Building.State.WAITING_MATERIAL)
+	assert_eq(b1.level, 2)
+	assert_eq(BuildingEconomy.warehouse_capacity(ACTOR, StringName(PORT)), cap_l1)
+	_seed_market_enough()
+	BuildingEconomy.daily_step(1)
+	BuildingEconomy.flush_signals()
+	var b2: Building = BuildingEconomy.get_building(bid)
+	assert_eq(b2.state, Building.State.BUILDING)
+	assert_eq(BuildingEconomy.warehouse_capacity(ACTOR, StringName(PORT)), cap_l1)
+
+
+func test_WP59_V1_TD16_upgrade_keeps_prior_public_level() -> void:
+	## V1／TD-16: PUBLIC order_upgrade WAITING keeps public_level at prior grade.
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	_force_public(city, &"CB-01", 1)
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-01"), 1)
+	_top_up(city, 50_000_000)
+	## Starve mats so upgrade waits (UPGRADE_PER_CAPITA L2 mats).
 	var mkt: Dictionary = GoodsLedger.make_market(PORT)
 	for gid in ["GD-001", "GD-002", "GD-003"]:
+		var q: int = GoodsLedger.get_qty(mkt, StringName(gid))
+		if q > 0:
+			GoodsLedger.transfer(
+				mkt, GoodsLedger.make_external(), StringName(gid), q, GoodsLedger.REASON_CONSUME, &"TEST"
+			)
+	var bid: StringName = &""
+	for b_v in BuildingEconomy.buildings_for_port(PORT):
+		var b: Building = b_v
+		if b.build_class == &"PUBLIC" and b.cb_id == &"CB-01":
+			bid = b.building_id
+			break
+	assert_ne(bid, &"")
+	var up: StringName = BuildingEconomy.order_upgrade(city, bid)
+	assert_eq(up, bid)
+	var b1: Building = BuildingEconomy.get_building(bid)
+	assert_eq(b1.state, Building.State.WAITING_MATERIAL)
+	assert_eq(b1.level, 2)
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-01"), 1)
+
+
+func _seed_market_enough() -> void:
+	var mkt: Dictionary = GoodsLedger.make_market(PORT)
+	for gid in ["GD-001", "GD-002", "GD-003", "GD-004"]:
 		GoodsLedger.transfer(
 			GoodsLedger.make_external(),
 			mkt,
@@ -400,7 +472,7 @@ func test_WP54_city_queue_success_starts_when_funded() -> void:
 		BuildingEconomy.REQUESTER_SYS08
 	)
 	BuildingEconomy.season_step()
-	assert_eq(int(BuildingEconomy._queue_pos[PORT]), 1)
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-01"), 1)
 	var found := false
 	for b_v in BuildingEconomy.buildings_for_port(PORT):
 		var b: Building = b_v
@@ -411,37 +483,8 @@ func test_WP54_city_queue_success_starts_when_funded() -> void:
 
 
 func test_TST_SYS08_14_city_queue_no_skip() -> void:
-	_boot_world()
-	var city := CashLedger.make_city_id(PORT)
-	# Two queue steps; fund enough for step1 only if step0 is expensive.
-	var s0 := BuildStep.new()
-	s0.port_id = PORT
-	s0.step = 0
-	s0.cb_id = "CB-01"
-	s0.target_level = 1
-	var s1 := BuildStep.new()
-	s1.port_id = PORT
-	s1.step = 1
-	s1.cb_id = "CB-02"
-	s1.target_level = 1
-	BuildingEconomy.set_build_queue(PORT, [s0, s1])
-	# PUBLIC cash cost from params — fund less than one.
-	var cost: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["PUBLIC"])
-	CashLedger.post(
-		[
-			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - (cost - 1)),
-			CashLedger.make_entry(city, cost - 1),
-		],
-		&"TEST_FUND",
-		BuildingEconomy.REQUESTER_SYS08
-	)
-	BuildingEconomy.season_step()
-	assert_eq(int(BuildingEconomy._queue_pos[PORT]), 0)
-
-
-func test_TST_SYS08_14b_city_queue_asymmetric_no_skip() -> void:
-	## D-19c: item1 unaffordable (L2 upgrade cash), item2 affordable (PUBLIC L1) → no skip.
-	## Uses existing UPGRADE_PER_CAPITA vs BUILD_CASH_LI PUBLIC — no invented per-cb_id prices.
+	## T4／TST-SYS08-14: CITY can afford step 2 (PUBLIC L1) but not step 1 (L2 upgrade) → no skip.
+	## Asymmetric step costs via UPGRADE_PER_CAPITA L2 vs BUILD_CASH_LI PUBLIC.
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
 	var s0 := BuildStep.new()
@@ -456,7 +499,9 @@ func test_TST_SYS08_14b_city_queue_asymmetric_no_skip() -> void:
 	s1.target_level = 1
 	BuildingEconomy.set_build_queue(PORT, [s0, s1])
 	var public_cost: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["PUBLIC"])
-	var upgrade_cost: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
+	## FRM-SYS08-07 numeric: pop=1000 × UPGRADE_PER_CAPITA[L2].CASH_LI=10000 → 10_000_000.
+	var upgrade_cost: int = int(BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)["CASH_LI"])
+	assert_eq(upgrade_cost, 10_000_000)
 	assert_gt(upgrade_cost, public_cost)
 	CashLedger.post(
 		[
@@ -469,32 +514,22 @@ func test_TST_SYS08_14b_city_queue_asymmetric_no_skip() -> void:
 	assert_lt(CashLedger.balance(city), upgrade_cost)
 	assert_gte(CashLedger.balance(city), public_cost)
 	BuildingEconomy.season_step()
-	assert_eq(int(BuildingEconomy._queue_pos[PORT]), 0)
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-01"), 0)
 	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-02"), 0)
 
 
-func test_D21b_public_upgrade_fee_scales_with_pop() -> void:
-	## D-21b: FRM-SYS08-07 — different pop → different upgrade fee; queue helper matches fee API.
+func test_WP59_D21b_public_upgrade_fee_scales_with_pop() -> void:
+	## D-21b／V2: FRM-SYS08-07 numeric examples — pop×CASH_LI (fixture L2 CASH_LI=10000).
 	## Mutate injected TestPop (D-11d forbids set_population_provider after load).
 	_boot_world()
 	var pop: TestPop = BuildingEconomy._population as TestPop
 	pop.set_pop(PORT, 500)
 	var fee_a: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)
-	var cash_a: int = int(fee_a["CASH_LI"])
-	var helper_a: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
-	assert_eq(helper_a, cash_a)
+	assert_eq(int(fee_a["CASH_LI"]), 5_000_000)
 	pop.set_pop(PORT, 1500)
 	var fee_b: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)
-	var cash_b: int = int(fee_b["CASH_LI"])
-	var helper_b: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
-	assert_eq(helper_b, cash_b)
-	assert_ne(cash_a, cash_b)
-	assert_gt(cash_b, cash_a)
-	# L2 uses arr[0], not arr[1] (三級).
-	var arr: Array = Params.get_value("PRM-SYS08-UPGRADE_PER_CAPITA")
-	var l2: int = int((arr[0] as Dictionary).get("CASH_LI", 0))
-	var expect_b: int = ceili(AmountQuantize.quantize_amount(1500.0 * float(l2)))
-	assert_eq(cash_b, expect_b)
+	assert_eq(int(fee_b["CASH_LI"]), 15_000_000)
+	assert_gt(int(fee_b["CASH_LI"]), int(fee_a["CASH_LI"]))
 
 
 func test_TST_SYS08_R_boot_and_zone_open_max_ring() -> void:
@@ -593,12 +628,16 @@ func test_WP23_14_07_1_season_order_reproducible() -> void:
 	assert_eq(BuildingEconomy.get_building(brew).acc_wage_li, 0)
 
 
-func test_WP23_14_07_4_levy_only_surplus() -> void:
+func test_WP59_V1_FRM_SYS08_17_levy_surplus_via_season() -> void:
+	## V1／FRM-SYS08-17 numeric: thr=4×avg(1000)=4000; bal=10000; rate=0.1 → levy=600 → 9400.
+	## Clears formal queue so season_step only applies levy (no city build spend).
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	BuildingEconomy.set_build_queue(PORT, [])
+	## Spend-hist seed has no public setter (F11 residual); season_step is the levy entry.
 	BuildingEconomy._city_spend_hist[PORT] = [1000, 1000, 1000, 1000]
-	BuildingEconomy._season_city_spend[PORT] = 1000
-	# thr = 4 * 1000 = 4000; fund 10000 → levy floor((10000-4000)*0.1)=600
+	BuildingEconomy._season_city_spend[PORT] = 0
 	CashLedger.post(
 		[
 			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 10000),
@@ -607,7 +646,7 @@ func test_WP23_14_07_4_levy_only_surplus() -> void:
 		&"TEST_FUND",
 		BuildingEconomy.REQUESTER_SYS08
 	)
-	BuildingEconomy._season_levy(PORT)
+	BuildingEconomy.season_step()
 	assert_eq(CashLedger.balance(city), 9400)
 
 
@@ -640,7 +679,7 @@ func _boot_world(wf: WorkforceProvider = null) -> void:
 
 
 func _setup_core_without_be(pop: TestPop) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)

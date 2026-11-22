@@ -50,7 +50,7 @@ const DEMO_Q1 := 50 ## B452
 ## TST-SYS04-04／xlsx B467
 const DEMO_SPLIT_EXTRA_LI := 0
 ## TST-SYS04-05／xlsx B470
-const DEMO_ROUNDTRIP_PNL_LI := 0 - 13715
+const DEMO_ROUNDTRIP_PNL_LI := -13715
 const DEMO_BUY_TOTAL_LI := 144000 ## B463
 const DEMO_SELL_TOTAL_LI := 130285 ## B469
 
@@ -60,6 +60,12 @@ const TST02_M_AT_2 := 1.2
 const TST02_W_PLAT_LO := 3.0
 const TST02_W_PLAT_HI := 6.0
 const TST02_M_PLAT := 1.0
+
+## T7 named consts (no 1+1 / 1.0+1.0 / 0-1 evasions)
+const TWO := 2
+const THREE := 3
+const HALF_F := 0.5
+const PORT_COUNT_TRANSIT_MIN := 3
 
 ## TST-SYS04-03
 const TST03_W_CEIL := 0.0
@@ -111,7 +117,7 @@ func before_each() -> void:
 	ShipRegistry._sailor_pool = null
 
 
-func test_consumption_provider_base_push_error() -> void:
+func test_WP59_consumption_provider_base_push_error() -> void:
 	# 2.1-03／TechSpec 3.7: 基底方法一律 push_error 並回失敗值
 	# WP-32／15-05: weekly_consumption removed from interface.
 	var base := ConsumptionProvider.new()
@@ -120,7 +126,7 @@ func test_consumption_provider_base_push_error() -> void:
 	assert_push_error_count(1)
 
 
-func test_D08g_named_band_enum_order() -> void:
+func test_WP59_D08g_named_band_enum_order() -> void:
 	# D-08g: BAND_VERY_LOW…BAND_VERY_HIGH named enum；0 過低→4 過高；不得裸用 0..4 比較。
 	assert_eq(MarketPricer.BAND_VERY_LOW, MarketPricer.Band.VERY_LOW)
 	assert_eq(MarketPricer.BAND_LOW, MarketPricer.Band.LOW)
@@ -174,13 +180,18 @@ func test_TST_SYS04_01_curve_validation_errors() -> void:
 
 
 func test_TST_SYS04_02_mid_multiplier_platform() -> void:
-	# TST-SYS04-02: w=2 → m=1.2；w=3..6 → m=1.0
+	# TST-SYS04-02／AB3: w=2 → m=1.2；w=3..6 → m=1.0；mid_price asserts plateau path
 	_boot_full(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK)
 	assert_eq(MarketPricer.multiplier_at_weeks(TST02_W), TST02_M_AT_2)
 	assert_eq(MarketPricer.multiplier_at_weeks(TST02_W_PLAT_LO), TST02_M_PLAT)
 	assert_eq(MarketPricer.multiplier_at_weeks(TST02_W_PLAT_HI), TST02_M_PLAT)
 	var mid2: float = MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))
-	# stock/C = 300/105 ≈ 2.857 → between 1.4 and 1.0; just check m(2) path via helper above
+	# stock/C = 300/105 ≈ 2.857 → interpolate between M2=1.4 and M3=1.0
+	var weeks: float = float(DEMO_STOCK) / float(DEMO_WEEKLY_C)
+	var expected_mid: float = float(DEMO_ANCHOR_LI) * MarketPricer.multiplier_at_weeks(weeks)
+	assert_eq(mid2, expected_mid)
+	assert_gt(weeks, TST02_W)
+	assert_lt(weeks, TST02_W_PLAT_LO)
 
 
 func test_TST_SYS04_03_ceiling_and_floor() -> void:
@@ -353,26 +364,44 @@ func test_TST_SYS04_10_qty_rejects_no_state_change() -> void:
 	)
 	assert_eq(zero[MarketPricer.KEY_ERROR], MarketPricer.ERR_SYS04_06)
 	assert_true(_last_error_is(MarketPricer.ERR_SYS04_06))
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 
 	assert_eq(GoodsLedger.get_qty(market, StringName(GOOD_DEMO)), TST10_STOCK)
 
 
-func test_D01_quantize_amount_snaps_near_integer() -> void:
+func test_WP59_D01_quantize_amount_snaps_near_integer() -> void:
 	# D-01: |x−round(x)| <= ROUND_EPS×max(1,|x|) → snap；else leave; EPS from Params (no bare 1e-9).
 	_boot_full(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK)
 	var eps: float = Params.get_float(PRM_ROUND_EPS)
 	assert_gt(eps, 0.0)
-	var half: float = 1.0 / (1.0 + 1.0)
-	var near: float = float(DEMO_BUY_TOTAL_LI) + eps * half
+	var near: float = float(DEMO_BUY_TOTAL_LI) + eps * HALF_F
 	assert_eq(AmountQuantize.quantize_amount(near), float(DEMO_BUY_TOTAL_LI))
-	var far: float = float(DEMO_BUY_TOTAL_LI) + half
+	var far: float = float(DEMO_BUY_TOTAL_LI) + HALF_F
 	assert_eq(AmountQuantize.quantize_amount(far), far)
 
 
 func test_TST_SYS04_11_zero_window_qty_floor() -> void:
-	# TST-SYS04-11: window_qty＝0 → m＝M_n；買 10 總額同 TST-SYS04-07
-	_boot_full(DEMO_ANCHOR_LI, 0, DEMO_STOCK)
+	# TST-SYS04-11／AB2: window_qty＝0 with normal window_days（≠ SYS04-07 C=0 via weekly inject）.
+	_boot_catalog_ports_ledger(DEMO_ANCHOR_LI)
+	_seed_market(PORT_DEMO, DEMO_STOCK)
+	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(errors.size(), 0, "MarketPricer must load: %s" % str(errors))
+	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	assert_gt(days_pw, 0)
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(PORT_DEMO), StringName(GOOD_DEMO), 0, 0, days_pw, 0
+	)
+	for gid_variant in GoodCatalog.all_ids():
+		var gid: String = String(gid_variant)
+		if gid != GOOD_DEMO:
+			GoodsLedger.seed_offtake_snapshot(
+				StringName(PORT_DEMO), StringName(gid), 0, 0, days_pw, 0
+			)
+	var snap: Dictionary = GoodsLedger.offtake_snapshot(
+		StringName(PORT_DEMO), StringName(GOOD_DEMO)
+	)
+	assert_eq(int(snap.get(GoodsLedger.FIELD_WINDOW_QTY, -1)), 0)
+	assert_eq(int(snap.get(GoodsLedger.FIELD_WINDOW_DAYS, -1)), days_pw)
 	var buy: Dictionary = MarketPricer.quote(
 		StringName(PORT_DEMO), StringName(GOOD_DEMO), MarketPricer.SIDE_BUY, TST07_Q
 	)
@@ -403,14 +432,9 @@ func test_TST_SYS04_13_offtake_weeks_fixture() -> void:
 	_seed_market(PORT_DEMO, 210)
 	var errors: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
 	assert_eq(errors.size(), 0)
-	if not GoodsLedger._offtake_snapshot.has(PORT_DEMO):
-		GoodsLedger._offtake_snapshot[PORT_DEMO] = {}
-	GoodsLedger._offtake_snapshot[PORT_DEMO][GOOD_DEMO] = {
-		"window_qty": 70,
-		"local_qty": 70,
-		"window_days": 7,
-		"day": 0,
-	}
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(PORT_DEMO), StringName(GOOD_DEMO), 70, 70, 7, 0
+	)
 	var mid: float = MarketPricer.mid_price(StringName(PORT_DEMO), StringName(GOOD_DEMO))
 	# w=3 → m=M3=1.0 on fixture curve; mid = 1000 × 1.0
 	assert_eq(mid, float(DEMO_ANCHOR_LI) * 1.0)
@@ -432,21 +456,12 @@ func _boot_full(anchor_li: int, weekly_c: int, stock: int) -> void:
 
 
 func _inject_offtake_weekly(port_id: String, good_id: String, weekly_offtake: int) -> void:
-	# weekly_offtake = window_qty × DAYS_PER_WEEK ÷ window_days; use window_days=7.
+	# weekly_offtake = window_qty × DAYS_PER_WEEK ÷ window_days; use window_days=DAYS_PER_WEEK.
 	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
 	var window_days: int = days_pw if days_pw > 0 else 1
-	var window_qty: int = weekly_offtake
-	# With window_days == DAYS_PER_WEEK, weekly_offtake == window_qty.
-	if not GoodsLedger._offtake_snapshot.has(port_id):
-		GoodsLedger._offtake_snapshot[port_id] = {}
-	var by_good: Dictionary = GoodsLedger._offtake_snapshot[port_id]
-	by_good[good_id] = {
-		"window_qty": window_qty,
-		"local_qty": window_qty,
-		"window_days": window_days,
-		"day": 0,
-	}
-	GoodsLedger._offtake_snapshot[port_id] = by_good
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(port_id), StringName(good_id), weekly_offtake, weekly_offtake, window_days, 0
+	)
 
 
 func _boot_catalog_ports_ledger(anchor_li: int) -> void:
@@ -467,8 +482,8 @@ func _boot_catalog_ports_ledger_transit(anchor_li: int) -> void:
 	var gerr: Array = GoodCatalog.load_and_validate(goods_dir)
 	assert_eq(gerr.size(), 0, "goods must load")
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
-	if port_count < 1 + 1 + 1:
-		port_count = 1 + 1 + 1
+	if port_count < PORT_COUNT_TRANSIT_MIN:
+		port_count = PORT_COUNT_TRANSIT_MIN
 	var ports_dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "transit/")
 	_set_transit(ports_dir, PORT_TRANSIT, GOOD_DEMO, PackedStringArray([PORT_TERMINAL]))
 	var perr: Array = PortRegistry.load_and_validate(ports_dir)

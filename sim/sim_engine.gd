@@ -21,8 +21,21 @@ var demand_tables_path: String = DemandModel.TABLES_PATH
 
 ## Optional: called before each combo boot to clear Autoload session (must not live in sim/).
 var session_reset: Callable = Callable()
-## Optional test hook: called as (combo_index, day) before each tick_day.
-var before_day: Callable = Callable()
+## R9-54 Y5 formal inject (WP-59): optional hook (combo_index, day) before each tick_day.
+## Prefer set_before_day_hook／clear_before_day_hook over writing the field.
+## WP-58 Y1 still injects TradeDesk day errors into the buffer drained by public
+## take_day_errors (SimLoop step 6); do not reintroduce private _day_errors writes
+## when a public inject path exists.
+var _before_day: Callable = Callable()
+
+
+func set_before_day_hook(hook: Callable) -> void:
+	## R9-54 Y5: formal test／CLI inject before each day tick.
+	_before_day = hook
+
+
+func clear_before_day_hook() -> void:
+	_before_day = Callable()
 
 
 func run_scenario_dict(scenario: Dictionary) -> Dictionary:
@@ -167,8 +180,8 @@ func _run_one_job(
 
 	for day_i in range(total_days):
 		var day_num: int = day_i + 1 ## first advance yields day=1
-		if before_day.is_valid():
-			before_day.call(combo_index, day_num)
+		if _before_day.is_valid():
+			_before_day.call(combo_index, day_num)
 		## A31／H8／ERR-SYS23-07: collect tick_day errors; do not discard.
 		var day_errors: Array = SimLoop.tick_day()
 		if sampler.conservation_hits > 0:

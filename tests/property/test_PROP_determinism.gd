@@ -4,7 +4,6 @@ extends GutTest
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
-const PARAMS_DEMO := "res://tests/fixtures/params_sys05_demo.json"
 const GOODS_FIXTURE_ROOT := "user://prop_determinism_goods/"
 const PORTS_FIXTURE_ROOT := "user://prop_determinism_ports/"
 
@@ -15,6 +14,9 @@ const PROP_SEQ_LEN_DET := 120
 const PROP_HOLD_CAP := 400
 const PROP_MAX_QTY := 15
 const PROP_MAX_AMOUNT := 3000
+## T7: named branch counts (no 1+1 evasions)
+const BRANCH_COUNT := 2
+const REASON_COUNT := 5
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -91,9 +93,9 @@ func _run_once() -> Dictionary:
 	)
 
 	for _i in PROP_SEQ_LEN_DET:
-		var branch: int = stream.next_index(1 + 1)
+		var branch: int = stream.next_index(BRANCH_COUNT)
 		if branch == 0:
-			var reason_i: int = stream.next_index(1 + 1 + 1 + 1 + 1)
+			var reason_i: int = stream.next_index(REASON_COUNT)
 			var qty: int = stream.next_qty(PROP_MAX_QTY)
 			match reason_i:
 				0:
@@ -171,7 +173,7 @@ func _state_hashes(good: StringName, market: Dictionary, hold: Dictionary) -> Di
 
 func _boot() -> void:
 	# Cash uses demo params (START_CASH)；goods／ports from all_keys mins via rebuilt fixtures.
-	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
 	## D-32b 重置輔助.

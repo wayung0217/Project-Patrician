@@ -133,13 +133,13 @@ func test_WP34_parse_scaled_decimal_examples() -> void:
 	assert_false(d["ok"])
 
 
-func test_D40a_scale_not_power_of_10() -> void:
+func test_WP59_D40a_scale_not_power_of_10() -> void:
 	var bad: Dictionary = CsvImport.parse_scaled_decimal("1.0", 50)
 	assert_false(bad["ok"])
 	assert_true(String(bad["error"]).contains("power of 10"))
 
 
-func test_D40a_excess_decimals() -> void:
+func test_WP59_D40a_excess_decimals() -> void:
 	## D-40a: digit budget from scale (100 → 2 places); 5.941 exceeds.
 	var c: Dictionary = CsvImport.parse_scaled_decimal("5.941", RATE_SCALE)
 	assert_false(c["ok"])
@@ -148,7 +148,7 @@ func test_D40a_excess_decimals() -> void:
 	assert_false(d["ok"])
 
 
-func test_D40b_non_int_value() -> void:
+func test_WP59_D40b_non_int_value() -> void:
 	## D-40b: JSON float 100.5 rejected; whole JSON float 100 accepted.
 	_write_params_tmp({"PRM-SYS06-RATE_SCALE": 100.5, "PRM-SYS06-PPM_SCALE": 1000000.0, "PRM-SYS06-WEIGHT_SUM": 100.0})
 	var bad: Dictionary = CsvImport._read_demand_scales_from_params(PARAMS_TMP)
