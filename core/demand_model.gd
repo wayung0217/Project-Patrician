@@ -116,6 +116,14 @@ func weekly_demand(port_id: StringName, good_id: StringName) -> int:
 	return floori(float(w_num) / float(_period_S))
 
 
+func weekly_potential_demand(port_id: StringName, good_id: StringName) -> int:
+	## D-96f／FRM-SYS23-04／WP-27: 週潛在需求（擔／週，FLOOR）。
+	## Exact public name (D-96f)；口径同 weekly_demand。
+	## N-04: lane A may replace this; integration prefers lane A.
+	assert(_loaded, "DemandModel.weekly_potential_demand before load")
+	return weekly_demand(port_id, good_id)
+
+
 func daily_demand(port_id: StringName, good_id: StringName, day: int) -> int:
 	assert(_loaded, "DemandModel.daily_demand before load")
 	_ensure_day_plan(day)
