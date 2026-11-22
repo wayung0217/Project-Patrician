@@ -14,7 +14,6 @@ signal conservation_violated(good_id: StringName, expected: int, actual: int)
 const SYS_ID := &"SYS-03"
 const SCRIPT_PATH := "res://autoload/goods_ledger.gd"
 
-const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_CONSERVATION_CHECK_EVERY_TICK := "PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK"
 const PRM_OFFTAKE_WINDOW_DAYS := "PRM-SYS03-OFFTAKE_WINDOW_DAYS"
 
@@ -37,7 +36,6 @@ const ERR_SYS03_08 := &"ERR-SYS03-08"
 const ERR_SYS03_09 := &"ERR-SYS03-09"
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
-const CODE_PORT_REGISTRY_NOT_LOADED := &"PORT_REGISTRY_NOT_LOADED"
 
 const FIELD_OWNER_ID := "owner_id"
 const FIELD_PORT_ID := "port_id"
@@ -85,9 +83,7 @@ const EXTERNAL_KEY := "EXTERNAL"
 const FIELD_PARAMS := "Params"
 const FIELD_QTY := "qty"
 const FIELD_REASON := "reason"
-const FIELD_PORT_REGISTRY := "PortRegistry"
 const FIELD_KIND := "kind"
-const REQUESTER_SYS03 := &"SYS-03"
 
 ## Day when Clock Autoload absent (WP-02 not on WP-04 stack) — see PR 缺口.
 ## D-05(b): Clock boot day = 0; keep injectable default aligned until Clock is on stack.
