@@ -950,6 +950,29 @@ R9-64,17-47 全量代碼審查（補 R9-63 只讀 8.8% 的部分）：產品碼�
 ★ 結構-1 十年 7 種貨零產出：開局 16 座加工坊（米酒、臘肉、鐵器、火藥、瓷器、武器、彩瓷）每座都缺至少一種本地原料，16 座中 9 座卡在木炭 GD-013；L1 沒船運，原料永遠到不了 → 不是代碼錯。城防採購為 0 同因。
 ★ 結構-2 WP-63 (d) 部分過時：WP-56 A18 已修好 max_affordable_qty 對報價失敗的處理，WP-53 只需改回呼叫它。
 ★ 確認無誤：整合步無衝突、無多出代碼；日誌除截圖腳本外無 ERROR；各線 GUT 全綠（427 → 466＋ui 4）；WP-52 data/ 經 csv_import 重匯（45 檔、0 錯）；WP-55 抽籤序號每港重置正確；WP-57 工資與維修取整改走 quantize；WP-58 遇 ERR 中止、寫檔失敗回非 0；WP-59 改名 115 個測試中 108 個有對照表，其餘 7 個逐一看過屬改寫或依 L15 刪除。",合併建議維持 R9-63：#44 → #45 → #53 → #55 → #51。四個高風險：高-1、高-2 是規格或既有行為，不是本批引入；高-3 是流程；高-4 只在「成交後轉貨失敗」的備援路徑觸發。全部排入 17-50（修訂版）修正，不擋合併。D-95(a) 追認改為排除 reverse_last_post（D-96d）。,2026-11-22,,,
+R9-65,17-50 下午長任務全量審查（afternoon-17-50）：高風險 4 項、中風險 11 項；整合 PR #62 暫不合併；十年模擬顯示遷移是主驅動、f 值幾乎無影響,"Owner 2026-11-22 把交付 zip 解壓上傳到 afternoon-17-50（174 檔），指示線 D 與 Windows 執行檔不審。
+★ 已讀範圍（分母寫明）
+① 檔案：審查範圍 132 檔（174 檔扣除 step_D_wp62 40 檔與 zip_parts 2 檔）。完整讀 119 檔（90.2%）；只讀到開頭 5 檔（3.8%）：step_A gut_full、step_C scan、step_int scan、step_int gut_ui、step00 gut_after_51_ui（線上讀取只回傳開頭）；未讀 8 檔（6.1%）：step_C gut_full、step_int gut_full、step_int gut_unit_property、step00 gut_after_44／45／51_unit／53／55（每檔 700 至 870 KB 的 GUT 記錄，測試總數以各步 report 自述為準，未逐行核對）。
+② 差異：線 A、B、C 的 diff.patch 逐行讀；整合步 diff 用程式比對，確認＝線 A＋B＋C 加線 D 檔案，唯一衝突 demand_model.gd 保留線 A。
+③ 黃金輸出 v2：8 份 CSV 全部用程式逐格重算（每份 6,137 列＝5,776 港日列＋361 雜湊列）。baseline＝run1＝run2＝線 B（完全相同）；線 A 自第 0 日起 mid、stock_weeks 各差 5,776 格，buildings 361 格；線 C 自第 90 日起 buildings 2,691 格、city_balance 1,356 格，自第 136 日起人口變動；整合＝步 Z。
+④ 步 Z 四組十年模擬（L1、L2 f＝0.05／0.10／0.20）：season_ports、season_cells、obs_ext、combos、summary、sim_runner.log 全部重算。","★ 高-1 線 B 遷移寫在訊號處理器：遷移在 Clock.day_ticked 的 lambda（SimEngine 連線）內執行並寫帳本轉移，違反 C-04（不得依 signal 決定執行順序、訊號接收者不得改 tick 狀態）。應改為 tick_day 之後的明確步驟。
+★ 高-2 整合分支 UI 報價壞掉，但「零錯誤」測試仍通過：step_int gut_ui 每次開 Debug UI 都報 market_pricer.gd 第 418 行 _batch_area「Nonexistent 'float' constructor」（quote → _refresh_market），test_WP61_formal_boot_zero_errors 等 4 項仍 4／4 通過。合併前 main 的 UI 記錄（gut_after_51_ui_clean）沒有這個錯誤，所以是本批引入；最可能是線 A 改了 _stock_weeks_raw 的回傳值（null 或 0.0）而 _batch_area 直接 float()。測試只數 push_error，看不到腳本錯誤。
+★ 高-3 線 C _frm18_price 在週毛利小於 0 時回 0：等於免費買樓。規格要求停止並回報錯誤，不得回 0。
+★ 高-4 城市隊列 16 港有 5 港卡死（資料／規格問題，不是代碼）：2 年探針（每城種子現金 2 億厘、材料 5 萬擔）只有 11 港做到第一次升級，報告寫 15 港不實。PT-08、09、10、16 的隊列要新建的 L1 公共樓多於空的公共槽，卡在原位；PT-07 卡在缺 CB-16@L1。04_Content build_queue 與 city_center 公共槽數不一致，需 Owner 裁決。
+◆ 中-1 產品碼留測試後門：DemandModel、MarketPricer 檢查 has_meta(""wp64_test_potential"")，並用 int()（違反 C-09）。
+◆ 中-2 線 B e_p 先用 float 除法再 floori，違反 D-93「全整數」。
+◆ 中-3 線 B OBS-04 算不出 R_g 時預設「分配不足」，應為「無法判定」。
+◆ 中-4 線 B 新公開名 set_sim_relocate_enabled、is_sim_relocate_enabled 未經核准（C-14，Cursor 自報）。
+◆ 中-5 線 C BuildingEconomy 每日呼叫 CashLedger.set_quote_provider（測試便利寫進產品碼）；自創錯誤碼 GAP-EX-08-18-05。
+◆ 中-6 線 A 報告寫 R6＝0，scan.txt 為 COUNT_R6＝6，不一致。
+◆ 中-7 步 0 缺 diff.patch、functions_after、report、interface、scan（違反 S9d）；scenario_validate 先出現編譯錯誤再顯示 ALL_OK。
+◆ 中-8 黃金輸出 v2 雜湊列不可作證據：記錄顯示 FNV-1a 64 位起始值 14695981039346656037 超出 int64。逐格比對不受影響（本審查用逐格）。開局第 0 日 16 列 residences 全為 p0:c0:r0，第 1 日起正常（5,760／5,776 列有住戶）。
+◆ 中-9 探針品質：線 B 方向探針是 Python 重寫，不是跑 GDScript；線 C 探針灌錢灌料且誇大結果。
+◆ 中-10 #46 至 #52 關閉失敗（403），仍開著。
+◆ 中-11 OBS-05 地租、空置稅、支出分項三欄全空（無公開 API）。
+★ 十年模擬結果（逐列重算）
+L1（遷移關）：MET-01 0.0002（目標 0.4 至 0.6）；MET-02 53；MET-04 42；人口 34,191 → 20,557（−39.9%）；富人第 3 季起 16 港全部不動（1,409）；7 種貨十年零產出（GD-016、020、021、023、024、026、027）；最後一季 448 格中 385 格庫存 0；城市現金合計 35,045 → 385,588 兩（上升，WP-65 隊列沒把錢花出去）。
+L2（遷移開）：f＝0.05／0.10／0.20 結果幾乎相同：MET-01 0.024／0.027／0.012；庫存 0 格 177／178／177；人口三組都是 33,417（組成不同，富人 9,830／9,808／9,883），推斷是住房容量上限所致，未證實；米 mid 全為 600 厘地板；遷移累計約 718 至 723 萬擔；零產出貨物歸零；城市現金約 852,000 兩。結論：遷移是主驅動，f 在 0.05 至 0.20 之間幾乎沒有鑑別力。",整合 PR #62 與線 A #56、B #57、C #59／#60 暫不合併。先請 Cursor 修高-1、高-2、高-3 與中-1 至中-7（代碼與流程）；高-4 待 Owner 裁決（D-97 待起草：① 增加公共槽 ② 刪減 build_queue 新建項 ③ 隊列遇無槽項跳過）。步 0 已合併入 main 的 #44、#45、#53、#55、#51 不受影響。線 D #58 依 Owner 指示未審。,2026-11-22,,,
 R9-31,WP-48 稽核 tests（wp-audit-tests，main d465db9）：證實並重新分類；其餘三份尚未收到,Cursor 回報（唯讀）：規格 TST 共 356 個：(a) 已實作 120、(b) 缺測 235、(c) 規格停用 1（TST-SYS02-04）；現碼 test_ 函式 354；無 TST ID 的測試 226（逐檔列用途）。前一版 113／242 作廢，以本版為準。Cursor 暫把全部缺測標「乙（違規）」。,AI 重新分類：235 個缺測不是違規。其中 TST-P0-01 至 05 是規格自查（比對工作簿各表），不是程式測試；TST-SYS05-13 至 24 在 #40（WP-33，未合併）；TST-SYS23-01 至 07、09 至 11 在 #38（WP-26，未合併）；TST-SYS13-02 至 05、10 至 12 屬 WP-31（造船與賣船，未派）；SYS-09 至 12、15 至 18、20 至 22、24 的測試屬尚未實作的工作包。已合併到 main 的程式沒有缺測。226 個無 TST ID 名稱記 TD-05（D-60e）。wp-audit-compliance（四份）、wp-audit-interfaces、wp-audit-gut 尚未附上，待 Owner 附檔後審（compliance 摘要提及 BuildingEconomy→CashLedger、PopulationModel→BuildingEconomy、ShipRegistry→GoodsLedger 的跨模組 _ 存取，須先分辨是產品碼違規或 D-32b 重置輔助）。,tests 稽核證實；TD-05 已記；其餘三份待收件,2026-11-21,,,
 R9-26,WP-33 階段 2（PR #40，head 870876b，TradeDesk；wp33-report）：部分證實；須補證，不合併,Cursor 回報：新 PR #40（非 draft），GUT 369／369（354＋15）、CI 2 checks 綠；新增 trade_desk.gd、qualification_provider.gd、trade_observer.gd，GoodsLedger 新增 can_transfer 並與 transfer 共用 _validate_transfer_preconditions、容器唯讀查詢、HOLD meta 存 ship_id，CashLedger 新增 has_account，SimLoop 於 boot 呼叫 TradeDesk.load_and_validate／boot_gate_errors、tick_day 步驟 6 追加 take_day_errors／flush_signals（boot 簽名與每日順序未改），project.godot 於 CashLedger 後登錄 TradeDesk；BuildingEconomy 兩條採購路徑未動；正式開機探測 38 個錯誤。,有證據：閘門原始輸出；354＋15＝369 且改內容不改名只列 test_autoload_order_2_2_01（R2-11 依計數成立）；規格對照表與介面清單；產品碼 reason＝TRADE 的 transfer 只在 trade_desk.gd（掃描結果列出）；TST-SYS05-23 的原始輸出與 can_transfer／transfer 同碼失敗。未證實（17-04 要求完整貼出而只給行號或檔案路徑）：(b) execute_trade 完整函式與七步逐行對照（只給行號範圍，稱「見倉庫」）；(e) sim_loop.gd 與 project.godot 完整 diff（只貼要點與 Cursor 本機路徑）；(c) TST-SYS05-20、24 的測試原始輸出（只有結論）；(f) 觀察者失敗不回滾的測試原始輸出；(h) can_transfer 共用檢查的 diff（只有路徑）；(d) 掃描腳本未貼；E(1)–(6) 為斷言、無指令輸出。問題：(i) 正式開機探測的 28 個 ERR-SYS01-07 疑為探測腳本在 Autoload _ready 之前執行（與 wp26-evidence-2 的 RegEx 發現相同；WP-43 的探測曾為 0 錯），Cursor 只稱「預存／環境」，ERR-SYS06-01／02 稱「資料空／缺」亦無證據；故「只多出缺提供者與缺觀察者兩項」未證實。C-14：新增公開名稱未經裁決（TradeDesk.set_qualification_provider、set_trade_observers、boot_gate_errors、take_day_errors、flush_signals、load_and_validate；GoodsLedger.is_container_registered／get_container_kind／owner_id／port_id／ship_id／container_dict；CashLedger.has_account），規格 20.1 H 只定 execute_trade、last_error 與信號 trade_executed，介面清單把 set_qualification_provider 的依據寫成「20.1 H」不實。,部分證實；須補證（17-41）；待 Owner 追認新增名稱；不合併,2026-11-20,,,
 ,,,,,,,,
@@ -1607,6 +1630,62 @@ WP-65（在 WP-63 的 head 上開，PR base 設 WP-63 分支）：照 05_TechSpe
 工作報告請依 AI_README S9a 範本逐點回覆。","發送前（依序；Owner 不需手改任何 JSON，也不用處理任何壓縮檔）：
 ① 匯出 docs/spec：AI_README.csv、03_Systems.csv、05_TechSpec.csv、frm_examples.csv（新增）、Project Patrician.xlsx（工作簿 v6.99.120）。
 ② 一次 commit 推 main，再發本派工（發送即視為核准 D-95、D-96）。
-情境檔（scenario_L1_baseline.json 修改＋三個 L2 新檔）由 Cursor 依派工「步 0 第 0 項」自己建立，數值全部寫在派工裡。",D-95；D-96；R9-63；R9-64；WP-27；WP-62 至 WP-66；S9c；S9d；S9g；S9h,未發送（待 Owner commit 後發）,,,
+情境檔（scenario_L1_baseline.json 修改＋三個 L2 新檔）由 Cursor 依派工「步 0 第 0 項」自己建立，數值全部寫在派工裡。",D-95；D-96；R9-63；R9-64；WP-27；WP-62 至 WP-66；S9c；S9d；S9g；S9h,已發送；Cursor 完成；交付已解壓重傳（afternoon-17-50，174 檔）；R9-65 審畢（132 檔範圍）：整合 PR #62 暫不合併，待修高-1 至高-3，高-4 待 Owner 裁決,,,
+17-51,17-50 收尾：分支清理（GitHub 21 條）→ 修正線 A、B、C → 補證據（步 0、黃金輸出雜湊、UI 腳本錯誤閘門、線 D）→ 重建整合 int-1751 → 重跑步 Z（2026-11-22）,"【派工 17-51：17-50 收尾——分支清理、四線修正、補證據、重建整合】
+前提：docs/spec 已更新到工作簿 v6.99.122（AI_README B9）。審查依據：05_TechSpec R9-65。本則自含全部規定；遇規格缺口照 C-05 停該子項、寫 gaps.md，其他照做。
+總規則：① 不准合併任何產品 PR 到 main（S9 ③，等 Owner 依審查授權）；② 不准 force push 到 main、不准改 main 歷史；③ 每刪一條分支前先把「分支名＋完整 SHA」寫進 branches_before.md（可還原）；④ 一個 PR 只做一件事（C-13）。
+
+━━ 步 1　分支盤點（唯讀，先做完才可進步 2）
+git fetch --all --prune，列出 origin 全部分支（Owner 看到 21 條）。逐條填表 branches_before.md，欄位：分支名｜最�� commit 完整 SHA｜對應 PR 編號與狀態（open／closed／merged／無）｜git merge-base --is-ancestor <分支> origin/main 的結果｜git rev-list --count origin/main..<分支>｜git cherry origin/main <分支> 中 + 號 commit 數｜歸類（A 至 G）｜處理方式。
+
+━━ 步 2　清理（只處理能證明的）
+A 類　已完全併入 main（is-ancestor 為真，或 git cherry 全為 − 號）：刪遠端分支；PR 若仍開著，關閉並留言「已含於 main，依 R9-65 關閉」。
+B 類　被 #53 取代的 #46、#47、#48、#49、#50、#52：逐條用 git cherry origin/main <分支> 確認每個 commit 的改動已在 main。全部確認者 → 關 PR、刪分支。只要有一個 commit 不在 main → 不刪，在 gaps.md 寫明 commit SHA、改了哪些檔、為什麼沒進 main。
+C 類　本輪要修的分支：線 A #56、線 B #57、線 C #59 與 #60（#60 疊在 #59 上，維持）。不准刪、不准合併。
+D 類　整合分支 int-1750（#62）：先做步 4 E4 的「對舊整合分支驗證」，之後關 PR、刪分支（步 5 重建）。
+E 類　線 D #58（WP-62）：保留，不改代碼，只補證據（步 4 E3）。
+F 類　審查分支：review/night-17-47 已審畢（R9-63、R9-64），刪除；review/afternoon-17-50 保留到本輪審畢。
+G 類　其他看不出來源、沒有 PR、又不是 main 祖先的分支：不刪，列表回報，由 Owner 決定。
+關 PR 若回 403：不要重試，把 PR 編號列在報告第一段「Owner 待手動關閉」，分支照樣依上述規則處理。
+完成後產出 branches_after.md（同欄位），並寫清楚剩下每條分支為什麼留著。
+
+━━ 步 3　修正（在原分支上加 commit，不開新 PR；每線修完跑全部 GUT＋tests/ui）
+線 A（#56，WP-64）
+A1（R9-65 高-2）market_pricer.gd _batch_area（約第 418 行）float() 收到 null 的腳本錯誤：找出 null 從哪裡來（_stock_weeks_raw 的回傳），依 D-96(a)、FRM-SYS04-09（改）的語義處理「w 為 null＝地板」分支；不得用 0 或其他預設值替代（C-06）。報告貼修前修後代碼，並補一個能重現原錯誤的測試（測試名含 R9_65）。
+A2（中-1）刪除產品碼中所有 has_meta(""wp64_test_potential"") 與相關 int()；測試改用 fixture 或注入的 provider。報告貼全倉 grep wp64_test_potential 結果（只准出現在 tests/）。
+A3（中-6）報告寫 R6＝0，scan.txt 寫 COUNT_R6＝6：重跑 scan，逐處列出 6 處，說明是否違規；違規者修。
+線 B（#57，WP-27）
+B1（高-1）把遷移從 Clock.day_ticked 的 lambda 移出，改成 SimEngine 每日流程中 tick_day 之後的一個明確步驟（C-04；2.3-06：訊號接收者不得改寫本 tick 狀態）。報告貼 SimEngine 每日步驟清單修前修後，以及全倉 grep ""day_ticked.connect"" 結果。修後重跑黃金輸出 v2（L1，遷移關），必須與 baseline 逐格相同。
+B2（中-2）e_p 改全整數（D-93）：只用 int 乘除與 floori 等價寫法，不得經 float；乘法前做 int64 溢位檢查（C-10）。補邊界測試。
+B3（中-3）OBS-04 算不出 R_g 時，原因寫「無法判定」，不得預設「分配不足」。補測試。
+B4（中-4）set_sim_relocate_enabled、is_sim_relocate_enabled 是未核准的公開名（C-14）：不要自行改名或刪除，在報告「規格缺口」列出用途與呼叫端，等 Owner 裁決。
+B5（中-9）方向探針改為直接以 headless 跑 GDScript，不准用 Python 重寫的模型；貼完整指令與輸出。
+B6　e_p 若有截到 stock_p 的寫法（clamp），刪除；若數學上可能超出，改為報錯（C-06）。
+線 C（#59 WP-63、#60 WP-65）
+C1（高-3）_frm18_price 週毛利 < 0 時不得回 0。依 C-06 回錯誤（只用規格已有的 ERR 碼；沒有合適的碼就停該項、寫 gaps.md，不得自創）。列出全部呼叫端，逐一說明收到錯誤時怎麼處理（購買必須失敗，不得以 0 元成交）；補測試。
+C2（中-5）刪除 BuildingEconomy 每日呼叫 CashLedger.set_quote_provider，改在 SimLoop.boot 登錄一次；刪除自創錯誤碼 GAP-EX-08-18-05，改寫進 gaps.md。
+C3（中-9）2 年城市隊列探針重跑：用正式開局資料，不准灌現金、不准灌材料。逐港回報走到隊列第幾步、卡在哪一步、卡住原因（缺公共槽／缺前置建築／缺錢／缺料）。已知 PT-07、08、09、10、16 會卡：不要改資料、不要改隊列邏輯（R9-65 高-4 等 Owner 裁決）。
+C4　駐軍「先記現金、後轉貨，轉貨失敗無回滾」屬既有問題：本輪不修，列 gaps.md。
+
+━━ 步 4　補證據與兩個小修正分支（各從最新 origin/main 開分支、各開一個草稿 PR，不合併）
+E1（中-7）步 0 補 S9d 規定的五件：diff.patch、functions_after.md、report.md、interface.md、scan.txt（範圍：WP-66 黃金輸出 v2 harness 與 A35 R8 規則的 commit）。重跑 scenario_validate，貼完整輸出，並解釋 17-50 那份為何先出現編譯錯誤再顯示 ALL_OK。
+E2（中-8）分支 fix-golden-hash：記錄顯示 FNV-1a 64 起始值 14695981039346656037 超出 int64。改用不溢位的寫法（以 int64 存同一位元樣式，乘法依 2^64 取模，寫法須與 FRM-SYS23-10 的 FNV-1a 64 定義一致並註解 FRM ID）；補一個已知字串的雜湊測試。修後重產 baseline、run1、run2，貼 sha256。另說明開局第 0 日 16 港 residences 全為 p0:c0:r0 的原因（是 harness 取值時點，還是住宅真的空）。
+E3　線 D #58：補 S9a 報告；在 #58 分支跑 tests/ui，貼完整輸出；SCRIPT ERROR 必須為 0。
+E4（高-2 第二半）分支 ci-script-error-gate：在 CI 加一道檢查——GUT（unit 與 ui）輸出只要出現 ""SCRIPT ERROR"" 即判失敗。證明它有效：① 先對舊 int-1750 跑一次，必須失敗（貼輸出）；② 再對 step 5 新整合跑一次，必須通過。
+
+━━ 步 5　重建整合 int-1751（從最新 origin/main 開）
+依序合併：線 A → 線 B → 線 C（#59 → #60）→ fix-golden-hash → ci-script-error-gate → 線 D #58。每次合併記錄衝突與解法。
+驗收：GUT 全部＋tests/ui 全綠；SCRIPT ERROR 0；黃金輸出 v2 與新 baseline 逐格比對，按欄位列出差異格數與首日，逐類說明屬哪個 WP。
+步 Z：重跑四組十年（L1、L2 f＝0.05／0.10／0.20），輸出格式同 17-50；新增「每港城市隊列走到第幾步」欄（只用公開查詢；沒有公開 API 就寫 gaps.md，不准讀私有成員）。
+
+━━ 步 6　交付
+① 只開一個草稿 PR：int-1751（base main），不合併。
+② 交付資料夾 evening-17-51，結構同 afternoon-17-50（每步一夾：diff.patch、functions_after.md、report.md、interface.md、scan.txt、gut_full.txt、gaps.md），另加 branches_before.md、branches_after.md。不要放 build/、.godot/、匯出執行檔。單一 gut 記錄超過 2 MB 就分割。壓縮後必須小於 150 MB；推到孤兒分支 review/evening-17-51（不開 PR）並附 zip。
+③ 報告第一段寫：刪了哪些分支（名＋SHA）；哪些 PR 因 403 要 Owner 手動關；剩下哪些分支、各自為什麼留著。
+工作報告請依 AI_README S9a 範本逐點回覆。","發送前（依序）：
+① 匯出 docs/spec：AI_README.csv、05_TechSpec.csv（工作簿 v6.99.122）。
+② commit 到 main，訊息：spec v6.99.122（17-51）。
+③ 把本列 C 欄整段貼給 Cursor。
+④ Cursor 回報 403 的 PR：到 GitHub 網頁逐個按 Close（不用刪分支，Cursor 會處理）。",R9-65；R9-64；D-96；S9a；S9c；S9d；C-04；C-06；C-10；C-13；C-14,草稿，待發送,,,
 17-20,WP-40 SYS-15 船報與牙行行市範圍,"IntelLedger（res://autoload/intel_ledger.gd）；介面 ShipEventObserver（res://core/interfaces/ship_event_observer.gd）；ShipRegistry.set_ship_observer、sail 成功時 on_departed、tick_step 結束時 on_arrivals（每 tick 至多一次）；MarketPricer.stock_weeks（純函數，mid_price 與 FRM-SYS04-01 改呼叫同一函數，不得複製公式）；FRM-SYS15-01 至 10、ERR-SYS15-01 至 07；Params 登錄 PRM-SYS15 六項（無值者缺鍵拒絕啟動，不得填值）；SimLoop 注入觀察者與每日步驟 IntelLedger.daily_step（ShipRegistry 之後、TraderRegistry 之前）。第一步唯讀盤點：ShipRegistry 現有 sail、tick_step、ship_info 簽名與抵港處理位置；MarketPricer.mid_price 現有週數計算位置；貼回後才寫代碼。｜★ D-37c（D-37e 已追認，須盤點回報後才寫碼）：IntelLedger 另含船報公開延遲與特權可見性（FRM-SYS16-04）、board_samples(actor, port, origin, good, requester)（requester 只准 SYS-16）、刪除 grant_base；特別證據加：延遲邊界測試輸出（TST-SYS15 對應新增與 TST-SYS16-13 至 16 的可見性部分）。",不做酒館、逐艘明細、付費調閱、牙行提前一日、商館、船轉手消息；不改任何本地報價、庫存、現金；不得讀他模組 _ 開頭成員；數值只來自已登錄 PRM，測試只用 fixture（TST-SYS15-06 的數字僅為 fixture 值）；不得針對特定 ID 寫 if。,03_Systems 25.1；D-34a 至 d,已由 17-41 B 取代（WP-40 已合併，#42）,,,
 17-21,WP-40 驗收與特別證據,TST-SYS15-01 至 20；紅隊-94 至 98 各一個測試或明示由 SYS-23 驗證；改內容的既有測試（例：test_autoload_order_2_2_01、ShipRegistry 與 MarketPricer 既有測試）逐一列名。特別證據：(a) 盤點報告（第一步）；(b) on_arrivals 恰一次且批次原子（TST-SYS15-05）的程式碼與測試輸出；(c) stock_weeks 單一實作：產品碼搜尋庫存週數公式的完整指令輸出，與 mid_price 改動前後逐值相同的測試輸出（TST-SYS15-19）；(d) 快照內容與 null 週數不填 0（TST-SYS15-02、03）；(e) 行市整數運算：TST-SYS15-06、08 輸出與取整程式碼（不得 int()、round、roundi）；(f) 在場規則與不改狀態（TST-SYS15-11）；(g) SYS-15 不產生現金分錄與貨物轉移（TST-SYS15-20）；(h) ShipRegistry、SimLoop、project.godot 完整 diff（不得截斷）；(i) 標準掃描 E(1)–(6) 與 Obj._member 逐筆列表（D-32b）。,依 AI_README S9a 範本逐點回覆；缺項視為不對；高風險證據不得截斷（C-15、S9a）。,03_Systems 25.1 I；C-15；S9a,已由 17-41 B 取代（WP-40 已合併，#42）,,,
