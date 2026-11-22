@@ -183,8 +183,10 @@ func test_TST_SYS15_04_05_batch_atomic_and_stale_mid() -> void:
 	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
 	var a: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
 	var b: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
-	assert_gt(ShipRegistry.sail(ACTOR, a, StringName(PT_B)), 0)
-	assert_gt(ShipRegistry.sail(ACTOR, b, StringName(PT_B)), 0)
+	var arrival_a: int = ShipRegistry.sail(ACTOR, a, StringName(PT_B))
+	var arrival_b: int = ShipRegistry.sail(ACTOR, b, StringName(PT_B))
+	assert_gt(arrival_a, 0)
+	assert_eq(arrival_a, arrival_b, "Z1: formal sail → identical arrival_tick")
 	var mid_at_depart: int = floori(
 		float(
 			(IntelLedger._ship_snap[String(a)] as Dictionary)[IntelLedger.KEY_GOODS][GOOD][
@@ -196,17 +198,11 @@ func test_TST_SYS15_04_05_batch_atomic_and_stale_mid() -> void:
 	_seed_market(PT_A, GOOD, 10, DEMO_WEEKLY_C)
 	var live: float = MarketPricer.mid_price(StringName(PT_A), StringName(GOOD))
 	assert_true(floori(live) != mid_at_depart)
-	var tick_arrive: int = 5000
-	for sid in [a, b]:
-		var s: Ship = ShipRegistry._ships[String(sid)]
-		s.arrival_tick = tick_arrive
-		s.origin_port = StringName(PT_A)
-		s.dest_port = StringName(PT_B)
 	_add_building(ACTOR, PT_B)
 	var counter := _ForwardObserver.new()
 	counter.inner = IntelLedger.get_ship_event_observer()
 	ShipRegistry.set_ship_observer(counter)
-	ShipRegistry.tick_step(tick_arrive)
+	ShipRegistry.tick_step(arrival_a)
 	assert_eq(counter.arrival_calls, 1)
 	assert_eq(counter.last_arrivals.size(), 2)
 	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
@@ -223,11 +219,11 @@ func test_TST_SYS15_06_08_consensus_and_divergence() -> void:
 	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
 	assert_eq(int(board[IntelLedger.KEY_N]), 2)
 	assert_eq(int(board[IntelLedger.KEY_CONSENSUS_MID]), TST06_CONSENSUS)
-	# weights 5／8 → mean_age = (5*5+8*2)/13 = 41/13 = 3；newest=2
-	assert_eq(int(board[IntelLedger.KEY_MEAN_AGE]), floori(float(5 * 5 + 8 * 2) / float(13)))
+	# weights 5／8 → mean_age = (5*5+8*2) ÷ 13 = 41÷13 = 3；newest=2（A27 integer ÷）
+	assert_eq(int(board[IntelLedger.KEY_MEAN_AGE]), (5 * 5 + 8 * 2) / 13)
 	assert_eq(int(board[IntelLedger.KEY_NEWEST_AGE]), TST06_AGE_NEW)
 	var ppm: int = Params.get_int(PRM_PPM)
-	var expect_div: int = floori(float(TST08_SPAN * ppm) / float(TST06_CONSENSUS))
+	var expect_div: int = (TST08_SPAN * ppm) / TST06_CONSENSUS
 	assert_eq(int(board[IntelLedger.KEY_DIV_PPM]), expect_div)
 	assert_eq(int(board[IntelLedger.KEY_DIV_BAND]), IntelLedger.DivergenceBand.MID)
 
@@ -295,17 +291,17 @@ func test_TST_SYS15_11_12_13_14_presence_contact_samples() -> void:
 	assert_eq(StringName(IntelLedger.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), IntelLedger.ERR_SYS15_04)
 	assert_eq(str(IntelLedger._rec), str(before))
 	assert_push_error_count(1)
-	# Return-to-origin: no publish; contact updates.
+	# Return-to-origin via formal sail A→B then B→A: no publish at origin; contact updates.
 	_add_building(ACTOR, PT_A)
+	_add_building(ACTOR, PT_B)
 	var s2: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
-	assert_gt(ShipRegistry.sail(ACTOR, s2, StringName(PT_B)), 0)
-	# Force arrive back at origin.
-	var ship: Ship = ShipRegistry._ships[String(s2)]
-	ship.arrival_tick = 9000
-	ship.origin_port = StringName(PT_A)
-	ship.dest_port = StringName(PT_A)
+	var arr_b: int = ShipRegistry.sail(ACTOR, s2, StringName(PT_B))
+	assert_gt(arr_b, 0)
 	ShipRegistry.set_ship_observer(IntelLedger.get_ship_event_observer())
-	ShipRegistry.tick_step(9000)
+	ShipRegistry.tick_step(arr_b)
+	var arr_back: int = ShipRegistry.sail(ACTOR, s2, StringName(PT_A))
+	assert_gt(arr_back, 0)
+	ShipRegistry.tick_step(arr_back)
 	assert_eq(IntelLedger.contact_level(ACTOR, StringName(PT_A)), 1)
 	board = IntelLedger.board_for(ACTOR, StringName(PT_A), StringName(PT_A), StringName(GOOD))
 	assert_eq(int(board.get(IntelLedger.KEY_N, 0)), 0)
@@ -329,21 +325,23 @@ func test_TST_SYS15_11_12_13_14_presence_contact_samples() -> void:
 
 
 func test_TST_SYS15_13_publish_at_actual_arrival_port() -> void:
-	## TST-SYS15-13：中途改道／他港抵達 → 公開在實際抵達港，origin＝原起航港.
+	## TST-SYS15-13／Z1：reroute() 真實路徑 → 公開在實際抵達港，origin＝原起航港.
 	_boot_intel(true)
 	_seed_market(PT_A, GOOD, DEMO_STOCK, DEMO_WEEKLY_C)
 	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
 	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
-	# Sail A→B then divert dest to a third fixture port before arrival.
-	assert_gt(ShipRegistry.sail(ACTOR, sid, StringName(PT_B)), 0)
-	var ship: Ship = ShipRegistry._ships[String(sid)]
-	var pt_c := "PT-01"
-	ship.arrival_tick = 8000
-	ship.origin_port = StringName(PT_A)
-	ship.dest_port = StringName(pt_c) # 改道：實際抵達 ≠ 原目的
+	var arrival1: int = ShipRegistry.sail(ACTOR, sid, StringName(PT_B))
+	assert_gt(arrival1, 0)
+	# Advance into first leg so reroute takes effect at next waypoint (FRM-SYS14-05).
+	var tpw: int = int(Params.get_value(StringName("PRM-SYS13-TICKS_PER_WAYPOINT"))["SH-01"])
+	Clock._tick = Clock.tick + maxi(tpw / 2, 1)
+	var pt_c := "PT-10" ## third fixture port (王港); reachable via reroute from A→B leg
+	var arrival2: int = ShipRegistry.reroute(ACTOR, sid, StringName(pt_c))
+	assert_gt(arrival2, 0)
+	assert_ne(arrival2, arrival1)
 	_add_building(ACTOR, pt_c)
 	ShipRegistry.set_ship_observer(IntelLedger.get_ship_event_observer())
-	ShipRegistry.tick_step(8000)
+	ShipRegistry.tick_step(arrival2)
 	var board_c: Dictionary = IntelLedger.board_for(
 		ACTOR, StringName(pt_c), StringName(PT_A), StringName(GOOD)
 	)
@@ -476,25 +474,21 @@ func test_red_team_94_same_ship_dedupe() -> void:
 
 
 func test_red_team_96_batch_atomic_before_read() -> void:
-	## 紅隊-96：同 tick 批次寫完才公開（依 TST-SYS15-05）.
+	## 紅隊-96／Z1：同 tick 批次寫完才公開；arrival 由正式 sail 產生.
 	_boot_intel(true)
 	_seed_market(PT_A, GOOD, DEMO_STOCK, DEMO_WEEKLY_C)
 	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
 	var a: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
 	var b: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_A), cap)
-	assert_gt(ShipRegistry.sail(ACTOR, a, StringName(PT_B)), 0)
-	assert_gt(ShipRegistry.sail(ACTOR, b, StringName(PT_B)), 0)
-	var tick_arrive: int = 7000
-	for sid in [a, b]:
-		var s: Ship = ShipRegistry._ships[String(sid)]
-		s.arrival_tick = tick_arrive
-		s.origin_port = StringName(PT_A)
-		s.dest_port = StringName(PT_B)
+	var arrival_a: int = ShipRegistry.sail(ACTOR, a, StringName(PT_B))
+	var arrival_b: int = ShipRegistry.sail(ACTOR, b, StringName(PT_B))
+	assert_gt(arrival_a, 0)
+	assert_eq(arrival_a, arrival_b)
 	_add_building(ACTOR, PT_B)
 	var counter := _ForwardObserver.new()
 	counter.inner = IntelLedger.get_ship_event_observer()
 	ShipRegistry.set_ship_observer(counter)
-	ShipRegistry.tick_step(tick_arrive)
+	ShipRegistry.tick_step(arrival_a)
 	assert_eq(counter.arrival_calls, 1)
 	assert_eq(counter.last_arrivals.size(), 2)
 	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))

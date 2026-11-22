@@ -17,8 +17,15 @@ const FIELD_SEP := 0x1f
 
 
 ## FRM-SYS23-10: FNV-1a 64 over UTF-8 fields joined by 0x1F; result = SplitMix64 seed.
+## WP-55 A13／D-83a／D-89b（待追認）: optional draw_seq = ST-RNG fifth lottery dim
+## (per-port per-purpose draw index, from 0). Omitted (−1) keeps prior 5-field hash.
 static func derive_seed(
-	seed: int, day: int, port_id: String, item: String, purpose: String
+	seed: int,
+	day: int,
+	port_id: String,
+	item: String,
+	purpose: String,
+	draw_seq: int = -1
 ) -> int:
 	var parts: Array[PackedByteArray] = [
 		str(seed).to_utf8_buffer(),
@@ -27,6 +34,8 @@ static func derive_seed(
 		item.to_utf8_buffer(),
 		purpose.to_utf8_buffer(),
 	]
+	if draw_seq >= 0:
+		parts.append(str(draw_seq).to_utf8_buffer())
 	var data := PackedByteArray()
 	for i in parts.size():
 		if i > 0:

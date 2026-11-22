@@ -88,7 +88,9 @@ func test_WP51_only_movers_draw_rng() -> void:
 	# Ensure free beds: capacity 5*100=500, residents 45.
 	PopulationModel._wp51_rng_calls = 0
 	# Inject one immigration via _place_movers directly after sync.
-	PopulationModel._sync_port_residences(PORT_A, 3)
+	var sync_errs: Array = []
+	PopulationModel._sync_port_residences(PORT_A, 3, sync_errs)
+	PopulationModel._draw_seq_by_purpose = {}
 	PopulationModel._place_movers(PORT_A, 3, 0, 0, 0, 0, 0, 0, 1)
 	assert_gt(PopulationModel._wp51_rng_calls, 0)
 

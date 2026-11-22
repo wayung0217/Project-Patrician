@@ -72,8 +72,12 @@ func run_scenario_dict(scenario: Dictionary) -> Dictionary:
 	var written: Dictionary = SimCsvOut.write_all(
 		sid, all_sampler, summaries, combo_rows, daily_ports
 	)
+	## A34: write failure → ok false (do not claim success with incomplete CSV).
+	var write_ok: bool = bool(written.get("ok", false))
+	if not write_ok:
+		errors.append("SimCsvOut.write_all failed: %s" % str(written.get("failed_paths", [])))
 	return {
-		"ok": true,
+		"ok": write_ok,
 		"errors": errors,
 		"summaries": summaries,
 		"combo_rows": combo_rows,
@@ -165,10 +169,17 @@ func _run_one_job(
 		var day_num: int = day_i + 1 ## first advance yields day=1
 		if before_day.is_valid():
 			before_day.call(combo_index, day_num)
-		var _day_errors: Array = SimLoop.tick_day()
+		## A31／H8／ERR-SYS23-07: collect tick_day errors; do not discard.
+		var day_errors: Array = SimLoop.tick_day()
 		if sampler.conservation_hits > 0:
 			aborted = true
 			abort_reason = "%s: conservation violated" % ERR_SYS23_07
+			break
+		## G／ERR-SYS23-07: any system ERR aborts this combo (WRN does not).
+		var fatal: Array = _fatal_day_errors(day_errors)
+		if not fatal.is_empty():
+			aborted = true
+			abort_reason = "%s: day_errors: %s" % [ERR_SYS23_07, _format_day_errors(fatal)]
 			break
 		## Daily detail after day's writes／signals.
 		for pid_v in daily_ports:
@@ -241,3 +252,37 @@ func _combo_count(grid: Dictionary) -> int:
 static func _job_int(v: Variant) -> int:
 	## C-06：JSON／Variant 整數還原；非整數報錯（不靜默 floori）。
 	return SimJsonInt.as_int(v, "job_int")
+
+
+static func _fatal_day_errors(day_errors: Array) -> Array:
+	## Severity gate (WP-58 A31): ERR-* aborts; empty／WRN-* continue.
+	var fatal: Array = []
+	for err_v in day_errors:
+		if typeof(err_v) != TYPE_DICTIONARY:
+			fatal.append(err_v)
+			continue
+		var err: Dictionary = err_v
+		var code: String = String(err.get(ErrorInfoUtil.KEY_CODE, err.get("code", "")))
+		if code.is_empty() or code.begins_with("ERR-"):
+			fatal.append(err)
+	return fatal
+
+
+static func _format_day_errors(fatal: Array) -> String:
+	## Compact abort_reason payload for summary.csv (ERR-SYS23-07).
+	var parts: PackedStringArray = PackedStringArray()
+	for err_v in fatal:
+		if typeof(err_v) != TYPE_DICTIONARY:
+			parts.append(str(err_v))
+			continue
+		var err: Dictionary = err_v
+		var code: String = String(err.get(ErrorInfoUtil.KEY_CODE, err.get("code", "")))
+		var detail: Variant = err.get(ErrorInfoUtil.KEY_DETAIL, err.get("detail", {}))
+		var msg: String = ""
+		if typeof(detail) == TYPE_DICTIONARY:
+			msg = String((detail as Dictionary).get(ErrorInfoUtil.DETAIL_MESSAGE, ""))
+		if msg.is_empty():
+			parts.append(code if not code.is_empty() else str(err))
+		else:
+			parts.append("%s (%s)" % [code, msg])
+	return "; ".join(parts)

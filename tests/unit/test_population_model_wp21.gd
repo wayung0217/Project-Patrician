@@ -390,7 +390,8 @@ func test_TST_SYS07_17_temple_bonus_caps_at_sat_scale() -> void:
 	BuildingEconomy._register_building(temple)
 	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-04"), 3)
 	var scale: int = Params.get_int("PRM-SYS07-SAT_SCALE")
-	var t: int = PopulationModel._target_sat(PORT, &"CITIZEN", false)
+	var sat_errs: Array = []
+	var t: int = PopulationModel._target_sat(PORT, &"CITIZEN", false, sat_errs)
 	assert_eq(t, scale)
 	assert_lte(t, scale)
 	# Uncapped would be quantize(980)+70 = 1050; must clamp.

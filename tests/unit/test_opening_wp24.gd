@@ -241,7 +241,8 @@ func test_WP24_ERR_SYS07_09_duplicate_port() -> void:
 	assert_push_error_count(errs.size())
 
 
-func test_WP24_ERR_SYS08_10_empty_workshops_still_places_residences_kontor() -> void:
+func test_WP24_ERR_SYS08_10_empty_workshops_no_writes() -> void:
+	## D-87: ERR-SYS08-10 → no residences／kontor／workshops written.
 	_boot_with_opening_population_only()
 	var empty_ws := ROOT + "empty_ws/"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_ws))
@@ -251,16 +252,19 @@ func test_WP24_ERR_SYS08_10_empty_workshops_still_places_residences_kontor() -> 
 		empty_ws, ROOT + "opening_public/", PORT_HOME, ACTOR
 	)
 	assert_true(_has_code(errs, BuildingEconomy.ERR_SYS08_10))
-	assert_gt(BuildingEconomy.residences(StringName(PORT_A)).size(), 0)
+	assert_eq(BuildingEconomy.residences(StringName(PORT_A)).size(), 0)
+	assert_eq(BuildingEconomy.workplaces(StringName(PORT_A)).size(), 0)
 	var kontor_ok := false
 	for b_v in BuildingEconomy.buildings_for_port(PORT_HOME):
 		if (b_v as Building).build_class == &"KONTOR" and (b_v as Building).owner == ACTOR:
 			kontor_ok = true
-	assert_true(kontor_ok)
+	assert_false(kontor_ok)
+	assert_eq(BuildingEconomy.buildings_for_port(PORT_A).size(), 0)
 	assert_push_error_count(errs.size())
 
 
-func test_WP24_ERR_SYS08_10_empty_public_still_places_residences_kontor() -> void:
+func test_WP24_ERR_SYS08_10_empty_public_no_writes() -> void:
+	## D-87: ERR-SYS08-10 → no residences／kontor／workshops written.
 	_boot_with_opening_population_only()
 	_write_opening_workshops_all()
 	var empty_pub := ROOT + "empty_pub/"
@@ -269,16 +273,19 @@ func test_WP24_ERR_SYS08_10_empty_public_still_places_residences_kontor() -> voi
 		ROOT + "opening/", empty_pub, PORT_HOME, ACTOR
 	)
 	assert_true(_has_code(errs, BuildingEconomy.ERR_SYS08_10))
-	assert_gt(BuildingEconomy.residences(StringName(PORT_HOME)).size(), 0)
+	assert_eq(BuildingEconomy.residences(StringName(PORT_HOME)).size(), 0)
+	assert_eq(BuildingEconomy.workplaces(StringName(PORT_HOME)).size(), 0)
 	var kontor_ok := false
 	for b_v in BuildingEconomy.buildings_for_port(PORT_HOME):
 		if (b_v as Building).build_class == &"KONTOR" and (b_v as Building).owner == ACTOR:
 			kontor_ok = true
-	assert_true(kontor_ok)
+	assert_false(kontor_ok)
+	assert_eq(BuildingEconomy.buildings_for_port(PORT_HOME).size(), 0)
 	assert_push_error_count(errs.size())
 
 
-func test_WP24_ERR_SYS08_10_missing_port_in_workshops() -> void:
+func test_WP24_ERR_SYS08_10_missing_port_in_workshops_no_writes() -> void:
+	## D-87: missing port → error and no buildings written.
 	_boot_with_opening_population_only()
 	_write_opening_public_all()
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(ROOT + "opening/"))
@@ -292,6 +299,115 @@ func test_WP24_ERR_SYS08_10_missing_port_in_workshops() -> void:
 		ROOT + "opening/", ROOT + "opening_public/", PORT_HOME, ACTOR
 	)
 	assert_true(_has_code(errs, BuildingEconomy.ERR_SYS08_10))
+	assert_eq(BuildingEconomy.residences(StringName(PORT_A)).size(), 0)
+	assert_eq(BuildingEconomy.workplaces(StringName(PORT_A)).size(), 0)
+	var kontor_ok := false
+	for b_v in BuildingEconomy.buildings_for_port(PORT_HOME):
+		if (b_v as Building).build_class == &"KONTOR" and (b_v as Building).owner == ACTOR:
+			kontor_ok = true
+	assert_false(kontor_ok)
+	assert_push_error_count(errs.size())
+
+
+func test_WP54_V1_opening_residence_before_workshop_rings() -> void:
+	## V1／FRM-SYS08-21／A9: residences on innermost open civil; IND1 on gathering belt.
+	_boot_with_opening()
+	var res_rings: Array = []
+	for b_v in BuildingEconomy.residences(StringName(PORT_A)):
+		var b: Building = b_v
+		var slot: Slot = BuildingEconomy.get_slot(b.slot_id)
+		assert_not_null(slot)
+		assert_true(slot.zone_open)
+		res_rings.append(slot.ring)
+	assert_gt(res_rings.size(), 0)
+	res_rings.sort()
+	var ws_rings: Array = []
+	for b_v2 in BuildingEconomy.workplaces(StringName(PORT_A)):
+		var w: Building = b_v2
+		var wslot: Slot = BuildingEconomy.get_slot(w.slot_id)
+		assert_not_null(wslot)
+		# IND1 gathering belt = max open zone + 1 → not zone_open.
+		assert_false(wslot.zone_open)
+		ws_rings.append(wslot.ring)
+	assert_gt(ws_rings.size(), 0)
+	ws_rings.sort()
+	# Residences occupy lower rings than gathering-belt workshops.
+	assert_lt(int(res_rings[res_rings.size() - 1]), int(ws_rings[0]))
+
+
+func test_WP54_V1_opening_processing_outermost_ring() -> void:
+	## V1／A9: IND2／3 place on outermost open civil (not innermost).
+	# Custom boot so IND2 def is present at load_and_validate.
+	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Clock.load_and_validate().size(), 0)
+	var goods_dir := _build_goods(ROOT + "goods/")
+	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
+	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")
+	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
+	assert_eq(GoodsLedger.load_and_validate().size(), 0)
+	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
+	assert_eq(CashLedger.load_and_validate().size(), 0)
+	assert_eq(CashLedger.genesis_grant(), OK)
+	PopulationModel.set_satisfaction_input_provider(TestSat.new())
+	assert_eq(PopulationModel.load_and_validate().size(), 0)
+	BuildingEconomy.set_population_provider(PopulationModel.get_population_provider())
+	BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
+	_write_layout_multi()
+	_write_defs()
+	_save_def(ROOT + "buildings/", "WS-SALT", "IND2", "GD-002", 1, 1.0)
+	assert_eq(
+		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
+		0
+	)
+	_write_opening_tres()
+	var ow := OpeningWorkshop.new()
+	ow.port_id = PORT_A
+	ow.good_id = "GD-002"
+	ow.count = 1
+	ResourceSaver.save(ow, ROOT + "opening/%s__GD-002.tres" % PORT_A)
+	assert_eq(PopulationModel.apply_opening_init(ROOT + "opening_population/").size(), 0)
+	assert_eq(
+		BuildingEconomy.apply_opening_init(
+			ROOT + "opening/", ROOT + "opening_public/", PORT_HOME, ACTOR
+		).size(),
+		0
+	)
+	var open_rings: Array = []
+	for s_v in BuildingEconomy.slots_for_port(PORT_A):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.CIVIL and s.zone_open:
+			open_rings.append(s.ring)
+	open_rings.sort()
+	var max_open_ring: int = int(open_rings[open_rings.size() - 1])
+	var found := false
+	for b_v in BuildingEconomy.workplaces(StringName(PORT_A)):
+		var b: Building = b_v
+		if String(b.type) != "WS-SALT":
+			continue
+		var slot: Slot = BuildingEconomy.get_slot(b.slot_id)
+		assert_eq(slot.ring, max_open_ring)
+		found = true
+	assert_true(found)
+
+
+func test_WP54_A11_bad_opening_workshop_tres_reported() -> void:
+	## A11: non-OpeningWorkshop tres in opening dir is collected, not skipped.
+	_boot_with_opening_population_only()
+	_write_opening_workshops_all()
+	_write_opening_public_all()
+	# Drop a ZoneDef into workshops dir (wrong type).
+	var bad := ZoneDef.new()
+	bad.port_id = PORT_A
+	bad.zone = 1
+	bad.rings = 1
+	bad.slots = 1
+	bad.open_at_start = 1
+	ResourceSaver.save(bad, ROOT + "opening/ZZ_BAD.tres")
+	var errs: Array = BuildingEconomy.apply_opening_init(
+		ROOT + "opening/", ROOT + "opening_public/", PORT_HOME, ACTOR
+	)
+	assert_true(_has_code(errs, BuildingEconomy.ERR_SYS08_10))
+	assert_eq(BuildingEconomy.buildings_for_port(PORT_A).size(), 0)
 	assert_push_error_count(errs.size())
 
 
@@ -477,8 +593,11 @@ func _write_layout_multi() -> void:
 func _write_defs() -> void:
 	var dir := ROOT + "buildings/"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	_save_def(dir, "KT-01", "KONTOR", "", 0, 1.0)
+	_save_def(dir, "CB-17", "KONTOR", "", 0, 1.0)
 	_save_def(dir, "RB-01", "RESIDENCE", "", 0, 1.0)
+	## A12: no silent PUBLIC shells — opening_public rows need real defs.
+	_save_def(dir, "CB-01", "PUBLIC", "", 0, 1.0)
+	_save_def(dir, "CB-09", "PUBLIC", "", 0, 1.0)
 	# Recipe-input workshop for D-19d conservation (consumes GD-002).
 	var d := BuildingDef.new()
 	d.type = "WS-RICE"

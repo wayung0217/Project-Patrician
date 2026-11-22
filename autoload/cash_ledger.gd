@@ -77,6 +77,8 @@ const FIELD_REQUESTER := "requester"
 const FIELD_ACCOUNT := "account_id"
 const FIELD_WEIGHTS := "weights"
 const KEY_TOTAL_LI := "total_li"
+## A18: MarketPricer.quote failure key（與 MarketPricer.KEY_ERROR 對齊）.
+const KEY_ERROR := "error"
 
 ## Day／season 占位：本堆疊無 Clock（WP-02）— 見 PR 缺口。
 const DAY_PLACEHOLDER := 1
@@ -99,6 +101,12 @@ var _loaded: bool = false
 var _quote_provider: Object = null
 ## D-04: last single-call ErrorInfo {code,sys,detail}; empty Dictionary when none.
 var _last_error: Dictionary = {}
+## A19: accounts that already emitted bankruptcy_referred while continuously over threshold.
+var _bankruptcy_referred_ids: Dictionary = {} ## String → true
+## A23: last successful post apply meta for reverse_last_post（待追認）.
+## Each row: {id, balance_delta, arrears_delta, sink_credit, debit_stat, credit_stat}
+var _last_apply_meta: Array = []
+var _last_post_reason: StringName = &""
 
 
 func _ready() -> void:
@@ -250,7 +258,11 @@ func post(entries: Array, reason: StringName, requester: StringName) -> Error:
 	if sum_amount != 0:
 		return _fail(ERR_SYS05_02, FIELD_ENTRIES, sum_amount, "unbalanced posting")
 
-	# Snapshot for rollback
+	# A22: posting.seq 必須經 GoodsLedger；未載入不得靜默退回 posting_id（C-06）.
+	if not GoodsLedger.is_loaded():
+		return _fail(ERR_SYS05_04, "seq", null, "GoodsLedger must be loaded for posting.seq")
+
+	# Snapshot for rollback（A20：含 SINK 與季統計，欠款抵償會寫入 SINK）
 	var snap_balances: Dictionary = {}
 	var snap_arrears: Dictionary = {}
 	for pe2 in parsed:
@@ -258,6 +270,12 @@ func post(entries: Array, reason: StringName, requester: StringName) -> Error:
 		var acc2: Account = _accounts[k2]
 		snap_balances[k2] = acc2.balance
 		snap_arrears[k2] = acc2.arrears
+	var sink_key := String(ID_SINK)
+	if not snap_balances.has(sink_key):
+		var sink0: Account = _accounts[sink_key]
+		snap_balances[sink_key] = sink0.balance
+		snap_arrears[sink_key] = sink0.arrears
+	var snap_season_stats: Dictionary = _season_stats.duplicate(true)
 
 	# 預檢自願支出非負（FRM-SYS05-02）；欠款抵償入帳在 apply 時處理
 	for pe3 in parsed:
@@ -270,57 +288,69 @@ func post(entries: Array, reason: StringName, requester: StringName) -> Error:
 	# Apply entries；正入帳走 FRM-SYS05-07
 	var deltas: Array = [] ## {id, delta, reason} for signals after commit
 	var arrears_signals: Array = []
+	var apply_meta: Array = []
 	for pe4 in parsed:
 		var acc4: Account = _accounts[String(pe4.account_id)]
 		if pe4.amount > 0:
 			var applied: Dictionary = apply_inbound_credit(acc4, pe4.amount)
 			if bool(applied.get("overflow", false)):
-				_restore_snap(snap_balances, snap_arrears)
+				_restore_snap(snap_balances, snap_arrears, snap_season_stats)
 				return _fail(ERR_SYS05_08, FIELD_AMOUNT, pe4.amount, "overflow on credit")
-			deltas.append({"id": acc4.id, "delta": int(applied["balance_delta"]), "reason": reason})
-			if int(applied["arrears_offset"]) > 0:
-				var sink: Account = _accounts[String(ID_SINK)]
-				if not _add_checked(sink.balance, int(applied["arrears_offset"])):
-					_restore_snap(snap_balances, snap_arrears)
-					return _fail(ERR_SYS05_08, FIELD_AMOUNT, applied["arrears_offset"], "overflow on SINK")
-				sink.balance = sink.balance + int(applied["arrears_offset"])
-				deltas.append({"id": ID_SINK, "delta": int(applied["arrears_offset"]), "reason": reason})
-				_bump_season_stat(String(ID_SINK), SeasonLedgerReport.KEY_SUM_CREDIT, int(applied["arrears_offset"]))
+			var bal_delta: int = int(applied["balance_delta"])
+			var arr_off: int = int(applied["arrears_offset"])
+			deltas.append({"id": acc4.id, "delta": bal_delta, "reason": reason})
+			var meta_row: Dictionary = {
+				"id": acc4.id,
+				"balance_delta": bal_delta,
+				"arrears_delta": 0 - arr_off,
+				"sink_credit": arr_off,
+			}
+			if arr_off > 0:
+				var sink: Account = _accounts[sink_key]
+				if not _add_checked(sink.balance, arr_off):
+					_restore_snap(snap_balances, snap_arrears, snap_season_stats)
+					return _fail(ERR_SYS05_08, FIELD_AMOUNT, arr_off, "overflow on SINK")
+				sink.balance = sink.balance + arr_off
+				deltas.append({"id": ID_SINK, "delta": arr_off, "reason": reason})
+				_bump_season_stat(sink_key, SeasonLedgerReport.KEY_SUM_CREDIT, arr_off)
+				_bump_season_stat(String(acc4.id), SeasonLedgerReport.KEY_SUM_DEBIT, arr_off)
 				arrears_signals.append(acc4.id)
-			if int(applied["balance_delta"]) > 0:
-				_bump_season_stat(String(acc4.id), SeasonLedgerReport.KEY_SUM_CREDIT, int(applied["balance_delta"]))
-			# 入帳抵欠：對抵金額視作出帳至 SINK（統計）
-			if int(applied["arrears_offset"]) > 0:
-				_bump_season_stat(String(acc4.id), SeasonLedgerReport.KEY_SUM_DEBIT, int(applied["arrears_offset"]))
+			if bal_delta > 0:
+				_bump_season_stat(String(acc4.id), SeasonLedgerReport.KEY_SUM_CREDIT, bal_delta)
+			apply_meta.append(meta_row)
 		else:
 			# 出帳
 			if not _add_checked(acc4.balance, pe4.amount):
-				_restore_snap(snap_balances, snap_arrears)
+				_restore_snap(snap_balances, snap_arrears, snap_season_stats)
 				return _fail(ERR_SYS05_08, FIELD_AMOUNT, pe4.amount, "overflow on debit")
 			var new_bal: int = acc4.balance + pe4.amount
 			if acc4.kind != Account.Kind.SOURCE and new_bal < 0:
 				# ERR-SYS05-03 保底
-				_restore_snap(snap_balances, snap_arrears)
+				_restore_snap(snap_balances, snap_arrears, snap_season_stats)
 				return _fail(ERR_SYS05_03, FIELD_AMOUNT, pe4.amount, "negative balance")
 			acc4.balance = new_bal
 			deltas.append({"id": acc4.id, "delta": pe4.amount, "reason": reason})
 			_bump_season_stat(String(acc4.id), SeasonLedgerReport.KEY_SUM_DEBIT, 0 - pe4.amount)
+			apply_meta.append({
+				"id": acc4.id,
+				"balance_delta": pe4.amount,
+				"arrears_delta": 0,
+				"sink_credit": 0,
+			})
 
 	# Commit posting record
 	var posting := Posting.new()
 	posting.posting_id = _next_posting_id
 	_next_posting_id = _next_posting_id + 1
 	posting.day = _day
-	# seq 與貨物事件共用 GoodsLedger 序列（TechSpec D148）
-	if GoodsLedger.is_loaded():
-		posting.seq = GoodsLedger.next_seq()
-	else:
-		# 缺口：GoodsLedger 未載入時無法取 seq；測試應先載入。
-		posting.seq = posting.posting_id
+	# seq 與貨物事件共用 GoodsLedger 序列（TechSpec D148）；A22：已於上方閘門
+	posting.seq = GoodsLedger.next_seq()
 	posting.requester = requester
 	posting.reason = reason
 	posting.entries = parsed
 	_postings.append(posting)
+	_last_apply_meta = apply_meta
+	_last_post_reason = reason
 
 	for d in deltas:
 		var did: StringName = d["id"]
@@ -329,6 +359,81 @@ func post(entries: Array, reason: StringName, requester: StringName) -> Error:
 	for aid in arrears_signals:
 		var acc_a: Account = _accounts[String(aid)]
 		arrears_changed.emit(acc_a.id, acc_a.arrears, acc_a.arrears_seasons)
+	return OK
+
+
+func reverse_last_post(requester: StringName) -> Error:
+	## A23／D-89b 待追認: undo last successful post（含 FRM-SYS05-07 抵欠寫入 SINK）.
+	## TradeDesk 步驟 6 備用回滾；不經入帳抵欠路徑，直接還原 balance／arrears／SINK／季統計效應.
+	assert(_loaded, "CashLedger.reverse_last_post before load")
+	_clear_last_error()
+	if not _is_authorized(requester):
+		return _fail(ERR_SYS05_06, FIELD_REQUESTER, requester, "unauthorized requester")
+	if _last_apply_meta.is_empty() or _postings.is_empty():
+		return _fail(ERR_SYS05_04, FIELD_ENTRIES, null, "no posting to reverse")
+	if not GoodsLedger.is_loaded():
+		return _fail(ERR_SYS05_04, "seq", null, "GoodsLedger must be loaded for reverse_last_post")
+
+	var sink: Account = _accounts[String(ID_SINK)]
+	var signals_cash: Array = []
+	var signals_arr: Array = []
+	## Undo in reverse order of apply.
+	var i: int = _last_apply_meta.size()
+	while i > 0:
+		i = i - 1
+		var m: Dictionary = _last_apply_meta[i]
+		var aid: StringName = m["id"]
+		var acc: Account = _accounts[String(aid)]
+		var bal_d: int = int(m["balance_delta"])
+		var arr_d: int = int(m["arrears_delta"])
+		var sink_c: int = int(m["sink_credit"])
+		if bal_d != 0:
+			if not _add_checked(acc.balance, 0 - bal_d):
+				return _fail(ERR_SYS05_08, FIELD_AMOUNT, bal_d, "overflow reversing balance")
+			acc.balance = acc.balance - bal_d
+			signals_cash.append({"id": aid, "delta": 0 - bal_d})
+			if bal_d > 0:
+				_bump_season_stat(String(aid), SeasonLedgerReport.KEY_SUM_CREDIT, 0 - bal_d)
+			elif bal_d < 0:
+				_bump_season_stat(String(aid), SeasonLedgerReport.KEY_SUM_DEBIT, bal_d)
+		if arr_d != 0:
+			acc.arrears = acc.arrears - arr_d
+			if acc.arrears < 0:
+				return _fail(ERR_SYS05_03, "arrears", acc.arrears, "arrears underflow on reverse")
+			signals_arr.append(aid)
+		if sink_c > 0:
+			if not _add_checked(sink.balance, 0 - sink_c):
+				return _fail(ERR_SYS05_08, FIELD_AMOUNT, sink_c, "overflow reversing SINK")
+			sink.balance = sink.balance - sink_c
+			signals_cash.append({"id": ID_SINK, "delta": 0 - sink_c})
+			_bump_season_stat(String(ID_SINK), SeasonLedgerReport.KEY_SUM_CREDIT, 0 - sink_c)
+			_bump_season_stat(String(aid), SeasonLedgerReport.KEY_SUM_DEBIT, 0 - sink_c)
+
+	## Drop original posting；append reverse audit row with new seq.
+	var orig: Posting = _postings[_postings.size() - 1] as Posting
+	_postings.pop_back()
+	var rev := Posting.new()
+	rev.posting_id = _next_posting_id
+	_next_posting_id = _next_posting_id + 1
+	rev.day = _day
+	rev.seq = GoodsLedger.next_seq()
+	rev.requester = requester
+	rev.reason = orig.reason
+	rev.entries = []
+	for pe_o in orig.entries:
+		var pe_r: PostingEntry = make_entry(pe_o.account_id, 0 - pe_o.amount)
+		rev.entries.append(pe_r)
+	_postings.append(rev)
+	_last_apply_meta = []
+	_last_post_reason = &""
+
+	for sc in signals_cash:
+		var sid: StringName = sc["id"]
+		var sacc: Account = _accounts[String(sid)]
+		cash_changed.emit(sid, sacc.balance, int(sc["delta"]), orig.reason)
+	for arid in signals_arr:
+		var aacc: Account = _accounts[String(arid)]
+		arrears_changed.emit(aacc.id, aacc.arrears, aacc.arrears_seasons)
 	return OK
 
 
@@ -422,7 +527,9 @@ func revalidate_submit(account_balance: int, new_total_b_prime: int) -> Error:
 func split_largest_remainder(total: int, weights: Array) -> Array:
 	# FRM-SYS05-12：最大餘數分攤 — 獨立單一函數（D158）
 	# base_i = FLOOR(T·w_i ÷ W)；r = T − Σbase；依 MOD(T·w_i, W) 大到小、同值索引小者先，前 r 名 +1
+	# A20／C-10：乘法溢位 → ERR-SYS05-08
 	var out: Array = []
+	_clear_last_error()
 	if total < 0:
 		_record_error(ERR_SYS05_09, FIELD_WEIGHTS, total, "total negative")
 		return out
@@ -443,6 +550,9 @@ func split_largest_remainder(total: int, weights: Array) -> Array:
 			_record_error(ERR_SYS05_09, FIELD_WEIGHTS, wi, "negative weight")
 			return []
 		w_ints.append(wi)
+		if not _add_checked(w_sum, wi):
+			_record_error(ERR_SYS05_08, FIELD_WEIGHTS, wi, "weight sum overflow")
+			return []
 		w_sum = w_sum + wi
 	if w_sum == 0:
 		_record_error(ERR_SYS05_09, FIELD_WEIGHTS, w_sum, "weight sum 0")
@@ -453,6 +563,9 @@ func split_largest_remainder(total: int, weights: Array) -> Array:
 	var base_sum: int = 0
 	for i in range(w_ints.size()):
 		var wi2: int = int(w_ints[i])
+		if not _mul_checked(total, wi2):
+			_record_error(ERR_SYS05_08, FIELD_AMOUNT, {"total": total, "weight": wi2}, "split multiply overflow")
+			return []
 		var product: int = total * wi2
 		var base_i: int = floori(product / w_sum)
 		bases.append(base_i)
@@ -473,7 +586,9 @@ func split_largest_remainder(total: int, weights: Array) -> Array:
 
 func prorate(fee: int, days_held: int) -> int:
 	# FRM-SYS05-05：CEIL(fee × days_held ÷ D)；D = PRM-SYS00-DAYS_PER_SEASON
+	# A20／C-10：乘法溢位 → ERR-SYS05-08
 	assert(_loaded, "CashLedger.prorate before load")
+	_clear_last_error()
 	if fee < 0 or days_held < 0:
 		_record_error(ERR_SYS05_05, FIELD_AMOUNT, {"fee": fee, "days_held": days_held}, "prorate negative input")
 		return 0
@@ -481,8 +596,16 @@ func prorate(fee: int, days_held: int) -> int:
 	assert(days_d > 0, "DAYS_PER_SEASON must be > 0")
 	if days_held == 0 or fee == 0:
 		return 0
+	if not _mul_checked(fee, days_held):
+		_record_error(ERR_SYS05_08, FIELD_AMOUNT, {"fee": fee, "days_held": days_held}, "prorate multiply overflow")
+		return INT_API_FAILURE
+	var product: int = fee * days_held
+	var pad: int = days_d - 1
+	if not _add_checked(product, pad):
+		_record_error(ERR_SYS05_08, FIELD_AMOUNT, product, "prorate ceil-pad overflow")
+		return INT_API_FAILURE
 	# 整數 CEIL(fee * days_held / D) = (fee * days_held + D - 1) / D
-	var numer: int = fee * days_held + days_d - 1
+	var numer: int = product + pad
 	return floori(numer / days_d)
 
 
@@ -523,6 +646,7 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
 
 func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
 	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
+	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
 	assert(_loaded, "CashLedger.max_affordable_qty before load")
 	var bal: int = balance(actor)
 	if bal <= 0:
@@ -535,9 +659,7 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 	var hi: int = 1
 	while true:
 		var t_hi: int = _quote_buy_total(port, good, hi)
-		if t_hi < 0:
-			return 0
-		if t_hi > bal:
+		if t_hi < 0 or t_hi > bal:
 			break
 		lo = hi
 		# hi = hi * 2 without literal 2
@@ -550,29 +672,35 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 	while lo + 1 < hi:
 		var mid: int = floori((lo + hi) / INT_DIV_MID_DENOM)
 		var t_mid: int = _quote_buy_total(port, good, mid)
-		if t_mid < 0:
-			return 0
-		if t_mid <= bal:
-			lo = mid
-		else:
+		if t_mid < 0 or t_mid > bal:
 			hi = mid
+		else:
+			lo = mid
 	# 整數 quote 校正：確認 lo 可負擔、lo+1 不可
 	if lo > 0:
 		var t_lo: int = _quote_buy_total(port, good, lo)
-		if t_lo > bal:
+		if t_lo < 0 or t_lo > bal:
 			lo = lo - 1
 	return lo
 
 
 func buy_slider_max(q_afford: int, hold_free: int, stock: int) -> int:
 	# FRM-SYS05-10：買 = MIN(q_afford, hold_free, stock)
+	# A22／C-06：負數不得靜默夾成 0
+	_clear_last_error()
+	if q_afford < 0 or hold_free < 0 or stock < 0:
+		_record_error(
+			ERR_SYS05_05,
+			FIELD_AMOUNT,
+			{"q_afford": q_afford, "hold_free": hold_free, "stock": stock},
+			"buy_slider_max negative input"
+		)
+		return INT_API_FAILURE
 	var m: int = q_afford
 	if hold_free < m:
 		m = hold_free
 	if stock < m:
 		m = stock
-	if m < 0:
-		return 0
 	return m
 
 
@@ -610,14 +738,17 @@ func close_season() -> SeasonLedgerReport:
 				continue
 			# 3 FRM-SYS05-06 扣費入 SINK
 			charge_mandatory(sched.account_id, due, sched.reason, sched.requester)
-		# 4 FRM-SYS05-08
+		# 4 FRM-SYS05-08；A19：達門檻只發一次，清償歸零後可再發
 		if acc.arrears > 0:
 			acc.arrears_seasons = acc.arrears_seasons + 1
 		else:
 			acc.arrears_seasons = 0
+			_bankruptcy_referred_ids.erase(acc_id)
 		arrears_changed.emit(acc.id, acc.arrears, acc.arrears_seasons)
 		if acc.arrears_seasons >= bankrupt_lim:
-			bankruptcy_referred.emit(acc.id)
+			if not _bankruptcy_referred_ids.has(acc_id):
+				_bankruptcy_referred_ids[acc_id] = true
+				bankruptcy_referred.emit(acc.id)
 
 	# 5 SeasonLedgerReport
 	var report := SeasonLedgerReport.new()
@@ -665,6 +796,7 @@ func quantize_money(x: float, mode: int) -> int:
 
 
 func _quote_buy_total(port: StringName, good: StringName, qty: int) -> int:
+	## A18：quote 失敗（error 鍵）回 INT_API_FAILURE，不得把 total_li＝0 當可負擔.
 	if _quote_provider == null:
 		return INT_API_FAILURE
 	if not _quote_provider.has_method("quote"):
@@ -674,6 +806,8 @@ func _quote_buy_total(port: StringName, good: StringName, qty: int) -> int:
 	if typeof(q) != TYPE_DICTIONARY:
 		return INT_API_FAILURE
 	var d: Dictionary = q
+	if d.has(KEY_ERROR):
+		return INT_API_FAILURE
 	if not d.has(KEY_TOTAL_LI):
 		return INT_API_FAILURE
 	return int(d[KEY_TOTAL_LI])
@@ -737,11 +871,22 @@ func _add_checked(a: int, b: int) -> bool:
 	return a >= a + b
 
 
-func _restore_snap(balances: Dictionary, arrears_map: Dictionary) -> void:
+func _mul_checked(a: int, b: int) -> bool:
+	# A20／C-10／ERR-SYS05-08：乘法溢位檢查（不得依賴環繞）
+	if a == 0 or b == 0:
+		return true
+	var product: int = a * b
+	return product / a == b
+
+
+func _restore_snap(balances: Dictionary, arrears_map: Dictionary, season_stats: Dictionary = {}) -> void:
+	## A20：還原分錄帳戶＋SINK 抵欠與季統計
 	for k in balances.keys():
 		var acc: Account = _accounts[k]
 		acc.balance = int(balances[k])
 		acc.arrears = int(arrears_map[k])
+	if not season_stats.is_empty():
+		_season_stats = season_stats.duplicate(true)
 
 
 func _ensure_system_account(id: StringName, kind: Account.Kind) -> void:
@@ -800,6 +945,9 @@ func _clear_state() -> void:
 	_season_stats = {}
 	_loaded = false
 	_quote_provider = null
+	_bankruptcy_referred_ids = {}
+	_last_apply_meta = []
+	_last_post_reason = &""
 	_clear_last_error()
 
 

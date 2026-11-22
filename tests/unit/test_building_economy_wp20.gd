@@ -23,7 +23,7 @@ const STAPLE_TIMBER := "木材"
 const ANCHOR_LI := 1000
 
 const ROOT := "user://wp20_be/"
-const TYPE_KONTOR := "KT-01"
+const TYPE_KONTOR := "CB-17"
 const TYPE_IND1 := "IB-RICE"
 const TYPE_IND2 := "IB-BREW"
 const TYPE_WH := "WH-01"
