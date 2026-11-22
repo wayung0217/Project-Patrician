@@ -483,6 +483,7 @@ func test_WP19_12_08_6_signals_flush_only() -> void:
 
 
 func test_WP19_12_08_7_public_upgrade_fee() -> void:
+	## V2／FRM-SYS08-07: pop=1000 × UPGRADE_PER_CAPITA[L2].CASH_LI=10000 → 10_000_000.
 	var pop := TestPop.new()
 	pop.set_pop(PORT_PT01, 1000)
 	_setup_core(pop)
@@ -490,10 +491,7 @@ func test_WP19_12_08_7_public_upgrade_fee() -> void:
 	_write_defs()
 	_load_be()
 	var fee: Dictionary = BuildingEconomy.public_upgrade_fee(StringName(PORT_PT01), 2)
-	var arr: Array = Params.get_value("PRM-SYS08-UPGRADE_PER_CAPITA")
-	var cash_per: int = int((arr[0] as Dictionary).get("CASH_LI", 0))
-	var expect: int = ceili(AmountQuantize.quantize_amount(1000.0 * float(cash_per)))
-	assert_eq(int(fee["CASH_LI"]), expect)
+	assert_eq(int(fee["CASH_LI"]), 10_000_000)
 
 
 func test_WP19_12_08_8_pause_resume_demolish() -> void:

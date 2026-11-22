@@ -113,15 +113,13 @@ func test_TST_SYS08_06_seven_day_floor_week_output() -> void:
 
 func test_TST_SYS08_07_input_shortfall_and_signal() -> void:
 	## TST-SYS08-07／12-12: input caps out; CONSUME CEIL(out×qty×N); shortfall signal.
-	## D-18a: content recipe 1.5 restored as float input1_qty.
+	## V2／FRM-SYS08-08／09／11 numeric (fixture K=1.83, N=0.6, recipe=1.5, seed=10):
+	## out_pot=26, feas=FLOOR(10/0.9)=11 → out=11; used=CEIL(11×1.5×0.6)=CEIL(9.9)=10.
 	var wf := TestWorkforce.new()
 	var brew: StringName = _boot_active_workshop(wf, TYPE_IND2, "GD-002", 2, 10.0, "GD-001", 1.5)
 	wf.set_workers(brew, 10)
 	var wh: Dictionary = GoodsLedger.make_warehouse(String(ACTOR), PORT_PT01)
-	# Seed rice for ~2/3 of potential: pot ≈ floor(10*10*1.83/7) per day via acc.
-	# Pot ≈ floor(10×10×1.83 / 7)=26; seed rice so feas ≈ 2/3 pot.
 	_seed_wh("GD-001", 10)
-	var n: float = Params.get_float(BuildingEconomy.PRM_RECIPE_N)
 	var rice_before: int = GoodsLedger.get_qty(wh, &"GD-001")
 	assert_eq(rice_before, 10)
 	var saw: Array = []
@@ -133,9 +131,8 @@ func test_TST_SYS08_07_input_shortfall_and_signal() -> void:
 	BuildingEconomy.production_shortfall.disconnect(cb)
 	var out: int = GoodsLedger.get_qty(wh, &"GD-002")
 	var rice_left: int = GoodsLedger.get_qty(wh, &"GD-001")
-	assert_gt(out, 0)
-	var used: int = rice_before - rice_left
-	assert_eq(used, ceili(AmountQuantize.quantize_amount(float(out) * 1.5 * n)))
+	assert_eq(out, 11)
+	assert_eq(rice_before - rice_left, 10)
 	assert_eq(saw.size(), 1)
 	assert_eq(saw[0]["id"], brew)
 	assert_eq(saw[0]["reason"], BuildingEconomy.SHORTFALL_INPUT)
