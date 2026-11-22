@@ -41,6 +41,21 @@ func before_each() -> void:
 	SeaLanes._last_error = {}
 
 
+func test_TST_WP62_D95d_lane_ids_ascending_full_chart() -> void:
+	## D-95(d): SeaLanes.lane_ids() ascending after formal-chart fixture load.
+	_boot_full_chart()
+	assert_true(SeaLanes.is_loaded())
+	var ids: Array[StringName] = SeaLanes.lane_ids()
+	assert_eq(ids.size(), SeaLanes._lanes.size())
+	var prev: String = ""
+	for lid_variant in ids:
+		var lid: String = String(lid_variant)
+		if prev != "":
+			assert_true(lid > prev, "ascending: %s then %s" % [prev, lid])
+		prev = lid
+		assert_true(SeaLanes._lanes.has(lid))
+
+
 func test_TST_SYS14_01_55_lanes_zero_errors_16_ports_reachable() -> void:
 	_boot_full_chart()
 	assert_true(SeaLanes.is_loaded())
