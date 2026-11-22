@@ -19,7 +19,6 @@ var _selected_ship: StringName = &""
 var _trade_qty: int = 1
 var _continuous: bool = false
 var _accum_sec: float = 0.0
-var _last_trade_total_li: int = 0
 
 var _sea_map: Control
 var _market_tree: Tree
@@ -308,11 +307,9 @@ func _do_trade(side: int) -> void:
 		_append_msg(_trade_result.text)
 		_refresh_all()
 		return
-	# total_li is queued on signal; recover via cash delta
+	# D-95(d): TradeDesk.last_trade_total_li() after successful execute_trade.
+	var paid: int = TradeDesk.last_trade_total_li()
 	var cash_after: int = CashLedger.balance(ACTOR)
-	var delta: int = cash_after - cash_before
-	var paid: int = delta if side == MarketPricer.SIDE_SELL else (0 - delta)
-	_last_trade_total_li = paid
 	var stock_after: int = GoodsLedger.get_qty(market, _selected_good)
 	TradeDesk.flush_signals()
 	_trade_result.text = "成交 seq=%s 量=%s 金額=%s 庫存 %s→%s 現金 %s→%s" % [
@@ -491,10 +488,8 @@ func _refresh_player() -> void:
 		var sid: StringName = sid_variant
 		var info: Dictionary = ShipRegistry.ship_info(sid)
 		var hold: Dictionary = GoodsLedger.make_hold(String(sid), String(ACTOR))
-		var used: int = 0
-		if GoodCatalog.is_loaded():
-			for gid in GoodCatalog.all_ids():
-				used = used + GoodsLedger.get_qty(hold, StringName(gid))
+		# D-95(d): GoodsLedger.container_used; capacity shows 150 擔 for SH-01 (D-94a／scenario).
+		var used: int = GoodsLedger.container_used(hold)
 		var cap: int = ShipRegistry.capacity_for_hold(hold)
 		var free_slots: int = cap - used
 		if free_slots < 0:
@@ -508,7 +503,7 @@ func _refresh_player() -> void:
 					cargo_bits.append("%s×%s" % [gd.name_zh if gd else gid, str(q)])
 		var cargo_s: String = "（空）" if cargo_bits.is_empty() else ", ".join(cargo_bits)
 		lines.append(
-			"船 %s 狀態=%s 港=%s 目的=%s 抵達tick=%s | 艙 %s/%s 餘 %s | 貨 %s" % [
+			"船 %s 狀態=%s 港=%s 目的=%s 抵達tick=%s | 艙 %s/%s 擔 餘 %s | 貨 %s" % [
 				String(sid),
 				str(info.get("state", "")),
 				str(info.get("port_id", "")),
@@ -541,7 +536,8 @@ func selected_port() -> StringName:
 
 
 func last_trade_total_li() -> int:
-	return _last_trade_total_li
+	## Delegates to TradeDesk.last_trade_total_li() (D-95d).
+	return TradeDesk.last_trade_total_li()
 
 
 func force_select_port(port_id: StringName) -> void:
