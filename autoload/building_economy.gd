@@ -139,6 +139,19 @@ var _acc_arms: Dictionary = {} ## port → int (ACC_SCALE units)
 var _acc_powder: Dictionary = {} ## port → int
 var _city_spend_hist: Dictionary = {} ## port → Array[int] recent season spends
 var _season_city_spend: Dictionary = {} ## port → int spend this season
+## WP-67／D-97(e) OBS-05 persistence: "port|season" → value.
+var _obs05_spend_by_cat: Dictionary = {}
+var _obs05_land_rent: Dictionary = {}
+var _obs05_vacancy_tax: Dictionary = {}
+## In-season accumulators (cleared each season_step).
+var _season_spend_cat: Dictionary = {} ## port → {build_upgrade_li,garrison_li,levy_li,other_li}
+var _season_land_rent_acc: Dictionary = {} ## port → int
+var _season_vacancy_tax_acc: Dictionary = {} ## port → int
+const SPEND_CAT_BUILD := "build_upgrade_li"
+const SPEND_CAT_GARRISON := "garrison_li"
+const SPEND_CAT_LEVY := "levy_li"
+const SPEND_CAT_OTHER := "other_li"
+const ERR_OBS05_LOOKUP := &"ERR-SYS08-08" ## D-08c unknown／unsettled → last_error
 var _land_held_days: Dictionary = {} ## slot_id → days held this season (player)
 
 
@@ -316,6 +329,9 @@ func load_and_validate(
 		_acc_arms[port_id] = 0
 		_acc_powder[port_id] = 0
 		_season_city_spend[port_id] = 0
+		_season_spend_cat[port_id] = _empty_spend_cat()
+		_season_land_rent_acc[port_id] = 0
+		_season_vacancy_tax_acc[port_id] = 0
 		if not _city_spend_hist.has(port_id):
 			_city_spend_hist[port_id] = []
 
@@ -698,6 +714,7 @@ func season_step() -> Array:
 		_season_city_build_queue(port_id)
 		_season_zone_open(port_id)
 		_season_levy(port_id)
+		_persist_obs05_season(port_id)
 		_clear_season_accums(port_id)
 	return errors
 
@@ -2031,7 +2048,7 @@ func buy_city_building(actor: StringName, bld_key: StringName) -> int:
 	var slot: Slot = _slot(bld.slot_id)
 	if slot != null:
 		slot.land_owner = actor
-	_note_city_spend(bld.port_id, 0) # purchase is income to city, not spend
+	_note_city_spend(bld.port_id, 0, SPEND_CAT_OTHER) # purchase is income to city, not spend
 	var seq: int = CashLedger.last_posting_seq()
 	return seq
 
@@ -2137,8 +2154,8 @@ func _step_garrison_procure(_day: int, _errors: Array) -> void:
 
 
 func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
-	## FRM-14：q = MIN(FLOOR(acc), MARKET 庫存, CITY 可負擔).
-	## Afford via direct MarketPricer.quote (units 通常很小；避開 max_affordable 對低庫存的擴張誤判).
+	## FRM-14／D-97(d)／WP-67: validate CITY afford + MARKET stock ≥ q, then cash+goods.
+	## Later failure → offsetting cash post (keep original); never delete postings.
 	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
 	if units <= 0:
 		return
@@ -2147,6 +2164,7 @@ func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, a
 	var market: Dictionary = GoodsLedger.make_market(port_id)
 	var stock: int = GoodsLedger.get_qty(market, good)
 	var q: int = mini(units, stock)
+	var price := 0
 	while q > 0:
 		var quote: Dictionary = MarketPricer.quote(
 			StringName(port_id), good, MarketPricer.SIDE_BUY, q
@@ -2154,10 +2172,21 @@ func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, a
 		if quote.has(MarketPricer.KEY_ERROR):
 			q = 0
 			break
-		var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
+		price = int(quote[MarketPricer.KEY_TOTAL_LI])
 		if price > CashLedger.balance(city):
 			q = q - 1
 			continue
+		## Pre-validate goods path (stock already gated); then write cash then goods.
+		if not GoodsLedger.can_transfer(
+			market,
+			GoodsLedger.make_external(),
+			good,
+			q,
+			GoodsLedger.REASON_CONSUME,
+			REQUESTER_SYS08
+		):
+			q = 0
+			break
 		var cash_rc: Error = CashLedger.post(
 			[
 				CashLedger.make_entry(city, 0 - price),
@@ -2178,8 +2207,17 @@ func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, a
 			REQUESTER_SYS08
 		)
 		if seq > 0:
-			_note_city_spend(port_id, price)
+			_note_city_spend(port_id, price, SPEND_CAT_GARRISON)
 		else:
+			## Goods failed after cash — offsetting entry; keep original post (D-97d).
+			CashLedger.post(
+				[
+					CashLedger.make_entry(CashLedger.ID_SINK, 0 - price),
+					CashLedger.make_entry(city, price),
+				],
+				REASON_TRADE,
+				REQUESTER_SYS08
+			)
 			q = 0
 		break
 	## D-81: discard unmet whole units; keep fractional remainder (acc % scale).
@@ -2317,6 +2355,7 @@ func _season_land_and_vacancy(port_id: String) -> void:
 		var rent2: int = _land_rent_li(s2, held2, days_d, seasons_y, rate_year)
 		if rent2 > 0:
 			_charge_to_city(s2.land_owner, city, rent2, REASON_LAND_RENT, port_id)
+			_season_land_rent_acc[port_id] = int(_season_land_rent_acc.get(port_id, 0)) + rent2
 		if s2.building_id != &"":
 			continue
 		if s2.vacancy_start_day < 0:
@@ -2340,6 +2379,7 @@ func _season_land_and_vacancy(port_id: String) -> void:
 		)
 		if vtax > 0:
 			_charge_to_city(s2.land_owner, city, vtax, REASON_VACANCY_TAX, port_id)
+			_season_vacancy_tax_acc[port_id] = int(_season_vacancy_tax_acc.get(port_id, 0)) + vtax
 
 
 func _land_rent_li(slot: Slot, held: int, days_d: int, seasons_y: int, rate_year: float) -> int:
@@ -2472,7 +2512,7 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 	)
 	if post_err != OK:
 		return false
-	_note_city_spend(port_id, cost)
+	_note_city_spend(port_id, cost, SPEND_CAT_BUILD)
 	var bld := Building.new()
 	bld.building_id = _next_bld_id(port_id)
 	bld.type = StringName(type_id)
@@ -2514,7 +2554,7 @@ func _season_zone_open(port_id: String) -> void:
 	)
 	if post_err != OK:
 		return
-	_note_city_spend(port_id, cost)
+	_note_city_spend(port_id, cost, SPEND_CAT_OTHER)
 	# Open slots in that zone
 	var opened := false
 	for s_v in _slots_by_port.get(port_id, []):
@@ -2563,6 +2603,7 @@ func _season_levy(port_id: String) -> void:
 		REASON_LEVY,
 		REQUESTER_SYS08
 	)
+	_note_city_spend(port_id, levy, SPEND_CAT_LEVY)
 
 
 func _clear_season_accums(port_id: String) -> void:
@@ -2571,6 +2612,9 @@ func _clear_season_accums(port_id: String) -> void:
 	hist.append(spent)
 	_city_spend_hist[port_id] = hist
 	_season_city_spend[port_id] = 0
+	_season_spend_cat[port_id] = _empty_spend_cat()
+	_season_land_rent_acc[port_id] = 0
+	_season_vacancy_tax_acc[port_id] = 0
 	_acc_arms[port_id] = 0
 	_acc_powder[port_id] = 0
 	for k in _land_held_days.keys():
@@ -2583,10 +2627,91 @@ func _clear_season_accums(port_id: String) -> void:
 		bld.acc_rent_li = 0
 
 
-func _note_city_spend(port_id: String, amount: int) -> void:
+func _empty_spend_cat() -> Dictionary:
+	return {
+		SPEND_CAT_BUILD: 0,
+		SPEND_CAT_GARRISON: 0,
+		SPEND_CAT_LEVY: 0,
+		SPEND_CAT_OTHER: 0,
+	}
+
+
+func _note_city_spend(port_id: String, amount: int, category: String = SPEND_CAT_OTHER) -> void:
 	if amount <= 0:
 		return
 	_season_city_spend[port_id] = int(_season_city_spend.get(port_id, 0)) + amount
+	var cat: Dictionary = _season_spend_cat.get(port_id, _empty_spend_cat()) as Dictionary
+	cat[category] = int(cat.get(category, 0)) + amount
+	_season_spend_cat[port_id] = cat
+
+
+func _obs05_key(port_id: String, season_index: int) -> String:
+	return "%s|%d" % [port_id, season_index]
+
+
+func _current_season_index() -> int:
+	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
+	if days_d <= 0:
+		return 0
+	var day: int = Clock.day if Clock != null else 0
+	## season_step runs at season boundary; day already advanced to next season start.
+	return maxi(0, int(day / days_d) - 1)
+
+
+func _persist_obs05_season(port_id: String) -> void:
+	var si: int = _current_season_index()
+	var key: String = _obs05_key(port_id, si)
+	var cat: Dictionary = (
+		_season_spend_cat.get(port_id, _empty_spend_cat()) as Dictionary
+	).duplicate()
+	_obs05_spend_by_cat[key] = cat
+	_obs05_land_rent[key] = int(_season_land_rent_acc.get(port_id, 0))
+	_obs05_vacancy_tax[key] = int(_season_vacancy_tax_acc.get(port_id, 0))
+
+
+func city_spend_by_category(port_id: StringName, season_index: int) -> Dictionary:
+	## WP-67／D-97(e) OBS-05: keys build_upgrade_li、garrison_li、levy_li、other_li.
+	assert(_loaded, "BuildingEconomy.city_spend_by_category before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid):
+		_record_fail(ERR_OBS05_LOOKUP, "port_id", port_id, "unknown port for OBS-05 spend")
+		return {}
+	var key: String = _obs05_key(pid, season_index)
+	if not _obs05_spend_by_cat.has(key):
+		_record_fail(ERR_OBS05_LOOKUP, "season_index", season_index, "season not settled (OBS-05)")
+		return {}
+	return (_obs05_spend_by_cat[key] as Dictionary).duplicate()
+
+
+func season_land_rent_li(port_id: StringName, season_index: int) -> int:
+	## WP-67／D-97(e) OBS-05 land rent total for settled season; unset → −1.
+	assert(_loaded, "BuildingEconomy.season_land_rent_li before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid):
+		_record_fail(ERR_OBS05_LOOKUP, "port_id", port_id, "unknown port for OBS-05 rent")
+		return -1
+	var key: String = _obs05_key(pid, season_index)
+	if not _obs05_land_rent.has(key):
+		_record_fail(ERR_OBS05_LOOKUP, "season_index", season_index, "season not settled (OBS-05)")
+		return -1
+	return int(_obs05_land_rent[key])
+
+
+func season_vacancy_tax_li(port_id: StringName, season_index: int) -> int:
+	## WP-67／D-97(e) OBS-05 vacancy tax total for settled season; unset → −1.
+	assert(_loaded, "BuildingEconomy.season_vacancy_tax_li before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid):
+		_record_fail(ERR_OBS05_LOOKUP, "port_id", port_id, "unknown port for OBS-05 vacancy")
+		return -1
+	var key: String = _obs05_key(pid, season_index)
+	if not _obs05_vacancy_tax.has(key):
+		_record_fail(ERR_OBS05_LOOKUP, "season_index", season_index, "season not settled (OBS-05)")
+		return -1
+	return int(_obs05_vacancy_tax[key])
 
 
 func _load_build_queues(queue_dir: String, errors: Array) -> void:
@@ -2636,6 +2761,12 @@ func _clear_state() -> void:
 	_acc_powder = {}
 	_city_spend_hist = {}
 	_season_city_spend = {}
+	_obs05_spend_by_cat = {}
+	_obs05_land_rent = {}
+	_obs05_vacancy_tax = {}
+	_season_spend_cat = {}
+	_season_land_rent_acc = {}
+	_season_vacancy_tax_acc = {}
 	_land_held_days = {}
 	_loaded = false
 	_clear_last_error()
