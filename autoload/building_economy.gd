@@ -311,7 +311,9 @@ func load_and_validate(
 	_building_defs = _load_building_defs(buildings_dir, errors)
 	_load_build_queues(BUILD_QUEUE_DIR, errors)
 	## D-97(a)／N1／FRM-SYS08-21: queue import validation ERR-SYS08-13（C-06 collect all）.
-	## Skip when fixture boots omit city centers for some PortRegistry ports（unit tests）.
+	## Only on formal city_center path — fixtures must not cross-check formal queue.
+	## Also skip when fixture boots omit city centers for some PortRegistry ports.
+	var formal_city_boot: bool = city_center_dir == CITY_CENTER_DIR
 	var registry_ports: Array = []
 	for rp_v in PortRegistry.all_ids():
 		registry_ports.append(String(rp_v))
@@ -320,7 +322,7 @@ func load_and_validate(
 		if not city_by_port.has(String(rp2)):
 			city_covers_registry = false
 			break
-	if city_covers_registry:
+	if formal_city_boot and city_covers_registry:
 		var opening_load_errs: Array = []
 		var opening_publics: Array = _load_opening_public(OPENING_PUBLIC_DIR, opening_load_errs)
 		for oe in opening_load_errs:
