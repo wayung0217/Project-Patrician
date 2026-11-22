@@ -351,7 +351,7 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 
 	## D-96(a)／FRM-SYS04-01（改）：weekly_basis = MAX(週去化, 週潛在需求).
 	var potential_dan: int = 0
-	if DemandModel.has_meta("wp64_test_potential") or DemandModel.is_loaded():
+	if DemandModel.has_potential_demand_provider() or DemandModel.is_loaded():
 		potential_dan = DemandModel.weekly_potential_demand(port_id, good_id)
 	var weekly_basis: float = weekly_offtake
 	if float(potential_dan) > weekly_basis:
@@ -410,11 +410,12 @@ func _batch_area(anchor: int, weekly_offtake: float, stock_before: int, stock_af
 	if q < 0:
 		q = 0 - q
 	var w_before: Variant = _stock_weeks_raw(stock_before, weekly_offtake)
-	if w_before == null:
-		# FRM-SYS04-09（改）
+	var w_after: Variant = _stock_weeks_raw(stock_after, weekly_offtake)
+	## R9-65 高-2／D-96(a)／FRM-SYS04-09（改）: null-w = floor.
+	## Do not float(null) and do not substitute 0 (C-06).
+	if w_before == null or w_after == null:
 		return float(anchor) * _floor_mult() * float(q)
 	var c_f: float = weekly_offtake
-	var w_after: Variant = _stock_weeks_raw(stock_after, weekly_offtake)
 	var delta_g: float = _G(float(w_after)) - _G(float(w_before))
 	if delta_g < 0.0:
 		delta_g = 0.0 - delta_g

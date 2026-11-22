@@ -38,6 +38,9 @@ var _tables_path: String = TABLES_PATH
 var _rate_cj: Dictionary = {} ## class → {good_id: int rate_scaled}
 var _sat_pct: Dictionary = {} ## class → {good_id: int weight pct points} (D-36c)
 var _subst: Array = [] ## [{from,to,cap_ppm,util_ppm}, ...] sorted by from,to
+## Fixture／test injection (R9-65 A2／C-14 待追認)：duck-typed provider with
+## weekly_potential_demand(port_id, good_id) -> int. Product must not use meta.
+var _potential_demand_provider: Object = null
 
 ## PRM-backed scales (C-03／N-01); set only from Params in load_and_validate.
 var _days_per_week: int = 0
@@ -116,18 +119,29 @@ func weekly_demand(port_id: StringName, good_id: StringName) -> int:
 	return floori(float(w_num) / float(_period_S))
 
 
+func set_potential_demand_provider(provider: Object) -> void:
+	## R9-65 A2／C-14 待追認：fixture／test provider injection（取代 product meta）。
+	_potential_demand_provider = provider
+
+
+func clear_potential_demand_provider() -> void:
+	_potential_demand_provider = null
+
+
+func has_potential_demand_provider() -> bool:
+	return _potential_demand_provider != null
+
+
 func weekly_potential_demand(port_id: StringName, good_id: StringName) -> int:
 	## D-96f／FRM-SYS23-04／FRM-SYS04-01（改）：週潛在需求（擔／週，FLOOR）。
 	## Exact public name (D-96f)；口径同 weekly_demand。
-	## Test-only override：meta `wp64_test_potential` Dictionary keyed "port|good" → int
-	## （允許在 DemandModel 未 load 時供 EX-04-09 固定示範值）。
-	if has_meta("wp64_test_potential"):
-		var ov: Variant = get_meta("wp64_test_potential")
-		if typeof(ov) == TYPE_DICTIONARY:
-			var key := "%s|%s" % [String(port_id), String(good_id)]
-			var d: Dictionary = ov
-			if d.has(key):
-				return int(d[key])
+	## Provider path allows EX-04-09 fixtures before DemandModel load (R9-65 A2).
+	if _potential_demand_provider != null:
+		assert(
+			_potential_demand_provider.has_method("weekly_potential_demand"),
+			"potential demand provider missing weekly_potential_demand"
+		)
+		return _potential_demand_provider.weekly_potential_demand(port_id, good_id)
 	assert(_loaded, "DemandModel.weekly_potential_demand before load")
 	return weekly_demand(port_id, good_id)
 
