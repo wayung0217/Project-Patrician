@@ -35,7 +35,7 @@ const STAPLE_FISH := "魚乾"
 const STAPLE_TIMBER := "木材"
 const ANCHOR_LI := 1000
 
-const TYPE_KONTOR := "KT-01"
+const TYPE_KONTOR := "CB-17"
 const TYPE_HEMP := "IB-HEMP"
 const TYPE_IRON := "IB-IRON"
 const TYPE_SULFUR := "IB-SULF"

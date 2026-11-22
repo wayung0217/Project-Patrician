@@ -477,8 +477,11 @@ func _write_layout_multi() -> void:
 func _write_defs() -> void:
 	var dir := ROOT + "buildings/"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	_save_def(dir, "KT-01", "KONTOR", "", 0, 1.0)
+	_save_def(dir, "CB-17", "KONTOR", "", 0, 1.0)
 	_save_def(dir, "RB-01", "RESIDENCE", "", 0, 1.0)
+	## A12: no silent PUBLIC shells — opening_public rows need real defs.
+	_save_def(dir, "CB-01", "PUBLIC", "", 0, 1.0)
+	_save_def(dir, "CB-09", "PUBLIC", "", 0, 1.0)
 	# Recipe-input workshop for D-19d conservation (consumes GD-002).
 	var d := BuildingDef.new()
 	d.type = "WS-RICE"

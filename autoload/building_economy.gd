@@ -735,8 +735,8 @@ func _step_construction(_errors: Array) -> void:
 			)
 			bld.missing_materials = still
 			if still.is_empty():
-				var days_map: Dictionary = Params.get_value(PRM_BUILD_DAYS)
-				bld.days_left = int(days_map[String(bld.build_class)])
+				## A12／R9-44 M2: keep days_left set at order_build／order_upgrade
+				## (upgrade may use KONTOR_UPGRADE DAYS, not BUILD_DAYS[class]).
 				bld.state = Building.State.BUILDING
 				_pending_started.append(bld.building_id)
 			else:
@@ -1612,12 +1612,10 @@ func apply_opening_init(
 		var need_h: int = ceili(float(pop_n) / float(house_cap))
 		var city2: StringName = CashLedger.make_city_id(port_id)
 		CashLedger.create_account(city2, Account.Kind.CITY)
-		# Ensure RESIDENCE def
+		# A12: require RB-01 def; no silent shell (C-06).
 		if not _building_defs.has("RB-01"):
-			var rd := BuildingDef.new()
-			rd.type = "RB-01"
-			rd.build_class = "RESIDENCE"
-			_building_defs["RB-01"] = rd
+			errors.append(_err(ERR_SYS08_10, "residence", "RB-01", "BuildingDef RB-01 missing"))
+			continue
 		for _h in range(need_h):
 			var rslot: StringName = _find_open_civil_slot(port_id)
 			if rslot == &"":
@@ -1633,16 +1631,17 @@ func apply_opening_init(
 		if pslot == &"":
 			errors.append(_err(ERR_SYS08_10, "public", pub.port_id, "no public slot"))
 			continue
+		# A12: no silent PUBLIC shell when cb_id missing from buildings.
 		if not _building_defs.has(pub.cb_id):
-			var pd := BuildingDef.new()
-			pd.type = pub.cb_id
-			pd.build_class = "PUBLIC"
-			_building_defs[pub.cb_id] = pd
+			errors.append(
+				_err(ERR_SYS08_10, "public", pub.cb_id, "BuildingDef missing for opening public")
+			)
+			continue
 		var pb: Building = _spawn_active_building(
 			city3, pub.port_id, pslot, StringName(pub.cb_id), CLASS_PUBLIC, maxi(BUILDING_LEVEL_MIN, pub.level)
 		)
 		pb.cb_id = StringName(pub.cb_id)
-	# 4) Player kontor at 魍港
+	# 4) Player kontor at 魍港 — A12: type CB-17 (buildings.csv KONTOR), no KT-01 shell.
 	var port_ids: PackedStringArray = PortRegistry.all_ids() if PortRegistry.is_loaded() else PackedStringArray()
 	var has_player_port := false
 	for pid_chk in port_ids:
@@ -1653,17 +1652,14 @@ func apply_opening_init(
 		var kslot: StringName = _find_kontor_slot(player_port)
 		if kslot == &"":
 			errors.append(_err(ERR_SYS08_10, "kontor", player_port, "no kontor slot for player"))
+		elif not _building_defs.has("CB-17"):
+			errors.append(_err(ERR_SYS08_10, "kontor", "CB-17", "BuildingDef CB-17 missing"))
 		else:
-			if not _building_defs.has("KT-01"):
-				var kd := BuildingDef.new()
-				kd.type = "KT-01"
-				kd.build_class = "KONTOR"
-				_building_defs["KT-01"] = kd
 			CashLedger.create_account(player_actor, Account.Kind.ACTOR)
 			var slot: Slot = _slot(kslot)
 			slot.land_owner = player_actor
 			_spawn_active_building(
-				player_actor, player_port, kslot, &"KT-01", CLASS_KONTOR, 1
+				player_actor, player_port, kslot, &"CB-17", CLASS_KONTOR, 1
 			)
 	# 5) Validate created counts vs opening rows (TST-18)
 	for row_v2 in openings:
@@ -1924,21 +1920,40 @@ func _weekly_income_estimate(bld: Building) -> int:
 			raw += float(int(occ.get(clazz.to_lower(), 0))) * float(int(spend.get(clazz, 0)))
 		return floori(AmountQuantize.quantize_amount(raw * share * (1.0 - mgmt)))
 	if _is_workshop(bld):
+		## FRM-SYS08-18／D-79: 週毛利＝週產出×基準價 − 週投入 − 週人工；刪 ×10.0。
 		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
 		if def == null:
 			return 0
 		var workers: int = _workers_of(bld.building_id)
+		if workers <= 0:
+			return 0
 		var k: float = Params.get_float(PRM_OUTPUT_K)
-		return floori(
-			AmountQuantize.quantize_amount(
-				float(workers) * float(def.base_output_per_worker) * k * 10.0
-			)
-		)
+		var wage_w: float = Params.get_float(PRM_WAGE_SHARE_W)
+		var wage_base: int = Params.get_int(PRM_WAGE_BASE_LI)
+		var recipe_n: float = Params.get_float(PRM_RECIPE_N)
+		var week_out: float = float(workers) * float(def.base_output_per_worker) * k
+		var out_px: float = 0.0
+		if not def.output_good_id.is_empty():
+			out_px = MarketPricer.mid_price(StringName(bld.port_id), StringName(def.output_good_id))
+		var revenue: float = week_out * out_px
+		var input_cost: float = 0.0
+		for inp_v in _recipe_inputs(def):
+			var inp: Dictionary = inp_v
+			var g: String = String(inp["good"])
+			var px: float = MarketPricer.mid_price(StringName(bld.port_id), StringName(g))
+			input_cost += week_out * float(inp["qty"]) * recipe_n * px
+		var wage_cost: float = float(workers) * float(wage_base) * pow(k, wage_w)
+		var rev_li: int = floori(AmountQuantize.quantize_amount(revenue))
+		var in_li: int = floori(AmountQuantize.quantize_amount(input_cost))
+		var wag_li: int = floori(AmountQuantize.quantize_amount(wage_cost))
+		## D-79: result < 0 is a spec gap — return as-is, never clamp.
+		return rev_li - in_li - wag_li
 	return 0
 
 
 func _step_garrison_procure(_day: int, _errors: Array) -> void:
-	## FRM-14 daily: demand acc; buy min(floor(acc), market, affordable); no carry of unmet.
+	## FRM-14／D-81: demand acc; buy min(floor(acc), market, affordable);
+	## fractional remainder carries; unmet whole units do not.
 	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
 	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
 	var garrison: Array = Params.get_value(PRM_GARRISON)
@@ -1962,14 +1977,11 @@ func _step_garrison_procure(_day: int, _errors: Array) -> void:
 		)
 		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, acc_scale)
 		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, acc_scale)
-		# Unmet demand does not carry (OQ-14q): reset remainder below 1 unit.
-		if int(_acc_arms.get(port_id, 0)) < acc_scale:
-			_acc_arms[port_id] = 0
-		if int(_acc_powder.get(port_id, 0)) < acc_scale:
-			_acc_powder[port_id] = 0
 
 
 func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
+	## FRM-14：q = MIN(FLOOR(acc), MARKET 庫存, CITY 可負擔).
+	## Afford via direct MarketPricer.quote (units 通常很小；避開 max_affordable 對低庫存的擴張誤判).
 	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
 	if units <= 0:
 		return
@@ -1977,42 +1989,44 @@ func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, a
 	CashLedger.create_account(city, Account.Kind.CITY)
 	var market: Dictionary = GoodsLedger.make_market(port_id)
 	var stock: int = GoodsLedger.get_qty(market, good)
-	var afford: int = CashLedger.max_affordable_qty(city, StringName(port_id), good)
-	var q: int = mini(units, mini(stock, afford))
-	if q <= 0:
-		acc_map[port_id] = 0 # unmet discarded
-		return
-	var quote: Dictionary = MarketPricer.quote(
-		StringName(port_id), good, MarketPricer.SIDE_BUY, q
-	)
-	if quote.has(MarketPricer.KEY_ERROR):
-		acc_map[port_id] = 0
-		return
-	var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
-	var cash_rc: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(city, 0 - price),
-			CashLedger.make_entry(CashLedger.ID_SINK, price),
-		],
-		REASON_TRADE,
-		REQUESTER_SYS08
-	)
-	if cash_rc != OK:
-		acc_map[port_id] = 0
-		return
-	var seq: int = GoodsLedger.transfer(
-		market,
-		GoodsLedger.make_external(),
-		good,
-		q,
-		GoodsLedger.REASON_CONSUME,
-		REQUESTER_SYS08
-	)
-	if seq <= 0:
-		acc_map[port_id] = 0
-		return
-	_note_city_spend(port_id, price)
-	acc_map[port_id] = int(acc_map.get(port_id, 0)) - q * acc_scale
+	var q: int = mini(units, stock)
+	while q > 0:
+		var quote: Dictionary = MarketPricer.quote(
+			StringName(port_id), good, MarketPricer.SIDE_BUY, q
+		)
+		if quote.has(MarketPricer.KEY_ERROR):
+			q = 0
+			break
+		var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
+		if price > CashLedger.balance(city):
+			q = q - 1
+			continue
+		var cash_rc: Error = CashLedger.post(
+			[
+				CashLedger.make_entry(city, 0 - price),
+				CashLedger.make_entry(CashLedger.ID_SINK, price),
+			],
+			REASON_TRADE,
+			REQUESTER_SYS08
+		)
+		if cash_rc != OK:
+			q = 0
+			break
+		var seq: int = GoodsLedger.transfer(
+			market,
+			GoodsLedger.make_external(),
+			good,
+			q,
+			GoodsLedger.REASON_CONSUME,
+			REQUESTER_SYS08
+		)
+		if seq > 0:
+			_note_city_spend(port_id, price)
+		else:
+			q = 0
+		break
+	## D-81: discard unmet whole units; keep fractional remainder (acc % scale).
+	acc_map[port_id] = int(acc_map.get(port_id, 0)) % acc_scale
 
 
 func _step_rent_accrual() -> void:
@@ -2068,10 +2082,9 @@ func _step_zone_streak() -> void:
 
 
 func _step_land_held_days() -> void:
+	## FRM-SYS08-03／A10: all non-city land accrues held days (built or vacant).
 	for slot_key_v in _slots.keys():
 		var slot: Slot = _slots[String(slot_key_v)] as Slot
-		if slot.building_id != &"":
-			continue
 		if _is_city_owner(slot.land_owner):
 			continue
 		var k := String(slot.slot_id)
@@ -2142,9 +2155,8 @@ func _season_land_and_vacancy(port_id: String) -> void:
 		var s2: Slot = slot_v2
 		if _is_city_owner(s2.land_owner):
 			continue
-		var held2: int = int(_land_held_days.get(String(s2.slot_id), days_d))
-		if held2 <= 0:
-			held2 = days_d
+		## A10: no "held ≤ 0 → full season" fallback; use accrued days only.
+		var held2: int = int(_land_held_days.get(String(s2.slot_id), 0))
 		var rent2: int = _land_rent_li(s2, held2, days_d, seasons_y, rate_year)
 		if rent2 > 0:
 			_charge_to_city(s2.land_owner, city, rent2, REASON_LAND_RENT, port_id)
