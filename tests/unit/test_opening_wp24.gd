@@ -412,10 +412,35 @@ func test_WP54_A11_bad_opening_workshop_tres_reported() -> void:
 
 
 func test_WP24_csv_only_opening_resources() -> void:
-	## Opening rows come from tres written from CSV fixture paths (2.1-04 ⑤).
-	assert_true(FileAccess.file_exists("res://tests/fixtures/wp24_opening/opening_workshops.csv"))
-	assert_true(FileAccess.file_exists("res://tests/fixtures/wp24_opening/opening_public.csv"))
-	assert_true(FileAccess.file_exists("res://tests/fixtures/wp24_opening/opening_population.csv"))
+	## AC4: CSV fixtures import to OpeningPopulation tres with row values (not mere file-exists).
+	var fix := "res://tests/fixtures/wp24_opening/"
+	var out := ROOT + "csv_open_res/"
+	_wipe(out)
+	var result: Dictionary = CsvImport.run_batch_opening_population(
+		fix, out, FIX_POP_OK.path_join("ports.csv")
+	)
+	assert_true(result["ok"], str(result.get("errors", [])))
+	var op1: OpeningPopulation = load(out.path_join("PT-01.tres")) as OpeningPopulation
+	assert_ne(op1, null)
+	assert_eq(op1.poor, 100)
+	assert_eq(op1.citizen, 40)
+	assert_eq(op1.rich, 10)
+	var op10: OpeningPopulation = load(out.path_join("PT-10.tres")) as OpeningPopulation
+	assert_ne(op10, null)
+	assert_eq(op10.poor, 80)
+	assert_eq(op10.citizen, 30)
+	assert_eq(op10.rich, 5)
+	## Workshop／public CSVs parse with expected row counts (behavior, not existence-only).
+	var ws: Dictionary = CsvImport.import_csv(
+		fix.path_join("opening_workshops.csv"), CsvImport.KIND_OPENING_WORKSHOP, false
+	)
+	assert_true(ws["ok"], str(ws.get("errors", [])))
+	assert_eq((ws["rows"] as Array).size(), 2)
+	var pub: Dictionary = CsvImport.import_csv(
+		fix.path_join("opening_public.csv"), CsvImport.KIND_OPENING_PUBLIC, false
+	)
+	assert_true(pub["ok"], str(pub.get("errors", [])))
+	assert_eq((pub["rows"] as Array).size(), 2)
 
 
 # --- helpers ---

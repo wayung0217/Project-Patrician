@@ -41,6 +41,9 @@ const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 ## A20 overflow probes（非規格值；僅觸發 ERR-SYS05-08）
 const HUGE_FEE := 9223372036854775807
 const HUGE_DAYS := 90
+## T7 named consts
+const TWO := 2
+const NEG_ONE := -1
 
 
 func before_each() -> void:
@@ -136,7 +139,7 @@ func test_WP56_A20_prorate_and_split_overflow() -> void:
 	var parts: Array = CashLedger.split_largest_remainder(HUGE_FEE, [HUGE_DAYS, 1])
 	assert_eq(parts.size(), 0)
 	assert_eq(StringName(CashLedger.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), CashLedger.ERR_SYS05_08)
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 
 
 func test_WP56_A21_quote_unknown_port() -> void:
@@ -164,7 +167,7 @@ func test_WP56_A22_buy_slider_max_rejects_negative() -> void:
 	assert_eq(Params.load_and_validate(PARAMS_DEMO).size(), 0)
 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
-	var m: int = CashLedger.buy_slider_max(0 - 1, 10, 10)
+	var m: int = CashLedger.buy_slider_max(NEG_ONE, 10, 10)
 	assert_eq(m, CashLedger.INT_API_FAILURE)
 	assert_eq(StringName(CashLedger.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), CashLedger.ERR_SYS05_05)
 	assert_push_error_count(1)
@@ -177,7 +180,7 @@ func test_WP56_A22_post_requires_goods_ledger_seq() -> void:
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
 	var err: Error = CashLedger.post([
-		CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 10),
+		CashLedger.make_entry(CashLedger.ID_SOURCE, -10),
 		CashLedger.make_entry(ACTOR, 10),
 	], REASON_OPEN, REQUESTER_SYS04)
 	assert_eq(err, FAILED)
@@ -267,14 +270,9 @@ func _boot_pricing_stack() -> void:
 	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
-	if not GoodsLedger._offtake_snapshot.has(PORT):
-		GoodsLedger._offtake_snapshot[PORT] = {}
-	GoodsLedger._offtake_snapshot[PORT][GOOD] = {
-		"window_qty": 105,
-		"local_qty": 105,
-		"window_days": days_pw,
-		"day": 0,
-	}
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(PORT), StringName(GOOD), 105, 105, days_pw, 0
+	)
 
 
 func _seed_market(stock: int) -> void:

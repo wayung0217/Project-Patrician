@@ -48,6 +48,10 @@ const TST06_MID_NEW := 70
 const TST06_AGE_OLD := 5
 const TST06_AGE_NEW := 2
 const TST06_CONSENSUS := 81
+
+## T7 named consts (no 1+1 evasions)
+const TWO := 2
+const CONTACT_LEVEL_KONTOR := 2
 ## TST-SYS15-08: (100-70)*PPM / 81
 const TST08_SPAN := 30
 
@@ -134,7 +138,7 @@ func test_TST_SYS15_01_missing_prm() -> void:
 	Params._values.erase(PRM_DECAY)
 	var e1: Array = IntelLedger.load_and_validate()
 	assert_true(_has_code(e1, IntelLedger.ERR_SYS15_01))
-	assert_eq(e1.size(), 1 + 1)
+	assert_eq(e1.size(), TWO)
 	assert_false(IntelLedger.is_loaded())
 	assert_push_error_count(e1.size())
 
@@ -310,14 +314,14 @@ func test_TST_SYS15_11_12_13_14_presence_contact_samples() -> void:
 	# Level 2 via fixture BrokerProvider.has_kontor（D-60f／D-37e）.
 	_install_broker()
 	_broker.kontor["%s|%s" % [String(ACTOR), PT_B]] = true
-	assert_eq(IntelLedger.contact_level(ACTOR, StringName(PT_B)), 1 + 1)
+	assert_eq(IntelLedger.contact_level(ACTOR, StringName(PT_B)), CONTACT_LEVEL_KONTOR)
 	# Presence ERR already pushed once; board_samples unauthorized → ERR-SYS15-03.
 	var samples: Array = IntelLedger.board_samples(
 		ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD), &"SYS-99"
 	)
 	assert_eq(samples.size(), 0)
 	assert_eq(StringName(IntelLedger.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), IntelLedger.ERR_SYS15_03)
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 	samples = IntelLedger.board_samples(
 		ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD), IntelLedger.REQUESTER_SYS16
 	)
@@ -374,7 +378,7 @@ func test_TST_SYS15_15_16_snapshot_fail_and_no_observer() -> void:
 	assert_true(_has_code(gate, IntelLedger.ERR_SYS15_06))
 	assert_true(_gate_field(gate, "ShipEventObserver"))
 	# Absorb all expected pushes from this test (MarketPricer + ERR-05 + ERR-06).
-	assert_push_error_count(1 + 1 + gate.size())
+	assert_push_error_count(TWO + gate.size())
 
 
 func test_TST_SYS15_16_D60f_broker_provider_required() -> void:
@@ -510,7 +514,7 @@ func test_ship_event_observer_base_2_1_03() -> void:
 	var base := ShipEventObserver.new()
 	base.on_departed(&"S", &"A", &"P", 0)
 	base.on_arrivals(0, [])
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 
 
 func test_WP40_D60f_broker_provider_base_2_1_03() -> void:
@@ -520,7 +524,7 @@ func test_WP40_D60f_broker_provider_base_2_1_03() -> void:
 	assert_false(base.last_error().is_empty())
 	assert_false(base.is_broker_qualified(ACTOR, StringName(PT_A)))
 	assert_false(base.last_error().is_empty())
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 
 
 # --- helpers ---
@@ -644,16 +648,14 @@ func _seed_market(port: String, good: String, stock: int, weekly_offtake: float)
 
 
 func _inject_offtake_weekly(port_id: String, good_id: String, weekly_offtake: int) -> void:
-	var window_qty: int = weekly_offtake
-	if not GoodsLedger._offtake_snapshot.has(port_id):
-		GoodsLedger._offtake_snapshot[port_id] = {}
-	var by_good: Dictionary = GoodsLedger._offtake_snapshot[port_id]
-	by_good[good_id] = {
-		"window_qty": window_qty,
-		"local_qty": window_qty,
-		"window_days": Params.get_int(PRM_DPW),
-	}
-	GoodsLedger._offtake_snapshot[port_id] = by_good
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(port_id),
+		StringName(good_id),
+		weekly_offtake,
+		weekly_offtake,
+		Params.get_int(PRM_DPW),
+		0
+	)
 
 
 func _set_offtake(port: String, good: String, window_qty: int, _window_days: int) -> void:

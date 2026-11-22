@@ -16,6 +16,8 @@ const PROP_MAX_STOCK := 500
 const PROP_MAX_OFFTAKE := 200
 const PROP_MAX_QTY := 80
 const PROP_WEEKS_PAST_FLOOR := 1000.0
+## T7: named side-branch count (no 1+1 evasion)
+const SIDE_BRANCHES := 2
 
 const PORT_DEMO := "PT-01"
 const GOOD_DEMO := "GD-001"
@@ -62,7 +64,7 @@ func test_PROP_SYS04_quote_within_curve_hard_bounds_and_non_negative() -> void:
 		_inject_offtake_weekly(PORT_DEMO, GOOD_DEMO, offtake if offtake > 0 else 0)
 
 		var side: int = (
-			MarketPricer.SIDE_BUY if stream.next_index(1 + 1) == 0 else MarketPricer.SIDE_SELL
+			MarketPricer.SIDE_BUY if stream.next_index(SIDE_BRANCHES) == 0 else MarketPricer.SIDE_SELL
 		)
 		var qty: int = stream.next_qty(PROP_MAX_QTY)
 		var q: Dictionary = MarketPricer.quote(
@@ -111,19 +113,12 @@ func _reset_market_stock(stock: int) -> void:
 
 
 func _inject_offtake_weekly(port_id: String, good_id: String, weekly_offtake: int) -> void:
-	## D-32b 重置輔助：寫 GoodsLedger._offtake_snapshot.
+	## D-32b／F11: public seed_offtake_snapshot（不再寫 _offtake_snapshot）.
 	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
 	var window_days: int = days_pw if days_pw > 0 else 1
-	if not GoodsLedger._offtake_snapshot.has(port_id):
-		GoodsLedger._offtake_snapshot[port_id] = {}
-	var by_good: Dictionary = GoodsLedger._offtake_snapshot[port_id]
-	by_good[good_id] = {
-		"window_qty": weekly_offtake,
-		"local_qty": weekly_offtake,
-		"window_days": window_days,
-		"day": 0,
-	}
-	GoodsLedger._offtake_snapshot[port_id] = by_good
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(port_id), StringName(good_id), weekly_offtake, weekly_offtake, window_days, 0
+	)
 
 
 func _build_valid_goods(dir: String) -> String:

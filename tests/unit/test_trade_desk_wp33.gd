@@ -588,14 +588,9 @@ func _boot_ledgers() -> void:
 		OK
 	)
 	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
-	if not GoodsLedger._offtake_snapshot.has(PORT):
-		GoodsLedger._offtake_snapshot[PORT] = {}
-	GoodsLedger._offtake_snapshot[PORT][GOOD] = {
-		"window_qty": 105,
-		"local_qty": 105,
-		"window_days": days_pw,
-		"day": 0,
-	}
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(PORT), StringName(GOOD), 105, 105, days_pw, 0
+	)
 
 
 func _seed_market(stock: int) -> void:
