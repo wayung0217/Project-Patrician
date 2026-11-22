@@ -379,6 +379,37 @@ func _seed_market_enough() -> void:
 		)
 
 
+func test_WP54_city_queue_success_starts_when_funded() -> void:
+	## Blind-spot: funded queue advances and places a city PUBLIC building.
+	## A8 design-only this WP — still asserts interim ACTIVE path (see step04 A8).
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	var s0 := BuildStep.new()
+	s0.port_id = PORT
+	s0.step = 0
+	s0.cb_id = "CB-01"
+	s0.target_level = 1
+	BuildingEconomy.set_build_queue(PORT, [s0])
+	var cost: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["PUBLIC"])
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - cost),
+			CashLedger.make_entry(city, cost),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	BuildingEconomy.season_step()
+	assert_eq(int(BuildingEconomy._queue_pos[PORT]), 1)
+	var found := false
+	for b_v in BuildingEconomy.buildings_for_port(PORT):
+		var b: Building = b_v
+		if b.build_class == &"PUBLIC" and String(b.type) == "CB-01":
+			assert_eq(b.state, Building.State.ACTIVE)
+			found = true
+	assert_true(found)
+
+
 func test_TST_SYS08_14_city_queue_no_skip() -> void:
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
