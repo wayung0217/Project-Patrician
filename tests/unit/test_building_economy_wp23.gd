@@ -458,9 +458,32 @@ func _seed_market_enough() -> void:
 		)
 
 
+func _stock_public_build_mats(port_id: String, qty: int) -> void:
+	var mkt: Dictionary = GoodsLedger.make_market(port_id)
+	for gid in ["GD-003", "GD-004", "GD-021"]:
+		if GoodCatalog.get_good(gid) == null:
+			continue
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			mkt,
+			StringName(gid),
+			qty,
+			GoodsLedger.REASON_PRODUCE,
+			&"TEST"
+		)
+
+
+func _count_occupied_public_slots(port_id: String) -> int:
+	var n := 0
+	for s_v in BuildingEconomy.slots_for_port(port_id):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.PUBLIC and s.building_id != &"":
+			n += 1
+	return n
+
+
 func test_WP54_city_queue_success_starts_when_funded() -> void:
-	## Blind-spot: funded queue advances and places a city PUBLIC building.
-	## A8 design-only this WP — still asserts interim ACTIVE path (see step04 A8).
+	## WP-65／A8: funded＋stocked → order_build path：BUILDING、days_left>0（非即 ACTIVE）.
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
 	var s0 := BuildStep.new()
@@ -472,21 +495,137 @@ func test_WP54_city_queue_success_starts_when_funded() -> void:
 	var cost: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["PUBLIC"])
 	CashLedger.post(
 		[
-			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - cost),
-			CashLedger.make_entry(city, cost),
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - (cost + 5_000_000)),
+			CashLedger.make_entry(city, cost + 5_000_000),
 		],
 		&"TEST_FUND",
 		BuildingEconomy.REQUESTER_SYS08
 	)
+	_stock_public_build_mats(PORT, 1000)
 	BuildingEconomy.season_step()
-	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-01"), 1)
+	## TD-16: new build effect level 0 until ACTIVE.
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-01"), 0)
 	var found := false
 	for b_v in BuildingEconomy.buildings_for_port(PORT):
 		var b: Building = b_v
 		if b.build_class == &"PUBLIC" and String(b.type) == "CB-01":
-			assert_eq(b.state, Building.State.ACTIVE)
+			assert_eq(b.state, Building.State.BUILDING)
+			assert_gt(b.days_left, 0)
 			found = true
 	assert_true(found)
+
+
+func test_WP65_TST_city_queue_new_build_construct_use() -> void:
+	## WP-65 盲點：資金＋建材充足 → BUILDING、days_left>0、CONSTRUCT_USE 取料.
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	var s0 := BuildStep.new()
+	s0.port_id = PORT
+	s0.step = 0
+	s0.cb_id = "CB-01"
+	s0.target_level = 1
+	BuildingEconomy.set_build_queue(PORT, [s0])
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 20_000_000),
+			CashLedger.make_entry(city, 20_000_000),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	var mkt: Dictionary = GoodsLedger.make_market(PORT)
+	_stock_public_build_mats(PORT, 1000)
+	var wood0: int = GoodsLedger.get_qty(mkt, &"GD-003")
+	BuildingEconomy.season_step()
+	assert_lt(GoodsLedger.get_qty(mkt, &"GD-003"), wood0)
+	var bld: Building = null
+	for b_v in BuildingEconomy.buildings_for_port(PORT):
+		var b: Building = b_v
+		if String(b.type) == "CB-01":
+			bld = b
+			break
+	assert_ne(bld, null)
+	assert_eq(bld.state, Building.State.BUILDING)
+	assert_gt(bld.days_left, 0)
+	assert_gt(bld.locked_materials.size(), 0)
+	assert_eq(int(BuildingEconomy._queue_pos.get(PORT, 0)), 1)
+
+
+func test_WP65_TST_city_queue_upgrade_no_new_slot() -> void:
+	## WP-65 盲點：升級原地 order_upgrade，公共槽佔用數不變.
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	## Pre-place ACTIVE L1 CB-01 on a public slot.
+	var slot_id: StringName = BuildingEconomy._find_public_slot(PORT)
+	assert_ne(slot_id, &"")
+	var b0 := Building.new()
+	b0.building_id = BuildingEconomy._next_bld_id(PORT)
+	b0.type = &"CB-01"
+	b0.build_class = &"PUBLIC"
+	b0.cb_id = &"CB-01"
+	b0.owner = city
+	b0.port_id = PORT
+	b0.slot_id = slot_id
+	b0.level = 1
+	b0.state = Building.State.ACTIVE
+	BuildingEconomy.get_slot(slot_id).building_id = b0.building_id
+	BuildingEconomy._register_building(b0)
+	var occ0: int = _count_occupied_public_slots(PORT)
+	var s0 := BuildStep.new()
+	s0.port_id = PORT
+	s0.step = 0
+	s0.cb_id = "CB-01"
+	s0.target_level = 2
+	BuildingEconomy.set_build_queue(PORT, [s0])
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 50_000_000),
+			CashLedger.make_entry(city, 50_000_000),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	_stock_public_build_mats(PORT, 5000)
+	BuildingEconomy.season_step()
+	assert_eq(_count_occupied_public_slots(PORT), occ0)
+	var b1: Building = BuildingEconomy.get_building(b0.building_id)
+	assert_eq(b1.level, 2)
+	assert_true(
+		b1.state == Building.State.BUILDING or b1.state == Building.State.WAITING_MATERIAL
+	)
+	assert_gt(b1.days_left, 0)
+	## TD-16: effect stays at prior level 1 while upgrading.
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-01"), 1)
+	assert_eq(int(BuildingEconomy._queue_pos.get(PORT, 0)), 1)
+
+
+func test_WP65_TST_city_queue_missing_upgrade_target_stops() -> void:
+	## WP-65：找不到可升級建築 → 停在該步、不跳過後續 L1.
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	var s0 := BuildStep.new()
+	s0.port_id = PORT
+	s0.step = 0
+	s0.cb_id = "CB-01"
+	s0.target_level = 2
+	var s1 := BuildStep.new()
+	s1.port_id = PORT
+	s1.step = 1
+	s1.cb_id = "CB-02"
+	s1.target_level = 1
+	BuildingEconomy.set_build_queue(PORT, [s0, s1])
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 50_000_000),
+			CashLedger.make_entry(city, 50_000_000),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	_stock_public_build_mats(PORT, 5000)
+	BuildingEconomy.season_step()
+	assert_eq(int(BuildingEconomy._queue_pos.get(PORT, 0)), 0)
+	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-02"), 0)
 
 
 func test_TST_SYS08_14_city_queue_no_skip() -> void:
@@ -819,6 +958,10 @@ func _write_defs() -> void:
 	_save_def(dir, "CB-17", "KONTOR", "", 0, 1.0)
 	_save_def(dir, "RB-01", "RESIDENCE", "", 0, 1.0)
 	_save_def(dir, "IND1", "IND1", "GD-001", 1, 1.0)
+	## WP-65: city queue requires real PUBLIC defs（no silent shell）.
+	_save_def(dir, "CB-01", "PUBLIC", "", 0, 0.0)
+	_save_def(dir, "CB-02", "PUBLIC", "", 0, 0.0)
+	_save_def(dir, "CB-09", "PUBLIC", "", 0, 0.0)
 
 
 func _save_def(dir: String, type_id: String, bclass: String, out_g: String, tier: int, base: float) -> void:
