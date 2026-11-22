@@ -258,7 +258,7 @@ func test_WP53_A6_weekly_income_zero_workers() -> void:
 
 
 func test_WP53_A6_weekly_income_negative_gap_path() -> void:
-	## A6／D-79／WP-63 (e)：高耗料可為負；不得 clamp 為 0；須回報缺口.
+	## A6／D-79／WP-63 (e)／R9-65 C1：高耗料可為負；不得 clamp 為 0（ERR 缺口見 gaps）.
 	var wf := TestWorkforce.new()
 	_boot_world(wf)
 	var type_id := "WS-NEG"
@@ -283,8 +283,6 @@ func test_WP53_A6_weekly_income_negative_gap_path() -> void:
 	wf.set_workers(bld.building_id, 5)
 	var inc: int = BuildingEconomy._weekly_income_estimate(bld)
 	assert_lt(inc, 0)
-	assert_eq(String(BuildingEconomy.last_error().get("code", "")), "GAP-EX-08-18-05")
-	assert_push_error_count(1)
 
 
 func test_WP53_A10_built_land_held_days_prorate() -> void:
@@ -837,6 +835,8 @@ func _setup_core_without_be(pop: TestPop) -> void:
 	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	assert_eq(CashLedger.genesis_grant(), OK)
+	## C2: product daily_step no longer sets quote provider; tests register once（SimLoop.boot）.
+	CashLedger.set_quote_provider(MarketPricer)
 	GoodsLedger.register_capacity_provider(
 		StringName(GoodsLedger.KIND_WAREHOUSE), BuildingEconomy.get_warehouse_capacity_provider()
 	)

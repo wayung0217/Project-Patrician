@@ -225,18 +225,38 @@ func test_EX_08_18_04_salt_floor_revenue() -> void:
 	assert_eq(BuildingEconomy._weekly_income_estimate(BuildingEconomy.get_building(bid)), 27523)
 
 
-func test_EX_08_18_05_negative_gross_reports_gap() -> void:
-	## EX-08-18-05：WAGE_BASE=10000 → 毛利 −308721；回報缺口、不得 clamp.
+func test_EX_08_18_05_negative_gross_not_clamped() -> void:
+	## EX-08-18-05：WAGE_BASE=10000 → 毛利 −308721；不得 clamp 為 0（C1：無合適 ERR → gaps）.
 	var wf := TestWorkforce.new()
 	_boot_world(wf)
 	Params._values["PRM-SYS08-WAGE_BASE_LI"] = 10000
 	_set_good_price("GD-001", 1000)
 	var bid: StringName = _spawn_typed_workshop("IB-01", "IND1", "GD-001", 3.252, "", 0.0)
 	wf.set_workers(bid, 25)
-	var inc: int = BuildingEconomy._weekly_income_estimate(BuildingEconomy.get_building(bid))
+	var bld: Building = BuildingEconomy.get_building(bid)
+	var inc: int = BuildingEconomy._weekly_income_estimate(bld)
 	assert_eq(inc, -308721)
-	assert_eq(String(BuildingEconomy.last_error().get("code", "")), "GAP-EX-08-18-05")
-	assert_push_error_count(1)
+	## City-owned so quote／buy path runs; negative gross → 0／fail（not free）.
+	bld.owner = CashLedger.make_city_id(PORT)
+	assert_eq(BuildingEconomy.quote_city_building(bid), 0)
+	assert_eq(BuildingEconomy.buy_city_building(ACTOR, bid), 0)
+	assert_eq(bld.owner, CashLedger.make_city_id(PORT))
+
+
+func test_R9_65_C1_negative_margin_buy_fails() -> void:
+	## R9-65 高-3：週毛利 < 0 → quote 0、buy 失敗，不得 0 元成交.
+	var wf := TestWorkforce.new()
+	_boot_world(wf)
+	Params._values["PRM-SYS08-WAGE_BASE_LI"] = 10000
+	_set_good_price("GD-001", 1000)
+	var bid: StringName = _spawn_typed_workshop("IB-01", "IND1", "GD-001", 3.252, "", 0.0)
+	wf.set_workers(bid, 25)
+	var bld: Building = BuildingEconomy.get_building(bid)
+	bld.owner = CashLedger.make_city_id(PORT)
+	assert_lt(BuildingEconomy._weekly_income_estimate(bld), 0)
+	assert_eq(BuildingEconomy.quote_city_building(bid), 0)
+	assert_eq(BuildingEconomy.buy_city_building(ACTOR, bid), 0)
+	assert_eq(bld.owner, CashLedger.make_city_id(PORT))
 
 
 func test_WP63_TST_reverse_last_post_keeps_original() -> void:

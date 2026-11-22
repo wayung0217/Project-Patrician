@@ -2063,14 +2063,9 @@ func _frm18_price(bld: Building) -> int:
 		Params.get_int(PRM_DAYS_PER_WEEK)
 	)
 	var week_income: int = _weekly_income_estimate(bld)
-	## WP-63 (e)：週毛利 < 0 → 停手回報，不得帶進收購價（C-05；見 gaps）.
+	## WP-63 (e)／R9-65 C1／EX-08-18-05: 週毛利 < 0 → 不得帶進收購價（回 0 使 buy 失敗）.
+	## No fitting ERR-SYS08（見 evening gaps C1）；不得自創 GAP／ERR（C-05／C-06）.
 	if week_income < 0:
-		_record_fail(
-			&"GAP-EX-08-18-05",
-			"weekly_income",
-			week_income,
-			"workshop weekly gross < 0; no ERR-SYS08 fits (C-05); do not feed into quote"
-		)
 		return 0
 	var premium: float = Params.get_float(PRM_TRANSFER_PREMIUM)
 	var comp_w: int = Params.get_int(PRM_COMPENSATION_WEEKS)
@@ -2128,14 +2123,8 @@ func _weekly_income_estimate(bld: Building) -> int:
 		var in_li: int = ceili(AmountQuantize.quantize_amount(input_cost))
 		var wag_li: int = ceili(AmountQuantize.quantize_amount(wage_cost))
 		var gross: int = rev_li - in_li - wag_li
-		## WP-63 (e)／EX-08-18-05: < 0 → report gap, never clamp; caller must not feed into quote.
-		if gross < 0:
-			_record_fail(
-				&"GAP-EX-08-18-05",
-				"weekly_gross",
-				gross,
-				"workshop weekly gross < 0; no ERR-SYS08 fits (C-05)"
-			)
+		## WP-63 (e)／EX-08-18-05: < 0 → never clamp to 0; _frm18_price refuses quote.
+		## Gap: no ERR-SYS08 for this path (C1 stopped; see gaps.md).
 		return gross
 	return 0
 
@@ -2149,8 +2138,7 @@ func _step_garrison_procure(_day: int, _errors: Array) -> void:
 	var arms_per: float = Params.get_float(PRM_ARMS_PER)
 	var powder_per: float = Params.get_float(PRM_POWDER_PER)
 	var thresh: int = days_pw * acc_scale
-	## SimLoop sets quote provider; unit tests may call daily_step directly.
-	CashLedger.set_quote_provider(MarketPricer)
+	## Quote provider registered once in SimLoop.boot（R9-65 C2）；tests set in fixtures.
 	var ports: Array = _slots_by_port.keys()
 	ports.sort()
 	for pid_v in ports:
