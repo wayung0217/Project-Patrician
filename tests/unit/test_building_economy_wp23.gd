@@ -156,7 +156,7 @@ func test_TST_SYS08_12b_vacancy_within_grace_no_tax() -> void:
 
 
 func test_TST_SYS08_13_garrison_no_stock_no_debt() -> void:
-	## A7／D-81: no market stock → no arrears; fractional acc retained (not cleared).
+	## A7／D-81／D-92a: no market stock → no arrears; fractional acc retained (thresh units).
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
 	_force_public(city, &"CB-09", 2)
@@ -170,15 +170,17 @@ func test_TST_SYS08_13_garrison_no_stock_no_debt() -> void:
 	)
 	var arrears0: int = CashLedger.arrears(city)
 	var acc_scale: int = Params.get_int("PRM-SYS08-ACC_SCALE")
+	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	var thresh: int = days_pw * acc_scale
 	assert_eq(BuildingEconomy.daily_step(1).size(), 0)
 	assert_eq(CashLedger.arrears(city), arrears0)
 	var acc: int = int(BuildingEconomy._acc_arms.get(PORT, 0))
 	assert_gt(acc, 0)
-	assert_lt(acc, acc_scale)
+	assert_lt(acc, thresh)
 
 
 func test_TST_SYS08_13_WP53_garrison_buy_success_within_7d() -> void:
-	## A7 盲點：庫存＋現金充足、駐軍 150，7 日內必有採購。
+	## A7 盲點：庫存＋現金充足、駐軍 150，7 日內必有採購（D-92a 整數累加）.
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
 	_force_public(city, &"CB-09", 2)
@@ -202,10 +204,13 @@ func test_TST_SYS08_13_WP53_garrison_buy_success_within_7d() -> void:
 	var powder1: int = GoodsLedger.get_qty(mkt, &"GD-023")
 	assert_lt(powder1, powder0)
 	assert_lt(CashLedger.balance(city), bal0)
+	## max_affordable_qty may probe overstock → ERR-SYS04-06 (expected).
+	for e in get_errors():
+		e.handled = true
 
 
 func test_TST_SYS08_13_WP53_garrison_fraction_kept_when_no_stock() -> void:
-	## A7：庫存不足時整擔差額丟棄，零頭跨日保留。
+	## A7／D-92a：庫存不足時整擔差額丟棄，零頭跨日保留（thresh＝DAYS×ACC_SCALE）.
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
 	_force_public(city, &"CB-09", 2)
@@ -218,14 +223,16 @@ func test_TST_SYS08_13_WP53_garrison_fraction_kept_when_no_stock() -> void:
 		BuildingEconomy.REQUESTER_SYS08
 	)
 	var acc_scale: int = Params.get_int("PRM-SYS08-ACC_SCALE")
+	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	var thresh: int = days_pw * acc_scale
 	assert_eq(BuildingEconomy.daily_step(1).size(), 0)
 	var acc1: int = int(BuildingEconomy._acc_arms.get(PORT, 0))
 	assert_gt(acc1, 0)
-	assert_lt(acc1, acc_scale)
+	assert_lt(acc1, thresh)
 	assert_eq(BuildingEconomy.daily_step(2).size(), 0)
 	var acc2: int = int(BuildingEconomy._acc_arms.get(PORT, 0))
 	assert_gt(acc2, acc1)
-	assert_lt(acc2, acc_scale)
+	assert_lt(acc2, thresh)
 
 
 func test_WP53_A6_weekly_income_positive_margin() -> void:
@@ -251,7 +258,7 @@ func test_WP53_A6_weekly_income_zero_workers() -> void:
 
 
 func test_WP53_A6_weekly_income_negative_gap_path() -> void:
-	## A6／D-79 缺口路徑：高耗料可為負；不得 clamp 為 0。
+	## A6／D-79／WP-63 (e)：高耗料可為負；不得 clamp 為 0；須回報缺口.
 	var wf := TestWorkforce.new()
 	_boot_world(wf)
 	var type_id := "WS-NEG"
@@ -276,6 +283,8 @@ func test_WP53_A6_weekly_income_negative_gap_path() -> void:
 	wf.set_workers(bld.building_id, 5)
 	var inc: int = BuildingEconomy._weekly_income_estimate(bld)
 	assert_lt(inc, 0)
+	assert_eq(String(BuildingEconomy.last_error().get("code", "")), "GAP-EX-08-18-05")
+	assert_push_error_count(1)
 
 
 func test_WP53_A10_built_land_held_days_prorate() -> void:
