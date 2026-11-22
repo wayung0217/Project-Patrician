@@ -13,7 +13,8 @@ const HDR_SEASON_CELLS := (
 )
 const HDR_SEASON_PORTS := (
 	"run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,"
-	+ "workplaces,beds,city_balance_li"
+	+ "workplaces,beds,city_balance_li,"
+	+ "land_rent_li,vacancy_tax_li,city_spend_json"
 )
 const HDR_DAILY := (
 	"run_id,seed,day,good_id,stock,mid_li,stock_weeks,band,"
@@ -79,6 +80,12 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 	var beds: int = PopulationModel.housing_capacity(StringName(port_s))
 	var city_id: StringName = CashLedger.make_city_id(port_s)
 	var bal: int = CashLedger.balance(city_id)
+	## WP-67／D-97(e) OBS-05: public queries only.
+	var pid: StringName = StringName(port_s)
+	var land_rent: int = BuildingEconomy.season_land_rent_li(pid, season_index)
+	var vac_tax: int = BuildingEconomy.season_vacancy_tax_li(pid, season_index)
+	var spend: Dictionary = BuildingEconomy.city_spend_by_category(pid, season_index)
+	var spend_json: String = "{}" if spend.is_empty() else JSON.stringify(spend)
 	season_ports.append({
 		"run_id": run_id,
 		"seed": seed,
@@ -92,6 +99,9 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 		"workplaces": workplaces,
 		"beds": beds,
 		"city_balance_li": bal,
+		"land_rent_li": land_rent,
+		"vacancy_tax_li": vac_tax,
+		"city_spend_json": spend_json,
 	})
 
 
