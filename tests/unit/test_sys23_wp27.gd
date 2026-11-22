@@ -284,3 +284,67 @@ func test_WP27_scenario_list_dir_sorted_R9_64() -> void:
 	assert_true(bool(r["ok"]), " ".join(r["errors"]))
 	assert_true(bool((r["scenario"]["layers"] as Dictionary)["RELOCATE"]))
 	print("WP27 R9-64 scenario_L2_f010 validates")
+
+
+func test_R9_65_B2_e_p_overflow_boundary() -> void:
+	## R9-65 B2／C-10: int64 overflow before multiply → error, not wrap.
+	_boot_cash()
+	## Huge stock × W overflows mul check.
+	var huge: int = 1 << 62
+	var stocks := {"A": huge, "B": 1}
+	var pots := {"A": 0, "B": 1}
+	var plan: Dictionary = SimRelocator.plan_one_good(stocks, pots, EX01_F_PPM, EX01_PPM)
+	assert_false(bool(plan["ok"]))
+	assert_true(String(plan.get("error", "")).find("overflow") >= 0)
+	print("R9-65 B2 e_p overflow → error ok")
+
+
+func test_R9_65_B6_e_p_exceeds_stock_errors() -> void:
+	## R9-65 B6／C-06: if math e_p > stock_p → error (no clamp).
+	_boot_cash()
+	## Construct: stock_p=1, W large, S small relative → e_p can exceed stock.
+	## Use f_ppm = ppm_scale so e_p ≈ (stock_p*W - S*w_p)/W = stock_p - S*w_p/W.
+	## With stock A=1, w_A=0, B stock=0 w_B=1, S=1 W=1 → numer=1*1-1*0=1; e=f*1/(1*ppm).
+	## Need e_p > stock: use f_ppm=ppm and inflate numer via W >> S*w.
+	## A: stock=1 w=0; B: stock=100 w=1; S=101 W=1 → numer_A=1*1-101*0=1; e=(f*1)/(1*ppm).
+	## Still e <= 1 when f<=ppm. Force via stock_p=1, W=ppm_scale, S=1, w=0, f=ppm:
+	## numer=1*W=ppm; e=(ppm*ppm)/(W*ppm)=ppm/W=1 when W=ppm. Still = stock.
+	## Use stock_p=1, W=2, S=1, w_A=0, f=ppm, ppm=1000000 → e=(1000000*2)/(2*1000000)=1.
+	## To get e>stock: numer_inner large vs stock — stock_p=1, W=10^6, S=1, f=ppm:
+	## numer=1e6; e=(ppm*1e6)/(1e6*ppm)=1.
+	## Formula e = f*(stock*W - S*w)/(W*ppm). Max when w=0: e=f*stock/ppm ≤ stock when f≤ppm.
+	## So e_p > stock_p only when f_ppm > ppm_scale (allowed by validator? relocate_f≤1 → f≤ppm).
+	## Use raw f_ppm > ppm_scale to prove no-clamp error path (API accepts any int f_ppm).
+	var stocks := {"A": 1, "B": 0}
+	var pots := {"A": 0, "B": 1}
+	var plan: Dictionary = SimRelocator.plan_one_good(stocks, pots, EX01_PPM * 2, EX01_PPM)
+	assert_false(bool(plan["ok"]), "e_p>stock must error")
+	assert_true(String(plan.get("error", "")).find("exceeds stock_p") >= 0)
+	print("R9-65 B6 e_p>stock_p → error ok: %s" % str(plan.get("error")))
+
+
+func test_R9_65_B3_OBS04_unable_to_judge() -> void:
+	## R9-65 B3: cannot compute R_g →「無法判定」, never default「分配不足」.
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
+	assert_eq(perr.size(), 0)
+	var cells: Array = []
+	## W=0 potentials → first_n=last_n=0 → 無法判定.
+	for si in [0, 1, 2, 3]:
+		cells.append({
+			"run_id": 0, "seed": 1, "season_index": si, "port_id": "PT-01", "good_id": "GD-001",
+			"stock": 10, "mid_li": 1, "stock_weeks": "",
+			"band": MarketPricer.BAND_EQUILIBRIUM,
+			"produced": 0, "consumed": 0, "relocated_in": 0, "relocated_out": 0,
+			"_weekly_potential": 0,
+		})
+	var rows: Array = SimMetrics._obs04_rows(
+		"t", 0, 1, cells, ["PT-01|GD-001"], {"TH-02": 1.1}, 2
+	)
+	var found := false
+	for r_v in rows:
+		var r: Dictionary = r_v
+		if String(r["obs_id"]) == "OBS-04" and String(r["key"]) == "cause":
+			assert_eq(String(r["value"]), "無法判定")
+			found = true
+	assert_true(found, "OBS-04 cause row missing")
+	print("R9-65 B3 OBS-04 無法判定 ok")

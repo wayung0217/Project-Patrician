@@ -582,7 +582,8 @@ static func _obs04_rows(
 			if si2 >= last_year_start:
 				last_sum = last_sum + weeks_g
 				last_n = last_n + 1
-		var cause: String = "分配不足（運力或路線）"
+		## R9-65 B3／OBS-04: cannot compute R_g → reason「無法判定」, never default「分配不足」.
+		var cause: String = "無法判定"
 		var r_g: float = 0.0
 		if first_n > 0 and last_n > 0:
 			var first_avg: float = first_sum / float(first_n)
@@ -590,6 +591,8 @@ static func _obs04_rows(
 				r_g = (last_sum / float(last_n)) / first_avg
 				if r_g > th02:
 					cause = "供給過剩"
+				else:
+					cause = "分配不足（運力或路線）"
 		rows.append(_obs_ext_row(
 			scenario_id, combo_index, seed, -1, pid, gid2,
 			"OBS-04", "cause", cause

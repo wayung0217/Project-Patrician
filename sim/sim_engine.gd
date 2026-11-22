@@ -197,21 +197,12 @@ func _run_one_job(
 	var total_days: int = years * seasons_y * days_per_season
 	var ppm_scale: int = Params.get_int(PRM_PPM_SCALE)
 
-	## Holder so day_ticked lambda can flag abort (GDScript closure).
+	## R9-65 B1／C-04／2.3-06: no Clock.day_ticked lambda for relocate.
+	## Daily step after SimLoop.tick_day (signals already flushed／emitted inside tick_day).
 	var run_state := {"aborted": false, "abort_reason": ""}
-	## FRM-SYS23-04: relocate on day_ticked (before season_cutoff sample in same step 6).
-	var on_day := func(_day: int) -> void:
-		if bool(run_state["aborted"]) or not relocate_on:
-			return
-		var rr: Dictionary = SimRelocator.run_day(f_ppm, ppm_scale, acc)
-		if not bool(rr.get("ok", false)):
-			run_state["aborted"] = true
-			run_state["abort_reason"] = String(rr.get("error", ERR_SYS23_07))
 	## FRM-SYS23-06: sample after season_cutoff is emitted (SimLoop step 6).
 	var on_cutoff := func(season_index: int) -> void:
 		sampler.sample_season(run_id, seed, season_index)
-	if not Clock.day_ticked.is_connected(on_day):
-		Clock.day_ticked.connect(on_day)
 	if not Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.connect(on_cutoff)
 
@@ -223,6 +214,13 @@ func _run_one_job(
 		var day_errors: Array = SimLoop.tick_day()
 		if bool(run_state["aborted"]):
 			break
+		## Explicit SimEngine daily relocate step (after tick_day; R9-65 B1).
+		if relocate_on and not bool(run_state["aborted"]):
+			var rr: Dictionary = SimRelocator.run_day(f_ppm, ppm_scale, acc)
+			if not bool(rr.get("ok", false)):
+				run_state["aborted"] = true
+				run_state["abort_reason"] = String(rr.get("error", ERR_SYS23_07))
+				break
 		if sampler.conservation_hits > 0:
 			run_state["aborted"] = true
 			run_state["abort_reason"] = "%s: conservation violated" % ERR_SYS23_07
@@ -235,12 +233,10 @@ func _run_one_job(
 				ERR_SYS23_07, _format_day_errors(fatal)
 			]
 			break
-		## Daily detail after day's writes／signals (includes same-day relocate).
+		## Daily detail after day's writes／signals／relocate.
 		for pid_v in daily_ports:
 			sampler.sample_daily(run_id, seed, Clock.day, String(pid_v))
 
-	if Clock.day_ticked.is_connected(on_day):
-		Clock.day_ticked.disconnect(on_day)
 	if Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.disconnect(on_cutoff)
 	acc.disconnect_ledger()

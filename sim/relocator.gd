@@ -93,7 +93,8 @@ static func plan_one_good(
 		var pid2: String = String(pid_v)
 		var stock_p: int = SimJsonInt.as_int(stock_by[pid2], "stock_p")
 		var w_p: int = SimJsonInt.as_int(w_by[pid2], "w_p")
-		## e_p = floori(f_ppm × (stock_p × W − S × w_p) ÷ (W × PPM_SCALE)); only e_p > 0.
+		## D-93／R9-65 B2: e_p all-integer; C-10 overflow checks before multiply.
+		## e_p = (f_ppm × (stock_p × W − S × w_p)) ÷ (W × PPM_SCALE); only e_p > 0.
 		if not _mul_ok(stock_p, W) or not _mul_ok(S, w_p):
 			return _fail_overflow("e_p numer")
 		var numer_inner: int = stock_p * W - S * w_p
@@ -101,11 +102,29 @@ static func plan_one_good(
 			continue
 		if not _mul_ok(f_ppm, numer_inner) or not _mul_ok(W, ppm_scale):
 			return _fail_overflow("e_p")
-		var e_p: int = floori(float(f_ppm * numer_inner) / float(W * ppm_scale))
+		var denom: int = W * ppm_scale
+		if denom <= 0:
+			return {
+				"ok": false,
+				"error": "%s: e_p denom <= 0" % ERR_SYS23_03,
+				"exports": {},
+				"imports": {},
+				"moves": [],
+			}
+		var e_p: int = (f_ppm * numer_inner) / denom
 		if e_p > 0:
-			## Cap by available stock (integer path safety).
+			## R9-65 B6／C-06: never clamp e_p to stock_p — math exceeding stock is an error.
 			if e_p > stock_p:
-				e_p = stock_p
+				return {
+					"ok": false,
+					"error": (
+						"%s: e_p %s exceeds stock_p %s at %s (no clamp)"
+						% [ERR_SYS23_07, str(e_p), str(stock_p), pid2]
+					),
+					"exports": {},
+					"imports": {},
+					"moves": [],
+				}
 			exports[pid2] = e_p
 			if not _add_ok(T, e_p):
 				return _fail_overflow("T")
