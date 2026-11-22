@@ -75,14 +75,20 @@ const TST02_SPEND := 101
 const TST10_Q := 120
 const TST10_NEW_TOTAL := 160000
 
+## T7 named consts (no 1+1 / 0-1 evasions)
+const TWO := 2
+const THREE := 3
+const SENTINEL_UNSET := -1
+const PROJECT_GODOT := "res://project.godot"
+
 
 class DemoQuoteProvider extends RefCounted:
 	## Test double for MarketPricer.quote（WP-06 平行未登錄）.
 	## 邊界對齊示範 5.1：total(120)/total(124)/total(125) — xlsx 期望值.
 	## A18：stock_cap ≥ 0 時 qty＞庫存回 error（模擬真實 MarketPricer）.
 	var buy_totals: Dictionary = {}
-	var override_total: int = 0 - 1
-	var stock_cap: int = 0 - 1
+	var override_total: int = SENTINEL_UNSET
+	var stock_cap: int = SENTINEL_UNSET
 
 	func quote(_port: StringName, _good: StringName, side: int, qty: int) -> Dictionary:
 		if side != CashLedger.SIDE_BUY:
@@ -121,7 +127,13 @@ func before_each() -> void:
 
 
 func test_autoload_order_cash_after_goods() -> void:
-	# 2.2-01：相對順序 GoodsLedger → CashLedger（MarketPricer 屬 WP-06）
+	# 2.2-01／AB4／W1 spirit：比較 project.godot 內實際 Autoload 相對順序
+	var order: Array = _autoload_names_from_project()
+	var i_goods: int = order.find("GoodsLedger")
+	var i_cash: int = order.find("CashLedger")
+	assert_gte(i_goods, 0, "GoodsLedger missing from project.godot [autoload]")
+	assert_gte(i_cash, 0, "CashLedger missing from project.godot [autoload]")
+	assert_lt(i_goods, i_cash, "GoodsLedger must precede CashLedger in Autoload order")
 	assert_true(CashLedger.is_loaded())
 	assert_true(GoodsLedger.is_loaded())
 
@@ -292,13 +304,13 @@ func test_TST_SYS05_07_bankruptcy_referred_and_reset() -> void:
 	assert_signal_not_emitted(CashLedger, "bankruptcy_referred")
 
 	CashLedger.close_season()
-	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 1 + 1)
+	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), TWO)
 	assert_signal_emitted(CashLedger, "bankruptcy_referred")
 	assert_signal_emit_count(CashLedger, "bankruptcy_referred", 1)
 
 	# A19：再過一季仍欠款 → 不重發
 	CashLedger.close_season()
-	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), 1 + 1 + 1)
+	assert_eq(CashLedger.arrears_seasons(CashLedger.ACCOUNT_PLAYER), THREE)
 	assert_signal_emit_count(CashLedger, "bankruptcy_referred", 1)
 
 	# 清償欠款
@@ -370,7 +382,7 @@ func test_TST_SYS05_11_split_largest_remainder() -> void:
 	# TST-SYS05-11 / FRM-SYS05-12: T=1000 權重 1,1,1 → 334,333,333
 	assert_true(CashLedger.has_method("split_largest_remainder"))
 	var parts: Array = CashLedger.split_largest_remainder(SPLIT_T, [SPLIT_W1, SPLIT_W2, SPLIT_W3])
-	assert_eq(parts.size(), 1 + 1 + 1)
+	assert_eq(parts.size(), THREE)
 	assert_eq(int(parts[0]), SPLIT_EXPECT_0)
 	assert_eq(int(parts[1]), SPLIT_EXPECT_1)
 	assert_eq(int(parts[2]), SPLIT_EXPECT_2)
@@ -402,7 +414,7 @@ func test_TST_SYS05_12_unauthorized_and_invalid_amount() -> void:
 	], REASON_TRADE, REQUESTER_SYS04)
 	assert_eq(err_float, FAILED)
 	assert_true(_last_error_is(CashLedger.ERR_SYS05_05))
-	assert_push_error_count(1 + 1 + 1)
+	assert_push_error_count(THREE)
 
 
 func test_close_season_prorate_via_schedule() -> void:
@@ -426,11 +438,31 @@ func test_close_season_prorate_via_schedule() -> void:
 
 
 func test_params_fixture_not_official_pending_keys() -> void:
-	# 1-A8 / B7: 正式 params.json 不得含 START_CASH 值；缺鍵拒絕
+	# AB5: 正式 params.json 若尚未登錄待審 PRM → 必須開機失敗；若已齊則反轉為成功。
+	var schema: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string("res://data/params/params_schema.json")
+	)
+	var official: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string("res://data/params/params.json")
+	)
+	var missing: Array = []
+	for key_v in schema.keys():
+		var key: String = String(key_v)
+		if not official.has(key):
+			missing.append(key)
 	var errors: Array = Params.load_and_validate("res://data/params/params.json")
-	assert_gt(errors.size(), 0)
-	assert_push_error_count(errors.size())
-	assert_false(Params.is_loaded())
+	if missing.is_empty():
+		assert_eq(errors.size(), 0, "all schema keys present → official params must load")
+		assert_true(Params.is_loaded())
+	else:
+		assert_gt(errors.size(), 0)
+		assert_push_error_count(errors.size())
+		assert_false(Params.is_loaded())
+		assert_true(
+			_has_field_error(errors, "PRM-SYS05-START_CASH", "MISSING_KEY")
+			or not schema.has("PRM-SYS05-START_CASH"),
+			"START_CASH still pending → must appear in errors"
+		)
 
 
 func test_R2_05_post_returns_ok_or_failed() -> void:
@@ -456,6 +488,36 @@ func test_R2_05_post_returns_ok_or_failed() -> void:
 
 
 # --- helpers ---
+
+func _autoload_names_from_project() -> Array:
+	## Parse [autoload] block order from project.godot (W1／AB4).
+	var text: String = FileAccess.get_file_as_string(PROJECT_GODOT)
+	var names: Array = []
+	var in_autoload := false
+	for line_v in text.split("\n"):
+		var line: String = String(line_v).strip_edges()
+		if line.begins_with("[") and line.ends_with("]"):
+			in_autoload = line == "[autoload]"
+			continue
+		if not in_autoload:
+			continue
+		if line.is_empty() or line.begins_with(";"):
+			continue
+		var eq: int = line.find("=")
+		if eq <= 0:
+			continue
+		names.append(line.substr(0, eq).strip_edges())
+	return names
+
+
+func _has_field_error(errors: Array, field: String, code: String) -> bool:
+	for e in errors:
+		if typeof(e) != TYPE_DICTIONARY:
+			continue
+		if String(e.get("field", "")) == field and String(e.get("code", "")) == code:
+			return true
+	return false
+
 
 func _open_from_source(actor: StringName, amount: int) -> void:
 	var err: int = CashLedger.post([

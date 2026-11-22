@@ -15,6 +15,9 @@ const PROP_SEQ_LEN_DET := 120
 const PROP_HOLD_CAP := 400
 const PROP_MAX_QTY := 15
 const PROP_MAX_AMOUNT := 3000
+## T7: named branch counts (no 1+1 evasions)
+const BRANCH_COUNT := 2
+const REASON_COUNT := 5
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -91,9 +94,9 @@ func _run_once() -> Dictionary:
 	)
 
 	for _i in PROP_SEQ_LEN_DET:
-		var branch: int = stream.next_index(1 + 1)
+		var branch: int = stream.next_index(BRANCH_COUNT)
 		if branch == 0:
-			var reason_i: int = stream.next_index(1 + 1 + 1 + 1 + 1)
+			var reason_i: int = stream.next_index(REASON_COUNT)
 			var qty: int = stream.next_qty(PROP_MAX_QTY)
 			match reason_i:
 				0:

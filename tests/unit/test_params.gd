@@ -175,11 +175,25 @@ func test_out_of_range_rejects() -> void:
 
 
 func test_collects_all_missing_errors() -> void:
-	# C-06: both 1-A8 missing keys reported together (official file).
+	# AB5／BB3／C-06: every schema key missing from official params is listed (per-key).
+	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
+	var official: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OFFICIAL))
+	var missing: Array = []
+	for key_v in schema.keys():
+		var key: String = String(key_v)
+		if not official.has(key):
+			missing.append(key)
+	missing.sort()
 	var errors: Array = Params.load_and_validate(OFFICIAL)
 	assert_push_error_count(errors.size())
-	assert_true(_has_field_error(errors, KEY_START_CASH, "MISSING_KEY"))
-	assert_true(_has_field_error(errors, KEY_ARREARS, "MISSING_KEY"))
+	assert_false(Params.is_loaded())
+	assert_gt(missing.size(), 0, "official params still incomplete — AB5 must-fail path")
+	for key2_v in missing:
+		var key2: String = String(key2_v)
+		assert_true(
+			_has_field_error(errors, key2, "MISSING_KEY"),
+			"missing key %s not reported" % key2
+		)
 
 
 func _write_user_fixture_without(erase_key: String) -> String:

@@ -17,6 +17,10 @@ const PROP_SEQ_LEN_CASH := 200
 const PROP_MAX_AMOUNT := 5000
 const PROP_CITY_TOKEN := "PROP1"
 const PROP_REGIME_TOKEN := "PROP1"
+## T7: named branch counts (no 1+1+1 evasions)
+const KIND_BRANCHES := 3
+const FAIL_MODES := 3
+const CHARGE_TARGETS := 3
 
 
 func before_each() -> void:
@@ -49,7 +53,7 @@ func test_PROP_SYS05_sum_balances_zero_after_post_and_charge() -> void:
 
 	var fail_count: int = 0
 	for _i in PROP_SEQ_LEN_CASH:
-		var kind: int = stream.next_index(1 + 1 + 1) ## 0=balanced post；1=bad post；2=charge
+		var kind: int = stream.next_index(KIND_BRANCHES) ## 0=balanced post；1=bad post；2=charge
 		match kind:
 			0:
 				_do_balanced_post(stream, accounts)
@@ -118,7 +122,7 @@ func _do_balanced_post(stream: PropStream, accounts: Array[StringName]) -> void:
 
 func _do_failing_post(stream: PropStream, accounts: Array[StringName]) -> bool:
 	var before: Dictionary = _snapshot_balances(accounts)
-	var mode: int = stream.next_index(1 + 1 + 1)
+	var mode: int = stream.next_index(FAIL_MODES)
 	var err: Error = OK
 	match mode:
 		0:
@@ -161,7 +165,7 @@ func _do_failing_post(stream: PropStream, accounts: Array[StringName]) -> bool:
 func _do_charge(stream: PropStream, accounts: Array[StringName]) -> void:
 	var due: int = stream.next_qty(PROP_MAX_AMOUNT)
 	var target: StringName = CashLedger.ACCOUNT_PLAYER
-	var pick: int = stream.next_index(1 + 1 + 1)
+	var pick: int = stream.next_index(CHARGE_TARGETS)
 	if pick == 1:
 		target = accounts[1] ## city
 	elif pick == 2:

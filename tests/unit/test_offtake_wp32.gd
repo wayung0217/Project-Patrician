@@ -24,6 +24,10 @@ const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
 const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 
+## T7 named consts (no 1+1 / 0-1 evasions)
+const TWO := 2
+const SNAP_MISSING := -1
+
 
 class TestCapUnlimited extends CapacityProvider:
 	func capacity(_container: Variant) -> int:
@@ -74,7 +78,7 @@ func test_ERR_SYS03_07_unknown_port_or_good() -> void:
 	var snap2: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), &"GD-999")
 	assert_true(snap2.is_empty())
 	assert_eq(StringName(GoodsLedger.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), GoodsLedger.ERR_SYS03_07)
-	assert_push_error_count(1 + 1)
+	assert_push_error_count(TWO)
 
 
 func test_ERR_SYS03_08_container_departed_invalid() -> void:
@@ -113,7 +117,7 @@ func test_TST_SYS03_07_cross_owner_export_counts() -> void:
 	GoodsLedger.set_day(1)
 	GoodsLedger.roll_offtake_snapshot(1)
 	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
-	assert_eq(int(snap.get("window_qty", 0 - 1)), 100)
+	assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 100)
 
 
 func test_TST_SYS03_08_same_owner_offsets() -> void:
@@ -126,7 +130,7 @@ func test_TST_SYS03_08_same_owner_offsets() -> void:
 	GoodsLedger.set_day(1)
 	GoodsLedger.roll_offtake_snapshot(1)
 	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
-	assert_eq(int(snap.get("window_qty", 0 - 1)), 0)
+	assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 0)
 
 
 func test_TST_SYS03_09_warehouse_roundtrip_zero() -> void:
@@ -139,7 +143,7 @@ func test_TST_SYS03_09_warehouse_roundtrip_zero() -> void:
 			GoodsLedger.CODE_OK
 		)
 	var market: Dictionary = GoodsLedger.make_market(PORT)
-	for _i in range(1 + 1):
+	for _i in range(TWO):
 		assert_gt(
 			GoodsLedger.transfer(market, wh, StringName(GOOD), 200, GoodsLedger.REASON_TRADE, &"TEST"),
 			0
@@ -148,10 +152,10 @@ func test_TST_SYS03_09_warehouse_roundtrip_zero() -> void:
 			GoodsLedger.transfer(wh, market, StringName(GOOD), 200, GoodsLedger.REASON_TRADE, &"TEST"),
 			0
 		)
-		GoodsLedger.set_day(GoodsLedger._day + 1)
-		GoodsLedger.roll_offtake_snapshot(GoodsLedger._day)
+		GoodsLedger.set_day(GoodsLedger.current_day() + 1)
+		GoodsLedger.roll_offtake_snapshot(GoodsLedger.current_day())
 		var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
-		assert_eq(int(snap.get("window_qty", 0 - 1)), 0)
+		assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 0)
 	var wh_cid: String = String(GoodsLedger.container_id(StringName(GoodsLedger.KIND_WAREHOUSE), OWNER_A, PORT))
 	var pend_left: int = 0
 	if GoodsLedger._offtake_pending.has(wh_cid):
@@ -191,8 +195,8 @@ func test_TST_SYS03_11_local_consume() -> void:
 	GoodsLedger.set_day(1)
 	GoodsLedger.roll_offtake_snapshot(1)
 	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
-	assert_eq(int(snap.get("local_qty", 0 - 1)), 50)
-	assert_eq(int(snap.get("window_qty", 0 - 1)), 50)
+	assert_eq(int(snap.get("local_qty", SNAP_MISSING)), 50)
+	assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 50)
 
 
 func test_TST_SYS03_12_warehouse_consume_clears_pending() -> void:
@@ -212,7 +216,7 @@ func test_TST_SYS03_12_warehouse_consume_clears_pending() -> void:
 	GoodsLedger.set_day(1)
 	GoodsLedger.roll_offtake_snapshot(1)
 	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
-	assert_eq(int(snap.get("local_qty", 0 - 1)), 30)
+	assert_eq(int(snap.get("local_qty", SNAP_MISSING)), 30)
 	var cid: String = String(GoodsLedger.container_id(StringName(GoodsLedger.KIND_WAREHOUSE), OWNER_A, PORT))
 	assert_false(GoodsLedger._offtake_pending.has(cid) and int(GoodsLedger._offtake_pending[cid].get(GOOD, 0)) > 0)
 
@@ -336,7 +340,7 @@ func test_15_08_04_cross_day_resale_red_team_60() -> void:
 	GoodsLedger.roll_offtake_snapshot(2)
 	var snap_after_sellin: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
 	# Same-owner net in window: export−sellin → 0 after sell-in offsets.
-	var window_after_sellin: int = int(snap_after_sellin.get("window_qty", 0 - 1))
+	var window_after_sellin: int = int(snap_after_sellin.get("window_qty", SNAP_MISSING))
 
 	var trade_pnl: int = sell_total - buy_total
 	var voyage_cost: int = 0 ## assumption
@@ -419,14 +423,9 @@ func _boot_market_pricer(stock: int, weekly_offtake: int) -> void:
 	_seed_market(PORT, stock)
 	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
 	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
-	if not GoodsLedger._offtake_snapshot.has(PORT):
-		GoodsLedger._offtake_snapshot[PORT] = {}
-	GoodsLedger._offtake_snapshot[PORT][GOOD] = {
-		"window_qty": weekly_offtake,
-		"local_qty": weekly_offtake,
-		"window_days": days_pw,
-		"day": 0,
-	}
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(PORT), StringName(GOOD), weekly_offtake, weekly_offtake, days_pw, 0
+	)
 
 
 func _seed_market(port_id: String, stock: int) -> void:

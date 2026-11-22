@@ -14,6 +14,8 @@ const PROP_SEQ_LEN_TRANSFER := 200
 const PROP_HOLD_CAP := 30
 const PROP_MAX_QTY := 40
 const PROP_SEED_STOCK := 15
+## T7: named op-branch count (no 1+1 evasion)
+const OP_BRANCHES := 2
 
 const STAPLE_RICE := "米"
 const STAPLE_SALT := "鹽"
@@ -98,7 +100,7 @@ func test_PROP_FRM_SYS03_02_failed_transfer_leaves_both_sides_unchanged() -> voi
 	var fail_count: int = 0
 	for _i in PROP_SEQ_LEN_TRANSFER:
 		var qty: int = stream.next_qty(PROP_MAX_QTY)
-		var op: int = stream.next_index(1 + 1) ## 0=LOAD market→hold；1=UNLOAD hold→market
+		var op: int = stream.next_index(OP_BRANCHES) ## 0=LOAD market→hold；1=UNLOAD hold→market
 		var from_c: Dictionary = market if op == 0 else hold
 		var to_c: Dictionary = hold if op == 0 else market
 		var reason: StringName = (
