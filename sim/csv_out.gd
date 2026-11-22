@@ -20,6 +20,10 @@ const HDR_COMBOS := (
 	+ "MET-05b_avg,MET-05b_min,MET-05b_max,"
 	+ "MET-06_avg,MET-06_min,MET-06_max,combo_pass"
 )
+## WP-27／D-93: OBS-04／05 long table (plus OBS-02 streak keys).
+const HDR_OBS_EXT := (
+	"scenario_id,combo_index,seed,season_index,port_id,good_id,obs_id,key,value"
+)
 
 
 static func out_dir(scenario_id: String) -> String:
@@ -71,6 +75,11 @@ static func write_all(
 		paths.append(combo_path)
 	else:
 		failed.append(combo_path)
+	var obs_path: String = d + "obs_ext.csv"
+	if _write_obs_ext(obs_path, sampler.obs_ext_rows):
+		paths.append(obs_path)
+	else:
+		failed.append(obs_path)
 	return {
 		"ok": failed.is_empty(),
 		"paths": paths,
@@ -99,13 +108,17 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
 	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_SEASON_PORTS])
 	for r_v in rows:
 		var r: Dictionary = r_v
+		var spend_esc: String = _csv_escape(String(r.get("city_spend_json", "{}")))
 		lines.append(
-			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
 				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]), r["port_id"],
 				_fmt(r["rich"]), _fmt(r["citizen"]), _fmt(r["poor"]), _fmt(r["beggar"]),
 				_fmt(r["sat_weighted"]), _fmt(r["workplaces"]), _fmt(r["beds"]),
 				_fmt(r["city_balance_li"]),
+				_fmt(r.get("land_rent_li", -1)),
+				_fmt(r.get("vacancy_tax_li", -1)),
+				spend_esc,
 			]
 		)
 	return _store(path, lines)
@@ -165,6 +178,27 @@ static func _write_combos(path: String, rows: Array) -> bool:
 				_fmt(r["MET-05b_avg"]), _fmt(r["MET-05b_min"]), _fmt(r["MET-05b_max"]),
 				_fmt(r["MET-06_avg"]), _fmt(r["MET-06_min"]), _fmt(r["MET-06_max"]),
 				r["combo_pass"],
+			]
+		)
+	return _store(path, lines)
+
+
+static func _write_obs_ext(path: String, rows: Array) -> bool:
+	var lines: PackedStringArray = PackedStringArray([HDR_OBS_EXT])
+	for r_v in rows:
+		var r: Dictionary = r_v
+		lines.append(
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			% [
+				_csv_escape(String(r.get("scenario_id", ""))),
+				_fmt(r.get("combo_index", "")),
+				_fmt(r.get("seed", "")),
+				_fmt(r.get("season_index", "")),
+				_csv_escape(String(r.get("port_id", ""))),
+				_csv_escape(String(r.get("good_id", ""))),
+				_csv_escape(String(r.get("obs_id", ""))),
+				_csv_escape(String(r.get("key", ""))),
+				_csv_escape(_fmt(r.get("value", ""))),
 			]
 		)
 	return _store(path, lines)
