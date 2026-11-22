@@ -58,7 +58,7 @@ const REASON_UNLOAD := &"UNLOAD"
 const REASON_CONSTRUCT_USE := &"CONSTRUCT_USE"
 const REASON_CONFISCATE := &"CONFISCATE"
 const REASON_SEA_LOSS := &"SEA_LOSS"
-## FRM-SYS23-05／WP-27: simulator-only; disabled unless set_sim_relocate_enabled(true).
+## FRM-SYS23-05／D-97(b): simulator-only reason; arming is layers.RELOCATE in SimEngine (no enable API).
 const REASON_SIM_RELOCATE := &"SIM_RELOCATE"
 
 ## Container Dictionary schema (TechSpec MARKET(port)／WAREHOUSE(owner,port)／HOLD(ship)／CONFISCATED／外部).
@@ -114,23 +114,12 @@ var _offtake_snapshot: Dictionary = {}
 ## EX-02: offtake epoch unset sentinel.
 const DAY_SENTINEL_UNSET := -1
 var _offtake_epoch_day: int = DAY_SENTINEL_UNSET
-## FRM-SYS23-05: SIM_RELOCATE allowed only when sim_runner enables before boot.
-## Public enable name pending C-14（D-95／D-96 未列）；行為依 FRM-SYS23-05。
-var _sim_relocate_enabled: bool = false
 
 
 func _ready() -> void:
 	_clear_state()
-	_sim_relocate_enabled = false
 
 
-func set_sim_relocate_enabled(enabled: bool) -> void:
-	## FRM-SYS23-05: sim_runner／SimEngine enable before boot; game body leaves false.
-	_sim_relocate_enabled = enabled
-
-
-func is_sim_relocate_enabled() -> bool:
-	return _sim_relocate_enabled
 
 
 func load_and_validate() -> Array:
@@ -276,8 +265,9 @@ func _validate_transfer_preconditions(
 	if reason == REASON_SEA_LOSS:
 		_fail(ERR_SYS03_04, FIELD_REASON, reason, "SEA_LOSS disabled")
 		return {}
-	# FRM-SYS23-05／TST-SYS23-07: SIM_RELOCATE only when sim mode enabled.
-	if reason == REASON_SIM_RELOCATE and not _sim_relocate_enabled:
+	# FRM-SYS23-05／D-97(b)／TST-SYS23-07: SIM_RELOCATE only from SYS-23 relocator.
+	# Scenario layers.RELOCATE is enforced in SimEngine (no GoodsLedger enable API).
+	if reason == REASON_SIM_RELOCATE and _requester != &"SYS-23":
 		_fail(ERR_SYS03_04, FIELD_REASON, reason, "SIM_RELOCATE disabled (non-sim)")
 		return {}
 
@@ -909,7 +899,7 @@ func _clear_state() -> void:
 	_offtake_pending = {}
 	_offtake_snapshot = {}
 	_offtake_epoch_day = DAY_SENTINEL_UNSET
-	## FRM-SYS23-05: do not clear _sim_relocate_enabled here — sim_runner enables before boot.
+	## D-97(b): no GoodsLedger relocate enable flag to clear.
 	_clear_last_error()
 
 

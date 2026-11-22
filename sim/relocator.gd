@@ -205,12 +205,7 @@ static func plan_one_good(
 
 ## Apply FRM-SYS23-04 for all goods (good_id ascending). Returns {ok, error, move_count}.
 static func run_day(f_ppm: int, ppm_scale: int, acc: SimTransferAcc = null) -> Dictionary:
-	if not GoodsLedger.is_sim_relocate_enabled():
-		return {
-			"ok": false,
-			"error": "%s: SIM_RELOCATE not enabled" % ERR_SYS23_07,
-			"move_count": 0,
-		}
+	## D-97(b): caller (SimEngine) gates on layers.RELOCATE; no enable API.
 	var goods: PackedStringArray = GoodCatalog.all_ids()
 	var ports: PackedStringArray = PortRegistry.all_ids()
 	var move_count: int = 0

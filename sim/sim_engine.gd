@@ -139,8 +139,7 @@ func _run_one_job(
 		(scenario.get("layers", {}) as Dictionary).get("RELOCATE", false)
 	)
 	var f_ppm: int = 0
-	## FRM-SYS23-05: enable SIM_RELOCATE before boot when layer 2 on (survives load_and_validate).
-	GoodsLedger.set_sim_relocate_enabled(relocate_on)
+	## D-97(b): layers.RELOCATE is the only switch; no GoodsLedger enable API.
 
 	# D-60f／D-63b: sim expects successful boot → inject deny-all fixtures（not formal always-allow）.
 	if not IntelLedger.has_broker_provider():
@@ -164,7 +163,6 @@ func _run_one_job(
 	)
 	if not boot_errors.is_empty() or not SimLoop.is_booted():
 		acc.disconnect_ledger()
-		GoodsLedger.set_sim_relocate_enabled(false)
 		var reason: String = "%s: boot failed: %s" % [ERR_SYS23_07, str(boot_errors)]
 		return {
 			"summary": _abort_summary(run_id, combo_index, seed, combo, reason, t0),
@@ -179,8 +177,7 @@ func _run_one_job(
 		)
 		if not bool(conv.get("ok", false)):
 			acc.disconnect_ledger()
-			GoodsLedger.set_sim_relocate_enabled(false)
-			return {
+				return {
 				"summary": _abort_summary(
 					run_id, combo_index, seed, combo, String(conv.get("error", ERR_SYS23_03)), t0
 				),
@@ -242,7 +239,6 @@ func _run_one_job(
 	acc.disconnect_ledger()
 	if GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.disconnect(sampler.on_conservation)
-	GoodsLedger.set_sim_relocate_enabled(false)
 
 	var elapsed: int = Time.get_ticks_msec() - t0
 	var sid: String = String(scenario.get(SimScenarioValidator.KEY_SCENARIO_ID, ""))

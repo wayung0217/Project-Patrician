@@ -23,11 +23,11 @@ const EX01_TOTAL := 110
 
 
 func before_each() -> void:
-	GoodsLedger.set_sim_relocate_enabled(false)
+	pass
 
 
 func after_each() -> void:
-	GoodsLedger.set_sim_relocate_enabled(false)
+	pass
 
 
 func _boot_cash() -> void:
@@ -93,7 +93,6 @@ func test_TST_SYS23_05_transfer_matches_EX_23_04_01() -> void:
 	_boot_cash()
 	var gerr: Array = GoodsLedger.load_and_validate()
 	assert_eq(gerr.size(), 0)
-	GoodsLedger.set_sim_relocate_enabled(true)
 	var good: StringName = &"GD-001"
 	var m_a: Dictionary = GoodsLedger.make_market("PT-A")
 	var m_b: Dictionary = GoodsLedger.make_market("PT-B")
@@ -143,7 +142,6 @@ func test_TST_SYS23_07_sim_relocate_rejected_when_disabled() -> void:
 	assert_eq(perr.size(), 0)
 	var gerr: Array = GoodsLedger.load_and_validate()
 	assert_eq(gerr.size(), 0)
-	GoodsLedger.set_sim_relocate_enabled(false)
 	var good: StringName = &"GD-001"
 	var m_a: Dictionary = GoodsLedger.make_market("PT-01")
 	var m_b: Dictionary = GoodsLedger.make_market("PT-02")
@@ -153,7 +151,7 @@ func test_TST_SYS23_07_sim_relocate_rejected_when_disabled() -> void:
 	var before_a: int = GoodsLedger.get_qty(m_a, good)
 	var before_b: int = GoodsLedger.get_qty(m_b, good)
 	var seq: int = GoodsLedger.transfer(
-		m_a, m_b, good, 1, GoodsLedger.REASON_SIM_RELOCATE, &"SYS-23"
+		m_a, m_b, good, 1, GoodsLedger.REASON_SIM_RELOCATE, &"TEST"
 	)
 	assert_eq(seq, 0)
 	var le: Dictionary = GoodsLedger.last_error()
