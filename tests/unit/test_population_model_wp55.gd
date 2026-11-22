@@ -49,7 +49,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	## U3: restore Params so rate／streak overrides do not leak across tests.
-	Params.load_and_validate(PARAMS_FIXTURE)
+	Params.load_and_validate(ParamsFixtures.path_demo())
 
 
 func test_WP55_A13_derive_seed_draw_seq_changes_hash() -> void:

@@ -124,7 +124,7 @@ func test_TST_SYS01_04_missing_dried_fish_staple_rejects() -> void:
 	assert_true(_has_code(errors, ERR_SYS01_05), "expected ERR-SYS01-05")
 
 
-func test_valid_catalog_loads_sorted_ids_and_derives_scale() -> void:
+func test_WP59_valid_catalog_loads_sorted_ids_and_derives_scale() -> void:
 	# Happy path: FRM-SYS01-01 pass, FRM-SYS01-02 controlled_scale_only, all_ids ascending, catalog_loaded.
 	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
 	var dir := _build_valid_catalog(count_min, FIXTURE_ROOT + "ok/")
@@ -162,7 +162,7 @@ func test_valid_catalog_loads_sorted_ids_and_derives_scale() -> void:
 	assert_eq(recheck.size(), 0)
 
 
-func test_count_above_max_rejects() -> void:
+func test_WP59_count_above_max_rejects() -> void:
 	# ERR-SYS01-04 upper bound (FRM-SYS01-01 goods count ∈ [MIN,MAX]).
 	var count_max: int = Params.get_int(PRM_GOOD_COUNT_MAX)
 	var too_many: int = count_max + 1
@@ -280,7 +280,7 @@ func _is_error_info(e: Variant) -> bool:
 	return typeof(d[ErrorInfoUtil.KEY_DETAIL]) == TYPE_DICTIONARY
 
 
-func test_D04_error_info_shape_not_int_codes() -> void:
+func test_WP59_D04_error_info_shape_not_int_codes() -> void:
 	# D-04: ErrorInfo Dictionary only; no ERR→int / −1..−5.
 	var count_min: int = Params.get_int(PRM_GOOD_COUNT_MIN)
 	var dir := _build_valid_catalog(count_min - 1, FIXTURE_ROOT + "d04_shape/")

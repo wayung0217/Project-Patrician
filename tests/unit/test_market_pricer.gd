@@ -117,7 +117,7 @@ func before_each() -> void:
 	ShipRegistry._sailor_pool = null
 
 
-func test_consumption_provider_base_push_error() -> void:
+func test_WP59_consumption_provider_base_push_error() -> void:
 	# 2.1-03／TechSpec 3.7: 基底方法一律 push_error 並回失敗值
 	# WP-32／15-05: weekly_consumption removed from interface.
 	var base := ConsumptionProvider.new()
@@ -126,7 +126,7 @@ func test_consumption_provider_base_push_error() -> void:
 	assert_push_error_count(1)
 
 
-func test_D08g_named_band_enum_order() -> void:
+func test_WP59_D08g_named_band_enum_order() -> void:
 	# D-08g: BAND_VERY_LOW…BAND_VERY_HIGH named enum；0 過低→4 過高；不得裸用 0..4 比較。
 	assert_eq(MarketPricer.BAND_VERY_LOW, MarketPricer.Band.VERY_LOW)
 	assert_eq(MarketPricer.BAND_LOW, MarketPricer.Band.LOW)
@@ -369,7 +369,7 @@ func test_TST_SYS04_10_qty_rejects_no_state_change() -> void:
 	assert_eq(GoodsLedger.get_qty(market, StringName(GOOD_DEMO)), TST10_STOCK)
 
 
-func test_D01_quantize_amount_snaps_near_integer() -> void:
+func test_WP59_D01_quantize_amount_snaps_near_integer() -> void:
 	# D-01: |x−round(x)| <= ROUND_EPS×max(1,|x|) → snap；else leave; EPS from Params (no bare 1e-9).
 	_boot_full(DEMO_ANCHOR_LI, DEMO_WEEKLY_C, DEMO_STOCK)
 	var eps: float = Params.get_float(PRM_ROUND_EPS)

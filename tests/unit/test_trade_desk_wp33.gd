@@ -95,7 +95,7 @@ func after_each() -> void:
 	_wipe_formal_opening_tres()
 
 
-func test_qualification_provider_base_push_error_2_1_03() -> void:
+func test_WP59_qualification_provider_base_push_error_2_1_03() -> void:
 	var base := QualificationProvider.new()
 	assert_false(base.can_enter(ACTOR, StringName(PORT)))
 	assert_false(base.can_trade(ACTOR, StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY))
@@ -103,7 +103,7 @@ func test_qualification_provider_base_push_error_2_1_03() -> void:
 	assert_push_error_count(3)
 
 
-func test_trade_observer_base_push_error_2_1_03() -> void:
+func test_WP59_trade_observer_base_push_error_2_1_03() -> void:
 	var base := TradeObserver.new()
 	assert_eq(
 		base.record_trade(ACTOR, StringName(PORT), StringName(GOOD), 0, 1, 1.0, 1.0, 1),
@@ -526,7 +526,7 @@ func test_TST_SYS05_23_can_transfer_matches_transfer() -> void:
 	assert_push_error_count(2)
 
 
-func test_D28d_observer_failure_keeps_trade() -> void:
+func test_WP59_D28d_observer_failure_keeps_trade() -> void:
 	_boot_ledgers()
 	_seed_market(40)
 	var obs: FixtureTradeObserver = TradeDesk._observers[0] as FixtureTradeObserver

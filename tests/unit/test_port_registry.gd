@@ -152,7 +152,7 @@ func test_TST_SYS02_05_role_change_queues_until_cutoff() -> void:
 	assert_signal_emitted(PortRegistry, "role_changed")
 
 
-func test_D02_queue_producer_payload_applies_output() -> void:
+func test_WP59_D02_queue_producer_payload_applies_output() -> void:
 	# D-02: PRODUCER requires base_output_per_season > 0; applied at cutoff.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
@@ -176,7 +176,7 @@ func test_D02_queue_producer_payload_applies_output() -> void:
 	assert_eq(PortRegistry.get_port(port_id).role_cells[good_id].base_output_per_season, 7)
 
 
-func test_D02_queue_transit_payload_applies_downstream() -> void:
+func test_WP59_D02_queue_transit_payload_applies_downstream() -> void:
 	# WP-32／15-04: TRANSIT may carry downstream_terminals (stored, not validated); applied at cutoff.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
@@ -199,7 +199,7 @@ func test_D02_queue_transit_payload_applies_downstream() -> void:
 	assert_eq(downs[0], "PT-02")
 
 
-func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
+func test_WP59_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
 	# D-02: missing / forbidden / wrong-type PRODUCER payload → ERR-SYS02 at enqueue, not cutoff.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
@@ -247,7 +247,7 @@ func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
 	assert_eq(PortRegistry.get_role(port_id, good_id), role_before)
 
 
-func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> void:
+func test_WP59_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> void:
 	# WP-32／15-04: TRANSIT empty／missing downstream allowed (ERR-SYS02-02 retired);
 	# TRANSIT + output and TERMINAL non-empty still reject.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
@@ -304,7 +304,7 @@ func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> voi
 	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_TRANSIT)
 
 
-func test_valid_ports_load_queries_and_warnings() -> void:
+func test_WP59_valid_ports_load_queries_and_warnings() -> void:
 	# Happy path: FRM-SYS02-01 pass, queries sorted, WRN-SYS02-01 does not block.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
@@ -429,7 +429,7 @@ func test_D08_TST_get_port_unknown_id_null_last_error() -> void:
 	assert_true(PortRegistry.last_error().is_empty(), "success clears last_error")
 
 
-func test_D08c_get_role_unknown_returns_role_invalid() -> void:
+func test_WP59_D08c_get_role_unknown_returns_role_invalid() -> void:
 	# R3-02 ①: get_role unknown port/good → ROLE_INVALID (0) + last_error ERR-SYS02-09; no assert abort.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
@@ -454,7 +454,7 @@ func test_D08c_get_role_unknown_returns_role_invalid() -> void:
 	assert_true(PortRegistry.last_error().is_empty(), "success clears last_error")
 
 
-func test_D08c_array_lookups_unknown_empty_last_error() -> void:
+func test_WP59_D08c_array_lookups_unknown_empty_last_error() -> void:
 	# R3-02 ②: get_downstream／producers_of／terminals_of unknown id → empty + last_error ERR-SYS02-09.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
@@ -480,7 +480,7 @@ func test_D08c_array_lookups_unknown_empty_last_error() -> void:
 	assert_true(_last_error_is(ERR_SYS02_09), "terminals_of unknown → ERR-SYS02-09")
 
 
-func test_D08c_success_clears_last_error_empty_not_failure() -> void:
+func test_WP59_D08c_success_clears_last_error_empty_not_failure() -> void:
 	# R3-02 ③: all id-lookup public methods clear last_error on success so empty array ≠ failure.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)
@@ -516,7 +516,7 @@ func test_D08c_success_clears_last_error_empty_not_failure() -> void:
 	assert_true(PortRegistry.last_error().is_empty(), "empty success ≠ failure")
 
 
-func test_D08c_queue_role_change_unknown_rejects() -> void:
+func test_WP59_D08c_queue_role_change_unknown_rejects() -> void:
 	# R3-02 ④: queue_role_change unknown port/good → reject enqueue ERR-SYS02-09 (D-02); no assert.
 	var port_count: int = Params.get_int(PRM_PORT_COUNT_MIN)
 	var free_count: int = _valid_free_count(port_count)

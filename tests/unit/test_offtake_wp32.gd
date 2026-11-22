@@ -47,7 +47,7 @@ func before_each() -> void:
 	_boot_catalog_ports_ledger()
 
 
-func test_15_08_01_missing_offtake_window_days_refuses_boot() -> void:
+func test_WP59_15_08_01_missing_offtake_window_days_refuses_boot() -> void:
 	# 15-08 ①: OFFTAKE_WINDOW_DAYS 缺鍵 → boot／Params 拒絕
 	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(PARAMS_FIXTURE))
 	fixture.erase(PRM_OFFTAKE_WINDOW)
@@ -293,7 +293,7 @@ func test_TST_SYS03_16_pending_invariant_debug() -> void:
 	assert_eq(GoodsLedger.debug_check_offtake_invariants(), GoodsLedger.CODE_OK)
 
 
-func test_15_08_04_cross_day_resale_red_team_60() -> void:
+func test_WP59_15_08_04_cross_day_resale_red_team_60() -> void:
 	# 紅隊-60／15-08 ④: 大量買走離港灌分母，隔日返港賣回。
 	# Test assumptions (explicit, not formal balance): voyage cost＝0；holding cost＝0；
 	# earliest return = next day; same-port berth via set_container_port.

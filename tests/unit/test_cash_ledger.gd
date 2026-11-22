@@ -126,7 +126,7 @@ func before_each() -> void:
 	assert_eq(cl_errors.size(), 0, "CashLedger must load")
 
 
-func test_autoload_order_cash_after_goods() -> void:
+func test_WP59_autoload_order_cash_after_goods() -> void:
 	# 2.2-01／AB4／W1 spirit：比較 project.godot 內實際 Autoload 相對順序
 	var order: Array = _autoload_names_from_project()
 	var i_goods: int = order.find("GoodsLedger")
@@ -138,13 +138,13 @@ func test_autoload_order_cash_after_goods() -> void:
 	assert_true(GoodsLedger.is_loaded())
 
 
-func test_account_player_constant() -> void:
+func test_WP59_account_player_constant() -> void:
 	# D-03: ACCOUNT_PLAYER = ACT-PLAYER
 	assert_eq(CashLedger.ACCOUNT_PLAYER, &"ACT-PLAYER")
 	assert_eq(CashLedger.ACCOUNT_PLAYER, CashLedger.make_actor_id("PLAYER"))
 
 
-func test_D01_quantize_amount_xlsx_buy_total() -> void:
+func test_WP59_D01_quantize_amount_xlsx_buy_total() -> void:
 	# D-01／N-04: Area×(1+HALF) → AmountQuantize then ceili = 144000（xlsx B463）；no AmountMath.
 	var area: float = DEMO_AREA_A * DEMO_AREA_B * DEMO_AREA_C / DEMO_AREA_D * DEMO_AREA_E
 	var total: int = ceili(AmountQuantize.quantize_amount(area))
@@ -152,7 +152,7 @@ func test_D01_quantize_amount_xlsx_buy_total() -> void:
 	assert_eq(CashLedger.quantize_money(area, CashLedger.MODE_CEIL), DEMO_BUY_TOTAL)
 
 
-func test_D03_genesis_grant() -> void:
+func test_WP59_D03_genesis_grant() -> void:
 	# D-03: genesis_grant posts SOURCE/−START_CASH + ACT-PLAYER/+START_CASH, reason GENESIS_CASH
 	var start: int = Params.get_int(CashLedger.PRM_START_CASH)
 	assert_eq(start, DEMO_C0)
@@ -164,7 +164,7 @@ func test_D03_genesis_grant() -> void:
 	assert_eq(CashLedger.sum_all_balances(), 0)
 
 
-func test_D03_genesis_requester_is_sole_auth_exception() -> void:
+func test_WP59_D03_genesis_requester_is_sole_auth_exception() -> void:
 	# D-03: REQUESTER_GENESIS_GRANT is the only ERR-SYS05-06 exception; list unchanged.
 	assert_false(CashLedger.AUTHORIZED_REQUESTERS.has(CashLedger.REQUESTER_GENESIS_GRANT))
 	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), OK)
@@ -417,7 +417,7 @@ func test_TST_SYS05_12_unauthorized_and_invalid_amount() -> void:
 	assert_push_error_count(THREE)
 
 
-func test_close_season_prorate_via_schedule() -> void:
+func test_WP59_close_season_prorate_via_schedule() -> void:
 	# 季末依 ChargeSchedule 按日扣費（F 寫入順序）
 	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), OK)
 	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
@@ -437,7 +437,7 @@ func test_close_season_prorate_via_schedule() -> void:
 	assert_eq(CashLedger.balance(CashLedger.ACCOUNT_PLAYER), DEMO_C0 - DEMO_PRORATE)
 
 
-func test_params_fixture_not_official_pending_keys() -> void:
+func test_WP59_params_fixture_not_official_pending_keys() -> void:
 	# AB5／BB3: 正式 params.json 若尚未登錄待審 PRM → 必須開機失敗；若已齊則反轉為成功。
 	var schema: Dictionary = JSON.parse_string(
 		FileAccess.get_file_as_string("res://data/params/params_schema.json")

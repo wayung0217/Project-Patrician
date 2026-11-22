@@ -20,7 +20,7 @@ func before_each() -> void:
 	Params.load_and_validate(FIXTURE_ALL)
 
 
-func test_all_section4_params_json_keys_readable() -> void:
+func test_WP59_all_section4_params_json_keys_readable() -> void:
 	# TechSpec WP-01: every §4 params.json PRM key is readable after load.
 	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
 	var errors: Array = Params.load_and_validate(FIXTURE_ALL)
@@ -54,7 +54,7 @@ func test_all_section4_params_json_keys_readable() -> void:
 				fail_test("unknown schema type %s for %s" % [type_name, id])
 
 
-func test_fixture_values_match_techspec_section4() -> void:
+func test_WP59_fixture_values_match_techspec_section4() -> void:
 	# Expected values: TechSpec §4 defaults copied into fixture (1-A8 uses 0 / 1).
 	# ROUND_EPS / TICKS_PER_DAY: TechSpec §4 + Owner D-01 / D-07 (2026-11-18).
 	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
@@ -71,7 +71,7 @@ func test_fixture_values_match_techspec_section4() -> void:
 	assert_eq(Params.get_bool(KEY_CONSERVATION), expected_cons)
 
 
-func test_missing_start_cash_rejects() -> void:
+func test_WP59_missing_start_cash_rejects() -> void:
 	# 1-A8 / TechSpec §4: missing PRM-SYS05-START_CASH → refuse.
 	var path := _write_user_fixture_without(KEY_START_CASH)
 	var errors: Array = Params.load_and_validate(path)
@@ -81,7 +81,7 @@ func test_missing_start_cash_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_START_CASH, "MISSING_KEY"))
 
 
-func test_missing_arrears_rejects() -> void:
+func test_WP59_missing_arrears_rejects() -> void:
 	# 1-A8 / TechSpec §4: missing PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT → refuse.
 	var path := _write_user_fixture_without(KEY_ARREARS)
 	var errors: Array = Params.load_and_validate(path)
@@ -91,7 +91,7 @@ func test_missing_arrears_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_ARREARS, "MISSING_KEY"))
 
 
-func test_missing_ticks_per_day_rejects() -> void:
+func test_WP59_missing_ticks_per_day_rejects() -> void:
 	# TechSpec §4 / D-07: PRM-SYS00-TICKS_PER_DAY required in params.json.
 	var path := _write_user_fixture_without(KEY_TICKS_PER_DAY)
 	var errors: Array = Params.load_and_validate(path)
@@ -101,7 +101,7 @@ func test_missing_ticks_per_day_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_TICKS_PER_DAY, "MISSING_KEY"))
 
 
-func test_missing_round_eps_rejects() -> void:
+func test_WP59_missing_round_eps_rejects() -> void:
 	# TechSpec §4 / D-01: PRM-SYS04-ROUND_EPS required in params.json.
 	var path := _write_user_fixture_without(KEY_ROUND_EPS)
 	var errors: Array = Params.load_and_validate(path)
@@ -111,7 +111,7 @@ func test_missing_round_eps_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_ROUND_EPS, "MISSING_KEY"))
 
 
-func test_ticks_per_day_out_of_range_rejects() -> void:
+func test_WP59_ticks_per_day_out_of_range_rejects() -> void:
 	# Range from schema (TechSpec §4: 24 ~ 24); adjust by 1 (allowed literal).
 	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
 	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
@@ -125,7 +125,7 @@ func test_ticks_per_day_out_of_range_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_TICKS_PER_DAY, "RANGE"))
 
 
-func test_round_eps_out_of_range_rejects() -> void:
+func test_WP59_round_eps_out_of_range_rejects() -> void:
 	# Range from schema (TechSpec §4: 0 ~ 0.000001); step above max via schema max.
 	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
 	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
@@ -139,7 +139,7 @@ func test_round_eps_out_of_range_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_ROUND_EPS, "RANGE"))
 
 
-func test_official_params_json_rejects_without_pending_keys() -> void:
+func test_WP59_official_params_json_rejects_without_pending_keys() -> void:
 	## BB3: formal params still missing schema keys → must refuse (reverse when PRMs registered).
 	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
 	var formal: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OFFICIAL))
@@ -161,7 +161,7 @@ func test_official_params_json_rejects_without_pending_keys() -> void:
 		assert_true(_has_field_error(errors, KEY_ARREARS, "MISSING_KEY"))
 
 
-func test_type_mismatch_rejects() -> void:
+func test_WP59_type_mismatch_rejects() -> void:
 	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
 	fixture[KEY_DAYS_PER_SEASON] = true
 	var path := _write_user_dict(fixture, "params_bad_type.json")
@@ -172,7 +172,7 @@ func test_type_mismatch_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_DAYS_PER_SEASON, "TYPE"))
 
 
-func test_out_of_range_rejects() -> void:
+func test_WP59_out_of_range_rejects() -> void:
 	# Range bounds from schema (TechSpec §4); adjust by 1 (allowed literal).
 	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
 	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(FIXTURE_ALL))
@@ -186,7 +186,7 @@ func test_out_of_range_rejects() -> void:
 	assert_true(_has_field_error(errors, KEY_DAYS_PER_SEASON, "RANGE"))
 
 
-func test_collects_all_missing_errors() -> void:
+func test_WP59_collects_all_missing_errors() -> void:
 	# AB5／BB3／C-06: every schema key missing from official params is listed (per-key).
 	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
 	var official: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OFFICIAL))

@@ -150,7 +150,7 @@ func test_ERR_SYS06_01_missing_demand_dir_rejects() -> void:
 	assert_push_error_count(errs.size())
 
 
-func test_D40c_bad_tres_load_collects_filename() -> void:
+func test_WP59_D40c_bad_tres_load_collects_filename() -> void:
 	## D-40c: corrupt .tres → ERR-SYS06-01 with filename.
 	_boot_params_ports_goods()
 	_boot_pop_sat()
@@ -177,7 +177,7 @@ func test_D40c_bad_tres_load_collects_filename() -> void:
 	assert_push_error_count(errs.size())
 
 
-func test_D40c_missing_substitutions_dir_fails() -> void:
+func test_WP59_D40c_missing_substitutions_dir_fails() -> void:
 	## D-40c: substitutions subdir must exist.
 	_boot_params_ports_goods()
 	_boot_pop_sat()
@@ -193,7 +193,7 @@ func test_D40c_missing_substitutions_dir_fails() -> void:
 	assert_push_error_count(errs.size())
 
 
-func test_D40c_empty_substitutions_dir_passes() -> void:
+func test_WP59_D40c_empty_substitutions_dir_passes() -> void:
 	## D-40c: empty substitutions OK when dir exists.
 	_boot_params_ports_goods()
 	_boot_pop_sat()

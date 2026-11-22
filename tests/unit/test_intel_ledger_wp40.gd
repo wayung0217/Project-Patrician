@@ -445,7 +445,7 @@ func test_TST_SYS15_19_stock_weeks_single_site_and_regression() -> void:
 	assert_true(MarketPricer.stock_weeks(StringName(PT_A), StringName(GOOD)) == null)
 
 
-func test_D37c_public_delay_visibility() -> void:
+func test_WP59_D37c_public_delay_visibility() -> void:
 	## D-37c／FRM-SYS16-04：PUBLIC_DELAY 與 is_broker_qualified 特權可見性.
 	_boot_intel(false)
 	_add_building(ACTOR, PT_B)
@@ -466,7 +466,7 @@ func test_D37c_public_delay_visibility() -> void:
 	assert_eq(int(board[IntelLedger.KEY_N]), 1)
 
 
-func test_red_team_94_same_ship_dedupe() -> void:
+func test_WP59_red_team_94_same_ship_dedupe() -> void:
 	## 紅隊-94：同一艘船同一起航港只算最新一筆（依 TST-SYS15-07）.
 	_boot_intel(false)
 	_add_building(ACTOR, PT_B)
@@ -477,7 +477,7 @@ func test_red_team_94_same_ship_dedupe() -> void:
 	assert_eq(int(board[IntelLedger.KEY_CONSENSUS_MID]), 55)
 
 
-func test_red_team_96_batch_atomic_before_read() -> void:
+func test_WP59_red_team_96_batch_atomic_before_read() -> void:
 	## 紅隊-96／Z1：同 tick 批次寫完才公開；arrival 由正式 sail 產生.
 	_boot_intel(true)
 	_seed_market(PT_A, GOOD, DEMO_STOCK, DEMO_WEEKLY_C)
@@ -499,7 +499,7 @@ func test_red_team_96_batch_atomic_before_read() -> void:
 	assert_eq(int(board[IntelLedger.KEY_N]), 2)
 
 
-func test_red_team_97_registry_not_live_price() -> void:
+func test_WP59_red_team_97_registry_not_live_price() -> void:
 	## 紅隊-97：商籍／接觸不給即時遠港價；遠端行情靠船報（TST-SYS15-11／18）.
 	_boot_intel(false)
 	# Never present at PT_B → ERR-SYS15-04；無行市.
@@ -510,7 +510,7 @@ func test_red_team_97_registry_not_live_price() -> void:
 	assert_push_error_count(1)
 
 
-func test_ship_event_observer_base_2_1_03() -> void:
+func test_WP59_ship_event_observer_base_2_1_03() -> void:
 	var base := ShipEventObserver.new()
 	base.on_departed(&"S", &"A", &"P", 0)
 	base.on_arrivals(0, [])

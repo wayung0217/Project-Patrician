@@ -39,7 +39,7 @@ const DATA_SUBDIRS: Array[String] = [
 
 
 ## 2.1-04 ① — PortDef CSV rejected when claimed as GoodDef.
-func test_2_1_04_rule1_port_csv_rejected_as_good_def() -> void:
+func test_WP59_2_1_04_rule1_port_csv_rejected_as_good_def() -> void:
 	var as_good: Dictionary = CsvImport.import_csv(FIXTURE_PORT_VALID, CsvImport.KIND_GOOD_DEF)
 	assert_false(
 		as_good["ok"],
@@ -54,7 +54,7 @@ func test_2_1_04_rule1_port_csv_rejected_as_good_def() -> void:
 
 
 ## 2.1-04 ① — GoodDef CSV rejected when claimed as PortDef.
-func test_2_1_04_rule1_good_csv_rejected_as_port_def() -> void:
+func test_WP59_2_1_04_rule1_good_csv_rejected_as_port_def() -> void:
 	var as_port: Dictionary = CsvImport.import_csv(FIXTURE_GOOD_VALID, CsvImport.KIND_PORT_DEF)
 	assert_false(
 		as_port["ok"],
@@ -69,7 +69,7 @@ func test_2_1_04_rule1_good_csv_rejected_as_port_def() -> void:
 
 
 ## 2.1-04 ① — matching kind succeeds (one resource kind per CSV).
-func test_2_1_04_rule1_matching_kind_imports() -> void:
+func test_WP59_2_1_04_rule1_matching_kind_imports() -> void:
 	var good_ok: Dictionary = CsvImport.import_csv(FIXTURE_GOOD_VALID, CsvImport.KIND_GOOD_DEF)
 	assert_true(good_ok["ok"], "source 2.1-04 ①: GoodDef CSV imports as GoodDef")
 	assert_eq((good_ok["rows"] as Array).size(), 1, "source 2.1-04 ①: one data row")
@@ -80,7 +80,7 @@ func test_2_1_04_rule1_matching_kind_imports() -> void:
 
 
 ## 2.1-04 ② — headers must equal 03_Systems field names exactly.
-func test_2_1_04_rule2_headers_match_field_names() -> void:
+func test_WP59_2_1_04_rule2_headers_match_field_names() -> void:
 	var expected: PackedStringArray = CsvImport.expected_headers(CsvImport.KIND_GOOD_DEF)
 	assert_eq(expected[0], "good_id", "source 03_Systems r234")
 	assert_eq(expected[expected.size() - 1], "season_mask", "source 03_Systems r241")
@@ -99,7 +99,7 @@ func test_2_1_04_rule2_headers_match_field_names() -> void:
 
 
 ## 2.1-04 ③ — missing column aborts.
-func test_2_1_04_rule3_missing_column_aborts() -> void:
+func test_WP59_2_1_04_rule3_missing_column_aborts() -> void:
 	var result: Dictionary = CsvImport.import_csv(FIXTURE_GOOD_MISSING, CsvImport.KIND_GOOD_DEF)
 	assert_false(result["ok"], "source 2.1-04 ③ 缺欄: must abort")
 	assert_eq((result["rows"] as Array).size(), 0, "source 2.1-04 ③: no partial rows")
@@ -114,7 +114,7 @@ func test_2_1_04_rule3_missing_column_aborts() -> void:
 
 
 ## 2.1-04 ③ — extra column aborts.
-func test_2_1_04_rule3_extra_column_aborts() -> void:
+func test_WP59_2_1_04_rule3_extra_column_aborts() -> void:
 	var result: Dictionary = CsvImport.import_csv(FIXTURE_GOOD_EXTRA, CsvImport.KIND_GOOD_DEF)
 	assert_false(result["ok"], "source 2.1-04 ③ 多欄: must abort")
 	assert_eq((result["rows"] as Array).size(), 0, "source 2.1-04 ③: no partial rows")
@@ -129,7 +129,7 @@ func test_2_1_04_rule3_extra_column_aborts() -> void:
 
 
 ## 2.1-04 ③ — type mismatch aborts.
-func test_2_1_04_rule3_type_mismatch_aborts() -> void:
+func test_WP59_2_1_04_rule3_type_mismatch_aborts() -> void:
 	var result: Dictionary = CsvImport.import_csv(FIXTURE_GOOD_TYPE, CsvImport.KIND_GOOD_DEF)
 	assert_false(result["ok"], "source 2.1-04 ③ 型別不符: must abort")
 	assert_eq((result["rows"] as Array).size(), 0, "source 2.1-04 ③: no partial rows")
@@ -144,7 +144,7 @@ func test_2_1_04_rule3_type_mismatch_aborts() -> void:
 
 
 ## 2.1-04 ④ — unit tests only load CSV under res://tests/fixtures/.
-func test_2_1_04_rule4_tests_use_fixtures_only() -> void:
+func test_WP59_2_1_04_rule4_tests_use_fixtures_only() -> void:
 	var fixture_paths: Array[String] = [
 		FIXTURE_GOOD_VALID,
 		FIXTURE_GOOD_MISSING,
@@ -169,7 +169,7 @@ func test_2_1_04_rule4_tests_use_fixtures_only() -> void:
 
 
 ## 2.1-04 ⑤ / N-09／BB4 — no hand-written formal CSV under res://data/ (.tres allowed after formal import).
-func test_2_1_04_rule5_no_formal_data_csv() -> void:
+func test_WP59_2_1_04_rule5_no_formal_data_csv() -> void:
 	for dir_path in DATA_SUBDIRS:
 		assert_true(DirAccess.dir_exists_absolute(dir_path), "data dir exists: %s" % dir_path)
 		var dir: DirAccess = DirAccess.open(dir_path)
@@ -189,7 +189,7 @@ func test_2_1_04_rule5_no_formal_data_csv() -> void:
 
 
 ## D-08i／D-04 — ROLE_VALUE_* must equal PortRegistry.Role members (not declaration-order 0／1／2).
-func test_D08i_role_values_match_port_registry_role_enum() -> void:
+func test_WP59_D08i_role_values_match_port_registry_role_enum() -> void:
 	assert_eq(
 		CsvImport.ROLE_VALUE_PRODUCER,
 		PortRegistry.Role.PRODUCER,
@@ -213,7 +213,7 @@ func test_D08i_role_values_match_port_registry_role_enum() -> void:
 
 
 ## D-08i / TST — fixed formal import／output path constants.
-func test_D08i_fixed_in_out_paths() -> void:
+func test_WP59_D08i_fixed_in_out_paths() -> void:
 	assert_eq(CsvImport.IMPORT_DIR, "res://data/import/", "source D-08i import dir")
 	assert_eq(CsvImport.IMPORT_GOODS_CSV, "res://data/import/goods.csv", "source D-08i goods.csv")
 	assert_eq(CsvImport.IMPORT_PORTS_CSV, "res://data/import/ports.csv", "source D-08i ports.csv")
@@ -237,7 +237,7 @@ func test_D08i_fixed_in_out_paths() -> void:
 
 
 ## D-08i / TST — any CSV error → write nothing; errors listed once (all-or-nothing).
-func test_D08i_all_or_nothing_no_write_on_error() -> void:
+func test_WP59_D08i_all_or_nothing_no_write_on_error() -> void:
 	_wipe_d08i_out()
 	# Plant a stale output that must remain when batch aborts (no clear+write on error).
 	_ensure_dir(FIXTURE_D08I_OUT_GOODS)
@@ -278,7 +278,7 @@ func test_D08i_all_or_nothing_no_write_on_error() -> void:
 
 
 ## D-08i / TST — successful batch writes goods／ports／price_curve from four CSVs.
-func test_D08i_batch_writes_all_outputs() -> void:
+func test_WP59_D08i_batch_writes_all_outputs() -> void:
 	_wipe_d08i_out()
 	var result: Dictionary = CsvImport.run_batch(
 		FIXTURE_D08I_OK,
@@ -316,7 +316,7 @@ func test_D08i_batch_writes_all_outputs() -> void:
 
 
 ## D-08i / TST — clear old .tres outputs before writing new ones.
-func test_D08i_clears_old_outputs_before_write() -> void:
+func test_WP59_D08i_clears_old_outputs_before_write() -> void:
 	_wipe_d08i_out()
 	_ensure_dir(FIXTURE_D08I_OUT_GOODS)
 	_ensure_dir(FIXTURE_D08I_OUT_PORTS)

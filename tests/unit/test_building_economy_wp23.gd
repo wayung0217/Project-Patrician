@@ -518,7 +518,7 @@ func test_TST_SYS08_14_city_queue_no_skip() -> void:
 	assert_eq(BuildingEconomy.public_level(StringName(PORT), &"CB-02"), 0)
 
 
-func test_D21b_public_upgrade_fee_scales_with_pop() -> void:
+func test_WP59_D21b_public_upgrade_fee_scales_with_pop() -> void:
 	## D-21b／V2: FRM-SYS08-07 numeric examples — pop×CASH_LI (fixture L2 CASH_LI=10000).
 	## Mutate injected TestPop (D-11d forbids set_population_provider after load).
 	_boot_world()

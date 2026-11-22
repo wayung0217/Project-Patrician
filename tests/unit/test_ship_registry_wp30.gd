@@ -370,7 +370,7 @@ func test_TST_SYS13_09_repair_prorata_mid_season() -> void:
 	assert_eq(bal_before - CashLedger.balance(ACTOR), expect)
 
 
-func test_D20a_sail_depart_arrive_container_port() -> void:
+func test_WP59_D20a_sail_depart_arrive_container_port() -> void:
 	_boot_ship_registry()
 	ShipRegistry.ship_departed.connect(_on_departed)
 	ShipRegistry.ship_arrived.connect(_on_arrived)

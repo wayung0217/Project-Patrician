@@ -15,7 +15,7 @@ func before_each() -> void:
 	Clock.set_paused(false)
 
 
-func test_boot_day_zero_first_advance_to_one() -> void:
+func test_WP59_boot_day_zero_first_advance_to_one() -> void:
 	# D-05(b) / D-07: boot _tick=0 → day=0; first advance → day=1 (k=0 PRODUCE).
 	assert_eq(Clock._tick, 0)
 	assert_eq(Clock.day, 0)
@@ -26,7 +26,7 @@ func test_boot_day_zero_first_advance_to_one() -> void:
 	assert_eq(Clock.season_index, 0)
 
 
-func test_season_index_formula() -> void:
+func test_WP59_season_index_formula() -> void:
 	# §3.1 / D-05(c): season_index = floori((day−1)/D)；首季 0，不得為 −1
 	var d: int = Params.get_int(PRM_DAYS)
 	# Advance to day == D → season_index still 0; then to D+1 → season_index 1
@@ -41,7 +41,7 @@ func test_season_index_formula() -> void:
 	assert_eq(Clock.season_index, 1)
 
 
-func test_set_paused_updates_is_paused() -> void:
+func test_WP59_set_paused_updates_is_paused() -> void:
 	# §3.1 public API: set_paused(bool) / is_paused
 	Clock.set_paused(true)
 	assert_true(Clock.is_paused)
@@ -49,7 +49,7 @@ func test_set_paused_updates_is_paused() -> void:
 	assert_false(Clock.is_paused)
 
 
-func test_advance_one_day_does_not_emit_signals() -> void:
+func test_WP59_advance_one_day_does_not_emit_signals() -> void:
 	# D-05(a): Clock mutates only; day_ticked / season_cutoff by SimLoop step 6.
 	var ticked: Array = []
 	var cutoffs: Array = []
@@ -61,7 +61,7 @@ func test_advance_one_day_does_not_emit_signals() -> void:
 	assert_eq(cutoffs.size(), 0)
 
 
-func test_paused_advance_push_error_and_no_progress() -> void:
+func test_WP59_paused_advance_push_error_and_no_progress() -> void:
 	# §3.1 / GP-01: paused → push_error, day/_tick unchanged, no signals
 	Clock.set_paused(true)
 	var day_before: int = Clock.day
@@ -78,7 +78,7 @@ func test_paused_advance_push_error_and_no_progress() -> void:
 	assert_eq(cutoffs.size(), 0)
 
 
-func test_advance_one_day_advances_exactly_tpd_ticks() -> void:
+func test_WP59_advance_one_day_advances_exactly_tpd_ticks() -> void:
 	# D-07 / WP-02: advance_one_day() advances exactly TPD ticks (from Params).
 	var tpd: int = Params.get_int(PRM_TPD)
 	assert_gt(tpd, 0)
@@ -91,7 +91,7 @@ func test_advance_one_day_advances_exactly_tpd_ticks() -> void:
 	assert_eq(Clock.day, 2)
 
 
-func test_no_season_cutoff_from_clock_at_season_end() -> void:
+func test_WP59_no_season_cutoff_from_clock_at_season_end() -> void:
 	# D-05(a): even at day_in_season == D, Clock must not emit season_cutoff.
 	var d: int = Params.get_int(PRM_DAYS)
 	var cutoffs: Array = []
@@ -103,7 +103,7 @@ func test_no_season_cutoff_from_clock_at_season_end() -> void:
 	assert_eq(cutoffs.size(), 0)
 
 
-func test_load_requires_params() -> void:
+func test_WP59_load_requires_params() -> void:
 	## BB3: official params missing keys → Clock refuses; reverse when formal is complete.
 	var schema: Dictionary = JSON.parse_string(
 		FileAccess.get_file_as_string("res://data/params/params_schema.json")
@@ -131,7 +131,7 @@ func test_load_requires_params() -> void:
 		assert_true(Clock.is_loaded())
 
 
-func test_load_requires_ticks_per_day() -> void:
+func test_WP59_load_requires_ticks_per_day() -> void:
 	# D-07: TPD must come from Params; missing key → Clock not loaded.
 	assert_true(Params.has_prm(PRM_TPD))
 	# Reload Clock after Params ok — already loaded in before_each.
@@ -158,7 +158,7 @@ func test_TST_SYS13_16_advance_one_day_matches_tpd_ticks() -> void:
 	assert_eq(Clock._tick, Clock.tick)
 
 
-func test_13_03_1_tick_starts_zero_increments_by_one() -> void:
+func test_WP59_13_03_1_tick_starts_zero_increments_by_one() -> void:
 	# 13-03 ①: tick 從 0 起、每次 advance_one_tick +1；唯讀 tick 與 _tick 一致.
 	assert_eq(Clock.tick, 0)
 	assert_eq(Clock._tick, 0)
@@ -170,7 +170,7 @@ func test_13_03_1_tick_starts_zero_increments_by_one() -> void:
 	assert_eq(Clock.day, 0)  # TPD=24；尚未跨日
 
 
-func test_13_03_2_day_boundary_across_days() -> void:
+func test_WP59_13_03_2_day_boundary_across_days() -> void:
 	# 13-03 ②: 跨日邊界 day = floori(tick ÷ TPD) 正確.
 	var tpd: int = Params.get_int(PRM_TPD)
 	for _i in range(tpd - 1):
@@ -186,7 +186,7 @@ func test_13_03_2_day_boundary_across_days() -> void:
 	assert_eq(Clock.day, 2)
 
 
-func test_13_03_3_paused_advance_one_tick_no_progress() -> void:
+func test_WP59_13_03_3_paused_advance_one_tick_no_progress() -> void:
 	# 13-03 ③／GP-01: 暫停時 advance_one_tick() push_error 不推進；不發信號.
 	Clock.set_paused(true)
 	var tick_before: int = Clock.tick

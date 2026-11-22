@@ -49,7 +49,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	## U3: restore Params so rate overrides do not leak across tests.
-	Params.load_and_validate(PARAMS_FIXTURE)
+	Params.load_and_validate(ParamsFixtures.path_demo())
 
 
 func test_WP51_occupants_stable_when_no_movers() -> void:
