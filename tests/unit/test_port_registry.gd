@@ -208,6 +208,7 @@ func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
 
 	var port_id := "PT-03"
 	var good_id: String = GoodCatalog.all_ids()[0]
+	var role_before: int = PortRegistry.get_role(port_id, good_id)
 
 	var push_total: int = 0
 
@@ -222,14 +223,16 @@ func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
 	push_total += zero_out.size()
 	assert_true(_has_code(zero_out, ERR_SYS02_03), "output <= 0 → ERR-SYS02-03")
 
-	# WP-32／15-04: PRODUCER + downstream_terminals ignored (ERR-SYS02-02 retired); still enqueues.
+	# A30／EV-SYS02-ROLE_CHANGE: PRODUCER + downstream_terminals rejected at enqueue.
 	var with_down: Array = PortRegistry.queue_role_change(
 		port_id,
 		good_id,
 		PortRegistry.ROLE_PRODUCER,
 		{"base_output_per_season": 1, "downstream_terminals": PackedStringArray(["PT-02"])}
 	)
-	assert_eq(with_down.size(), 0, "PRODUCER + downstream ignored, not ERR-SYS02-02")
+	push_total += with_down.size()
+	assert_gt(with_down.size(), 0, "PRODUCER + downstream must be rejected")
+	assert_true(_has_code(with_down, ERR_SYS02_01), "PRODUCER + downstream → ERR-SYS02-01")
 
 	var bad_type: Array = PortRegistry.queue_role_change(
 		port_id, good_id, PortRegistry.ROLE_PRODUCER, {"base_output_per_season": 1.5}
@@ -239,9 +242,9 @@ func test_D02_queue_rejects_bad_producer_payload_at_enqueue() -> void:
 
 	assert_push_error_count(push_total)
 
-	# with_down enqueued; apply succeeds; bad payloads rejected.
+	# Bad payloads rejected; nothing enqueued → role unchanged.
 	assert_eq(PortRegistry.apply_queued_role_changes().size(), 0)
-	assert_eq(PortRegistry.get_role(port_id, good_id), PortRegistry.ROLE_PRODUCER)
+	assert_eq(PortRegistry.get_role(port_id, good_id), role_before)
 
 
 func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> void:
@@ -283,6 +286,17 @@ func test_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue() -> voi
 	)
 	push_total += terminal_extra.size()
 	assert_true(_has_code(terminal_extra, ERR_SYS02_03), "TERMINAL non-empty → ERR-SYS02-03")
+
+	# A30: TERMINAL + downstream_terminals rejected.
+	var terminal_down: Array = PortRegistry.queue_role_change(
+		port_id,
+		good_id,
+		PortRegistry.ROLE_TERMINAL,
+		{"downstream_terminals": PackedStringArray(["PT-02"])}
+	)
+	push_total += terminal_down.size()
+	assert_gt(terminal_down.size(), 0, "TERMINAL + downstream must be rejected")
+	assert_true(_has_code(terminal_down, ERR_SYS02_01), "TERMINAL + downstream → ERR-SYS02-01")
 
 	assert_push_error_count(push_total)
 

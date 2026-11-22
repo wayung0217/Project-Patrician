@@ -68,12 +68,14 @@ class TestCapUnlimited extends CapacityProvider:
 var _sailor: FixtureSailorPool
 var _arrived: Array = []
 var _departed: Array = []
+var _crew_signals: Array = []
 
 
 func before_each() -> void:
 	_wipe_dir(ROOT)
 	_arrived = []
 	_departed = []
+	_crew_signals = []
 	_reset_autoloads()
 
 
@@ -82,6 +84,8 @@ func after_each() -> void:
 		ShipRegistry.ship_arrived.disconnect(_on_arrived)
 	if ShipRegistry.ship_departed.is_connected(_on_departed):
 		ShipRegistry.ship_departed.disconnect(_on_departed)
+	if ShipRegistry.crew_changed.is_connected(_on_crew_changed):
+		ShipRegistry.crew_changed.disconnect(_on_crew_changed)
 
 
 func test_WP30_13_08_missing_sailor_pool_boot_error() -> void:
@@ -203,22 +207,19 @@ func test_TST_SYS14_06_reroute_next_waypoint() -> void:
 
 
 func test_TST_SYS14_08_same_tick_arrival_ship_id_order() -> void:
+	## Z1: same-tick arrivals via formal sail API (identical path／depart → identical arrival_tick).
 	_boot_ship_registry()
 	ShipRegistry.ship_arrived.connect(_on_arrived)
 	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
 	var a: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_FUZHOU), cap)
 	var b: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_FUZHOU), cap)
-	# Force identical arrival_tick by sailing then patching voyage fields.
-	assert_gt(ShipRegistry.sail(ACTOR, a, StringName(PT_NAHA)), 0)
-	assert_gt(ShipRegistry.sail(ACTOR, b, StringName(PT_NAHA)), 0)
-	var tick_arrive: int = 1000
-	for sid in [a, b]:
-		var s: Ship = ShipRegistry._ships[String(sid)]
-		s.arrival_tick = tick_arrive
-		s.origin_port = StringName(PT_FUZHOU)
-		s.dest_port = StringName(PT_NAHA)
+	var arrival_a: int = ShipRegistry.sail(ACTOR, a, StringName(PT_NAHA))
+	var arrival_b: int = ShipRegistry.sail(ACTOR, b, StringName(PT_NAHA))
+	assert_gt(arrival_a, 0)
+	assert_eq(arrival_a, arrival_b, "same route＋depart tick → same arrival")
 	_arrived = []
-	ShipRegistry.tick_step(tick_arrive)
+	ShipRegistry.tick_step(arrival_a)
+	ShipRegistry.flush_signals() ## A24／D-05: emit only via flush
 	assert_eq(_arrived.size(), 2)
 	assert_true(String(_arrived[0]) < String(_arrived[1]), "ship_id ascending")
 	assert_true(ShipRegistry.can_trade(a, StringName(PT_NAHA)))
@@ -304,7 +305,10 @@ func test_TST_SYS13_08_season_wage_arrears() -> void:
 	# Isolate wage from repair: no hold-days this season end.
 	var s: Ship = ShipRegistry._ships[String(sid)]
 	s.held_from_day = Clock.day + 1
-	var expect: int = int(ceili(float(n * wage * days) / 7.0))
+	var days_pw: int = Params.get_int(StringName("PRM-SYS04-DAYS_PER_WEEK"))
+	var expect: int = ceili(
+		AmountQuantize.quantize_amount(float(n * wage * days) / float(days_pw))
+	)
 	var bal_before: int = CashLedger.balance(ACTOR)
 	ShipRegistry.cutoff_step(0)
 	var paid: int = bal_before - CashLedger.balance(ACTOR)
@@ -335,7 +339,10 @@ func test_TST_SYS13_09_repair_prorata_mid_season() -> void:
 	assert_eq(Clock.day, 90)
 	var price: int = int(Params.get_value(StringName(PRM_PRICE))["SH-01"])
 	var rate: float = float(Params.get_value(StringName(PRM_REPAIR)))
-	var expect: int = int(ceili(float(price) * rate * 60.0 / 90.0))
+	var days_d: int = Params.get_int(StringName(PRM_DAYS))
+	var expect: int = ceili(
+		AmountQuantize.quantize_amount(float(price) * rate * float(60) / float(days_d))
+	)
 	var bal_before: int = CashLedger.balance(ACTOR)
 	ShipRegistry.cutoff_step(0)
 	assert_eq(bal_before - CashLedger.balance(ACTOR), expect)
@@ -363,14 +370,82 @@ func test_D20a_sail_depart_arrive_container_port() -> void:
 	)
 	var arrival: int = ShipRegistry.sail(ACTOR, sid, StringName(PT_NAHA))
 	assert_gt(arrival, 0)
+	assert_eq(_departed.size(), 0, "A24: ship_departed not emitted until flush")
+	ShipRegistry.flush_signals()
 	assert_eq(_departed.size(), 1)
-	var meta: Dictionary = GoodsLedger._container_meta[String(hold_id)]
-	assert_eq(String(meta.get("port_id", "x")), "")
+	assert_eq(String(GoodsLedger.get_container_port_id(hold_id)), "")
 	ShipRegistry.tick_step(arrival)
+	assert_eq(_arrived.size(), 0, "A24: ship_arrived not emitted until flush")
+	ShipRegistry.flush_signals()
 	assert_eq(_arrived.size(), 1)
-	meta = GoodsLedger._container_meta[String(hold_id)]
-	assert_eq(String(meta.get("port_id", "")), PT_NAHA)
+	assert_eq(String(GoodsLedger.get_container_port_id(hold_id)), PT_NAHA)
 	assert_true(ShipRegistry.can_trade(sid, StringName(PT_NAHA)))
+
+
+func test_WP57_A24_M22_signals_only_at_flush() -> void:
+	## R9-47 M22／A24／D-05: hire／fire／depart／arrive emit only via flush_signals.
+	_boot_ship_registry()
+	ShipRegistry.ship_departed.connect(_on_departed)
+	ShipRegistry.ship_arrived.connect(_on_arrived)
+	ShipRegistry.crew_changed.connect(_on_crew_changed)
+	_sailor.pool[PT_FUZHOU] = 50
+	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_FUZHOU), 0)
+	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
+	assert_eq(ShipRegistry.hire_crew(ACTOR, sid, cap), cap)
+	assert_eq(_crew_signals.size(), 0, "hire must not emit before flush")
+	ShipRegistry.flush_signals()
+	assert_eq(_crew_signals.size(), 1)
+	assert_eq(ShipRegistry.fire_crew(ACTOR, sid, 1), 1)
+	assert_eq(_crew_signals.size(), 1, "fire must not emit before flush")
+	ShipRegistry.flush_signals()
+	assert_eq(_crew_signals.size(), 2)
+	# Re-hire to full crew for sail.
+	assert_eq(ShipRegistry.hire_crew(ACTOR, sid, 1), 1)
+	ShipRegistry.flush_signals()
+	_departed = []
+	_arrived = []
+	var arrival: int = ShipRegistry.sail(ACTOR, sid, StringName(PT_NAHA))
+	assert_gt(arrival, 0)
+	assert_eq(_departed.size(), 0, "depart must not emit before flush")
+	ShipRegistry.flush_signals()
+	assert_eq(_departed.size(), 1)
+	ShipRegistry.tick_step(arrival)
+	assert_eq(_arrived.size(), 0, "arrive must not emit before flush")
+	ShipRegistry.flush_signals()
+	assert_eq(_arrived.size(), 1)
+
+
+func test_WP57_A28_skipped_tick_still_arrives() -> void:
+	## A28: arrival_tick < current tick still docks the ship and reports error.
+	_boot_ship_registry()
+	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
+	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_FUZHOU), cap)
+	var arrival: int = ShipRegistry.sail(ACTOR, sid, StringName(PT_NAHA))
+	assert_gt(arrival, 0)
+	var late_tick: int = arrival + 5
+	ShipRegistry.tick_step(late_tick)
+	assert_true(ShipRegistry.can_trade(sid, StringName(PT_NAHA)))
+	assert_eq(
+		StringName(ShipRegistry.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		ShipRegistry.ERR_SYS13_01
+	)
+	assert_push_error_count(1)
+
+
+func test_WP57_A29_missing_tpw_type_errors() -> void:
+	## A29／C-06: TPW[type] missing → ERR-SYS13-12, sail fails (no silent default 1).
+	_boot_ship_registry()
+	var cap: int = int(Params.get_value(StringName(PRM_CREW))["SH-01"])
+	var sid: StringName = ShipRegistry.spawn_docked_ship(&"SH-01", ACTOR, StringName(PT_FUZHOU), cap)
+	var tpw_map: Dictionary = Params.get_value(StringName(PRM_TPW)).duplicate(true)
+	tpw_map.erase("SH-01")
+	Params._values[PRM_TPW] = tpw_map
+	assert_eq(ShipRegistry.sail(ACTOR, sid, StringName(PT_NAHA)), 0)
+	assert_eq(
+		StringName(ShipRegistry.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		ShipRegistry.ERR_SYS13_12
+	)
+	assert_push_error_count(1)
 
 
 # --- helpers ---
@@ -386,6 +461,10 @@ func _on_departed(
 	_departed.append(ship_id)
 
 
+func _on_crew_changed(ship_id: StringName, crew: int) -> void:
+	_crew_signals.append({"ship_id": ship_id, "crew": crew})
+
+
 func _run_voyage_trace() -> Dictionary:
 	_boot_ship_registry()
 	ShipRegistry.ship_arrived.connect(_on_arrived)
@@ -398,6 +477,7 @@ func _run_voyage_trace() -> Dictionary:
 	var arrival: int = ShipRegistry.sail(ACTOR, sid, StringName(PT_NAHA))
 	_arrived = []
 	ShipRegistry.tick_step(arrival)
+	ShipRegistry.flush_signals() ## A24
 	return {"path": lane_ids, "arrival": arrival, "signals": _arrived.duplicate()}
 
 

@@ -321,11 +321,19 @@ func _validate_role_change_payload(new_role: int, payload: Dictionary) -> Array:
 	keys.sort()
 
 	if new_role == ROLE_PRODUCER:
-		# WP-32／15-04: downstream_terminals field ignored (not validated; ERR-SYS02-02 retired).
+		## A30／EV-SYS02-ROLE_CHANGE: PRODUCER must not contain downstream_terminals.
 		for key_variant in keys:
 			var key: String = String(key_variant)
 			if key == FIELD_DOWNSTREAM:
-				continue
+				errors.append(
+					_err(
+						ERR_SYS02_01,
+						PORTS_DIR,
+						FIELD_PAYLOAD,
+						key,
+						"PRODUCER payload must not contain downstream_terminals"
+					)
+				)
 			elif key != FIELD_OUTPUT:
 				errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "PRODUCER payload unknown key"))
 		if not payload.has(FIELD_OUTPUT):
@@ -348,14 +356,21 @@ func _validate_role_change_payload(new_role: int, payload: Dictionary) -> Array:
 				errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "TRANSIT payload unknown key"))
 		return errors
 
-	# TERMINAL: payload must be empty (downstream field ignored, not validated — 15-04).
+	# TERMINAL: payload must be empty (A30／EV-SYS02-ROLE_CHANGE: reject downstream too).
 	for key_variant in keys:
 		var key: String = String(key_variant)
 		if key == FIELD_OUTPUT:
 			errors.append(_err(ERR_SYS02_03, PORTS_DIR, FIELD_OUTPUT, payload[key], "TERMINAL payload must be empty (no base_output_per_season)"))
 		elif key == FIELD_DOWNSTREAM:
-			# WP-32: do not trigger ERR-SYS02-02; ignore stray downstream on TERMINAL.
-			continue
+			errors.append(
+				_err(
+					ERR_SYS02_01,
+					PORTS_DIR,
+					FIELD_PAYLOAD,
+					key,
+					"TERMINAL payload must be empty (no downstream_terminals)"
+				)
+			)
 		else:
 			errors.append(_err(ERR_SYS02_01, PORTS_DIR, FIELD_PAYLOAD, key, "TERMINAL payload must be empty"))
 	return errors

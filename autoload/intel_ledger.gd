@@ -623,11 +623,12 @@ func _summarize_board(samples: Array, good_id: StringName) -> Dictionary:
 			KEY_DIV_BAND: null,
 			KEY_DIRECTION: null,
 		}
-	var consensus: int = floori(float(sum_wm) / float(sum_w))
-	var mean_age: int = floori(float(sum_wa) / float(sum_w))
+	## A27／FRM-SYS15-03／C-09: integer ÷ integer, no float.
+	var consensus: int = sum_wm / sum_w
+	var mean_age: int = sum_wa / sum_w
 	var consensus_weeks: Variant = null
 	if sum_w_weeks > 0:
-		consensus_weeks = floori(float(sum_ww) / float(sum_w_weeks))
+		consensus_weeks = sum_ww / sum_w_weeks
 	var good: GoodDef = GoodCatalog.get_good(String(good_id))
 	var base_li: int = good.base_price_li
 	var band: int = MarketPricer.indicator_band(
@@ -642,7 +643,9 @@ func _summarize_board(samples: Array, good_id: StringName) -> Dictionary:
 			_record(ERR_SYS15_07, KEY_DIV_PPM, span, "divergence overflow")
 			return {}
 		var prod_div_i: int = _expect_int(prod_div, KEY_DIV_PPM)
-		div_ppm = floori(float(prod_div_i) / float(consensus))
+		## A27／FRM-SYS15-04／C-09: integer ÷ consensus_mid_li.
+		if consensus > 0:
+			div_ppm = prod_div_i / consensus
 		var lo: int = Params.get_int(StringName(PRM_DIV_LO))
 		var hi: int = Params.get_int(StringName(PRM_DIV_HI))
 		if div_ppm <= lo:
@@ -703,7 +706,8 @@ func _direction_of(samples: Array, ppm: int) -> StringName:
 		sum_wm = sum_wm + prod_i
 	if sum_w <= 0:
 		return DIR_NONE
-	var rest_mid: int = floori(float(sum_wm) / float(sum_w))
+	## A27／FRM-SYS15-05／C-09: rest consensus via integer ÷.
+	var rest_mid: int = sum_wm / sum_w
 	var mid_n: int = _dict_int(newest, KEY_MID_LI, 0)
 	var d: int = mid_n - rest_mid
 	var abs_d: int = d if d >= 0 else 0 - d
