@@ -2581,53 +2581,62 @@ func _recompute_r(port_id: String) -> int:
 
 
 func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
-	# Find free public slot.
-	var slot_id: StringName = &""
-	for s_v in _slots_by_port.get(port_id, []):
-		var s: Slot = s_v
-		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
-			slot_id = s.slot_id
-			break
-	if slot_id == &"":
-		# Still advance? Spec: money enough → start. No slot → cannot start, don't skip.
-		return false
-	# Ensure a PUBLIC def exists for cb_id
+	## WP-65／A8／FRM-SYS08-15: L1 → order_build path；upgrade → in-place order_upgrade.
 	var type_id: String = step.cb_id
-	if not _building_defs.has(type_id):
-		var d := BuildingDef.new()
-		d.type = type_id
-		d.build_class = "PUBLIC"
-		d.tier = 0
-		d.max_workers = 0
-		d.base_output_per_worker = 0.0
-		_building_defs[type_id] = d
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(city, 0 - cost),
-			CashLedger.make_entry(CashLedger.ID_SINK, cost),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
+	if step.target_level <= BUILDING_LEVEL_MIN:
+		if not _building_defs.has(type_id):
+			_record_fail(
+				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (WP-65／C-06)"
+			)
+			return false
+		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+		if not cash_map.has("PUBLIC"):
+			_record_fail(
+				ERR_SYS08_09, PRM_BUILD_CASH_LI, "PUBLIC", "BUILD_CASH_LI PUBLIC missing (A11)"
+			)
+			return false
+		var slot_id: StringName = _find_public_slot(port_id)
+		if slot_id == &"":
+			return false
+		var bid: StringName = order_build(city, slot_id, StringName(type_id))
+		if bid == &"":
+			return false
+		_note_city_spend(port_id, int(cash_map["PUBLIC"]))
+		return true
+	## Upgrade: find city-owned PUBLIC at level == target − 1；no new slot.
+	var target: Building = _find_city_public_upgrade_target(
+		port_id, city, StringName(step.cb_id), step.target_level - 1
 	)
-	if post_err != OK:
+	if target == null:
+		return false
+	var up_id: StringName = order_upgrade(city, target.building_id)
+	if up_id == &"":
 		return false
 	_note_city_spend(port_id, cost)
-	var bld := Building.new()
-	bld.building_id = _next_bld_id(port_id)
-	bld.type = StringName(type_id)
-	bld.build_class = CLASS_PUBLIC
-	bld.cb_id = StringName(step.cb_id)
-	bld.owner = city
-	bld.port_id = port_id
-	bld.slot_id = slot_id
-	bld.level = maxi(BUILDING_LEVEL_MIN, step.target_level)
-	bld.state = Building.State.ACTIVE
-	bld.days_left = 0
-	var slot: Slot = _slot(slot_id)
-	slot.building_id = bld.building_id
-	slot.vacancy_start_day = -1
-	_register_building(bld)
 	return true
+
+
+func _find_city_public_upgrade_target(
+	port_id: String, city: StringName, cb: StringName, need_level: int
+) -> Building:
+	## Prefer lowest building_id among ACTIVE city PUBLIC matching cb_id／level.
+	var best: Building = null
+	var best_id := ""
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		if bld.owner != city or bld.build_class != CLASS_PUBLIC:
+			continue
+		if bld.state != Building.State.ACTIVE:
+			continue
+		if bld.cb_id != cb and bld.type != cb:
+			continue
+		if bld.level != need_level:
+			continue
+		var sid: String = String(bld.building_id)
+		if best == null or sid < best_id:
+			best = bld
+			best_id = sid
+	return best
 
 
 func _season_zone_open(port_id: String) -> void:
