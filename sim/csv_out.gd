@@ -1,6 +1,7 @@
 class_name SimCsvOut
 extends RefCounted
 ## 9.9 five CSV writers under user://sim_out/<scenario_id>/.
+## A34／L10: write failures set ok=false and list failed_paths (never silent ok:true).
 
 
 const HDR_SUMMARY := (
@@ -38,27 +39,46 @@ static func write_all(
 	combo_rows: Array,
 	daily_ports: Array
 ) -> Dictionary:
-	## Returns {ok, paths: PackedStringArray}.
+	## Returns {ok, paths: PackedStringArray, failed_paths: PackedStringArray}.
 	var d: String = ensure_dir(scenario_id)
 	var paths: PackedStringArray = PackedStringArray()
-	_write_season_cells(d + "season_cells.csv", sampler.season_cells)
-	paths.append(d + "season_cells.csv")
-	_write_season_ports(d + "season_ports.csv", sampler.season_ports)
-	paths.append(d + "season_ports.csv")
+	var failed: PackedStringArray = PackedStringArray()
+	var cell_path: String = d + "season_cells.csv"
+	if _write_season_cells(cell_path, sampler.season_cells):
+		paths.append(cell_path)
+	else:
+		failed.append(cell_path)
+	var ports_path: String = d + "season_ports.csv"
+	if _write_season_ports(ports_path, sampler.season_ports):
+		paths.append(ports_path)
+	else:
+		failed.append(ports_path)
 	for pid_v in daily_ports:
 		var pid: String = String(pid_v)
 		var rows: Array = sampler.daily_rows.get(pid, [])
 		var path: String = d + "daily_%s.csv" % pid
-		_write_daily(path, rows)
-		paths.append(path)
-	_write_summary(d + "summary.csv", summaries)
-	paths.append(d + "summary.csv")
-	_write_combos(d + "combos.csv", combo_rows)
-	paths.append(d + "combos.csv")
-	return {"ok": true, "paths": paths}
+		if _write_daily(path, rows):
+			paths.append(path)
+		else:
+			failed.append(path)
+	var sum_path: String = d + "summary.csv"
+	if _write_summary(sum_path, summaries):
+		paths.append(sum_path)
+	else:
+		failed.append(sum_path)
+	var combo_path: String = d + "combos.csv"
+	if _write_combos(combo_path, combo_rows):
+		paths.append(combo_path)
+	else:
+		failed.append(combo_path)
+	return {
+		"ok": failed.is_empty(),
+		"paths": paths,
+		"failed_paths": failed,
+	}
 
 
-static func _write_season_cells(path: String, rows: Array) -> void:
+static func _write_season_cells(path: String, rows: Array) -> bool:
 	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_SEASON_CELLS])
 	for r_v in rows:
 		var r: Dictionary = r_v
@@ -72,10 +92,10 @@ static func _write_season_cells(path: String, rows: Array) -> void:
 				_fmt(r["relocated_in"]), _fmt(r["relocated_out"]),
 			]
 		)
-	_store(path, lines)
+	return _store(path, lines)
 
 
-static func _write_season_ports(path: String, rows: Array) -> void:
+static func _write_season_ports(path: String, rows: Array) -> bool:
 	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_SEASON_PORTS])
 	for r_v in rows:
 		var r: Dictionary = r_v
@@ -88,10 +108,10 @@ static func _write_season_ports(path: String, rows: Array) -> void:
 				_fmt(r["city_balance_li"]),
 			]
 		)
-	_store(path, lines)
+	return _store(path, lines)
 
 
-static func _write_daily(path: String, rows: Array) -> void:
+static func _write_daily(path: String, rows: Array) -> bool:
 	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_DAILY])
 	for r_v in rows:
 		var r: Dictionary = r_v
@@ -104,10 +124,10 @@ static func _write_daily(path: String, rows: Array) -> void:
 				_fmt(r["relocated_in"]), _fmt(r["relocated_out"]),
 			]
 		)
-	_store(path, lines)
+	return _store(path, lines)
 
 
-static func _write_summary(path: String, rows: Array) -> void:
+static func _write_summary(path: String, rows: Array) -> bool:
 	var lines: PackedStringArray = PackedStringArray([HDR_SUMMARY])
 	for r_v in rows:
 		var r: Dictionary = r_v
@@ -126,10 +146,10 @@ static func _write_summary(path: String, rows: Array) -> void:
 				_fmt(r["elapsed_ms"]),
 			]
 		)
-	_store(path, lines)
+	return _store(path, lines)
 
 
-static func _write_combos(path: String, rows: Array) -> void:
+static func _write_combos(path: String, rows: Array) -> bool:
 	var lines: PackedStringArray = PackedStringArray([HDR_COMBOS])
 	for r_v in rows:
 		var r: Dictionary = r_v
@@ -147,7 +167,7 @@ static func _write_combos(path: String, rows: Array) -> void:
 				r["combo_pass"],
 			]
 		)
-	_store(path, lines)
+	return _store(path, lines)
 
 
 static func _fmt(v: Variant) -> String:
@@ -175,10 +195,12 @@ static func _csv_escape(s: String) -> String:
 	return s
 
 
-static func _store(path: String, lines: PackedStringArray) -> void:
+static func _store(path: String, lines: PackedStringArray) -> bool:
+	## A34: return false on open／write failure (caller sets ok=false).
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
-		push_error("SimCsvOut: cannot write %s" % path)
-		return
+		push_error("SimCsvOut: cannot write %s err=%s" % [path, str(FileAccess.get_open_error())])
+		return false
 	f.store_string("\n".join(lines) + "\n")
 	f.close()
+	return true

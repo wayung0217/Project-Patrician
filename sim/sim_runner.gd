@@ -110,6 +110,9 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 			"result_path": "user://sim_jobs/result_%d.json" % rid,
 		}
 		var jf := FileAccess.open(job_file, FileAccess.WRITE)
+		if jf == null:
+			push_error("sim_runner: cannot write job file %s" % job_file)
+			return 1
 		jf.store_string(JSON.stringify(payload))
 		jf.close()
 		var cmd_args: PackedStringArray = PackedStringArray([
@@ -126,37 +129,47 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 		print("sim_runner_child_argv: %s %s" % [exe, " ".join(cmd_args)])
 		var output: Array = []
 		var exit_code: int = OS.execute(exe, cmd_args, output, true, false)
+		## A32／M18: child failure must not return 0 (stop; do not emit partial as success).
 		if exit_code != 0:
 			push_error("sim_runner: job run_id=%s exit=%s" % [str(job["run_id"]), str(exit_code)])
 			for line in output:
 				print("child: %s" % str(line))
+			return exit_code if exit_code != 0 else 1
 		var result_path: String = String(payload["result_path"])
-		if FileAccess.file_exists(result_path):
-			var res_raw: String = FileAccess.get_file_as_string(result_path)
-			var res_v: Variant = JSON.parse_string(res_raw)
-			if typeof(res_v) == TYPE_DICTIONARY:
-				var res: Dictionary = res_v
-				if res.has("summary"):
-					summaries.append(res["summary"])
-				if res.has("season_cells"):
-					(all_sampler.get("season_cells") as Array).append_array(res["season_cells"])
-				if res.has("season_ports"):
-					(all_sampler.get("season_ports") as Array).append_array(res["season_ports"])
-				if res.has("daily_rows"):
-					var dr: Dictionary = res["daily_rows"]
-					var daily: Dictionary = all_sampler.get("daily_rows")
-					for pid_v in dr.keys():
-						var pid: String = String(pid_v)
-						if not daily.has(pid):
-							daily[pid] = []
-						(daily[pid] as Array).append_array(dr[pid])
-					all_sampler.set("daily_rows", daily)
+		if not FileAccess.file_exists(result_path):
+			push_error("sim_runner: job run_id=%s missing result %s" % [str(job["run_id"]), result_path])
+			return 1
+		var res_raw: String = FileAccess.get_file_as_string(result_path)
+		var res_v: Variant = JSON.parse_string(res_raw)
+		if typeof(res_v) != TYPE_DICTIONARY:
+			push_error("sim_runner: job run_id=%s bad result JSON" % str(job["run_id"]))
+			return 1
+		var res: Dictionary = res_v
+		if res.has("summary"):
+			summaries.append(res["summary"])
+		if res.has("season_cells"):
+			(all_sampler.get("season_cells") as Array).append_array(res["season_cells"])
+		if res.has("season_ports"):
+			(all_sampler.get("season_ports") as Array).append_array(res["season_ports"])
+		if res.has("daily_rows"):
+			var dr: Dictionary = res["daily_rows"]
+			var daily: Dictionary = all_sampler.get("daily_rows")
+			for pid_v in dr.keys():
+				var pid: String = String(pid_v)
+				if not daily.has(pid):
+					daily[pid] = []
+				(daily[pid] as Array).append_array(dr[pid])
+			all_sampler.set("daily_rows", daily)
 
 	var combo_rows: Array = SimMetrics.aggregate_combos(summaries)
 	var sid: String = String(scenario["scenario_id"])
-	SimCsvOut.write_all(
+	var written: Dictionary = SimCsvOut.write_all(
 		sid, all_sampler, summaries, combo_rows, scenario["daily_detail_ports"]
 	)
+	## A34: CSV write failure → non-zero exit.
+	if not bool(written.get("ok", false)):
+		push_error("sim_runner: write_all failed paths=%s" % str(written.get("failed_paths", [])))
+		return 1
 	print("sim_runner: wrote outputs under %s" % SimCsvOut.out_dir(sid))
 	return 0
 
@@ -198,6 +211,10 @@ func _run_job_file(job_path: String) -> int:
 		out["daily_rows"] = sm.get("daily_rows")
 	var result_path: String = String(payload["result_path"])
 	var rf := FileAccess.open(result_path, FileAccess.WRITE)
+	## A34／A32: result write failure → non-zero (parent must not treat as success).
+	if rf == null:
+		push_error("sim_runner: cannot write result %s" % result_path)
+		return 1
 	rf.store_string(JSON.stringify(out))
 	rf.close()
 	return 0

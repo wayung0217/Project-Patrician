@@ -2,15 +2,9 @@ class_name SimSampler
 extends RefCounted
 ## FRM-SYS23-06 season／daily sampling — public queries only (WP-26 / D-47b).
 ##
-## stock_weeks weekly consumption source:
-##   MarketPricer mid_price／quote use GoodsLedger.offtake_snapshot → weekly_offtake
-##   = window_qty * PRM-SYS04-DAYS_PER_WEEK / window_days (autoload/market_pricer.gd
-##   _resolve_context／FRM-SYS04-01). Sim mirrors that publicly. Not DemandModel.weekly_demand.
-##   Cite: 03_Systems FRM-SYS04-01／09; D-47b.
+## A33／N-04: stock_weeks comes only from MarketPricer.stock_weeks (single formula site).
+## Do not recompute weeks here. Cite: D-34d／D-52b／03_Systems FRM-SYS04-01／09.
 
-
-const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
-const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 
 ## Header strings — 9.9 verbatim.
 const HDR_SEASON_CELLS := (
@@ -111,12 +105,12 @@ func _cell_row(
 	var stock: int = GoodsLedger.get_qty(market, StringName(good_s))
 	var mid: float = MarketPricer.mid_price(StringName(port_s), StringName(good_s))
 	var mid_li: int = floori(mid)
-	var weekly: float = _weekly_offtake_like_pricer(port_s, good_s)
+	## A33／N-04: single weeks formula via MarketPricer.stock_weeks (null when no offtake).
+	var weeks_v: Variant = MarketPricer.stock_weeks(StringName(port_s), StringName(good_s))
 	var stock_weeks_s: String = ""
 	var band: int = MarketPricer.BAND_EQUILIBRIUM
-	if weekly > 0.0:
-		var w: float = float(stock) / weekly
-		stock_weeks_s = str(w)
+	if weeks_v != null:
+		stock_weeks_s = str(weeks_v)
 		var good: GoodDef = GoodCatalog.get_good(good_s)
 		var anchor: int = good.base_price_li
 		var ratio: float = 0.0
@@ -147,28 +141,3 @@ func _cell_row(
 	else:
 		row["day"] = day
 	return row
-
-
-func _weekly_offtake_like_pricer(port_s: String, good_s: String) -> float:
-	## Mirror MarketPricer._resolve_context weekly_offtake (public offtake_snapshot only).
-	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(port_s), StringName(good_s))
-	var window_qty: int = 0
-	var window_days: int = 1
-	if not snap.is_empty():
-		## 甲：offtake_snapshot window_* 應為 int；非整數拒絕（C-06，不靜默 floori）。
-		var wq: Variant = snap.get(MarketPricer.FIELD_WINDOW_QTY, 0)
-		var wd: Variant = snap.get(MarketPricer.FIELD_WINDOW_DAYS, 1)
-		if not SimJsonInt.is_json_int(wq) or not SimJsonInt.is_json_int(wd):
-			push_error(
-				"SimSampler: non-integral offtake window rejected qty=%s days=%s"
-				% [str(wq), str(wd)]
-			)
-			return 0.0
-		window_qty = SimJsonInt.as_int(wq, "window_qty")
-		window_days = SimJsonInt.as_int(wd, "window_days")
-		if window_days < 1:
-			window_days = 1
-	if window_qty <= 0:
-		return 0.0
-	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
-	return float(window_qty) * float(days_pw) / float(window_days)
