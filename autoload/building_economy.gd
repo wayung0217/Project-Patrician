@@ -499,8 +499,12 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 		if idx < 0 or idx >= arr.size():
 			return StringName(_fail_sn(ERR_SYS08_09, "level", to_level, "KONTOR_UPGRADE index"))
 		var row: Dictionary = arr[idx]
-		cash_li = int(row.get("CASH_LI", 0))
-		build_days = int(row.get("DAYS", 1))
+		if not row.has("CASH_LI") or not row.has("DAYS"):
+			return StringName(
+				_fail_sn(ERR_SYS08_09, "KONTOR_UPGRADE", idx, "CASH_LI／DAYS key missing (A11)")
+			)
+		cash_li = int(row["CASH_LI"])
+		build_days = int(row["DAYS"])
 		for k in row.keys():
 			var ks := String(k)
 			if ks == "CASH_LI" or ks == "DAYS":
@@ -584,7 +588,10 @@ func public_upgrade_fee(port_id: StringName, to_level: int) -> Dictionary:
 	if idx < 0 or idx >= arr.size():
 		return out
 	var row: Dictionary = arr[idx]
-	var cash_per: int = int(row.get("CASH_LI", 0))
+	if not row.has("CASH_LI"):
+		_record_fail(ERR_SYS08_09, "UPGRADE_PER_CAPITA", idx, "CASH_LI key missing (A11)")
+		return out
+	var cash_per: int = int(row["CASH_LI"])
 	out["CASH_LI"] = ceili(AmountQuantize.quantize_amount(float(pop) * float(cash_per)))
 	var mats: Dictionary = {}
 	for k in row.keys():
@@ -735,8 +742,8 @@ func _step_construction(_errors: Array) -> void:
 			)
 			bld.missing_materials = still
 			if still.is_empty():
-				var days_map: Dictionary = Params.get_value(PRM_BUILD_DAYS)
-				bld.days_left = int(days_map[String(bld.build_class)])
+				## A12／R9-44 M2: keep days_left set at order_build／order_upgrade
+				## (upgrade may use KONTOR_UPGRADE DAYS, not BUILD_DAYS[class]).
 				bld.state = Building.State.BUILDING
 				_pending_started.append(bld.building_id)
 			else:
@@ -1445,11 +1452,16 @@ func _slot(slot_key: StringName) -> Slot:
 	return _slots[key] as Slot
 
 
-func _load_zones(zones_dir: String, errors: Array) -> Dictionary:
-	var by_port: Dictionary = {}
-	var dir := DirAccess.open(zones_dir)
+
+func _list_tres_sorted(dir_path: String) -> Array:
+	## A9／C-08: DirAccess listing order must not affect results.
+	var names: Array = []
+	var abs_dir: String = ProjectSettings.globalize_path(dir_path)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		return names
+	var dir := DirAccess.open(dir_path)
 	if dir == null:
-		return by_port
+		return names
 	dir.list_dir_begin()
 	while true:
 		var file_name: String = dir.get_next()
@@ -1459,6 +1471,21 @@ func _load_zones(zones_dir: String, errors: Array) -> Dictionary:
 			continue
 		if not file_name.ends_with(TRES_SUFFIX):
 			continue
+		names.append(file_name)
+	dir.list_dir_end()
+	names.sort()
+	return names
+
+
+func _load_zones(zones_dir: String, errors: Array) -> Dictionary:
+	## A11: missing dir／bad tres → errors (C-06); A9: sorted listing.
+	var by_port: Dictionary = {}
+	var abs_dir: String = ProjectSettings.globalize_path(zones_dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, zones_dir, null, "zones dir missing"))
+		return by_port
+	for file_name_v in _list_tres_sorted(zones_dir):
+		var file_name: String = String(file_name_v)
 		var path: String = zones_dir.path_join(file_name)
 		var res: Resource = ResourceLoader.load(path)
 		if res == null:
@@ -1471,24 +1498,18 @@ func _load_zones(zones_dir: String, errors: Array) -> Dictionary:
 		if not by_port.has(zd.port_id):
 			by_port[zd.port_id] = []
 		(by_port[zd.port_id] as Array).append(zd)
-	dir.list_dir_end()
 	return by_port
 
 
 func _load_city_centers(city_center_dir: String, errors: Array) -> Dictionary:
+	## A11: missing dir／bad tres → errors; A9: sorted listing.
 	var by_port: Dictionary = {}
-	var dir := DirAccess.open(city_center_dir)
-	if dir == null:
+	var abs_dir: String = ProjectSettings.globalize_path(city_center_dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, city_center_dir, null, "city_center dir missing"))
 		return by_port
-	dir.list_dir_begin()
-	while true:
-		var file_name: String = dir.get_next()
-		if file_name == "":
-			break
-		if dir.current_is_dir():
-			continue
-		if not file_name.ends_with(TRES_SUFFIX):
-			continue
+	for file_name_v in _list_tres_sorted(city_center_dir):
+		var file_name: String = String(file_name_v)
 		var path: String = city_center_dir.path_join(file_name)
 		var res: Resource = ResourceLoader.load(path)
 		if res == null:
@@ -1499,24 +1520,18 @@ func _load_city_centers(city_center_dir: String, errors: Array) -> Dictionary:
 			continue
 		var cc: CityCenterDef = res
 		by_port[cc.port_id] = cc
-	dir.list_dir_end()
 	return by_port
 
 
 func _load_building_defs(buildings_dir: String, errors: Array) -> Dictionary:
+	## A11: missing dir／bad tres → errors; A9: sorted listing.
 	var by_type: Dictionary = {}
-	var dir := DirAccess.open(buildings_dir)
-	if dir == null:
+	var abs_dir: String = ProjectSettings.globalize_path(buildings_dir)
+	if not DirAccess.dir_exists_absolute(abs_dir):
+		errors.append(_err(CODE_PARAMS_NOT_LOADED, buildings_dir, null, "buildings dir missing"))
 		return by_type
-	dir.list_dir_begin()
-	while true:
-		var file_name: String = dir.get_next()
-		if file_name == "":
-			break
-		if dir.current_is_dir():
-			continue
-		if not file_name.ends_with(TRES_SUFFIX):
-			continue
+	for file_name_v in _list_tres_sorted(buildings_dir):
+		var file_name: String = String(file_name_v)
 		var path: String = buildings_dir.path_join(file_name)
 		var res: Resource = ResourceLoader.load(path)
 		if res == null:
@@ -1527,7 +1542,6 @@ func _load_building_defs(buildings_dir: String, errors: Array) -> Dictionary:
 			continue
 		var bd: BuildingDef = res
 		by_type[bd.type] = bd
-	dir.list_dir_end()
 	return by_type
 
 
@@ -1537,12 +1551,12 @@ func apply_opening_init(
 	player_port: String = PLAYER_HOME_PORT,
 	player_actor: StringName = PLAYER_ACTOR
 ) -> Array:
-	## FRM-SYS08-21: city workshops／residences／public／player kontor from CSV tres.
+	## FRM-SYS08-21／A9／D-87: validate all opening inputs first; write only if clean.
+	## Order: residences → gathering (IND1) → processing (IND2／3) → public → player kontor.
 	assert(_loaded, "BuildingEconomy.apply_opening_init before load")
 	var errors: Array = []
-	var openings: Array = _load_opening_workshops(opening_dir)
-	var publics: Array = _load_opening_public(opening_public_dir)
-	# D-19e: empty opening_workshops／opening_public → ERR-SYS08-10; residences＋kontor still apply.
+	var openings: Array = _load_opening_workshops(opening_dir, errors)
+	var publics: Array = _load_opening_public(opening_public_dir, errors)
 	if openings.is_empty():
 		errors.append(
 			_err(ERR_SYS08_10, "opening_workshops", opening_dir, "opening workshops dir empty or missing")
@@ -1568,8 +1582,68 @@ func apply_opening_init(
 				errors.append(
 					_err(ERR_SYS08_10, "opening_public", want, "missing opening public for port")
 				)
-	# 1) City workshops ACTIVE from opening_workshops (by output good → BuildingDef).
-	var created_by_good: Dictionary = {} ## good_id → count
+	# Deterministic row order (A9／C-08).
+	openings.sort_custom(
+		func(a: OpeningWorkshop, b: OpeningWorkshop) -> bool:
+			if a.port_id != b.port_id:
+				return String(a.port_id) < String(b.port_id)
+			return String(a.good_id) < String(b.good_id)
+	)
+	publics.sort_custom(
+		func(a: OpeningPublic, b: OpeningPublic) -> bool:
+			if a.port_id != b.port_id:
+				return String(a.port_id) < String(b.port_id)
+			return String(a.cb_id) < String(b.cb_id)
+	)
+
+	var occupied: Dictionary = {} ## slot_id → true (dry-run reservation)
+	var plan: Array = [] ## Dictionary spawn descriptors
+
+	# --- validate residences (innermost open civil) ---
+	var house_cap: int = Params.get_int(PopulationModel.PRM_HOUSE_CAP)
+	var port_ids: Array = []
+	if PortRegistry.is_loaded():
+		for pid_v2 in PortRegistry.all_ids():
+			port_ids.append(String(pid_v2))
+	port_ids.sort()
+	if not _building_defs.has("RB-01"):
+		errors.append(_err(ERR_SYS08_10, "residence", "RB-01", "BuildingDef RB-01 missing"))
+	else:
+		for port_id in port_ids:
+			var pop_n: int = 0
+			if PopulationModel.is_loaded():
+				pop_n = (
+					PopulationModel.population(StringName(port_id), &"POOR")
+					+ PopulationModel.population(StringName(port_id), &"CITIZEN")
+					+ PopulationModel.population(StringName(port_id), &"RICH")
+				)
+			elif _population != null:
+				pop_n = _population.population(StringName(port_id))
+			if pop_n <= 0:
+				continue
+			var need_h: int = ceili(float(pop_n) / float(house_cap))
+			for _h in range(need_h):
+				var rslot: StringName = _find_open_civil_slot(port_id, occupied)
+				if rslot == &"":
+					errors.append(_err(ERR_SYS08_10, "residence", port_id, "no civil slot for residence"))
+					break
+				occupied[String(rslot)] = true
+				plan.append(
+					{
+						"kind": "spawn",
+						"owner_kind": "city",
+						"port_id": port_id,
+						"slot_id": rslot,
+						"type": &"RB-01",
+						"build_class": CLASS_RESIDENCE,
+						"level": 1,
+						"cb_id": &"",
+					}
+				)
+
+	# --- validate workshops: IND1 gathering then IND2／3 outermost ---
+	var gathering_rows: Array = []
+	var processing_rows: Array = []
 	for row_v in openings:
 		var row: OpeningWorkshop = row_v
 		var def: BuildingDef = _def_for_output_good(row.good_id)
@@ -1578,117 +1652,135 @@ func apply_opening_init(
 				_err(ERR_SYS08_10, "good_id", row.good_id, "no BuildingDef for opening good")
 			)
 			continue
-		var city: StringName = CashLedger.make_city_id(row.port_id)
-		CashLedger.create_account(city, Account.Kind.CITY)
-		for _i in range(row.count):
-			var slot_id: StringName = _find_slot_for_workshop(row.port_id, def)
-			if slot_id == &"":
-				errors.append(
-					_err(ERR_SYS08_10, "slot", row.port_id, "no slot for opening workshop")
+		if def.build_class == "IND1":
+			gathering_rows.append({"row": row, "def": def})
+		else:
+			processing_rows.append({"row": row, "def": def})
+
+	for phase_rows in [gathering_rows, processing_rows]:
+		for item_v in phase_rows:
+			var item: Dictionary = item_v
+			var row2: OpeningWorkshop = item["row"]
+			var def2: BuildingDef = item["def"]
+			for _i in range(row2.count):
+				var slot_id: StringName = _find_slot_for_workshop(row2.port_id, def2, occupied)
+				if slot_id == &"":
+					errors.append(
+						_err(
+							ERR_SYS08_10,
+							"slot",
+							row2.port_id,
+							(
+								"no gathering belt for IND1"
+								if def2.build_class == "IND1"
+								else "no slot for opening workshop"
+							)
+						)
+					)
+					break
+				occupied[String(slot_id)] = true
+				plan.append(
+					{
+						"kind": "spawn",
+						"owner_kind": "city",
+						"port_id": row2.port_id,
+						"slot_id": slot_id,
+						"type": StringName(def2.type),
+						"build_class": StringName(def2.build_class),
+						"level": 1,
+						"cb_id": &"",
+						"staff": true,
+					}
 				)
-				break
-			var bld := _spawn_active_building(
-				city, row.port_id, slot_id, StringName(def.type), StringName(def.build_class), 1
-			)
-			created_by_good[row.good_id] = int(created_by_good.get(row.good_id, 0)) + 1
-			var _b: Building = bld
-		# Hire full workers for city workshops at this port
-		_opening_staff_port(row.port_id)
-	# 2) Residences = CEIL(pop / HOUSE_CAPACITY) city-owned
-	var house_cap: int = Params.get_int(PopulationModel.PRM_HOUSE_CAP)
-	for pid_v in PortRegistry.all_ids():
-		var port_id: String = String(pid_v)
-		var pop_n: int = 0
-		if PopulationModel.is_loaded():
-			pop_n = (
-				PopulationModel.population(StringName(port_id), &"POOR")
-				+ PopulationModel.population(StringName(port_id), &"CITIZEN")
-				+ PopulationModel.population(StringName(port_id), &"RICH")
-			)
-		elif _population != null:
-			pop_n = _population.population(StringName(port_id))
-		if pop_n <= 0:
-			continue
-		var need_h: int = ceili(float(pop_n) / float(house_cap))
-		var city2: StringName = CashLedger.make_city_id(port_id)
-		CashLedger.create_account(city2, Account.Kind.CITY)
-		# Ensure RESIDENCE def
-		if not _building_defs.has("RB-01"):
-			var rd := BuildingDef.new()
-			rd.type = "RB-01"
-			rd.build_class = "RESIDENCE"
-			_building_defs["RB-01"] = rd
-		for _h in range(need_h):
-			var rslot: StringName = _find_open_civil_slot(port_id)
-			if rslot == &"":
-				errors.append(_err(ERR_SYS08_10, "residence", port_id, "no civil slot for residence"))
-				break
-			_spawn_active_building(city2, port_id, rslot, &"RB-01", CLASS_RESIDENCE, 1)
-	# 3) opening_public buildings level 1 (D-11c)
+
+	# --- validate opening_public ---
 	for pub_v in publics:
 		var pub: OpeningPublic = pub_v
-		var city3: StringName = CashLedger.make_city_id(pub.port_id)
-		CashLedger.create_account(city3, Account.Kind.CITY)
-		var pslot: StringName = _find_public_slot(pub.port_id)
+		var pslot: StringName = _find_public_slot(pub.port_id, occupied)
 		if pslot == &"":
 			errors.append(_err(ERR_SYS08_10, "public", pub.port_id, "no public slot"))
 			continue
 		if not _building_defs.has(pub.cb_id):
-			var pd := BuildingDef.new()
-			pd.type = pub.cb_id
-			pd.build_class = "PUBLIC"
-			_building_defs[pub.cb_id] = pd
-		var pb: Building = _spawn_active_building(
-			city3, pub.port_id, pslot, StringName(pub.cb_id), CLASS_PUBLIC, maxi(BUILDING_LEVEL_MIN, pub.level)
+			errors.append(
+				_err(ERR_SYS08_10, "public", pub.cb_id, "BuildingDef missing for opening public")
+			)
+			continue
+		occupied[String(pslot)] = true
+		plan.append(
+			{
+				"kind": "spawn",
+				"owner_kind": "city",
+				"port_id": pub.port_id,
+				"slot_id": pslot,
+				"type": StringName(pub.cb_id),
+				"build_class": CLASS_PUBLIC,
+				"level": maxi(BUILDING_LEVEL_MIN, pub.level),
+				"cb_id": StringName(pub.cb_id),
+			}
 		)
-		pb.cb_id = StringName(pub.cb_id)
-	# 4) Player kontor at 魍港
-	var port_ids: PackedStringArray = PortRegistry.all_ids() if PortRegistry.is_loaded() else PackedStringArray()
+
+	# --- validate player kontor ---
 	var has_player_port := false
 	for pid_chk in port_ids:
 		if String(pid_chk) == player_port:
 			has_player_port = true
 			break
 	if has_player_port:
-		var kslot: StringName = _find_kontor_slot(player_port)
+		var kslot: StringName = _find_kontor_slot(player_port, occupied)
 		if kslot == &"":
 			errors.append(_err(ERR_SYS08_10, "kontor", player_port, "no kontor slot for player"))
+		elif not _building_defs.has("CB-17"):
+			errors.append(_err(ERR_SYS08_10, "kontor", "CB-17", "BuildingDef CB-17 missing"))
 		else:
-			if not _building_defs.has("KT-01"):
-				var kd := BuildingDef.new()
-				kd.type = "KT-01"
-				kd.build_class = "KONTOR"
-				_building_defs["KT-01"] = kd
-			CashLedger.create_account(player_actor, Account.Kind.ACTOR)
-			var slot: Slot = _slot(kslot)
-			slot.land_owner = player_actor
-			_spawn_active_building(
-				player_actor, player_port, kslot, &"KT-01", CLASS_KONTOR, 1
+			occupied[String(kslot)] = true
+			plan.append(
+				{
+					"kind": "spawn",
+					"owner_kind": "player",
+					"port_id": player_port,
+					"slot_id": kslot,
+					"type": &"CB-17",
+					"build_class": CLASS_KONTOR,
+					"level": 1,
+					"cb_id": &"",
+					"actor": player_actor,
+				}
 			)
-	# 5) Validate created counts vs opening rows (TST-18)
-	for row_v2 in openings:
-		var row2: OpeningWorkshop = row_v2
-		var got: int = int(created_by_good.get(row2.good_id, 0))
-		# Count may aggregate across ports; check per-port
-		var port_got := 0
-		for bld_v in _buildings_by_port.get(row2.port_id, []):
-			var b: Building = bld_v
-			if not _is_city_owner(b.owner) or b.state != Building.State.ACTIVE:
-				continue
-			var d2: BuildingDef = _building_defs.get(String(b.type), null) as BuildingDef
-			if d2 != null and d2.output_good_id == row2.good_id:
-				port_got = port_got + 1
-		if port_got < row2.count:
-			errors.append(
-				_err(
-					ERR_SYS08_10,
-					"opening_count",
-					[row2.port_id, row2.good_id, port_got, row2.count],
-					"opening workshop count mismatch"
-				)
-			)
+
+	# D-87: any error → no writes.
 	if not errors.is_empty():
 		_emit_errors(errors)
+		return errors
+
+	# --- commit ---
+	var staffed_ports: Dictionary = {}
+	for step_v in plan:
+		var step: Dictionary = step_v
+		var port_id3: String = String(step["port_id"])
+		var owner: StringName
+		if String(step["owner_kind"]) == "player":
+			owner = step["actor"] as StringName
+			CashLedger.create_account(owner, Account.Kind.ACTOR)
+			var slot: Slot = _slot(step["slot_id"])
+			if slot != null:
+				slot.land_owner = owner
+		else:
+			owner = CashLedger.make_city_id(port_id3)
+			CashLedger.create_account(owner, Account.Kind.CITY)
+		var bld: Building = _spawn_active_building(
+			owner,
+			port_id3,
+			step["slot_id"],
+			step["type"],
+			step["build_class"],
+			int(step["level"])
+		)
+		if step.get("cb_id", &"") != &"":
+			bld.cb_id = step["cb_id"]
+		if bool(step.get("staff", false)):
+			staffed_ports[port_id3] = true
+	for pid_staff in staffed_ports.keys():
+		_opening_staff_port(String(pid_staff))
 	return errors
 
 
@@ -1738,45 +1830,98 @@ func _def_for_output_good(good_id: String) -> BuildingDef:
 	return best
 
 
-func _find_slot_for_workshop(port_id: String, def: BuildingDef) -> StringName:
-	# Gathering belt for IND1; open civil for IND2/3.
+func _slot_free(slot: Slot, occupied: Dictionary) -> bool:
+	if slot.building_id != &"":
+		return false
+	if occupied.has(String(slot.slot_id)):
+		return false
+	return true
+
+
+func _find_slot_for_workshop(
+	port_id: String, def: BuildingDef, occupied: Dictionary = {}
+) -> StringName:
+	## A9: IND1 gathering belt only (no civil fallback); IND2／3 outermost open civil.
 	if def.build_class == "IND1":
+		var belt_slots: Array = []
 		for s_v in _slots_by_port.get(port_id, []):
 			var s: Slot = s_v
-			if s.building_id != &"":
+			if not _slot_free(s, occupied):
 				continue
 			if _is_gathering_belt(s):
-				return s.slot_id
-	return _find_open_civil_slot(port_id)
+				belt_slots.append(s)
+		belt_slots.sort_custom(
+			func(a: Slot, b: Slot) -> bool:
+				if a.ring != b.ring:
+					return a.ring < b.ring
+				return String(a.slot_id) < String(b.slot_id)
+		)
+		if belt_slots.is_empty():
+			return &""
+		return (belt_slots[0] as Slot).slot_id
+	return _find_open_civil_slot_outermost(port_id, occupied)
 
 
-func _find_open_civil_slot(port_id: String) -> StringName:
+func _find_open_civil_slot(port_id: String, occupied: Dictionary = {}) -> StringName:
+	## Residences: innermost open civil first (FRM-SYS08-21).
 	var best: StringName = &""
 	var best_ring := 999999
+	var best_id := ""
 	for s_v in _slots_by_port.get(port_id, []):
 		var s: Slot = s_v
-		if s.kind != Slot.Kind.CIVIL or not s.zone_open or s.building_id != &"":
+		if s.kind != Slot.Kind.CIVIL or not s.zone_open or not _slot_free(s, occupied):
 			continue
-		if s.ring < best_ring:
+		var sid: String = String(s.slot_id)
+		if s.ring < best_ring or (s.ring == best_ring and (best_id == "" or sid < best_id)):
 			best_ring = s.ring
 			best = s.slot_id
+			best_id = sid
 	return best
 
 
-func _find_public_slot(port_id: String) -> StringName:
+func _find_open_civil_slot_outermost(port_id: String, occupied: Dictionary = {}) -> StringName:
+	## Processing workshops: outermost open civil first (FRM-SYS08-21／A9).
+	var best: StringName = &""
+	var best_ring := -1
+	var best_id := ""
 	for s_v in _slots_by_port.get(port_id, []):
 		var s: Slot = s_v
-		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
-			return s.slot_id
-	return &""
+		if s.kind != Slot.Kind.CIVIL or not s.zone_open or not _slot_free(s, occupied):
+			continue
+		var sid: String = String(s.slot_id)
+		if s.ring > best_ring or (s.ring == best_ring and (best_id == "" or sid < best_id)):
+			best_ring = s.ring
+			best = s.slot_id
+			best_id = sid
+	return best
 
 
-func _find_kontor_slot(port_id: String) -> StringName:
+func _find_public_slot(port_id: String, occupied: Dictionary = {}) -> StringName:
+	var candidates: Array = []
 	for s_v in _slots_by_port.get(port_id, []):
 		var s: Slot = s_v
-		if s.kind == Slot.Kind.KONTOR and s.building_id == &"":
-			return s.slot_id
-	return &""
+		if s.kind == Slot.Kind.PUBLIC and _slot_free(s, occupied):
+			candidates.append(s)
+	candidates.sort_custom(
+		func(a: Slot, b: Slot) -> bool: return String(a.slot_id) < String(b.slot_id)
+	)
+	if candidates.is_empty():
+		return &""
+	return (candidates[0] as Slot).slot_id
+
+
+func _find_kontor_slot(port_id: String, occupied: Dictionary = {}) -> StringName:
+	var candidates: Array = []
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.KONTOR and _slot_free(s, occupied):
+			candidates.append(s)
+	candidates.sort_custom(
+		func(a: Slot, b: Slot) -> bool: return String(a.slot_id) < String(b.slot_id)
+	)
+	if candidates.is_empty():
+		return &""
+	return (candidates[0] as Slot).slot_id
 
 
 func _opening_staff_port(port_id: String) -> void:
@@ -1792,47 +1937,43 @@ func _opening_staff_port(port_id: String) -> void:
 		PopulationModel.set_workers(bld.building_id, def.max_workers)
 
 
-func _load_opening_workshops(dir: String) -> Array:
+func _load_opening_workshops(dir: String, errors: Array) -> Array:
+	## A11: bad tres reported; missing dir → empty (caller adds ERR-SYS08-10).
 	var out: Array = []
 	var abs_dir: String = ProjectSettings.globalize_path(dir)
 	if not DirAccess.dir_exists_absolute(abs_dir):
 		return out
-	var d := DirAccess.open(dir)
-	if d == null:
-		return out
-	d.list_dir_begin()
-	while true:
-		var fname: String = d.get_next()
-		if fname == "":
-			break
-		if d.current_is_dir() or not fname.ends_with(TRES_SUFFIX):
+	for fname_v in _list_tres_sorted(dir):
+		var fname: String = String(fname_v)
+		var path: String = dir.path_join(fname)
+		var res: Resource = load(path)
+		if res == null:
+			errors.append(_err(ERR_SYS08_10, path, fname, "opening workshop load failed"))
 			continue
-		var res: Resource = load(dir.path_join(fname))
-		if res is OpeningWorkshop:
-			out.append(res)
-	d.list_dir_end()
+		if not res is OpeningWorkshop:
+			errors.append(_err(ERR_SYS08_10, path, fname, "not OpeningWorkshop"))
+			continue
+		out.append(res)
 	return out
 
 
-func _load_opening_public(dir: String) -> Array:
+func _load_opening_public(dir: String, errors: Array) -> Array:
+	## A11: bad tres reported; missing dir → empty (caller adds ERR-SYS08-10).
 	var out: Array = []
 	var abs_dir: String = ProjectSettings.globalize_path(dir)
 	if not DirAccess.dir_exists_absolute(abs_dir):
 		return out
-	var d := DirAccess.open(dir)
-	if d == null:
-		return out
-	d.list_dir_begin()
-	while true:
-		var fname: String = d.get_next()
-		if fname == "":
-			break
-		if d.current_is_dir() or not fname.ends_with(TRES_SUFFIX):
+	for fname_v in _list_tres_sorted(dir):
+		var fname: String = String(fname_v)
+		var path: String = dir.path_join(fname)
+		var res: Resource = load(path)
+		if res == null:
+			errors.append(_err(ERR_SYS08_10, path, fname, "opening public load failed"))
 			continue
-		var res: Resource = load(dir.path_join(fname))
-		if res is OpeningPublic:
-			out.append(res)
-	d.list_dir_end()
+		if not res is OpeningPublic:
+			errors.append(_err(ERR_SYS08_10, path, fname, "not OpeningPublic"))
+			continue
+		out.append(res)
 	return out
 
 
@@ -1924,21 +2065,40 @@ func _weekly_income_estimate(bld: Building) -> int:
 			raw += float(int(occ.get(clazz.to_lower(), 0))) * float(int(spend.get(clazz, 0)))
 		return floori(AmountQuantize.quantize_amount(raw * share * (1.0 - mgmt)))
 	if _is_workshop(bld):
+		## FRM-SYS08-18／D-79: 週毛利＝週產出×基準價 − 週投入 − 週人工；刪 ×10.0。
 		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
 		if def == null:
 			return 0
 		var workers: int = _workers_of(bld.building_id)
+		if workers <= 0:
+			return 0
 		var k: float = Params.get_float(PRM_OUTPUT_K)
-		return floori(
-			AmountQuantize.quantize_amount(
-				float(workers) * float(def.base_output_per_worker) * k * 10.0
-			)
-		)
+		var wage_w: float = Params.get_float(PRM_WAGE_SHARE_W)
+		var wage_base: int = Params.get_int(PRM_WAGE_BASE_LI)
+		var recipe_n: float = Params.get_float(PRM_RECIPE_N)
+		var week_out: float = float(workers) * float(def.base_output_per_worker) * k
+		var out_px: float = 0.0
+		if not def.output_good_id.is_empty():
+			out_px = MarketPricer.mid_price(StringName(bld.port_id), StringName(def.output_good_id))
+		var revenue: float = week_out * out_px
+		var input_cost: float = 0.0
+		for inp_v in _recipe_inputs(def):
+			var inp: Dictionary = inp_v
+			var g: String = String(inp["good"])
+			var px: float = MarketPricer.mid_price(StringName(bld.port_id), StringName(g))
+			input_cost += week_out * float(inp["qty"]) * recipe_n * px
+		var wage_cost: float = float(workers) * float(wage_base) * pow(k, wage_w)
+		var rev_li: int = floori(AmountQuantize.quantize_amount(revenue))
+		var in_li: int = floori(AmountQuantize.quantize_amount(input_cost))
+		var wag_li: int = floori(AmountQuantize.quantize_amount(wage_cost))
+		## D-79: result < 0 is a spec gap — return as-is, never clamp.
+		return rev_li - in_li - wag_li
 	return 0
 
 
 func _step_garrison_procure(_day: int, _errors: Array) -> void:
-	## FRM-14 daily: demand acc; buy min(floor(acc), market, affordable); no carry of unmet.
+	## FRM-14／D-81: demand acc; buy min(floor(acc), market, affordable);
+	## fractional remainder carries; unmet whole units do not.
 	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
 	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
 	var garrison: Array = Params.get_value(PRM_GARRISON)
@@ -1962,14 +2122,11 @@ func _step_garrison_procure(_day: int, _errors: Array) -> void:
 		)
 		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, acc_scale)
 		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, acc_scale)
-		# Unmet demand does not carry (OQ-14q): reset remainder below 1 unit.
-		if int(_acc_arms.get(port_id, 0)) < acc_scale:
-			_acc_arms[port_id] = 0
-		if int(_acc_powder.get(port_id, 0)) < acc_scale:
-			_acc_powder[port_id] = 0
 
 
 func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
+	## FRM-14：q = MIN(FLOOR(acc), MARKET 庫存, CITY 可負擔).
+	## Afford via direct MarketPricer.quote (units 通常很小；避開 max_affordable 對低庫存的擴張誤判).
 	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
 	if units <= 0:
 		return
@@ -1977,42 +2134,44 @@ func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, a
 	CashLedger.create_account(city, Account.Kind.CITY)
 	var market: Dictionary = GoodsLedger.make_market(port_id)
 	var stock: int = GoodsLedger.get_qty(market, good)
-	var afford: int = CashLedger.max_affordable_qty(city, StringName(port_id), good)
-	var q: int = mini(units, mini(stock, afford))
-	if q <= 0:
-		acc_map[port_id] = 0 # unmet discarded
-		return
-	var quote: Dictionary = MarketPricer.quote(
-		StringName(port_id), good, MarketPricer.SIDE_BUY, q
-	)
-	if quote.has(MarketPricer.KEY_ERROR):
-		acc_map[port_id] = 0
-		return
-	var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
-	var cash_rc: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(city, 0 - price),
-			CashLedger.make_entry(CashLedger.ID_SINK, price),
-		],
-		REASON_TRADE,
-		REQUESTER_SYS08
-	)
-	if cash_rc != OK:
-		acc_map[port_id] = 0
-		return
-	var seq: int = GoodsLedger.transfer(
-		market,
-		GoodsLedger.make_external(),
-		good,
-		q,
-		GoodsLedger.REASON_CONSUME,
-		REQUESTER_SYS08
-	)
-	if seq <= 0:
-		acc_map[port_id] = 0
-		return
-	_note_city_spend(port_id, price)
-	acc_map[port_id] = int(acc_map.get(port_id, 0)) - q * acc_scale
+	var q: int = mini(units, stock)
+	while q > 0:
+		var quote: Dictionary = MarketPricer.quote(
+			StringName(port_id), good, MarketPricer.SIDE_BUY, q
+		)
+		if quote.has(MarketPricer.KEY_ERROR):
+			q = 0
+			break
+		var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
+		if price > CashLedger.balance(city):
+			q = q - 1
+			continue
+		var cash_rc: Error = CashLedger.post(
+			[
+				CashLedger.make_entry(city, 0 - price),
+				CashLedger.make_entry(CashLedger.ID_SINK, price),
+			],
+			REASON_TRADE,
+			REQUESTER_SYS08
+		)
+		if cash_rc != OK:
+			q = 0
+			break
+		var seq: int = GoodsLedger.transfer(
+			market,
+			GoodsLedger.make_external(),
+			good,
+			q,
+			GoodsLedger.REASON_CONSUME,
+			REQUESTER_SYS08
+		)
+		if seq > 0:
+			_note_city_spend(port_id, price)
+		else:
+			q = 0
+		break
+	## D-81: discard unmet whole units; keep fractional remainder (acc % scale).
+	acc_map[port_id] = int(acc_map.get(port_id, 0)) % acc_scale
 
 
 func _step_rent_accrual() -> void:
@@ -2068,10 +2227,9 @@ func _step_zone_streak() -> void:
 
 
 func _step_land_held_days() -> void:
+	## FRM-SYS08-03／A10: all non-city land accrues held days (built or vacant).
 	for slot_key_v in _slots.keys():
 		var slot: Slot = _slots[String(slot_key_v)] as Slot
-		if slot.building_id != &"":
-			continue
 		if _is_city_owner(slot.land_owner):
 			continue
 		var k := String(slot.slot_id)
@@ -2142,9 +2300,8 @@ func _season_land_and_vacancy(port_id: String) -> void:
 		var s2: Slot = slot_v2
 		if _is_city_owner(s2.land_owner):
 			continue
-		var held2: int = int(_land_held_days.get(String(s2.slot_id), days_d))
-		if held2 <= 0:
-			held2 = days_d
+		## A10: no "held ≤ 0 → full season" fallback; use accrued days only.
+		var held2: int = int(_land_held_days.get(String(s2.slot_id), 0))
 		var rent2: int = _land_rent_li(s2, held2, days_d, seasons_y, rate_year)
 		if rent2 > 0:
 			_charge_to_city(s2.land_owner, city, rent2, REASON_LAND_RENT, port_id)
@@ -2253,7 +2410,9 @@ func _public_upgrade_cash(port_id: String, to_level: int) -> int:
 	if idx < 0 or idx >= arr.size():
 		return 0
 	var row: Dictionary = arr[idx] as Dictionary
-	var cash_per: int = int(row.get("CASH_LI", 0))
+	if not row.has("CASH_LI"):
+		return 0
+	var cash_per: int = int(row["CASH_LI"])
 	return ceili(AmountQuantize.quantize_amount(float(pop) * float(cash_per)))
 
 
@@ -2418,30 +2577,27 @@ func _note_city_spend(port_id: String, amount: int) -> void:
 	_season_city_spend[port_id] = int(_season_city_spend.get(port_id, 0)) + amount
 
 
-func _load_build_queues(queue_dir: String, _errors: Array) -> void:
+func _load_build_queues(queue_dir: String, errors: Array) -> void:
+	## A9 sorted listing; A11 report bad tres (missing dir OK — empty queues).
 	_queue_by_port = {}
 	_queue_pos = {}
 	var abs_dir: String = ProjectSettings.globalize_path(queue_dir)
 	if not DirAccess.dir_exists_absolute(abs_dir):
 		return
-	var dir := DirAccess.open(queue_dir)
-	if dir == null:
-		return
-	dir.list_dir_begin()
-	while true:
-		var fname: String = dir.get_next()
-		if fname == "":
-			break
-		if dir.current_is_dir() or not fname.ends_with(TRES_SUFFIX):
+	for fname_v in _list_tres_sorted(queue_dir):
+		var fname: String = String(fname_v)
+		var path: String = queue_dir.path_join(fname)
+		var res: Resource = load(path)
+		if res == null:
+			errors.append(_err(CODE_PARAMS_NOT_LOADED, path, fname, "build queue load failed"))
 			continue
-		var res: Resource = load(queue_dir.path_join(fname))
-		if res == null or not (res is BuildStep):
+		if not (res is BuildStep):
+			errors.append(_err(CODE_PARAMS_NOT_LOADED, path, fname, "not BuildStep"))
 			continue
 		var step: BuildStep = res as BuildStep
 		if not _queue_by_port.has(step.port_id):
 			_queue_by_port[step.port_id] = []
 		(_queue_by_port[step.port_id] as Array).append(step)
-	dir.list_dir_end()
 	for pid in _queue_by_port.keys():
 		var arr: Array = _queue_by_port[pid]
 		arr.sort_custom(func(a: BuildStep, b: BuildStep) -> bool: return a.step < b.step)

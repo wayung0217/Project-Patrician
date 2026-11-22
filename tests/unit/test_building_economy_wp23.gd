@@ -157,6 +157,7 @@ func test_TST_SYS08_12b_vacancy_within_grace_no_tax() -> void:
 
 
 func test_TST_SYS08_13_garrison_no_stock_no_debt() -> void:
+	## A7／D-81: no market stock → no arrears; fractional acc retained (not cleared).
 	_boot_world()
 	var city := CashLedger.make_city_id(PORT)
 	_force_public(city, &"CB-09", 2)
@@ -169,9 +170,244 @@ func test_TST_SYS08_13_garrison_no_stock_no_debt() -> void:
 		BuildingEconomy.REQUESTER_SYS08
 	)
 	var arrears0: int = CashLedger.arrears(city)
+	var acc_scale: int = Params.get_int("PRM-SYS08-ACC_SCALE")
 	assert_eq(BuildingEconomy.daily_step(1).size(), 0)
 	assert_eq(CashLedger.arrears(city), arrears0)
-	assert_eq(int(BuildingEconomy._acc_arms.get(PORT, 0)), 0)
+	var acc: int = int(BuildingEconomy._acc_arms.get(PORT, 0))
+	assert_gt(acc, 0)
+	assert_lt(acc, acc_scale)
+
+
+func test_TST_SYS08_13_WP53_garrison_buy_success_within_7d() -> void:
+	## A7 盲點：庫存＋現金充足、駐軍 150，7 日內必有採購。
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	_force_public(city, &"CB-09", 2)
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 5_000_000),
+			CashLedger.make_entry(city, 5_000_000),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	var mkt: Dictionary = GoodsLedger.make_market(PORT)
+	## Fixture has GD-023 (powder) within GOOD_COUNT_MIN=24; GD-026 (arms) may be absent.
+	GoodsLedger.transfer(
+		GoodsLedger.make_external(), mkt, &"GD-023", 100, GoodsLedger.REASON_PRODUCE, &"TEST"
+	)
+	var powder0: int = GoodsLedger.get_qty(mkt, &"GD-023")
+	var bal0: int = CashLedger.balance(city)
+	for d in range(1, 8):
+		assert_eq(BuildingEconomy.daily_step(d).size(), 0)
+	var powder1: int = GoodsLedger.get_qty(mkt, &"GD-023")
+	assert_lt(powder1, powder0)
+	assert_lt(CashLedger.balance(city), bal0)
+
+
+func test_TST_SYS08_13_WP53_garrison_fraction_kept_when_no_stock() -> void:
+	## A7：庫存不足時整擔差額丟棄，零頭跨日保留。
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	_force_public(city, &"CB-09", 2)
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 100000),
+			CashLedger.make_entry(city, 100000),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	var acc_scale: int = Params.get_int("PRM-SYS08-ACC_SCALE")
+	assert_eq(BuildingEconomy.daily_step(1).size(), 0)
+	var acc1: int = int(BuildingEconomy._acc_arms.get(PORT, 0))
+	assert_gt(acc1, 0)
+	assert_lt(acc1, acc_scale)
+	assert_eq(BuildingEconomy.daily_step(2).size(), 0)
+	var acc2: int = int(BuildingEconomy._acc_arms.get(PORT, 0))
+	assert_gt(acc2, acc1)
+	assert_lt(acc2, acc_scale)
+
+
+func test_WP53_A6_weekly_income_positive_margin() -> void:
+	## A6／D-79：工坊週毛利 > 0（採集業無耗料；壓低 WAGE_BASE 使毛利為正）。
+	var wf := TestWorkforce.new()
+	_boot_world(wf)
+	Params._values["PRM-SYS08-WAGE_BASE_LI"] = 1
+	var brew := _force_workshop(ACTOR, "IND1", "GD-001", 1)
+	wf.set_workers(brew, 10)
+	var bld: Building = BuildingEconomy.get_building(brew)
+	var inc: int = BuildingEconomy._weekly_income_estimate(bld)
+	assert_gt(inc, 0)
+
+
+func test_WP53_A6_weekly_income_zero_workers() -> void:
+	## A6：無工人 → 週收入 0。
+	var wf := TestWorkforce.new()
+	_boot_world(wf)
+	var brew := _force_workshop(ACTOR, "IND1", "GD-001", 1)
+	wf.set_workers(brew, 0)
+	var bld: Building = BuildingEconomy.get_building(brew)
+	assert_eq(BuildingEconomy._weekly_income_estimate(bld), 0)
+
+
+func test_WP53_A6_weekly_income_negative_gap_path() -> void:
+	## A6／D-79 缺口路徑：高耗料可為負；不得 clamp 為 0。
+	var wf := TestWorkforce.new()
+	_boot_world(wf)
+	var type_id := "WS-NEG"
+	var d := BuildingDef.new()
+	d.type = type_id
+	d.build_class = "IND2"
+	d.output_good_id = "GD-001"
+	d.tier = 1
+	d.max_workers = 20
+	d.base_output_per_worker = 0.01
+	d.input1_good_id = "GD-002"
+	d.input1_qty = 50.0
+	BuildingEconomy._building_defs[type_id] = d
+	var bld := Building.new()
+	bld.building_id = BuildingEconomy._next_bld_id(PORT)
+	bld.type = StringName(type_id)
+	bld.build_class = &"IND2"
+	bld.owner = ACTOR
+	bld.port_id = PORT
+	bld.state = Building.State.ACTIVE
+	BuildingEconomy._register_building(bld)
+	wf.set_workers(bld.building_id, 5)
+	var inc: int = BuildingEconomy._weekly_income_estimate(bld)
+	assert_lt(inc, 0)
+
+
+func test_WP53_A10_built_land_held_days_prorate() -> void:
+	## A10：季中購地並立即建築 → 持有日累計、地租按 days_held 比例（非整季）。
+	_boot_world()
+	var tpd: int = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
+	var days_d: int = Params.get_int("PRM-SYS00-DAYS_PER_SEASON")
+	Clock._tick = 1 * tpd
+	var slot: StringName = _first_open_civil()
+	assert_gt(BuildingEconomy.buy_land(ACTOR, slot), 0)
+	# Immediately place a building on the purchased slot.
+	var bld := Building.new()
+	bld.building_id = BuildingEconomy._next_bld_id(PORT)
+	bld.type = &"RB-01"
+	bld.build_class = &"RESIDENCE"
+	bld.owner = ACTOR
+	bld.port_id = PORT
+	bld.slot_id = slot
+	bld.state = Building.State.ACTIVE
+	BuildingEconomy.get_slot(slot).building_id = bld.building_id
+	BuildingEconomy.get_slot(slot).vacancy_start_day = -1
+	BuildingEconomy._register_building(bld)
+	var held_days := 10
+	for d in range(2, held_days + 2):
+		Clock._tick = d * tpd
+		BuildingEconomy.daily_step(d)
+	assert_eq(int(BuildingEconomy._land_held_days.get(String(slot), 0)), held_days)
+	var city := CashLedger.make_city_id(PORT)
+	var rent0: int = _sum_posted_to(city, BuildingEconomy.REASON_LAND_RENT)
+	BuildingEconomy.season_step()
+	var rent1: int = _sum_posted_to(city, BuildingEconomy.REASON_LAND_RENT)
+	var paid: int = rent1 - rent0
+	assert_gt(paid, 0)
+	# Full-season rent for same slot would be larger (held = days_d).
+	var full: int = BuildingEconomy._land_rent_li(
+		BuildingEconomy.get_slot(slot),
+		days_d,
+		days_d,
+		Params.get_int("PRM-SYS00-SEASONS_PER_YEAR"),
+		Params.get_float("PRM-SYS08-LAND_RENT_RATE_YEAR")
+	)
+	assert_lt(paid, full)
+
+
+func test_WP53_A12_upgrade_waiting_keeps_upgrade_days() -> void:
+	## A12：商館升級待料轉開工保留 KONTOR_UPGRADE DAYS（≠ BUILD_DAYS[KONTOR]）。
+	_boot_world()
+	_top_up(ACTOR, 50_000_000)
+	var kslot: StringName = &""
+	for s_v in BuildingEconomy.slots_for_port(PORT):
+		var s: Slot = s_v
+		if s.kind == Slot.Kind.KONTOR and s.building_id == &"":
+			kslot = s.slot_id
+			break
+	assert_ne(kslot, &"")
+	assert_gt(BuildingEconomy.buy_land(ACTOR, kslot), 0)
+	# Zero market mats so upgrade waits; upgrade DAYS=42, BUILD_DAYS KONTOR=84.
+	(Params._values["PRM-SYS08-BUILD_MAT"] as Dictionary)["KONTOR"] = {"GD-001": 0}
+	var bid: StringName = BuildingEconomy.order_build(ACTOR, kslot, &"CB-17")
+	assert_ne(bid, &"")
+	# Force ACTIVE L1 then upgrade with missing mats.
+	var b0: Building = BuildingEconomy.get_building(bid)
+	b0.state = Building.State.ACTIVE
+	b0.days_left = 0
+	b0.level = 1
+	b0.missing_materials = {}
+	b0.locked_materials = {}
+	var arr: Array = Params.get_value("PRM-SYS08-KONTOR_UPGRADE")
+	var up_days: int = int((arr[0] as Dictionary)["DAYS"])
+	var build_days: int = int(Params.get_value("PRM-SYS08-BUILD_DAYS")["KONTOR"])
+	assert_ne(up_days, build_days)
+	# Require mats so WAITING_MATERIAL.
+	var row0: Dictionary = (arr[0] as Dictionary).duplicate(true)
+	row0["GD-001"] = 9999
+	Params._values["PRM-SYS08-KONTOR_UPGRADE"] = [row0, arr[1]]
+	var up: StringName = BuildingEconomy.order_upgrade(ACTOR, bid)
+	assert_eq(up, bid)
+	var b1: Building = BuildingEconomy.get_building(bid)
+	assert_eq(b1.state, Building.State.WAITING_MATERIAL)
+	assert_eq(b1.days_left, up_days)
+	# Supply mats → start building; days_left must stay upgrade days.
+	_seed_market_enough()
+	BuildingEconomy.daily_step(1)
+	BuildingEconomy.flush_signals()
+	var b2: Building = BuildingEconomy.get_building(bid)
+	assert_eq(b2.state, Building.State.BUILDING)
+	assert_eq(b2.days_left, up_days)
+
+
+func _seed_market_enough() -> void:
+	var mkt: Dictionary = GoodsLedger.make_market(PORT)
+	for gid in ["GD-001", "GD-002", "GD-003"]:
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			mkt,
+			StringName(gid),
+			10000,
+			GoodsLedger.REASON_PRODUCE,
+			&"TEST"
+		)
+
+
+func test_WP54_city_queue_success_starts_when_funded() -> void:
+	## Blind-spot: funded queue advances and places a city PUBLIC building.
+	## A8 design-only this WP — still asserts interim ACTIVE path (see step04 A8).
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	var s0 := BuildStep.new()
+	s0.port_id = PORT
+	s0.step = 0
+	s0.cb_id = "CB-01"
+	s0.target_level = 1
+	BuildingEconomy.set_build_queue(PORT, [s0])
+	var cost: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["PUBLIC"])
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - cost),
+			CashLedger.make_entry(city, cost),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	BuildingEconomy.season_step()
+	assert_eq(int(BuildingEconomy._queue_pos[PORT]), 1)
+	var found := false
+	for b_v in BuildingEconomy.buildings_for_port(PORT):
+		var b: Building = b_v
+		if b.build_class == &"PUBLIC" and String(b.type) == "CB-01":
+			assert_eq(b.state, Building.State.ACTIVE)
+			found = true
+	assert_true(found)
 
 
 func test_TST_SYS08_14_city_queue_no_skip() -> void:
@@ -532,7 +768,7 @@ func _write_layout() -> void:
 func _write_defs() -> void:
 	var dir := ROOT + "buildings/"
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	_save_def(dir, "KT-01", "KONTOR", "", 0, 1.0)
+	_save_def(dir, "CB-17", "KONTOR", "", 0, 1.0)
 	_save_def(dir, "RB-01", "RESIDENCE", "", 0, 1.0)
 	_save_def(dir, "IND1", "IND1", "GD-001", 1, 1.0)
 
@@ -609,6 +845,19 @@ func _build_valid_goods(dir: String) -> String:
 		ResourceSaver.save(g2, dir + "%s.tres" % gid)
 		written += 1
 		next_n += 1
+	## Ensure garrison goods exist (GOOD_ARMS=GD-026 may exceed GOOD_COUNT_MIN sequence).
+	for extra_id in ["GD-023", "GD-026"]:
+		var extra_path: String = dir + "%s.tres" % extra_id
+		if FileAccess.file_exists(extra_path):
+			continue
+		var gx := GoodDef.new()
+		gx.good_id = extra_id
+		gx.name_zh = extra_id
+		gx.tier = 1
+		gx.is_staple = false
+		gx.base_price_li = 10
+		gx.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+		ResourceSaver.save(gx, extra_path)
 	return dir
 
 
