@@ -32,3 +32,9 @@ jobs:
           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
             -gdir=res://tests/unit,res://tests/property \
             -gexit
+
+      - name: A35 norm scan (report-only)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          python3 tools/a35_norm_scan.py
