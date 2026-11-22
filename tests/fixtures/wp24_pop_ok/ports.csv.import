@@ -1,0 +1,19 @@
+[remap]
+
+importer="keep"
+type="Translation"
+uid="uid://7bb7h4sfonqw"
+
+[deps]
+
+files=["res://tests/fixtures/wp24_pop_ok/ports.name.translation", "res://tests/fixtures/wp24_pop_ok/ports.is.translation", "res://tests/fixtures/wp24_pop_ok/ports.draft.translation", "res://tests/fixtures/wp24_pop_ok/ports.regime.translation"]
+
+source_file="res://tests/fixtures/wp24_pop_ok/ports.csv"
+dest_files=["res://tests/fixtures/wp24_pop_ok/ports.name.translation", "res://tests/fixtures/wp24_pop_ok/ports.is.translation", "res://tests/fixtures/wp24_pop_ok/ports.draft.translation", "res://tests/fixtures/wp24_pop_ok/ports.regime.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
