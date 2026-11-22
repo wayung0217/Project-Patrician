@@ -79,14 +79,60 @@ var _work_adapter: _WorkAdapter = null
 var _sailor_adapter: _SailorAdapter = null
 var _pending_pop_ports: Array = []
 var _pending_sat_ports: Array = []
-## Test／WP-51: count Rng.derive_seed calls during placement (movers only after opening).
-var _wp51_rng_calls: int = 0
 ## WP-55 A13: per daily_port／opening — purpose → next draw_seq (FRM-SYS07-12／D-83a).
 var _draw_seq_by_purpose: Dictionary = {}
 
 
 func _ready() -> void:
 	_clear_state()
+
+
+## Test／WP-59 F11: wipe runtime so providers can be reinjected before the next load.
+func reset_runtime_state() -> void:
+	_clear_state()
+	_sat_input = null
+	_seed = 0
+
+
+## Test／WP-59 F11: set PF-2／PF-3 streak day counters for a port.
+func set_upgrade_streaks(port_id: String, streak_up1: int, streak_up2: int) -> void:
+	assert(_loaded, "PopulationModel.set_upgrade_streaks before load")
+	var p: PortPop = _ensure_port(port_id)
+	p.streak_up1 = streak_up1
+	p.streak_up2 = streak_up2
+
+
+## Test／WP-59 F11: read streak_up1 (which=&"UP1") or streak_up2 (which=&"UP2").
+func get_upgrade_streak(port_id: String, which: StringName) -> int:
+	assert(_loaded, "PopulationModel.get_upgrade_streak before load")
+	var p: PortPop = _ports.get(port_id, null) as PortPop
+	if p == null:
+		return 0
+	if which == &"UP1":
+		return p.streak_up1
+	if which == &"UP2":
+		return p.streak_up2
+	return 0
+
+
+## Test／WP-59 F11: whether FRM-SYS07-14 opening placement has run for this port.
+func is_opening_placed(port_id: StringName) -> bool:
+	return bool(_opening_placed.get(String(port_id), false))
+
+
+## Test／WP-59 F11: whether a port row exists in the runtime table.
+func has_port(port_id: StringName) -> bool:
+	return _ports.has(String(port_id))
+
+
+## Test／WP-59 F11: drop tracked residence occupants／opening flag for one port.
+func clear_port_residence_tracking(port_id: StringName) -> void:
+	var pid: String = String(port_id)
+	var ids: Array = _port_res_ids.get(pid, [])
+	for rid_v in ids:
+		_residents.erase(String(rid_v))
+	_port_res_ids[pid] = []
+	_opening_placed.erase(pid)
 
 
 func set_satisfaction_input_provider(provider: SatisfactionInputProvider) -> void:
@@ -989,7 +1035,6 @@ func _next_draw_seq(purpose: String) -> int:
 
 
 func _draw_u(port_id: String, day: int, res_id: String, purpose: String, draw_seq: int) -> float:
-	_wp51_rng_calls = _wp51_rng_calls + 1
 	var u_seed: int = Rng.derive_seed(_seed, day, port_id, res_id, purpose, draw_seq)
 	var u_pair: Array = Rng.next(u_seed)
 	var rate_scale: int = Params.get_int(PRM_RATE_SCALE)
@@ -1173,7 +1218,6 @@ func _clear_state() -> void:
 	_residents = {}
 	_port_res_ids = {}
 	_opening_placed = {}
-	_wp51_rng_calls = 0
 	_draw_seq_by_purpose = {}
 	_loaded = false
 	_pending_pop_ports = []
