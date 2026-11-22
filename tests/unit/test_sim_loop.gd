@@ -137,9 +137,9 @@ func test_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_autoload_order_2_2_01() -> void:
-	# 2.2-01／D-14c／D-26b／D-09a／D-34d:
+	# W1／2.2-01／D-14c／D-26b／D-09a／D-34d:
+	# Compare actual Autoload order in project.godot (not merely has_setting).
 	# … → CashLedger → TradeDesk → BuildingEconomy → … → ShipRegistry → IntelLedger → SimLoop
-	# (TierRegistry／ReputationLedger／TaxLedger／BrokerDesk／TraderRegistry not yet registered — relative order kept)
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -157,32 +157,31 @@ func test_autoload_order_2_2_01() -> void:
 		"IntelLedger",
 		"SimLoop",
 	]
-	for name_variant in expected:
-		var name: String = String(name_variant)
-		assert_true(
-			ProjectSettings.has_setting("autoload/%s" % name),
-			"missing Autoload %s" % name
-		)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/SimLoop")),
-		"*res://autoload/sim_loop.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/CashLedger")),
-		"*res://autoload/cash_ledger.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/TradeDesk")),
-		"*res://autoload/trade_desk.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/Clock")),
-		"*res://autoload/clock.gd"
-	)
-	assert_eq(
-		String(ProjectSettings.get_setting("autoload/DemandModel")),
-		"*res://core/demand_model.gd"
-	)
+	var text: String = FileAccess.get_file_as_string("res://project.godot")
+	assert_false(text.is_empty(), "project.godot readable")
+	var actual: Array = []
+	var paths: Dictionary = {}
+	var in_autoload := false
+	for line_v in text.split("\n"):
+		var line: String = String(line_v).strip_edges()
+		if line.begins_with("["):
+			in_autoload = line == "[autoload]"
+			continue
+		if not in_autoload or line.is_empty() or line.begins_with(";"):
+			continue
+		if not line.contains("="):
+			continue
+		var eq: int = line.find("=")
+		var name: String = line.substr(0, eq).strip_edges()
+		var path: String = line.substr(eq + 1).strip_edges().trim_prefix("\"").trim_suffix("\"")
+		actual.append(name)
+		paths[name] = path
+	assert_eq(actual, expected, "project.godot [autoload] order mismatch")
+	assert_eq(String(paths.get("SimLoop", "")), "*res://autoload/sim_loop.gd")
+	assert_eq(String(paths.get("CashLedger", "")), "*res://autoload/cash_ledger.gd")
+	assert_eq(String(paths.get("TradeDesk", "")), "*res://autoload/trade_desk.gd")
+	assert_eq(String(paths.get("Clock", "")), "*res://autoload/clock.gd")
+	assert_eq(String(paths.get("DemandModel", "")), "*res://core/demand_model.gd")
 
 
 func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
@@ -324,8 +323,16 @@ func test_boot_collects_all_module_errors_2_2_02() -> void:
 	assert_gt(errors.size(), 1, "must collect errors from multiple modules")
 	assert_false(SimLoop.is_booted())
 	assert_push_error_count(errors.size())
-	assert_true(_has_code(errors, "ERR-SYS01-04") or _has_code(errors, "ERR-SYS01-05"))
-	assert_true(_has_code(errors, "GOOD_CATALOG_NOT_LOADED") or _has_code(errors, "PORT_REGISTRY_NOT_LOADED") or errors.size() > 1)
+	## W2: per-module collection (no tautology or); empty goods → catalog, then ports／sea continue.
+	assert_true(_has_code(errors, "ERR-SYS01-04"), "GoodCatalog empty count → ERR-SYS01-04")
+	assert_true(
+		_has_code(errors, "GOOD_CATALOG_NOT_LOADED"),
+		"PortRegistry must still run and report GOOD_CATALOG_NOT_LOADED"
+	)
+	assert_true(
+		_has_code(errors, "PORT_REGISTRY_NOT_LOADED"),
+		"SeaLanes must still run and report PORT_REGISTRY_NOT_LOADED"
+	)
 
 
 func test_boot_day_zero_and_genesis_grant_D03_D05() -> void:
@@ -361,9 +368,9 @@ func test_boot_success_and_tick_advances_clock_2_3_01() -> void:
 	assert_eq(Clock.day, 1)
 
 
-func test_tick_produce_then_consume_order_2_3_02_03() -> void:
-	# 2.3-03／D-12d／D-09g: daily_step (workshop PRODUCE) then CONSUME; consume asc.
-	# Role-cell Q no longer feeds MARKET; with empty workshops only CONSUME runs.
+func test_tick_consume_ascending_order_no_role_cell_produce_2_3_03() -> void:
+	# W3／2.3-03／D-12d／D-09g: with empty workshops, tick runs CONSUME ascending (port, good);
+	# role-cell Q no longer feeds MARKET (no PRODUCE events). Name matches behaviour.
 	var cons := _boot_ready_provider()
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
 	_seed_market(PORT_DEMO, GOOD_DEMO, SEED_STOCK)
@@ -461,10 +468,32 @@ func test_consume_shortage_err_sys03_02_into_day_errors_D05() -> void:
 
 
 func test_conservation_runs_on_tick_when_debug_prm() -> void:
-	# 2.3-04: debug fixture CONSERVATION_CHECK_EVERY_TICK=true → check does not violate after clean tick
+	# T3／2.3-04: prove SimLoop.tick_day invokes maybe_check_conservation_on_tick
+	# (manual post-tick check_conservation would pass even if SimLoop forgot the call).
 	_boot_ready_provider()
+	assert_true(
+		Params.get_bool(GoodsLedger.PRM_CONSERVATION_CHECK_EVERY_TICK),
+		"fixture debug PRM must enable per-tick conservation"
+	)
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	var key: String = String(
+		GoodsLedger.container_id(StringName(GoodsLedger.KIND_MARKET), PORT_DEMO)
+	)
+	if not GoodsLedger._stock.has(key):
+		GoodsLedger._stock[key] = {}
+	var bucket: Dictionary = GoodsLedger._stock[key]
+	bucket[String(good)] = int(bucket.get(String(good), 0)) + 1
+	GoodsLedger._stock[key] = bucket
+	var hits: Array = [0]
+	var on_hit := func(_g: StringName, _e: int, _a: int) -> void:
+		hits[0] = int(hits[0]) + 1
+	GoodsLedger.conservation_violated.connect(on_hit)
 	SimLoop.tick_day()
-	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
+	if GoodsLedger.conservation_violated.is_connected(on_hit):
+		GoodsLedger.conservation_violated.disconnect(on_hit)
+	assert_eq(int(hits[0]), 1, "SimLoop.tick_day must call conservation check when PRM true")
+	## ERR-SYS03-05 push_error from the check invoked inside tick_day (not post-hoc).
+	assert_push_error_count(1)
 
 
 func test_no_public_subday_methods_D07() -> void:
@@ -477,8 +506,9 @@ func test_no_public_subday_methods_D07() -> void:
 	assert_true(SimLoop.has_method("_run_tick_steps"))
 
 
-func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
-	# 13-03／TST-SYS13-16／D-09g: tick_day vs TPD×tick + BuildingEconomy.daily_step settle.
+func test_TST_SYS13_16_tick_day_clock_matches_advance_one_day() -> void:
+	# W3／13-03／TST-SYS13-16／D-09g／D-12d: tick_day clock (tick/day) matches advance_one_day
+	# and TPD×advance_one_tick; with no workshops both paths leave market qty unchanged.
 	_boot_ready_provider()
 	var tpd: int = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
 	_set_producer_output(PORT_DEMO, GOOD_DEMO, PRODUCE_Q)
@@ -512,6 +542,7 @@ func test_TST_SYS13_16_tick_day_matches_advance_one_day_plus_settle() -> void:
 		GoodsLedger.make_market(PORT_DEMO), StringName(GOOD_DEMO)
 	)
 	assert_eq(qty_via_ticks, qty_via_loop)
+	assert_eq(qty_via_ticks, before, "no workshops → market unchanged on both paths")
 
 
 func test_D08j_public_api_names_match_ruling() -> void:

@@ -1,7 +1,7 @@
 class_name DebugBoot
 extends RefCounted
-## WP-61：Debug UI formal L1 boot helper（mirror tests/fixtures/sys23/probe_formal_l1_boot.gd）.
-## Injects ui/debug always-allow providers (D-90(f)); merges scenario_L1_baseline overrides.
+## WP-61：Debug UI formal L1 boot helper（formal data + scenario_L1_baseline overrides）.
+## Injects ui/debug always-allow providers (D-90(f)).
 
 
 const SCENARIO_PATH := "res://docs/spec/scenario_L1_baseline.json"
