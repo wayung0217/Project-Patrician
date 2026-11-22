@@ -24,8 +24,26 @@ from collections import defaultdict
 from pathlib import Path
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[1]
-SCAN_DIRS = ["autoload", "core", "sim", "tools", "tests"]
-PRODUCT_TOP = {"autoload", "core", "sim", "tools"}
+SCAN_DIRS = ["autoload", "core", "sim", "ui", "tools", "tests"]
+PRODUCT_TOP = {"autoload", "core", "sim", "ui", "tools"}
+
+# D-95(a)／17-50 step0：產品碼不得呼叫的測試輔助（只報不擋 → R8）。
+D95A_TEST_HELPERS = (
+    "reset_runtime_state",
+    "set_upgrade_streaks",
+    "get_upgrade_streak",
+    "is_opening_placed",
+    "has_port",
+    "clear_port_residence_tracking",
+    "seed_offtake_snapshot",
+)
+D95A_CALL_RE = re.compile(
+    r"\b(?:"
+    + "|".join(re.escape(n) for n in D95A_TEST_HELPERS)
+    + r")\s*\("
+)
+# Product dirs scanned for R8 (exclude tools／tests).
+R8_PRODUCT_TOP = {"autoload", "core", "sim", "ui"}
 
 NUM_RE = re.compile(
     r"(?<![\w.])("
@@ -91,6 +109,10 @@ def strip_strings(s: str) -> str:
 
 def is_product(rel: str) -> bool:
     return rel.split("/", 1)[0] in PRODUCT_TOP
+
+
+def is_r8_product(rel: str) -> bool:
+    return rel.split("/", 1)[0] in R8_PRODUCT_TOP
 
 
 def iter_gd_files(root: Path) -> list[Path]:
@@ -170,6 +192,13 @@ def scan_file(path: Path, root: Path, hits: dict[str, list]) -> None:
                 if re.search(rf'const\s+\w+.*["\']' + re.escape(tok), raw):
                     continue
                 hits["R7"].append(f"{rel}:{i}:{tok}:{raw.strip()}")
+        # R8: D-95(a) test helpers called from product (autoload/core/sim/ui).
+        if is_r8_product(rel):
+            # Skip the defining func lines themselves.
+            if re.match(r"^\s*func\s+", raw):
+                continue
+            for m in D95A_CALL_RE.finditer(code_ns):
+                hits["R8"].append(f"{rel}:{i}:D95a_helper_call:{raw.strip()}")
 
 
 def main() -> int:
@@ -190,7 +219,7 @@ def main() -> int:
     print(f"ROOT={root}")
     print(f"FILES={len(files)}")
     print(f"PROBES_EXPECTED={len(probe_names)}:{','.join(probe_names)}")
-    keys = ["R1", "R2_product", "R2_tests", "R3", "R4", "R5", "R6", "R7"]
+    keys = ["R1", "R2_product", "R2_tests", "R3", "R4", "R5", "R6", "R7", "R8"]
     for k in keys:
         print(f"COUNT_{k}={len(hits[k])}")
     missing = []
