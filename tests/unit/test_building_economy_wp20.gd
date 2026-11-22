@@ -269,60 +269,6 @@ func test_WP20_12_11_wage_accrues_when_starved() -> void:
 	assert_eq(GoodsLedger.get_qty(GoodsLedger.make_warehouse(String(ACTOR), PORT_PT01), &"GD-002"), 0)
 
 
-
-func test_TST_SYS03_04_season_produce_sums_to_q() -> void:
-	## D-86: TST-SYS03-04 retargeted to workshop PRODUCE (BuildingEconomy.daily_step).
-	## Season Σ out = floor((D * floor(w_week*ACC)) / (DAYS_PW*ACC)); consecutive day Δ ≤ 1.
-	var wf := TestWorkforce.new()
-	var farm: StringName = _boot_active_workshop(wf, TYPE_IND1, "GD-001", 1, 1.0, "", 0)
-	wf.set_workers(farm, 25)
-	# City-owned → MARKET destination (unbounded).
-	var city: StringName = CashLedger.make_city_id(PORT_PT01)
-	CashLedger.create_account(city, Account.Kind.CITY)
-	var bld: Building = BuildingEconomy.get_building(farm)
-	bld.owner = city
-	var k: float = Params.get_float(BuildingEconomy.PRM_OUTPUT_K)
-	var acc_scale: int = Params.get_int(BuildingEconomy.PRM_ACC_SCALE)
-	var days_pw: int = Params.get_int(BuildingEconomy.PRM_DAYS_PER_WEEK)
-	var days_d: int = Params.get_int("PRM-SYS00-DAYS_PER_SEASON")
-	var w_week: float = 25.0 * 1.0 * k
-	var expect: int = int((days_d * floori(w_week * float(acc_scale))) / (days_pw * acc_scale))
-	var market: Dictionary = GoodsLedger.make_market(PORT_PT01)
-	var before: int = GoodsLedger.get_qty(market, &"GD-001")
-	var prev_out := -1
-	for d in range(days_d):
-		var q0: int = GoodsLedger.get_qty(market, &"GD-001")
-		assert_eq(BuildingEconomy.daily_step(d + 1).size(), 0)
-		var day_out: int = GoodsLedger.get_qty(market, &"GD-001") - q0
-		if prev_out >= 0:
-			assert_lte(absi(day_out - prev_out), 1, "single-day produce delta ≤ 1 (D-86／TST-SYS03-04)")
-		prev_out = day_out
-	var after: int = GoodsLedger.get_qty(market, &"GD-001")
-	assert_eq(after - before, expect, "Σ workshop PRODUCE must equal season expect (D-86)")
-
-
-func test_TST_SYS03_06_market_unbounded_over_ten_seasons() -> void:
-	## D-86: TST-SYS03-06 retargeted — city workshop MARKET grows over 10 seasons, no cap.
-	var wf := TestWorkforce.new()
-	var farm: StringName = _boot_active_workshop(wf, TYPE_IND1, "GD-001", 1, 1.0, "", 0)
-	wf.set_workers(farm, 5)
-	var city: StringName = CashLedger.make_city_id(PORT_PT01)
-	CashLedger.create_account(city, Account.Kind.CITY)
-	BuildingEconomy.get_building(farm).owner = city
-	var days_d: int = Params.get_int("PRM-SYS00-DAYS_PER_SEASON")
-	var seasons: int = 10
-	var market: Dictionary = GoodsLedger.make_market(PORT_PT01)
-	var prev: int = GoodsLedger.get_qty(market, &"GD-001")
-	for _s in range(seasons):
-		for d in range(days_d):
-			assert_eq(BuildingEconomy.daily_step(d + 1).size(), 0)
-		var now: int = GoodsLedger.get_qty(market, &"GD-001")
-		assert_gt(now, prev, "MARKET must keep growing each season (no cap)")
-		prev = now
-	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
-
-
-
 # --- helpers ---
 
 

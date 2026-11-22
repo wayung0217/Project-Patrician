@@ -5,10 +5,19 @@ extends GutTest
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
+const PARAMS_BE_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
+const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const GOODS_FIXTURE_ROOT := "user://goods_ledger_goods/"
 const PORTS_FIXTURE_ROOT := "user://goods_ledger_ports/"
+const BE_ROOT := "user://goods_ledger_be/"
 
 const SYS_ID := &"SYS-03"
+const PORT_PT01 := "PT-01"
+const ACTOR := &"ACT-PLAYER"
+const TYPE_KONTOR := "KT-01"
+const TYPE_IND1 := "IB-RICE"
+const TYPE_WH := "WH-01"
+const ANCHOR_LI := 1000
 
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
@@ -30,15 +39,36 @@ const TST_SYS03_02_TRANSFER_QTY := 6
 ## TST-SYS03-03 given: remaining capacity 3；transfer 4 → ERR-SYS03-03
 const TST_SYS03_03_REMAINING_CAP := 3
 const TST_SYS03_03_TRANSFER_QTY := 4
-## TST-SYS03-04 given: Q=1000, D=DAYS_PER_SEASON → Σ PRODUCE = 1000
-const TST_SYS03_04_Q := 1000
-## TST-SYS03-04／3.1: single-day produce difference ≤ 1
+## TST-SYS03-04／3.1: single-day produce difference ≤ 1 (D-86 workshop path)
 const TST_SYS03_04_MAX_DAY_DELTA := 1
-## TST-SYS03-06: 10 seasons of produce, MARKET grows unboundedly
+const TST_SYS03_04_WORKERS := 25
+const TST_SYS03_04_BASE_OUT := 1.0
+## TST-SYS03-06: 10 seasons of workshop produce, MARKET grows unboundedly
 const TST_SYS03_06_SEASONS := 10
+const TST_SYS03_06_WORKERS := 5
 ## D-05(d): CONSUME shortage fixture
 const TST_CONSUME_HAVE := 2
 const TST_CONSUME_WANT := 3
+
+
+class TestPop extends PopulationProvider:
+	var _pop: Dictionary = {}
+
+	func set_pop(port_id: String, value: int) -> void:
+		_pop[port_id] = value
+
+	func population(port_id: StringName) -> int:
+		return int(_pop.get(String(port_id), 0))
+
+
+class TestWorkforce extends WorkforceProvider:
+	var _by_ws: Dictionary = {}
+
+	func set_workers(ws_id: StringName, n: int) -> void:
+		_by_ws[String(ws_id)] = n
+
+	func workers(ws_id: StringName) -> int:
+		return int(_by_ws.get(String(ws_id), 0))
 
 
 class TestCapacityProvider extends CapacityProvider:
@@ -226,6 +256,35 @@ func test_D05_consume_shortage_err_sys03_02_all_or_nothing() -> void:
 	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 
+func test_TST_SYS03_04_season_produce_sums_to_q() -> void:
+	## D-86: TST-SYS03-04 via BuildingEconomy.daily_step workshop PRODUCE.
+	## Season Σ ≈ workshop expect; consecutive day Δ ≤ 1.
+	var wf := TestWorkforce.new()
+	var farm: StringName = _boot_city_workshop(wf, TST_SYS03_04_WORKERS, TST_SYS03_04_BASE_OUT)
+	var k: float = Params.get_float(BuildingEconomy.PRM_OUTPUT_K)
+	var acc_scale: int = Params.get_int(BuildingEconomy.PRM_ACC_SCALE)
+	var days_pw: int = Params.get_int(BuildingEconomy.PRM_DAYS_PER_WEEK)
+	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
+	var w_week: float = float(TST_SYS03_04_WORKERS) * TST_SYS03_04_BASE_OUT * k
+	var expect: int = int((days_d * floori(w_week * float(acc_scale))) / (days_pw * acc_scale))
+	var market: Dictionary = GoodsLedger.make_market(PORT_PT01)
+	var before: int = GoodsLedger.get_qty(market, &"GD-001")
+	var prev_out := -1
+	for d in range(days_d):
+		var q0: int = GoodsLedger.get_qty(market, &"GD-001")
+		assert_eq(BuildingEconomy.daily_step(d + 1).size(), 0)
+		var day_out: int = GoodsLedger.get_qty(market, &"GD-001") - q0
+		if prev_out >= 0:
+			assert_lte(
+				absi(day_out - prev_out),
+				TST_SYS03_04_MAX_DAY_DELTA,
+				"single-day produce delta ≤ 1 (D-86／TST-SYS03-04)"
+			)
+		prev_out = day_out
+	var after: int = GoodsLedger.get_qty(market, &"GD-001")
+	assert_eq(after - before, expect, "Σ workshop PRODUCE must equal season expect (D-86)")
+	assert_ne(farm, &"")
+
 
 func test_TST_SYS03_05_sea_loss_rejected() -> void:
 	# TST-SYS03-05: reason = SEA_LOSS → ERR-SYS03-04
@@ -243,6 +302,21 @@ func test_TST_SYS03_05_sea_loss_rejected() -> void:
 	assert_push_error_count(1)
 	assert_eq(GoodsLedger.get_qty(market, good), before)
 
+
+func test_TST_SYS03_06_market_unbounded_over_ten_seasons() -> void:
+	## D-86: city workshop → MARKET grows over 10 seasons when no buyers (no cap).
+	var wf := TestWorkforce.new()
+	var _farm: StringName = _boot_city_workshop(wf, TST_SYS03_06_WORKERS, TST_SYS03_04_BASE_OUT)
+	var days_d: int = Params.get_int(PRM_DAYS_PER_SEASON)
+	var market: Dictionary = GoodsLedger.make_market(PORT_PT01)
+	var prev: int = GoodsLedger.get_qty(market, &"GD-001")
+	for _s in range(TST_SYS03_06_SEASONS):
+		for d in range(days_d):
+			assert_eq(BuildingEconomy.daily_step(d + 1).size(), 0)
+		var now: int = GoodsLedger.get_qty(market, &"GD-001")
+		assert_gt(now, prev, "MARKET must keep growing each season (no cap)")
+		prev = now
+	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 
 func test_transfer_seq_and_timestamp_match() -> void:
@@ -443,6 +517,225 @@ func _is_error_info(e: Variant) -> bool:
 
 # --- fixtures ---
 
+
+func _boot_city_workshop(wf: TestWorkforce, workers_n: int, base_out: float) -> StringName:
+	## D-86: city-owned IND1 → MARKET PRODUCE via BuildingEconomy.daily_step.
+	_wipe_dir(BE_ROOT)
+	BuildingEconomy._loaded = false
+	BuildingEconomy._slots = {}
+	BuildingEconomy._slots_by_port = {}
+	BuildingEconomy._r_by_port = {}
+	BuildingEconomy._max_open_zone = {}
+	BuildingEconomy._buildings = {}
+	BuildingEconomy._buildings_by_port = {}
+	BuildingEconomy._building_defs = {}
+	BuildingEconomy._population = null
+	BuildingEconomy._workforce = null
+	BuildingEconomy._pending_started = []
+	BuildingEconomy._pending_waiting = []
+	BuildingEconomy._pending_completed = []
+	BuildingEconomy._pending_shortfalls = []
+	var pop := TestPop.new()
+	pop.set_pop(PORT_PT01, 1000)
+	var perr: Array = Params.load_and_validate(PARAMS_BE_FIXTURE)
+	assert_eq(perr.size(), 0, "params: %s" % str(perr))
+	var goods_dir := _build_be_goods(BE_ROOT + "goods/")
+	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
+	var ports_dir := _build_valid_ports(Params.get_int(PRM_PORT_COUNT_MIN), BE_ROOT + "ports/")
+	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
+	assert_eq(GoodsLedger.load_and_validate().size(), 0)
+	var mp_errs: Array = MarketPricer.load_and_validate(CURVE_FIXTURE)
+	assert_eq(mp_errs.size(), 0, "MarketPricer: %s" % str(mp_errs))
+	assert_eq(CashLedger.load_and_validate().size(), 0)
+	assert_eq(CashLedger.genesis_grant(), OK)
+	BuildingEconomy.set_population_provider(pop)
+	BuildingEconomy.set_workforce_provider(wf)
+	GoodsLedger.register_capacity_provider(
+		StringName(GoodsLedger.KIND_WAREHOUSE), BuildingEconomy.get_warehouse_capacity_provider()
+	)
+	_write_be_layout()
+	_write_be_defs(base_out)
+	var be_errs: Array = BuildingEconomy.load_and_validate(
+		BE_ROOT + "zones/", BE_ROOT + "city_center/", BE_ROOT + "buildings/"
+	)
+	assert_eq(be_errs.size(), 0, str(be_errs))
+	_cheap_build_params()
+	_seed_good_market("GD-001", 500)
+	_seed_good_market("GD-002", 500)
+	_seed_good_market("GD-003", 500)
+	_top_up(ACTOR, 5_000_000)
+	var k1: StringName = _first_kontor_slot()
+	assert_gt(BuildingEconomy.buy_land(ACTOR, k1), 0)
+	var kid: StringName = BuildingEconomy.order_build(ACTOR, k1, StringName(TYPE_KONTOR))
+	assert_ne(kid, &"", str(BuildingEconomy.last_errors()))
+	_force_active(kid)
+	var belt: StringName = _first_belt_slot()
+	if BuildingEconomy.get_slot(belt).land_owner != ACTOR:
+		assert_gt(BuildingEconomy.buy_land(ACTOR, belt), 0)
+	var farm: StringName = BuildingEconomy.order_build(ACTOR, belt, StringName(TYPE_IND1))
+	assert_ne(farm, &"", str(BuildingEconomy.last_errors()))
+	_force_active(farm)
+	var city: StringName = CashLedger.make_city_id(PORT_PT01)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	BuildingEconomy.get_building(farm).owner = city
+	wf.set_workers(farm, workers_n)
+	return farm
+
+
+func _cheap_build_params() -> void:
+	var cash: Dictionary = Params._values["PRM-SYS08-BUILD_CASH_LI"]
+	for k in cash.keys():
+		cash[k] = 1000
+	var days: Dictionary = Params._values["PRM-SYS08-BUILD_DAYS"]
+	for k in days.keys():
+		days[k] = 1
+	var mats: Dictionary = Params._values["PRM-SYS08-BUILD_MAT"]
+	for k in mats.keys():
+		mats[k] = {"GD-001": 1}
+
+
+func _build_be_goods(dir: String) -> String:
+	## Anchor prices high enough for MarketPricer floor sell ≥ 1 li (wp20 ANCHOR_LI).
+	_wipe_dir(dir)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var need: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var staples: Array = [
+		{"id": "GD-001", "name": STAPLE_RICE, "build": false},
+		{"id": "GD-002", "name": STAPLE_SALT, "build": false},
+		{"id": "GD-003", "name": STAPLE_TIMBER, "build": true},
+		{"id": "GD-004", "name": STAPLE_FISH, "build": false},
+	]
+	var n := 0
+	for row in staples:
+		n = n + 1
+		ResourceSaver.save(
+			_make_good(row["id"], row["name"], 1, true, row["build"], false, ANCHOR_LI),
+			dir + "%s.tres" % row["id"]
+		)
+	while n < need:
+		n = n + 1
+		var gid: String = "GD-%03d" % n
+		var tier: int = (n % (Params.get_int(PRM_FREE_PORT_TIER_MAX) + 1)) + 1
+		if tier > Params.get_int(PRM_TIER_MAX):
+			tier = Params.get_int(PRM_TIER_MAX)
+		ResourceSaver.save(
+			_make_good(gid, "填料%d" % n, tier, false, false, false, ANCHOR_LI),
+			dir + "%s.tres" % gid
+		)
+	return dir
+
+
+func _write_be_layout() -> void:
+	_write_zone(BE_ROOT + "zones/", PORT_PT01, 1, 1, 4, 1)
+	_write_zone(BE_ROOT + "zones/", PORT_PT01, 2, 1, 4, 0)
+	_write_city_center(BE_ROOT + "city_center/", PORT_PT01, 2)
+
+
+func _write_be_defs(base_out: float) -> void:
+	var dir := BE_ROOT + "buildings/"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	_save_def(dir, TYPE_KONTOR, "KONTOR", "", 0, 1.0, "", 0.0)
+	_save_def(dir, TYPE_IND1, "IND1", "GD-001", 1, base_out, "", 0.0)
+	_save_def(dir, TYPE_WH, "WAREHOUSE", "", 0, 1.0, "", 0.0)
+
+
+func _save_def(
+	dir: String,
+	type_id: String,
+	build_class: String,
+	out_g: String,
+	tier: int,
+	base_out: float,
+	in_g: String,
+	in_qty: float
+) -> void:
+	var d := BuildingDef.new()
+	d.type = type_id
+	d.build_class = build_class
+	d.output_good_id = out_g
+	d.tier = tier
+	d.max_workers = 25
+	d.base_output_per_worker = base_out
+	d.input1_good_id = in_g
+	d.input1_qty = in_qty
+	ResourceSaver.save(d, dir + type_id + ".tres")
+
+
+func _write_zone(
+	dir: String, port_id: String, zone: int, rings: int, slots: int, open_at_start: int
+) -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var z := ZoneDef.new()
+	z.port_id = port_id
+	z.zone = zone
+	z.slot_share = 0.5
+	z.rings = rings
+	z.slots = slots
+	z.open_at_start = open_at_start
+	ResourceSaver.save(z, dir + "%s__%d.tres" % [port_id, zone])
+
+
+func _write_city_center(dir: String, port_id: String, plots: int) -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var c := CityCenterDef.new()
+	c.port_id = port_id
+	c.public_slots = plots
+	ResourceSaver.save(c, dir + "%s.tres" % port_id)
+
+
+func _seed_good_market(good_id: String, qty: int) -> void:
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			GoodsLedger.make_market(PORT_PT01),
+			StringName(good_id),
+			qty,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		0
+	)
+
+
+func _top_up(actor: StringName, need: int) -> void:
+	var bal: int = CashLedger.balance(actor)
+	if bal >= need:
+		return
+	var delta: int = need - bal
+	assert_eq(
+		CashLedger.post(
+			[
+				CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - delta),
+				CashLedger.make_entry(actor, delta),
+			],
+			&"TEST_TOP_UP",
+			BuildingEconomy.REQUESTER_SYS08
+		),
+		OK
+	)
+
+
+func _force_active(bld_id: StringName) -> void:
+	var bld: Building = BuildingEconomy.get_building(bld_id)
+	bld.state = Building.State.ACTIVE
+	bld.days_left = 0
+	bld.missing_materials = {}
+
+
+func _first_kontor_slot() -> StringName:
+	for s_variant in BuildingEconomy.slots_for_port(PORT_PT01):
+		var s: Slot = s_variant
+		if s.kind == Slot.Kind.KONTOR and s.building_id == &"":
+			return s.slot_id
+	return &""
+
+
+func _first_belt_slot() -> StringName:
+	for s_variant in BuildingEconomy.slots_for_port(PORT_PT01):
+		var s: Slot = s_variant
+		if BuildingEconomy.is_gathering_belt_slot(s.slot_id) and s.building_id == &"":
+			return s.slot_id
+	return &""
 
 
 func _build_valid_goods(dir: String) -> String:
