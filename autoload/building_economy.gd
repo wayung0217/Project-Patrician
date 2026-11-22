@@ -959,12 +959,14 @@ func warehouse_capacity(actor: StringName, port: StringName) -> int:
 		var bld: Building = bld_variant
 		if bld.owner != actor:
 			continue
-		if bld.state != Building.State.ACTIVE:
-			continue
 		if bld.build_class == CLASS_KONTOR:
-			if bld.level > level:
-				level = bld.level
+			## TD-16／D-84b: upgrade WAITING／BUILDING keeps prior kontor cap level.
+			var eff: int = _effect_level(bld)
+			if eff > level:
+				level = eff
 		elif bld.build_class == CLASS_WAREHOUSE:
+			if bld.state != Building.State.ACTIVE:
+				continue
 			wh_count = wh_count + 1
 	if level <= 0:
 		return 0
@@ -1025,15 +1027,25 @@ func public_level(port: StringName, cb: StringName) -> int:
 	var best := 0
 	for bld_variant in _buildings_by_port.get(String(port), []):
 		var bld: Building = bld_variant
-		if bld.state != Building.State.ACTIVE:
-			continue
 		if bld.build_class != CLASS_PUBLIC:
 			continue
 		if bld.cb_id != cb and bld.type != cb:
 			continue
-		if bld.level > best:
-			best = bld.level
+		## TD-16／D-84b: upgrade period keeps prior public_level until completion day.
+		var eff: int = _effect_level(bld)
+		if eff > best:
+			best = eff
 	return best
+
+
+func _effect_level(bld: Building) -> int:
+	## TD-16／D-84b: order_upgrade advances `level` immediately; effects use prior until ACTIVE.
+	## New builds stay at level 1 while WAITING／BUILDING → prior 0 (no effect until complete).
+	if bld.state == Building.State.ACTIVE:
+		return bld.level
+	if bld.state == Building.State.WAITING_MATERIAL or bld.state == Building.State.BUILDING:
+		return maxi(0, bld.level - 1)
+	return 0
 
 
 func ring_count_open(_port_id: String) -> int:
