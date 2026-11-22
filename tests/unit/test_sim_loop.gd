@@ -2,7 +2,6 @@ extends GutTest
 ## WP-08 SimLoop + ConsumptionProvider — TechSpec 2.2／2.3／2.1-03／3.7; Owner D-05／D-03／D-07／D-08e／D-08j.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 ## R2-13 / 2.1-04 ⑤: curve from fixtures (PRM-SYS04-CURVE_W1–W5 / M1–M5). Formal path after Owner csv_import.
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const DEMAND_CSV_OK := "res://tests/fixtures/demand/ok/"
@@ -200,7 +199,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	_inject_trade_desk_fixtures()
 	assert_false(PopulationModel.has_satisfaction_input_provider())
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -224,7 +223,7 @@ func test_TST_SYS07_20_simloop_boot_sat_provider_detection() -> void:
 	_inject_trade_desk_fixtures()
 	assert_true(PopulationModel.has_satisfaction_input_provider())
 	var errors2: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -246,7 +245,7 @@ func test_D30a_missing_demand_refuses_boot() -> void:
 	_inject_broker_fixture()
 	var missing := GOODS_FIXTURE_ROOT + "missing_demand/"
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -272,7 +271,7 @@ func test_D30a_complete_demand_boots() -> void:
 	_inject_broker_fixture()
 	_inject_trade_desk_fixtures()
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -313,7 +312,7 @@ func test_boot_collects_all_module_errors_2_2_02() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(empty_sea + "lanes/"))
 	_inject_broker_fixture()
 	var errors: Array = SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		empty_goods,
 		empty_ports,
 		CURVE_FIXTURE,
@@ -625,7 +624,7 @@ func _boot_with_fixtures(fixtures: Dictionary) -> Array:
 	_inject_broker_fixture()
 	_inject_trade_desk_fixtures()
 	return SimLoop.boot(
-		PARAMS_FIXTURE,
+		ParamsFixtures.path_demo(),
 		fixtures["goods"],
 		fixtures["ports"],
 		CURVE_FIXTURE,
@@ -780,7 +779,7 @@ func _full_zero_provider() -> TestConsumptionProvider:
 
 
 func _prepare_fixtures() -> Dictionary:
-	var perr: Array = Params.load_and_validate(PARAMS_FIXTURE)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params fixture")
 	var goods_dir := _build_valid_goods(GOODS_FIXTURE_ROOT + "base/", ANCHOR_LI)
 	var gerr: Array = GoodCatalog.load_and_validate(goods_dir)

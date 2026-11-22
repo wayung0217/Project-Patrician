@@ -4,7 +4,6 @@ extends GutTest
 
 const CsvImport := preload("res://tools/csv_import.gd")
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp21_pop/"
 const PORT := "PT-01"
@@ -59,7 +58,7 @@ func before_each() -> void:
 
 
 func test_WP21_14_04_1_missing_sat_provider_boot_error() -> void:
-	Params.load_and_validate(PARAMS_FIXTURE)
+	Params.load_and_validate(ParamsFixtures.path_demo())
 	var errs: Array = PopulationModel.load_and_validate()
 	assert_gt(errs.size(), 0)
 	var found := false
@@ -315,7 +314,7 @@ func test_TST_SYS07_12_same_seed_placement_replay() -> void:
 
 func test_TST_SYS07_13_boot_param_errors() -> void:
 	var sat := TestSat.new()
-	Params.load_and_validate(PARAMS_FIXTURE)
+	Params.load_and_validate(ParamsFixtures.path_demo())
 	PopulationModel.set_satisfaction_input_provider(sat)
 	Params._values.erase("PRM-SYS07-SAT_MAX_STEP")
 	Params._values["PRM-SYS07-SAT_OUT_MAX"] = 900 # break OUT < DOWN
@@ -540,7 +539,7 @@ func test_WP21_D18a_negative_qty_rejected() -> void:
 
 
 func _boot_pop(sat: SatisfactionInputProvider) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	PopulationModel.set_satisfaction_input_provider(sat)
 	assert_eq(PopulationModel.load_and_validate().size(), 0)
 	PopulationModel.set_master_seed(1)

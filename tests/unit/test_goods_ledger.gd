@@ -5,7 +5,6 @@ extends GutTest
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
-const PARAMS_BE_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const GOODS_FIXTURE_ROOT := "user://goods_ledger_goods/"
 const PORTS_FIXTURE_ROOT := "user://goods_ledger_ports/"
@@ -100,7 +99,7 @@ class TestCapacityProvider extends CapacityProvider:
 
 
 func before_each() -> void:
-	var params_errors: Array = Params.load_and_validate(PARAMS_FIXTURE)
+	var params_errors: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(params_errors.size(), 0, "params fixture must load")
 	_wipe_dir(GOODS_FIXTURE_ROOT)
 	_wipe_dir(PORTS_FIXTURE_ROOT)
@@ -537,7 +536,7 @@ func _boot_city_workshop(wf: TestWorkforce, workers_n: int, base_out: float) -> 
 	BuildingEconomy._pending_shortfalls = []
 	var pop := TestPop.new()
 	pop.set_pop(PORT_PT01, 1000)
-	var perr: Array = Params.load_and_validate(PARAMS_BE_FIXTURE)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(perr.size(), 0, "params: %s" % str(perr))
 	var goods_dir := _build_be_goods(BE_ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)

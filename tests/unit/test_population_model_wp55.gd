@@ -2,7 +2,6 @@ extends GutTest
 ## WP-55: A13 draw_seq、A16 PF-3／hire、A17／D-87 opening all-or-nothing.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp55_pop/"
 const PORT_A := "PT-01"
@@ -178,7 +177,7 @@ func _u_at(draw_seq: int) -> float:
 
 
 func _boot_two_ports(sat: SatisfactionInputProvider) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	PopulationModel.set_satisfaction_input_provider(sat)
 	assert_eq(PopulationModel.load_and_validate().size(), 0)
 	PopulationModel.set_master_seed(1)
@@ -199,7 +198,7 @@ func _boot_two_ports(sat: SatisfactionInputProvider) -> void:
 
 
 func _boot_modules_ports_only() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
 	_setup_core_ledgers()
 	PopulationModel.set_satisfaction_input_provider(TestSat.new())

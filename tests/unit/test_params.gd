@@ -140,13 +140,25 @@ func test_round_eps_out_of_range_rejects() -> void:
 
 
 func test_official_params_json_rejects_without_pending_keys() -> void:
-	# Official params.json must not contain 待審 values (1-A8); missing keys refuse boot.
+	## BB3: formal params still missing schema keys → must refuse (reverse when PRMs registered).
+	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
+	var formal: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OFFICIAL))
+	var missing: Array = []
+	for id_variant in schema.keys():
+		var id: String = String(id_variant)
+		if not formal.has(id):
+			missing.append(id)
 	var errors: Array = Params.load_and_validate(OFFICIAL)
-	assert_gt(errors.size(), 0)
-	assert_push_error_count(errors.size())
-	assert_false(Params.is_loaded())
-	assert_true(_has_field_error(errors, KEY_START_CASH, "MISSING_KEY"))
-	assert_true(_has_field_error(errors, KEY_ARREARS, "MISSING_KEY"))
+	if missing.is_empty():
+		## PRMs fully registered: formal must load cleanly (reversed lock).
+		assert_eq(errors.size(), 0, "formal params complete → load ok")
+		assert_true(Params.is_loaded())
+	else:
+		assert_gt(errors.size(), 0)
+		assert_push_error_count(errors.size())
+		assert_false(Params.is_loaded())
+		assert_true(_has_field_error(errors, KEY_START_CASH, "MISSING_KEY"))
+		assert_true(_has_field_error(errors, KEY_ARREARS, "MISSING_KEY"))
 
 
 func test_type_mismatch_rejects() -> void:
@@ -175,11 +187,28 @@ func test_out_of_range_rejects() -> void:
 
 
 func test_collects_all_missing_errors() -> void:
-	# C-06: both 1-A8 missing keys reported together (official file).
+	## BB3／C-06: every schema key absent from formal params is listed (not just START_CASH／ARREARS).
+	var schema: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(SCHEMA))
+	var formal: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(OFFICIAL))
+	var missing: Array = []
+	for id_variant in schema.keys():
+		var id: String = String(id_variant)
+		if not formal.has(id):
+			missing.append(id)
+	missing.sort()
 	var errors: Array = Params.load_and_validate(OFFICIAL)
+	if missing.is_empty():
+		assert_eq(errors.size(), 0)
+		assert_true(Params.is_loaded())
+		return
 	assert_push_error_count(errors.size())
-	assert_true(_has_field_error(errors, KEY_START_CASH, "MISSING_KEY"))
-	assert_true(_has_field_error(errors, KEY_ARREARS, "MISSING_KEY"))
+	assert_false(Params.is_loaded())
+	for id_variant2 in missing:
+		var key: String = String(id_variant2)
+		assert_true(
+			_has_field_error(errors, key, "MISSING_KEY"),
+			"BB3: missing key %s must be collected" % key
+		)
 
 
 func _write_user_fixture_without(erase_key: String) -> String:

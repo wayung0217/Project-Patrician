@@ -163,13 +163,23 @@ func test_TST_SYS14_04_yuegang_to_dayuan_avoids_penghu_port() -> void:
 
 
 func test_TST_SYS14_09_path_deterministic_twice() -> void:
+	## BB1／C-08: reload SeaLanes then compare (not same in-memory object).
 	_boot_full_chart()
 	var a: Array = SeaLanes.path(PT_FUZHOU, PT_NAHA)
+	assert_gt(a.size(), 0)
+	var a_lanes: PackedStringArray = PackedStringArray()
+	var a_from: PackedStringArray = PackedStringArray()
+	for hop_variant in a:
+		var hop: Dictionary = hop_variant
+		a_lanes.append(String(hop["lane_id"]))
+		a_from.append(String(hop["from_node"]))
+	before_each()
+	_boot_full_chart()
 	var b: Array = SeaLanes.path(PT_FUZHOU, PT_NAHA)
-	assert_eq(a.size(), b.size())
-	for i in range(a.size()):
-		assert_eq(String(a[i]["lane_id"]), String(b[i]["lane_id"]))
-		assert_eq(String(a[i]["from_node"]), String(b[i]["from_node"]))
+	assert_eq(b.size(), a_lanes.size())
+	for i in range(b.size()):
+		assert_eq(String(b[i]["lane_id"]), a_lanes[i])
+		assert_eq(String(b[i]["from_node"]), a_from[i])
 
 
 func test_WP29_13_06_1_csv_headers_missing_extra_type_abort() -> void:
@@ -260,21 +270,21 @@ func test_WP29_13_06_5_ports_not_intermediate() -> void:
 	_boot_full_chart()
 	# Neighbor chain PT-01→PT-02→PT-06 would use intermediate port; must not appear.
 	var p: Array = SeaLanes.path(PT_YUE, "PT-06")
+	## T5: path must be non-empty before intermediate-port loop (no vacuous 0==0).
+	assert_gt(p.size(), 0, "T5: PT-01→PT-06 must have a path")
 	var intermediate_ports: Array = []
 	for i in range(p.size()):
 		var hop: Dictionary = p[i]
 		var lid: String = String(hop["lane_id"])
 		var from_n: String = String(hop["from_node"])
-		var lane: SeaLane = SeaLanes._lanes[lid]
-		var other: String = lane.node_b if from_n == lane.node_a else lane.node_a
+		var ends: PackedStringArray = SeaLanes.lane_endpoints(lid)
+		var other: String = ends[1] if ends[0] == from_n else ends[0]
 		# from_node of hops after the first, and arrival nodes before last, must not be foreign ports.
 		if i > 0:
-			var node: SeaNode = SeaLanes._nodes[from_n]
-			if node.kind == SeaNode.KIND_PORT and from_n != PT_YUE and from_n != "PT-06":
+			if _is_port_node(from_n) and from_n != PT_YUE and from_n != "PT-06":
 				intermediate_ports.append(from_n)
 		if i < p.size() - 1:
-			var arr: SeaNode = SeaLanes._nodes[other]
-			if arr.kind == SeaNode.KIND_PORT and other != PT_YUE and other != "PT-06":
+			if _is_port_node(other) and other != PT_YUE and other != "PT-06":
 				intermediate_ports.append(other)
 	assert_eq(intermediate_ports.size(), 0, "intermediate ports: %s path=%s" % [str(intermediate_ports), str(p)])
 
@@ -293,6 +303,28 @@ func test_WP29_13_05_no_path_err_sys14_03() -> void:
 	assert_eq(none.size(), 0)
 	assert_eq(StringName(SeaLanes.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), SeaLanes.ERR_SYS14_03)
 	assert_push_error_count(1)
+
+
+func test_WP59_BB2_port_exists_but_unreachable() -> void:
+	## BB2: small fixture with existing but unreachable port.
+	## (1) load rejects via FRM-SYS14-01 reachability; (2) path() → ERR-SYS14-03 after disconnect.
+	_setup_ports_goods(16)
+	var dirs := _write_tiny_sea_unreachable_port()
+	var load_errors: Array = SeaLanes.load_and_validate(dirs["nodes"], dirs["regions"], dirs["lanes"])
+	assert_gt(load_errors.size(), 0, "unreachable port fixture must fail load")
+	assert_true(_has_code(load_errors, SeaLanes.ERR_SYS14_01))
+	assert_false(SeaLanes.is_loaded())
+	var load_push: int = load_errors.size()
+	assert_push_error_count(load_push)
+	## Path behavior when dest port exists but has no route (post-load isolation).
+	before_each()
+	_boot_full_chart()
+	assert_true(PortRegistry.get_port(PT_NAHA) != null, "dest port must exist")
+	_disconnect_port_adj(PT_NAHA)
+	var none: Array = SeaLanes.path(PT_FUZHOU, PT_NAHA)
+	assert_eq(none.size(), 0)
+	assert_eq(StringName(SeaLanes.last_error().get(ErrorInfoUtil.KEY_CODE, &"")), SeaLanes.ERR_SYS14_03)
+	assert_push_error_count(load_push + 1)
 
 
 # --- helpers ---
@@ -384,6 +416,42 @@ func _write_tiny_sea_tie_lex() -> Dictionary:
 	return {"nodes": nodes, "regions": regions, "lanes": lanes}
 
 
+func _write_tiny_sea_unreachable_port() -> Dictionary:
+	## BB2 fixture: 16 PORT nodes; PT-02 has no lanes (exists but unreachable).
+	var root := SEA_ROOT + "unreachable/"
+	var nodes := root + "nodes/"
+	var regions := root + "regions/"
+	var lanes := root + "lanes/"
+	_wipe_dir(nodes)
+	_wipe_dir(regions)
+	_wipe_dir(lanes)
+	_write_all_ports_as_nodes(nodes)
+	_write_region(regions, "RG-01")
+	_write_junction(nodes, "JN-HUB", 0, 0)
+	for i in range(1, 17):
+		var pid := "PT-%02d" % i
+		if pid == "PT-02":
+			continue
+		_write_lane(lanes, "LN-U%02d" % i, pid, "JN-HUB", 2)
+	return {"nodes": nodes, "regions": regions, "lanes": lanes}
+
+
+func _disconnect_port_adj(port_id: String) -> void:
+	## Post-load: remove all edges incident to port_id (BB2 path isolation).
+	SeaLanes._adj[port_id] = []
+	for node_variant in SeaLanes._adj.keys():
+		var node_id: String = String(node_variant)
+		if node_id == port_id:
+			continue
+		var edges: Array = SeaLanes._adj[node_id]
+		var kept: Array = []
+		for edge_variant in edges:
+			var edge: Dictionary = edge_variant
+			if String(edge.get("other", "")) != port_id:
+				kept.append(edge)
+		SeaLanes._adj[node_id] = kept
+
+
 func _write_all_ports_as_nodes(nodes_dir: String) -> void:
 	var names := {
 		1: "月港", 2: "安海", 3: "福州", 4: "寧波", 5: "松江", 6: "澎湖",
@@ -472,48 +540,7 @@ func _build_valid_goods(dir: String) -> String:
 
 
 func _build_valid_ports(port_count: int, dir: String) -> String:
-	_wipe_dir(dir)
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	var free_count: int = _valid_free_count(port_count)
-	var good_ids: PackedStringArray = GoodCatalog.all_ids()
-	for i in range(port_count):
-		var n: int = i + 1
-		var port_id := "PT-%02d" % n
-		var def := PortDef.new()
-		def.port_id = port_id
-		def.name_zh = "港%d" % n
-		def.is_free_port = i < free_count
-		def.draft_limit_class = 0
-		def.regime_id = "RG-TEST"
-		def.role_cells = {}
-		for good_variant in good_ids:
-			var good_id: String = String(good_variant)
-			var cell := RoleCell.new()
-			if i == 0:
-				cell.role = PortRegistry.ROLE_PRODUCER
-				cell.base_output_per_season = 1
-				cell.downstream_terminals = PackedStringArray()
-			else:
-				cell.role = PortRegistry.ROLE_TERMINAL
-				cell.base_output_per_season = 0
-				cell.downstream_terminals = PackedStringArray()
-			def.role_cells[good_id] = cell
-		ResourceSaver.save(def, dir + "%s.tres" % port_id)
-	return dir
-
-
-func _valid_free_count(port_count: int) -> int:
-	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
-	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
-	if port_count <= 0:
-		return 0
-	var free_count: int = 0
-	while free_count <= port_count:
-		var ratio: float = float(free_count) / float(port_count)
-		if ratio >= ratio_min and ratio <= ratio_max:
-			return free_count
-		free_count += 1
-	return 0
+	return FixtureBuilders.build_valid_ports(port_count, dir)
 
 
 func _make_good(
@@ -524,16 +551,17 @@ func _make_good(
 	is_build_material: bool,
 	is_strategic: bool
 ) -> GoodDef:
-	var def := GoodDef.new()
-	def.good_id = good_id
-	def.name_zh = name_zh
-	def.tier = tier
-	def.is_staple = is_staple
-	def.is_build_material = is_build_material
-	def.is_strategic = is_strategic
-	def.base_price_li = ANCHOR_LI
-	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
-	return def
+	return FixtureBuilders.make_good(
+		good_id, name_zh, tier, is_staple, is_build_material, is_strategic, ANCHOR_LI
+	)
+
+
+func _is_port_node(node_id: String) -> bool:
+	for node_variant in SeaLanes.nodes():
+		var node: SeaNode = node_variant
+		if node.node_id == node_id:
+			return node.kind == SeaNode.KIND_PORT
+	return false
 
 
 func _has_code(errors: Array, code: StringName) -> bool:
@@ -544,22 +572,5 @@ func _has_code(errors: Array, code: StringName) -> bool:
 
 
 func _wipe_dir(rel: String) -> void:
-	var abs := ProjectSettings.globalize_path(rel)
-	if DirAccess.dir_exists_absolute(abs):
-		var dir := DirAccess.open(abs)
-		if dir != null:
-			dir.list_dir_begin()
-			while true:
-				var n := dir.get_next()
-				if n == "":
-					break
-				if n == "." or n == "..":
-					continue
-				var path := abs.path_join(n)
-				if dir.current_is_dir():
-					_wipe_dir(rel.path_join(n))
-					DirAccess.remove_absolute(path)
-				else:
-					DirAccess.remove_absolute(path)
-			dir.list_dir_end()
-	DirAccess.make_dir_recursive_absolute(abs)
+	FixtureBuilders.wipe_dir(rel)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(rel))

@@ -752,34 +752,8 @@ func _build_valid_goods(dir: String) -> String:
 
 
 func _build_valid_ports(port_count: int, dir: String) -> String:
-	_wipe_dir(dir)
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	var free_count: int = _valid_free_count(port_count)
-	var good_ids: PackedStringArray = GoodCatalog.all_ids()
-	for i in range(port_count):
-		var n: int = i + 1
-		var port_id := "PT-%02d" % n
-		var def := PortDef.new()
-		def.port_id = port_id
-		def.name_zh = "港%d" % n
-		def.is_free_port = i < free_count
-		def.draft_limit_class = 2
-		def.regime_id = "RG-TEST"
-		def.role_cells = {}
-		for good_variant in good_ids:
-			var good_id: String = String(good_variant)
-			var cell := RoleCell.new()
-			if i == 0:
-				cell.role = PortRegistry.ROLE_PRODUCER
-				cell.base_output_per_season = 1
-				cell.downstream_terminals = PackedStringArray()
-			else:
-				cell.role = PortRegistry.ROLE_TERMINAL
-				cell.base_output_per_season = 0
-				cell.downstream_terminals = PackedStringArray()
-			def.role_cells[good_id] = cell
-		ResourceSaver.save(def, dir + "%s.tres" % port_id)
-	return dir
+	## T6: shared builder; intel fixtures need deep draft (class 2).
+	return FixtureBuilders.build_valid_ports(port_count, dir, -1, 2)
 
 
 func _make_good(
@@ -790,28 +764,9 @@ func _make_good(
 	is_build_material: bool,
 	is_strategic: bool
 ) -> GoodDef:
-	var def := GoodDef.new()
-	def.good_id = good_id
-	def.name_zh = name_zh
-	def.tier = tier
-	def.is_staple = is_staple
-	def.is_build_material = is_build_material
-	def.is_strategic = is_strategic
-	def.base_price_li = DEMO_ANCHOR
-	def.season_mask = (1 << Params.get_int(PRM_SEASONS)) - 1
-	return def
-
-
-func _valid_free_count(port_count: int) -> int:
-	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
-	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
-	var free_count: int = 0
-	while free_count <= port_count:
-		var ratio: float = float(free_count) / float(port_count)
-		if ratio >= ratio_min and ratio <= ratio_max:
-			return free_count
-		free_count += 1
-	return 0
+	return FixtureBuilders.make_good(
+		good_id, name_zh, tier, is_staple, is_build_material, is_strategic, DEMO_ANCHOR
+	)
 
 
 func _reset_runtime() -> void:

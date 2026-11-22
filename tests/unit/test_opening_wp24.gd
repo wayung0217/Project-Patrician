@@ -4,7 +4,6 @@ extends GutTest
 
 const CsvImport := preload("res://tools/csv_import.gd")
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp24_open/"
 const PORT_A := "PT-01"
@@ -13,7 +12,16 @@ const ACTOR := &"ACT-PLAYER"
 const FIX_POP_OK := "res://tests/fixtures/wp24_pop_ok/"
 const FIX_POP_DUP := "res://tests/fixtures/wp24_pop_dup/"
 const FIX_POP_BAD_PORT := "res://tests/fixtures/wp24_pop_bad_port/"
+const FIX_POP_G4 := "res://tests/fixtures/wp59_opening_populated/"
 const OUT_POP := "res://tests/fixtures/wp24_out_pop/"
+
+## G4: formal docs/spec opening_population values for PT-01／PT-03.
+const G4_PT01_POOR := 1480
+const G4_PT01_CITIZEN := 590
+const G4_PT01_RICH := 130
+const G4_PT03_POOR := 2150
+const G4_PT03_CITIZEN := 870
+const G4_PT03_RICH := 180
 
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
@@ -181,6 +189,43 @@ func test_WP24_csv_import_opening_population_ok() -> void:
 	assert_eq(op.rich, 5)
 
 
+func test_WP59_G4_boot_with_formal_populated_opening() -> void:
+	## G4: small fixture derived from formal population (≥2 ports with pop) boots apply_opening_init.
+	_boot_modules_only()
+	var pop_dir := ROOT + "g4_opening_population/"
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(pop_dir))
+	var formal: Dictionary = {
+		"PT-01": {"poor": G4_PT01_POOR, "citizen": G4_PT01_CITIZEN, "rich": G4_PT01_RICH},
+		"PT-03": {"poor": G4_PT03_POOR, "citizen": G4_PT03_CITIZEN, "rich": G4_PT03_RICH},
+	}
+	## Cover every registry port; non-fixture ports get zero (D-19e).
+	for pid_v in PortRegistry.all_ids():
+		var pid: String = String(pid_v)
+		var op := OpeningPopulation.new()
+		op.port_id = pid
+		if formal.has(pid):
+			op.poor = int(formal[pid]["poor"])
+			op.citizen = int(formal[pid]["citizen"])
+			op.rich = int(formal[pid]["rich"])
+		else:
+			op.poor = 0
+			op.citizen = 0
+			op.rich = 0
+		ResourceSaver.save(op, pop_dir + "%s.tres" % pid)
+	var errs: Array = PopulationModel.apply_opening_init(pop_dir)
+	assert_eq(errs.size(), 0, "G4 opening boot: %s" % str(errs))
+	assert_eq(PopulationModel.population(&"PT-01", &"POOR"), G4_PT01_POOR)
+	assert_eq(PopulationModel.population(&"PT-01", &"CITIZEN"), G4_PT01_CITIZEN)
+	assert_eq(PopulationModel.population(&"PT-01", &"RICH"), G4_PT01_RICH)
+	assert_eq(PopulationModel.population(&"PT-03", &"POOR"), G4_PT03_POOR)
+	assert_eq(PopulationModel.population(&"PT-03", &"CITIZEN"), G4_PT03_CITIZEN)
+	assert_eq(PopulationModel.population(&"PT-03", &"RICH"), G4_PT03_RICH)
+	## Fixture CSV on disk matches formal-derived numbers (≥2 populated ports).
+	var csv: String = FileAccess.get_file_as_string(FIX_POP_G4.path_join("opening_population.csv"))
+	assert_true(csv.find("PT-01,%d,%d,%d" % [G4_PT01_POOR, G4_PT01_CITIZEN, G4_PT01_RICH]) >= 0)
+	assert_true(csv.find("PT-03,%d,%d,%d" % [G4_PT03_POOR, G4_PT03_CITIZEN, G4_PT03_RICH]) >= 0)
+
+
 func test_WP24_opening_pop_missing_file_refuses() -> void:
 	var result: Dictionary = CsvImport.run_batch_opening_population(
 		"res://tests/fixtures/wp24_pop_missing/", OUT_POP + "miss/", FIX_POP_OK.path_join("ports.csv")
@@ -338,7 +383,7 @@ func test_WP54_V1_opening_residence_before_workshop_rings() -> void:
 func test_WP54_V1_opening_processing_outermost_ring() -> void:
 	## V1／A9: IND2／3 place on outermost open civil (not innermost).
 	# Custom boot so IND2 def is present at load_and_validate.
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
 	var goods_dir := _build_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
@@ -422,7 +467,7 @@ func test_WP24_csv_only_opening_resources() -> void:
 
 
 func _boot_with_opening() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
 	var goods_dir := _build_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
@@ -520,7 +565,7 @@ func _write_opening_public_all() -> void:
 
 
 func _boot_modules_only() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
 	var goods_dir := _build_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)

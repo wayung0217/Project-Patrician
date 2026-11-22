@@ -310,7 +310,7 @@ func test_valid_ports_load_queries_and_warnings() -> void:
 	var free_count: int = _valid_free_count(port_count)
 	var dir := _build_valid_ports(port_count, PORTS_FIXTURE_ROOT + "ok/", free_count)
 	# Put controlled_scale_only PRODUCER on a free port → warning only.
-	_force_controlled_producer_on_free_port(dir)
+	FixtureBuilders.force_controlled_producer_on_free_port(dir)
 
 	var errors: Array = PortRegistry.load_and_validate(dir)
 	assert_eq(errors.size(), 0)
@@ -576,56 +576,11 @@ func _build_valid_goods(dir: String) -> String:
 
 
 func _build_valid_ports(port_count: int, dir: String, free_count: int = -1) -> String:
-	_wipe_dir(dir)
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	if free_count < 0:
-		free_count = _valid_free_count(port_count)
-	var good_ids: PackedStringArray = GoodCatalog.all_ids()
-	for i in range(port_count):
-		var n: int = i + 1
-		var port_id := "PT-%02d" % n
-		var def := PortDef.new()
-		def.port_id = port_id
-		def.name_zh = "港%d" % n
-		def.is_free_port = i < free_count
-		def.draft_limit_class = 0
-		def.regime_id = "RG-TEST"
-		def.role_cells = {}
-		for good_variant in good_ids:
-			var good_id: String = String(good_variant)
-			var cell := RoleCell.new()
-			if i == 0:
-				# PT-01: PRODUCER for every good (output > 0).
-				cell.role = PortRegistry.ROLE_PRODUCER
-				cell.base_output_per_season = 1
-				cell.downstream_terminals = PackedStringArray()
-			elif i == 1:
-				# PT-02: TERMINAL sink for every good.
-				cell.role = PortRegistry.ROLE_TERMINAL
-				cell.base_output_per_season = 0
-				cell.downstream_terminals = PackedStringArray()
-			else:
-				cell.role = PortRegistry.ROLE_TERMINAL
-				cell.base_output_per_season = 0
-				cell.downstream_terminals = PackedStringArray()
-			def.role_cells[good_id] = cell
-		ResourceSaver.save(def, dir + "%s.tres" % port_id)
-	return dir
+	return FixtureBuilders.build_valid_ports(port_count, dir, free_count)
 
 
 func _valid_free_count(port_count: int) -> int:
-	# Pick smallest free_count whose ratio ∈ [PRM min, max] (C-03: no bare literals beyond 0/1).
-	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
-	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
-	if port_count <= 0:
-		return 0
-	var free_count: int = 0
-	while free_count <= port_count:
-		var ratio: float = float(free_count) / float(port_count)
-		if ratio >= ratio_min and ratio <= ratio_max:
-			return free_count
-		free_count += 1
-	return 0
+	return FixtureBuilders.valid_free_count(port_count)
 
 
 func _set_transit(dir: String, port_id: String, good_id: String, downstream: PackedStringArray) -> void:
@@ -650,23 +605,6 @@ func _add_second_producer(dir: String, port_id: String, good_id: String) -> void
 	ResourceSaver.save(def, path)
 
 
-func _force_controlled_producer_on_free_port(dir: String) -> void:
-	# Free port PT-01 already PRODUCER; mark a high-tier strategic good so controlled_scale_only is true.
-	var good_ids: PackedStringArray = GoodCatalog.all_ids()
-	var target: String = ""
-	var free_max: int = Params.get_int(PRM_FREE_PORT_TIER_MAX)
-	for id in good_ids:
-		var g: GoodDef = GoodCatalog.get_good(id)
-		if g.tier > free_max or g.is_strategic:
-			target = id
-			break
-	if target.is_empty():
-		# Fallback: flip last filler to strategic via re-save in goods dir is heavy; skip if none.
-		return
-	# Ensure PT-01 (free when free_count>0) produces that good — already true in fixture.
-	assert_true(GoodCatalog.get_good(target).controlled_scale_only)
-
-
 func _make_good(
 	good_id: String,
 	name_zh: String,
@@ -676,17 +614,9 @@ func _make_good(
 	is_strategic: bool,
 	base_price_li: int
 ) -> GoodDef:
-	var def := GoodDef.new()
-	def.good_id = good_id
-	def.name_zh = name_zh
-	def.tier = tier
-	def.is_staple = is_staple
-	def.is_build_material = is_build_material
-	def.is_strategic = is_strategic
-	def.base_price_li = base_price_li
-	# D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
-	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
-	return def
+	return FixtureBuilders.make_good(
+		good_id, name_zh, tier, is_staple, is_build_material, is_strategic, base_price_li
+	)
 
 
 func _wipe_dir(dir: String) -> void:

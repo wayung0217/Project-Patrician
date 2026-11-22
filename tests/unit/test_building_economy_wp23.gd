@@ -2,7 +2,6 @@ extends GutTest
 ## WP-23 / TechSpec 14-07 city + quarter-end (FRM-03／04／12–18).
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp23_city/"
 const PORT := "PT-01"
@@ -368,7 +367,7 @@ func test_WP53_A12_upgrade_waiting_keeps_upgrade_days() -> void:
 
 func _seed_market_enough() -> void:
 	var mkt: Dictionary = GoodsLedger.make_market(PORT)
-	for gid in ["GD-001", "GD-002", "GD-003"]:
+	for gid in ["GD-001", "GD-002", "GD-003", "GD-004"]:
 		GoodsLedger.transfer(
 			GoodsLedger.make_external(),
 			mkt,
@@ -640,7 +639,7 @@ func _boot_world(wf: WorkforceProvider = null) -> void:
 
 
 func _setup_core_without_be(pop: TestPop) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)

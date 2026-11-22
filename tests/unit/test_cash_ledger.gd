@@ -4,7 +4,6 @@ extends GutTest
 
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
-const PARAMS_DEMO := "res://tests/fixtures/params_sys05_demo.json"
 const SYS_ID := &"SYS-05"
 
 const REQUESTER_SYS04 := &"SYS-04"
@@ -112,7 +111,8 @@ class DemoQuoteProvider extends RefCounted:
 
 
 func before_each() -> void:
-	var params_errors: Array = Params.load_and_validate(PARAMS_DEMO)
+	## G3: demo variant from baseline (START_CASH／ARREARS).
+	var params_errors: Array = Params.load_and_validate(ParamsFixtures.path_demo())
 	assert_eq(params_errors.size(), 0, "params demo fixture must load")
 	var gl_errors: Array = GoodsLedger.load_and_validate()
 	assert_eq(gl_errors.size(), 0, "GoodsLedger must load for shared seq")
@@ -280,7 +280,7 @@ func test_FRM_SYS05_07_is_single_function() -> void:
 func test_TST_SYS05_07_bankruptcy_referred_and_reset() -> void:
 	# TST-SYS05-07: 連續欠款達門檻 → bankruptcy_referred；清償後計數歸 0
 	# A19／M21：達門檻後再過一季不重發
-	# Fixture ARREARS_SEASONS_TO_BANKRUPT = 2（params_sys05_demo.json）
+	# Fixture ARREARS_SEASONS_TO_BANKRUPT = ParamsFixtures.DEMO_ARREARS_SEASONS
 	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), OK)
 	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_BAL_FOR_CHARGE)
 	CashLedger.charge_mandatory(CashLedger.ACCOUNT_PLAYER, DEMO_DUE, REASON_CHARGE, REQUESTER_SYS13)
@@ -426,11 +426,26 @@ func test_close_season_prorate_via_schedule() -> void:
 
 
 func test_params_fixture_not_official_pending_keys() -> void:
-	# 1-A8 / B7: 正式 params.json 不得含 START_CASH 值；缺鍵拒絕
+	## BB3: formal params must-fail while schema keys remain unregistered; reverse when complete.
+	var schema: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string("res://data/params/params_schema.json")
+	)
+	var formal: Dictionary = JSON.parse_string(
+		FileAccess.get_file_as_string("res://data/params/params.json")
+	)
+	var missing := false
+	for id_variant in schema.keys():
+		if not formal.has(String(id_variant)):
+			missing = true
+			break
 	var errors: Array = Params.load_and_validate("res://data/params/params.json")
-	assert_gt(errors.size(), 0)
-	assert_push_error_count(errors.size())
-	assert_false(Params.is_loaded())
+	if missing:
+		assert_gt(errors.size(), 0)
+		assert_push_error_count(errors.size())
+		assert_false(Params.is_loaded())
+	else:
+		assert_eq(errors.size(), 0)
+		assert_true(Params.is_loaded())
 
 
 func test_R2_05_post_returns_ok_or_failed() -> void:

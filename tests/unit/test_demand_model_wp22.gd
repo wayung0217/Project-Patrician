@@ -4,13 +4,10 @@ extends GutTest
 
 const CsvImport := preload("res://tools/csv_import.gd")
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const DEMAND_CSV_OK := "res://tests/fixtures/demand/ok/"
 const DEMAND_OUT := "res://tests/fixtures/demand/out/"
 const TABLES_OK := DEMAND_OUT ## demand dir after csv_import
-const PARAMS_MISSING_WEIGHT := "res://tests/fixtures/params_sys06_missing_weight.json"
-const PARAMS_MISSING_DPW := "res://tests/fixtures/params_sys06_missing_days_per_week.json"
 
 const ROOT := "user://wp22_demand/"
 const PORT := "PT-01"
@@ -553,7 +550,7 @@ func test_TST_SYS06_13_unmet_only_after_flush() -> void:
 
 func test_TST_SYS06_14_missing_prm_refuses_boot() -> void:
 	## Missing PRM-SYS04-DAYS_PER_WEEK or PRM-SYS06-* → ERR-SYS06-06; no defaults.
-	var perr: Array = Params.load_and_validate(PARAMS_MISSING_WEIGHT)
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_missing_weight_sum())
 	assert_gt(perr.size(), 0)
 	assert_false(Params.is_loaded())
 	var errs: Array = DemandModel.load_and_validate(TABLES_OK)
@@ -561,7 +558,7 @@ func test_TST_SYS06_14_missing_prm_refuses_boot() -> void:
 	assert_true(_has_code(errs, DemandModel.ERR_SYS06_06))
 	assert_false(DemandModel.is_loaded())
 	before_each()
-	var perr2: Array = Params.load_and_validate(PARAMS_MISSING_DPW)
+	var perr2: Array = Params.load_and_validate(ParamsFixtures.path_missing_days_per_week())
 	assert_gt(perr2.size(), 0)
 	assert_false(Params.is_loaded())
 	var errs2: Array = DemandModel.load_and_validate(TABLES_OK)
@@ -617,7 +614,7 @@ func _wipe_demand_out() -> void:
 
 
 func _boot_params_ports_goods() -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_valid_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")

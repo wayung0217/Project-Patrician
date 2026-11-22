@@ -2,7 +2,6 @@ extends GutTest
 ## WP-51 incremental placement — FRM-SYS07-12、OQ-13j、TST-SYS07-11／12、C-13／D-63e.
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_sys05_demo.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const ROOT := "user://wp51_pop/"
 const PORT_A := "PT-01"
@@ -226,7 +225,7 @@ func test_WP51_opening_full_placement() -> void:
 
 
 func _boot_two_ports(sat: SatisfactionInputProvider) -> void:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	PopulationModel.set_satisfaction_input_provider(sat)
 	assert_eq(PopulationModel.load_and_validate().size(), 0)
 	PopulationModel.set_master_seed(1)
