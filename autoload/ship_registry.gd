@@ -230,6 +230,8 @@ func hire_crew(actor: StringName, ship_id: StringName, n: int) -> int:
 		_record(ERR_SYS13_01, "n", n, "hire_crew n must be > 0")
 		return 0
 	var cap: int = _crew_cap(s.type)
+	if cap < 0:
+		return 0 ## A29／C-06: CREW[type] missing already recorded
 	if s.crew + n > cap:
 		_record(ERR_SYS13_05, "crew", s.crew + n, "hire would exceed CREW[type]")
 		return 0
@@ -238,8 +240,8 @@ func hire_crew(actor: StringName, ship_id: StringName, n: int) -> int:
 		_record(ERR_SYS13_06, "beggars", hired, "insufficient beggars (ERR-SYS13-06)")
 		return 0
 	s.crew = s.crew + n
+	## A24／D-05: queue only; SimLoop.flush_signals at day end emits.
 	_queue_signal("crew_changed", [s.ship_id, s.crew])
-	_flush_signals()
 	return n
 
 
@@ -261,8 +263,8 @@ func fire_crew(actor: StringName, ship_id: StringName, n: int) -> int:
 		_record(ERR_SYS13_01, "release", released, "release_sailors failed")
 		return 0
 	s.crew = s.crew - n
+	## A24／D-05: queue only; SimLoop.flush_signals at day end emits.
 	_queue_signal("crew_changed", [s.ship_id, s.crew])
-	_flush_signals()
 	return n
 
 
@@ -285,7 +287,10 @@ func sail(actor: StringName, ship_id: StringName, dest_port: StringName) -> int:
 	if dest == origin:
 		_record(ERR_SYS14_04, "dest_port", dest, "dest equals current port")
 		return 0
-	if s.crew < _crew_cap(s.type):
+	var crew_need: int = _crew_cap(s.type)
+	if crew_need < 0:
+		return 0 ## A29／C-06: CREW[type] missing already recorded
+	if s.crew < crew_need:
 		_record(ERR_SYS13_04, "crew", s.crew, "crew < CREW[type]")
 		return 0
 	var ship_draft: int = int(SHIP_DRAFT.get(String(s.type), DRAFT_DEEP))
@@ -298,6 +303,8 @@ func sail(actor: StringName, ship_id: StringName, dest_port: StringName) -> int:
 		_record(ERR_SYS14_03, "path", "%s→%s" % [origin, dest], "no path")
 		return 0
 	var tpw: int = _tpw(s.type)
+	if tpw <= 0:
+		return 0 ## A29／C-06: TPW[type] missing／invalid already recorded
 	var total_wp: int = _path_waypoints(path)
 	var depart_tick: int = Clock.tick
 	var arrival: int = depart_tick + total_wp * tpw
@@ -314,8 +321,8 @@ func sail(actor: StringName, ship_id: StringName, dest_port: StringName) -> int:
 	var hold_id: StringName = s.hold_container_id()
 	GoodsLedger.container_departed(hold_id)
 	GoodsLedger.set_container_port(hold_id, &"")
+	## A24／D-05: queue only; SimLoop.flush_signals at day end emits.
 	_queue_signal("ship_departed", [s.ship_id, from_port, dest_port, depart_tick, arrival])
-	_flush_signals()
 	# 25.1 F／D-34d: on_departed after SAILING committed, before return (snapshot fail ≠ block sail).
 	if _ship_observer != null:
 		_ship_observer.on_departed(s.ship_id, s.owner, from_port, depart_tick)
@@ -342,11 +349,14 @@ func reroute(actor: StringName, ship_id: StringName, dest_port: StringName) -> i
 		_record(ERR_SYS14_02, "draft", ship_draft, "ship draft exceeds dest port_draft")
 		return 0
 	var tpw: int = _tpw(s.type)
+	if tpw <= 0:
+		return 0 ## A29／C-06: TPW[type] missing／invalid already recorded
 	var t_now: int = Clock.tick
 	var elapsed: int = t_now - s.leg_start_tick
 	if elapsed < 0:
 		elapsed = 0
-	var k: int = int(floori(float(elapsed) / float(tpw)))
+	## C-09: integer division, no float.
+	var k: int = elapsed / tpw
 	var t_next: int = s.leg_start_tick + (k + 1) * tpw
 	var completed: int = s.wp_offset + (k + 1)
 	var loc: Dictionary = _locate_completed(s.path, completed)
@@ -408,8 +418,8 @@ func reroute(actor: StringName, ship_id: StringName, dest_port: StringName) -> i
 	s.wp_offset = new_offset
 	s.leg_start_tick = t_next
 	s.arrival_tick = t_next + remaining * tpw
+	## A24／D-05: queue only; SimLoop.flush_signals at day end emits.
 	_queue_signal("ship_rerouted", [s.ship_id, dest_port, s.arrival_tick])
-	_flush_signals()
 	return s.arrival_tick
 
 
@@ -424,10 +434,13 @@ func position(ship_id: StringName) -> Dictionary:
 	if s.state == Ship.STATE_DOCKED:
 		return {"state": s.state, "port_id": s.port_id, "tick": Clock.tick}
 	var tpw: int = _tpw(s.type)
+	if tpw <= 0:
+		return {} ## A29／C-06: TPW[type] missing／invalid already recorded
 	var elapsed: int = Clock.tick - s.leg_start_tick
 	if elapsed < 0:
 		elapsed = 0
-	var k: int = int(floori(float(elapsed) / float(tpw)))
+	## C-09: integer division, no float.
+	var k: int = elapsed / tpw
 	var completed: int = s.wp_offset + k
 	var loc: Dictionary = _locate_completed(s.path, completed)
 	if loc.is_empty():
@@ -472,6 +485,7 @@ func can_trade(ship_id: StringName, port_id: StringName) -> bool:
 
 func hold_transfer_allowed(container: Variant) -> bool:
 	## FRM-SYS13-10／ERR-SYS13-03: HOLD TRADE／LOAD only while DOCKED at registered port.
+	## A25／D-08d／FRM-SYS05-14: resolve via GoodsLedger public queries; never parse id／_container_meta.
 	if not _loaded:
 		return false
 	var ship_key: String = _ship_id_from_hold(container)
@@ -493,13 +507,22 @@ func hold_transfer_allowed(container: Variant) -> bool:
 
 
 func tick_step(tick: int) -> void:
-	## FRM-SYS14-06: arrivals with arrival_tick == tick, ship_id ascending.
+	## FRM-SYS14-06／A28: arrivals with arrival_tick <= tick (catch skipped ticks), ship_id ascending.
 	## 25.1 F／D-34d: after arrival loop, on_arrivals at most once (batch atomic).
+	## A24／D-05: queue ship_arrived; do not flush here — SimLoop day-end flush_signals emits.
 	assert(_loaded, "ShipRegistry.tick_step before load")
 	var arriving: Array = []
 	for key in _ships.keys():
 		var s: Ship = _ships[key]
-		if s.state == Ship.STATE_SAILING and s.arrival_tick == tick:
+		if s.state == Ship.STATE_SAILING and s.arrival_tick > 0 and s.arrival_tick <= tick:
+			if s.arrival_tick < tick:
+				## A28: missed tick(s) — still arrive; surface error (do not drop ship).
+				_record(
+					ERR_SYS13_01,
+					"arrival_tick",
+					s.arrival_tick,
+					"tick_step skipped arrival_tick; catching up at tick=%s" % tick
+				)
 			arriving.append(s)
 	arriving.sort_custom(func(a: Ship, b: Ship) -> bool: return String(a.ship_id) < String(b.ship_id))
 	var arrivals: Array = []
@@ -525,7 +548,6 @@ func tick_step(tick: int) -> void:
 		})
 	if not arrivals.is_empty() and _ship_observer != null:
 		_ship_observer.on_arrivals(tick, arrivals)
-	_flush_signals()
 
 
 func daily_step(_day: int) -> Array:
@@ -550,21 +572,36 @@ func cutoff_step(_season_index: int) -> Array:
 	var days_d: int = Params.get_int(StringName(PRM_DAYS_PER_SEASON))
 	var repair_rate: float = float(Params.get_value(StringName(PRM_REPAIR_RATE)))
 	var price_map: Dictionary = Params.get_value(StringName(PRM_PRICE_CASH))
+	var days_pw: int = Params.get_int(StringName(PRM_DAYS_PER_WEEK))
 	for key in keys:
 		var s: Ship = _ships[key]
 		if s.acc_wage > 0:
-			var days_pw: int = Params.get_int(StringName(PRM_DAYS_PER_WEEK))
-			var due_w: int = int(ceili(float(s.acc_wage) / float(days_pw)))
+			## A26／D-01／N-04／FRM-SYS13-07: CEIL after quantize_amount (no bare float→int).
+			var due_w: int = 0
+			if days_pw > 0:
+				due_w = ceili(AmountQuantize.quantize_amount(float(s.acc_wage) / float(days_pw)))
 			if due_w > 0:
 				CashLedger.charge_mandatory(s.owner, due_w, REASON_CREW_WAGE, REQUESTER)
 			s.acc_wage = 0
 		var days_held: int = Clock.day - s.held_from_day + 1
 		if days_held < 0:
 			days_held = 0
-		var price: int = int(price_map.get(String(s.type), 0))
+		## A29／C-06: missing PRICE_CASH[type] is an error, not silent zero repair.
+		if not price_map.has(String(s.type)):
+			errors.append(
+				_err(ERR_SYS13_12, PRM_PRICE_CASH, s.type, "PRICE_CASH[type] missing")
+			)
+			s.held_from_day = Clock.day + 1
+			continue
+		var price: int = int(price_map[String(s.type)])
 		var due_r: int = 0
 		if price > 0 and repair_rate > 0.0 and days_held > 0 and days_d > 0:
-			due_r = int(ceili(float(price) * repair_rate * float(days_held) / float(days_d)))
+			## A26／D-01／N-04／FRM-SYS13-08: CEIL after quantize_amount.
+			due_r = ceili(
+				AmountQuantize.quantize_amount(
+					float(price) * repair_rate * float(days_held) / float(days_d)
+				)
+			)
 		if due_r > 0:
 			CashLedger.charge_mandatory(s.owner, due_r, REASON_SHIP_REPAIR, REQUESTER)
 		s.held_from_day = Clock.day + 1
@@ -648,13 +685,25 @@ func _require_owned_docked(actor: StringName, ship_id: StringName) -> Ship:
 
 
 func _crew_cap(type: StringName) -> int:
+	## A29／C-06: missing CREW[type] → error, not silent 0.
 	var m: Dictionary = Params.get_value(StringName(PRM_CREW))
-	return int(m.get(String(type), 0))
+	if not m.has(String(type)):
+		_record(ERR_SYS13_12, PRM_CREW, type, "CREW[type] missing")
+		return HOLD_CHECK_FAILURE
+	return int(m[String(type)])
 
 
 func _tpw(type: StringName) -> int:
+	## A29／C-06: missing／non-positive TPW[type] → error, not silent 1.
 	var m: Dictionary = Params.get_value(StringName(PRM_TPW))
-	return int(m.get(String(type), 1))
+	if not m.has(String(type)):
+		_record(ERR_SYS13_12, PRM_TPW, type, "TPW[type] missing")
+		return 0
+	var v: int = int(m[String(type)])
+	if v <= 0:
+		_record(ERR_SYS13_12, PRM_TPW, v, "TPW[type] must be > 0")
+		return 0
+	return v
 
 
 func _path_waypoints(path: Array) -> int:
@@ -755,15 +804,18 @@ func _locate_completed(path: Array, completed: int) -> Dictionary:
 
 
 func _ship_id_from_hold(container: Variant) -> String:
+	## A25／D-08d／FRM-SYS05-14: Dictionary fields or GoodsLedger registry; never parse id strings.
 	if typeof(container) == TYPE_DICTIONARY:
 		var d: Dictionary = container
 		if String(d.get(GoodsLedger.KEY_KIND, "")) == GoodsLedger.KIND_HOLD:
 			return String(d.get(GoodsLedger.KEY_SHIP, ""))
-	var key := String(container)
-	var prefix := "HOLD:"
-	if key.begins_with(prefix):
-		return key.substr(prefix.length())
-	return ""
+		return ""
+	if not GoodsLedger.is_loaded():
+		return ""
+	var cid := StringName(String(container))
+	if not GoodsLedger.is_container_registered(cid):
+		return ""
+	return String(GoodsLedger.get_container_ship_id(cid))
 
 
 func _queue_signal(name: String, args: Array) -> void:
