@@ -20,6 +20,7 @@ static func f_to_ppm(relocate_f: float, ppm_scale: int, round_eps: float) -> Dic
 			"error": "%s: PPM_SCALE must be > 0" % ERR_SYS23_03,
 		}
 	var product: float = relocate_f * float(ppm_scale)
+	## C-02／D-01-style snap: round() only to test near-integer; final via floori.
 	var nearest: float = round(product)
 	var scale: float = absf(product)
 	if scale < 1.0:
@@ -90,8 +91,8 @@ static func plan_one_good(
 	var T: int = 0
 	for pid_v in port_ids:
 		var pid2: String = String(pid_v)
-		var stock_p: int = int(stock_by[pid2])
-		var w_p: int = int(w_by[pid2])
+		var stock_p: int = SimJsonInt.as_int(stock_by[pid2], "stock_p")
+		var w_p: int = SimJsonInt.as_int(w_by[pid2], "w_p")
 		## e_p = floori(f_ppm × (stock_p × W − S × w_p) ÷ (W × PPM_SCALE)); only e_p > 0.
 		if not _mul_ok(stock_p, W) or not _mul_ok(S, w_p):
 			return _fail_overflow("e_p numer")
@@ -116,10 +117,10 @@ static func plan_one_good(
 	var deficit_weights: Array = []
 	for pid_v2 in port_ids:
 		var pid3: String = String(pid_v2)
-		var w_q: int = int(w_by[pid3])
+		var w_q: int = SimJsonInt.as_int(w_by[pid3], "w_q")
 		if w_q <= 0:
 			continue
-		var stock_q: int = int(stock_by[pid3])
+		var stock_q: int = SimJsonInt.as_int(stock_by[pid3], "stock_q")
 		if not _mul_ok(S, w_q) or not _mul_ok(stock_q, W):
 			return _fail_overflow("d_q")
 		var d_q: int = S * w_q - stock_q * W
@@ -140,7 +141,7 @@ static func plan_one_good(
 		}
 	var imports: Dictionary = {}
 	for i in range(deficit_ports.size()):
-		var a_i: int = int(alloc[i])
+		var a_i: int = SimJsonInt.as_int(alloc[i], "alloc")
 		if a_i > 0:
 			imports[String(deficit_ports[i])] = a_i
 
@@ -157,8 +158,8 @@ static func plan_one_good(
 	while si < surplus_ports.size() and di < import_ports.size():
 		var sp: String = String(surplus_ports[si])
 		var dp: String = String(import_ports[di])
-		var s_rem: int = int(s_left.get(sp, 0))
-		var d_rem: int = int(d_left.get(dp, 0))
+		var s_rem: int = SimJsonInt.as_int(s_left.get(sp, 0), "s_rem")
+		var d_rem: int = SimJsonInt.as_int(d_left.get(dp, 0), "d_rem")
 		if s_rem <= 0:
 			si = si + 1
 			continue
@@ -169,9 +170,9 @@ static func plan_one_good(
 		moves.append({"from": sp, "to": dp, "qty": qty})
 		s_left[sp] = s_rem - qty
 		d_left[dp] = d_rem - qty
-		if int(s_left[sp]) <= 0:
+		if SimJsonInt.as_int(s_left[sp], "s_left") <= 0:
 			si = si + 1
-		if int(d_left[dp]) <= 0:
+		if SimJsonInt.as_int(d_left[dp], "d_left") <= 0:
 			di = di + 1
 
 	return {
@@ -212,7 +213,7 @@ static func run_day(f_ppm: int, ppm_scale: int, acc: SimTransferAcc = null) -> D
 			}
 		for mv_v in plan["moves"]:
 			var mv: Dictionary = mv_v
-			var qty: int = int(mv["qty"])
+			var qty: int = SimJsonInt.as_int(mv["qty"], "move_qty")
 			if qty <= 0:
 				continue
 			var from_c: Dictionary = GoodsLedger.make_market(String(mv["from"]))

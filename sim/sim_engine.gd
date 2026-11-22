@@ -186,7 +186,7 @@ func _run_one_job(
 				),
 				"sampler": sampler,
 			}
-		f_ppm = int(conv["f_ppm"])
+		f_ppm = SimJsonInt.as_int(conv["f_ppm"], "f_ppm")
 
 	PopulationModel.set_master_seed(seed)
 	Clock.set_paused(false)
