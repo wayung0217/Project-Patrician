@@ -92,6 +92,8 @@ func test_D102d_city_queue_position() -> void:
 		String(BuildingEconomy.last_error().get("code", "")),
 		String(BuildingEconomy.ERR_SYS08_08)
 	)
+	for e in get_errors():
+		e.handled = true
 
 
 func test_N1_formal_data_zero_queue_import_errors() -> void:
