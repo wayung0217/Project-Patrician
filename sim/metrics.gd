@@ -607,30 +607,51 @@ static func _obs04_rows(
 static func _obs05_rows(
 	scenario_id: String, combo_index: int, seed: int, ports: Array
 ) -> Array:
-	## D-93 OBS-05: CITY spend breakdown + closing balance.
-	## Spend categories (建設／城防／抽調／其他) require BuildingEconomy public query — gap.
-	## Emit city_balance_li per season; note gap keys once per port.
+	## D-93／WP-67 OBS-05: land rent, vacancy tax, spend categories via public queries.
 	var rows: Array = []
 	var by_port: Dictionary = _group_ports(ports)
 	var pids: Array = by_port.keys()
 	pids.sort()
 	for pid_v in pids:
 		var pid: String = String(pid_v)
-		rows.append(_obs_ext_row(
-			scenario_id, combo_index, seed, -1, pid, "",
-			"OBS-05", "gap_spend_breakdown",
-			"no_public_BuildingEconomy_city_spend_by_category"
-		))
 		var port_rows: Array = by_port[pid]
 		port_rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			return _json_int(a["season_index"]) < _json_int(b["season_index"])
 		)
 		for r_v in port_rows:
 			var r: Dictionary = r_v
+			var season_i: int = _json_int(r["season_index"])
 			rows.append(_obs_ext_row(
-				scenario_id, combo_index, seed,
-				_json_int(r["season_index"]), pid, "",
+				scenario_id, combo_index, seed, season_i, pid, "",
 				"OBS-05", "city_balance_li", _json_int(r["city_balance_li"])
+			))
+			## Prefer sampler-filled columns; fall back to live public queries.
+			var rent_v: int = _json_int(r.get("land_rent_li", -1))
+			var vac_v: int = _json_int(r.get("vacancy_tax_li", -1))
+			var spend_s: String = String(r.get("city_spend_json", ""))
+			if (
+				BuildingEconomy.is_loaded()
+				and (rent_v < 0 or vac_v < 0 or spend_s.is_empty() or spend_s == "{}")
+			):
+				var sn: StringName = StringName(pid)
+				if rent_v < 0:
+					rent_v = BuildingEconomy.season_land_rent_li(sn, season_i)
+				if vac_v < 0:
+					vac_v = BuildingEconomy.season_vacancy_tax_li(sn, season_i)
+				if spend_s.is_empty() or spend_s == "{}":
+					var spend: Dictionary = BuildingEconomy.city_spend_by_category(sn, season_i)
+					spend_s = "{}" if spend.is_empty() else JSON.stringify(spend)
+			rows.append(_obs_ext_row(
+				scenario_id, combo_index, seed, season_i, pid, "",
+				"OBS-05", "land_rent_li", rent_v
+			))
+			rows.append(_obs_ext_row(
+				scenario_id, combo_index, seed, season_i, pid, "",
+				"OBS-05", "vacancy_tax_li", vac_v
+			))
+			rows.append(_obs_ext_row(
+				scenario_id, combo_index, seed, season_i, pid, "",
+				"OBS-05", "city_spend_json", spend_s
 			))
 	return rows
 
