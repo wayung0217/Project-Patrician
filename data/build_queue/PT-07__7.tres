@@ -6,5 +6,5 @@
 script = ExtResource("1_igifl")
 port_id = "PT-07"
 step = 7
-cb_id = "CB-01"
+cb_id = "CB-04"
 target_level = 2

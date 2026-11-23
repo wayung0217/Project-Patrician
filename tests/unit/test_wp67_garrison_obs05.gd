@@ -130,13 +130,13 @@ func test_D102e_new_build_spend_build_upgrade_li() -> void:
 		&"TEST_FUND",
 		BuildingEconomy.REQUESTER_SYS08
 	)
-	## Ensure a free PUBLIC slot (layout may already have one).
+	## Free PUBLIC slot from city_center; def must be loaded (no invent — FRM-SYS08-15／F1).
 	var step := BuildStep.new()
 	step.port_id = PORT
 	step.step = 0
-	step.cb_id = "CB-10"
+	step.cb_id = "CB-09"
 	step.target_level = 1
-	## Register a PUBLIC def for cb so _try_start can invent if missing.
+	assert_true(BuildingEconomy._building_defs.has("CB-09"), "fixture must ship CB-09 BuildingDef")
 	assert_true(BuildingEconomy._try_start_city_public(PORT, city, step, expect))
 	var cat: Dictionary = BuildingEconomy._season_spend_cat.get(PORT, {})
 	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_BUILD, 0)), expect)

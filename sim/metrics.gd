@@ -614,6 +614,7 @@ static func _obs05_rows(
 	pids.sort()
 	for pid_v in pids:
 		var pid: String = String(pid_v)
+
 		var port_rows: Array = by_port[pid]
 		port_rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			return _json_int(a["season_index"]) < _json_int(b["season_index"])

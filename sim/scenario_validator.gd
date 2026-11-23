@@ -318,15 +318,22 @@ static func _list_port_ids(ports_dir: String) -> Dictionary:
 	var d := DirAccess.open(dir_path)
 	if d == null:
 		return out
+	## R9-64 中-3／C-08: collect then sort before load (deterministic).
+	var names: PackedStringArray = PackedStringArray()
 	d.list_dir_begin()
 	var fname: String = d.get_next()
 	while fname != "":
 		if not d.current_is_dir() and fname.ends_with(".tres"):
-			var res: Resource = ResourceLoader.load(dir_path + fname, "", ResourceLoader.CACHE_MODE_IGNORE)
-			if res != null and res is PortDef:
-				out[String((res as PortDef).port_id)] = true
+			names.append(fname)
 		fname = d.get_next()
 	d.list_dir_end()
+	names.sort()
+	for i in range(names.size()):
+		var res: Resource = ResourceLoader.load(
+			dir_path + names[i], "", ResourceLoader.CACHE_MODE_IGNORE
+		)
+		if res != null and res is PortDef:
+			out[String((res as PortDef).port_id)] = true
 	return out
 
 

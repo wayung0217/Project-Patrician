@@ -13,7 +13,7 @@ const HDR_SEASON_CELLS := (
 )
 const HDR_SEASON_PORTS := (
 	"run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,"
-	+ "workplaces,beds,city_balance_li,"
+	+ "workplaces,beds,city_balance_li,queue_position,"
 	+ "land_rent_li,vacancy_tax_li,city_spend_json"
 )
 const HDR_DAILY := (
@@ -103,6 +103,7 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 		"workplaces": workplaces,
 		"beds": beds,
 		"city_balance_li": bal,
+		"queue_position": BuildingEconomy.city_queue_position(StringName(port_s)),
 		"land_rent_li": land_rent,
 		"vacancy_tax_li": vac_tax,
 		"city_spend_json": spend_json,
@@ -141,15 +142,12 @@ func _cell_row(
 	if acc != null:
 		produced = acc.produced(port_s, good_s)
 		consumed = acc.consumed(port_s, good_s)
-		## WP-27 APIs may be absent until that lane merges（keep 0 on WP-67-only tip）.
-		if acc.has_method("relocated_in"):
-			reloc_in = int(acc.call("relocated_in", port_s, good_s))
-		if acc.has_method("relocated_out"):
-			reloc_out = int(acc.call("relocated_out", port_s, good_s))
-	## WP-27／WP-64 OBS-04: weekly potential when DemandModel exposes it.
+		reloc_in = acc.relocated_in(port_s, good_s)
+		reloc_out = acc.relocated_out(port_s, good_s)
+	## WP-27／WP-64 OBS-04: weekly potential at sample time (not written to 9.9 CSV).
 	var potential: int = 0
-	if DemandModel.is_loaded() and DemandModel.has_method("weekly_potential_demand"):
-		potential = int(DemandModel.call("weekly_potential_demand", StringName(port_s), StringName(good_s)))
+	if DemandModel.is_loaded():
+		potential = DemandModel.weekly_potential_demand(StringName(port_s), StringName(good_s))
 	var row := {
 		"run_id": run_id,
 		"seed": seed,

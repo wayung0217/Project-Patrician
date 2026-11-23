@@ -6,5 +6,5 @@
 script = ExtResource("1_pwi4t")
 port_id = "PT-16"
 step = 10
-cb_id = "CB-02"
+cb_id = "CB-09"
 target_level = 2

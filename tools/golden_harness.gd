@@ -3,6 +3,8 @@ extends SceneTree
 ## 用法：
 ##   godot --headless --path . -s res://tools/golden_harness.gd -- \
 ##     --out <abs.csv> --days 360 --seed 1
+## D-111(e)／F6 gated run (counts ERROR + SCRIPT ERROR in log; non-zero if >0):
+##   tools/run_golden_gated.sh --godot /path/to/godot --out <abs.csv> --days 360
 ## 預設 360 日；輸出寬表＋逐日欄位雜湊列（row_kind=hash）。
 
 
@@ -373,8 +375,10 @@ func _residences_json(be: Node, pop: Node, port_s: String) -> String:
 
 
 func _fnv1a64(s: String) -> String:
-	## Deterministic hash via String.hash()（signed-safe；定位第一差異日足夠）.
-	return "%08x" % int(s.hash())
+	## FRM-SYS23-10／E2: FNV-1a 64 via Rng（offset basis as int64 bit-pattern of
+	## unsigned 14695981039346656037＝0xcbf29ce484222325；mul mod 2^64 in Rng）.
+	## Emit signed decimal of the bit-pattern（stable across platforms）.
+	return str(Rng.fnv1a64(s.to_utf8_buffer()))
 
 
 func _arg_value(args: PackedStringArray, key: String) -> String:

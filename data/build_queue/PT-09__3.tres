@@ -6,5 +6,5 @@
 script = ExtResource("1_ogd4x")
 port_id = "PT-09"
 step = 3
-cb_id = "CB-04"
-target_level = 1
+cb_id = "CB-01"
+target_level = 2

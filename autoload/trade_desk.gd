@@ -48,6 +48,8 @@ var _qualification: QualificationProvider = null
 var _observers: Array = [] ## Array[TradeObserver]
 var _last_error: Dictionary = {}
 var _loaded: bool = false
+## D-95(d): last successful execute_trade total_li (厘); fail does not update; boot 0.
+var _last_trade_total_li: int = 0
 
 
 func _ready() -> void:
@@ -350,8 +352,15 @@ func execute_trade(
 		"total_li": total_li,
 		"seq": seq,
 	})
+	# D-95(d): record only on successful execute_trade.
+	_last_trade_total_li = total_li
 	_clear_last_error()
 	return seq
+
+
+func last_trade_total_li() -> int:
+	## D-95(d): last successful execute_trade total (厘); 0 at boot／before any success.
+	return _last_trade_total_li
 
 
 func boot_gate_errors() -> Array:
@@ -406,6 +415,7 @@ func _clear_state() -> void:
 	_day_errors = []
 	_last_error = {}
 	_loaded = false
+	_last_trade_total_li = 0
 
 
 func _clear_last_error() -> void:

@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  gut:
+  gut-unit-property:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,15 +26,59 @@ jobs:
           set -euo pipefail
           ./godot --headless --path . --import
 
-      - name: Run GUT unit tests
+      - name: Run GUT unit + property tests
         run: |
           set -euo pipefail
           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
             -gdir=res://tests/unit,res://tests/property \
-            -gexit
+            -gexit 2>&1 | tee gut_unit.log
+          # E4／evening-17-51: fail CI if any SCRIPT ERROR appears in GUT log
+          if grep -F "SCRIPT ERROR" gut_unit.log; then
+            echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
+            exit 1
+          fi
+
+      - name: Run GUT UI tests
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+            -gdir=res://tests/ui \
+            -gexit 2>&1 | tee gut_ui.log
+          if grep -F "SCRIPT ERROR" gut_ui.log; then
+            echo "::error::SCRIPT ERROR detected in GUT UI log (ci-script-error-gate)"
+            exit 1
+          fi
 
       - name: A35 norm scan (report-only)
         continue-on-error: true
         run: |
           set -euo pipefail
           python3 tools/a35_norm_scan.py
+
+  gut-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          ./godot --version
+
+      - name: Import project (register global classes)
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . --import
+
+      - name: Run GUT UI tests (isolated from unit data wipe)
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+            -gdir=res://tests/ui \
+            -gexit

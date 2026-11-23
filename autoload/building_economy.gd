@@ -28,8 +28,10 @@ const ERR_SYS08_07 := &"ERR-SYS08-07"
 const ERR_SYS08_08 := &"ERR-SYS08-08"
 const ERR_SYS08_09 := &"ERR-SYS08-09"
 const ERR_SYS08_10 := &"ERR-SYS08-10"
+const ERR_SYS08_11 := &"ERR-SYS08-11" ## D-113(c): 建設順序表引用未知建築或等級
 const ERR_SYS08_12 := &"ERR-SYS08-12"
 const ERR_SYS08_13 := &"ERR-SYS08-13"
+const ERR_SYS08_14 := &"ERR-SYS08-14" ## D-102(b)／FRM-SYS08-18: 工坊週毛利為負，無法報收購價
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
 const CODE_PORT_REGISTRY_NOT_LOADED := &"PORT_REGISTRY_NOT_LOADED"
@@ -69,6 +71,10 @@ const PRM_UPGRADE_PER_CAPITA := "PRM-SYS08-UPGRADE_PER_CAPITA"
 const FEAS_UNBOUNDED := 0x7fffffff
 ## EX-03: building level floor (spec enum base).
 const BUILDING_LEVEL_MIN := 1
+## EX-WP63: unset ring sentinel for innermost civil search (was bare 999999).
+const RING_SENTINEL_UNSET := 999999
+## EX-WP63: public upgrade cash failure sentinel（不得回 0 冒充免費）.
+const PUBLIC_UPGRADE_CASH_FAIL := -1
 const PRM_KONTOR_UPGRADE := "PRM-SYS08-KONTOR_UPGRADE"
 const PRM_ACC_SCALE := "PRM-SYS08-ACC_SCALE"
 const PRM_OUTPUT_K := "PRM-SYS08-OUTPUT_PER_WORKER_K"
@@ -95,6 +101,9 @@ const PRM_ZONE_SAT_DAYS := "PRM-SYS08-ZONE_SAT_DAYS"
 const PRM_ZONE_OPEN_COST := "PRM-SYS08-ZONE_OPEN_COST_LI"
 const PRM_TRANSFER_PREMIUM := "PRM-SYS08-TRANSFER_PREMIUM"
 const PRM_COMPENSATION_WEEKS := "PRM-SYS08-COMPENSATION_WEEKS"
+## D-97(c)／WP-62b: opening MARKET stock weeks（Owner-approved 4／2）.
+const PRM_OPENING_STOCK_DEMAND_WEEKS := "PRM-SYS08-OPENING_STOCK_DEMAND_WEEKS"
+const PRM_OPENING_STOCK_OUTPUT_WEEKS := "PRM-SYS08-OPENING_STOCK_OUTPUT_WEEKS"
 const BUILD_QUEUE_DIR := "res://data/build_queue/"
 const OPENING_DIR := "res://data/opening/"
 const OPENING_PUBLIC_DIR := "res://data/opening_public/"
@@ -207,7 +216,9 @@ func slot_id(port_id: String, seq_n: int) -> StringName:
 func load_and_validate(
 	zones_dir: String = ZONES_DIR,
 	city_center_dir: String = CITY_CENTER_DIR,
-	buildings_dir: String = BUILDINGS_DIR
+	buildings_dir: String = BUILDINGS_DIR,
+	build_queue_dir: String = BUILD_QUEUE_DIR,
+	opening_public_dir: String = OPENING_PUBLIC_DIR
 ) -> Array:
 	var errors: Array = []
 	_clear_state()
@@ -314,7 +325,24 @@ func load_and_validate(
 	var zones_by_port: Dictionary = _load_zones(zones_dir, errors)
 	var city_by_port: Dictionary = _load_city_centers(city_center_dir, errors)
 	_building_defs = _load_building_defs(buildings_dir, errors)
-	_load_build_queues(BUILD_QUEUE_DIR, errors)
+	_load_build_queues(build_queue_dir, errors)
+	## D-97(a)／D-102(f)／D-111(c)／FRM-SYS08-21: ERR-SYS08-13 on coherent datasets.
+	## Same validation path for all boots — tests must ship legal build_queue + opening_public
+	## (optional dirs). Never clear queues to bypass validation.
+	var registry_ports: Array = []
+	for rp_v in PortRegistry.all_ids():
+		registry_ports.append(String(rp_v))
+	var city_covers_registry := true
+	for rp2 in registry_ports:
+		if not city_by_port.has(String(rp2)):
+			city_covers_registry = false
+			break
+	if city_covers_registry:
+		var opening_load_errs: Array = []
+		var opening_publics: Array = _load_opening_public(opening_public_dir, opening_load_errs)
+		for oe in opening_load_errs:
+			errors.append(oe)
+		_validate_build_queue_import_d97a(city_by_port, opening_publics, errors)
 	if not errors.is_empty():
 		_emit_errors(errors)
 		return errors
@@ -443,18 +471,20 @@ func order_build(actor: StringName, slot_key: StringName, type_id: StringName) -
 	var days_map: Dictionary = Params.get_value(PRM_BUILD_DAYS)
 	var build_days: int = int(days_map[String(build_class)])
 
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(actor, 0 - cash_li),
-			CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
-	)
-	if post_err != OK:
-		return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "construction cash post failed"))
+	## D-113(b)／FRM-SYS08-15: cash_li＝0 → skip CashLedger.post (ledger rejects 0).
+	if cash_li != 0:
+		var post_err: Error = CashLedger.post(
+			[
+				CashLedger.make_entry(actor, 0 - cash_li),
+				CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
+			],
+			REASON_CONSTRUCTION,
+			REQUESTER_SYS08
+		)
+		if post_err != OK:
+			return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "construction cash post failed"))
 	## D-102(e)／OBS-05: CITY PUBLIC new-build cash → build_upgrade_li（not other_li）.
-	if build_class == CLASS_PUBLIC and _is_city_owner(actor):
+	if cash_li != 0 and build_class == CLASS_PUBLIC and _is_city_owner(actor):
 		_note_city_spend(slot.port_id, cash_li, SPEND_CAT_BUILD)
 
 	var bld := Building.new()
@@ -546,19 +576,22 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 	else:
 		return StringName(_fail_sn(ERR_SYS08_03, "build_class", bld.build_class, "upgrade not allowed"))
 
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(actor, 0 - cash_li),
-			CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
-	)
-	if post_err != OK:
-		return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "upgrade cash post failed"))
-	## D-102(e)／OBS-05: CITY PUBLIC upgrade cash → build_upgrade_li.
-	if bld.build_class == CLASS_PUBLIC and _is_city_owner(actor):
-		_note_city_spend(bld.port_id, cash_li, SPEND_CAT_BUILD)
+	## D-113(b)／FRM-SYS08-15: cash_li＝0 (e.g. public upgrade fee when pop＝0) → skip post;
+	## materials／days still apply. CashLedger rejects amount 0 (ERR-SYS05-05).
+	if cash_li != 0:
+		var post_err: Error = CashLedger.post(
+			[
+				CashLedger.make_entry(actor, 0 - cash_li),
+				CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
+			],
+			REASON_CONSTRUCTION,
+			REQUESTER_SYS08
+		)
+		if post_err != OK:
+			return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "upgrade cash post failed"))
+		## D-102(e)／OBS-05: CITY PUBLIC upgrade cash → build_upgrade_li.
+		if bld.build_class == CLASS_PUBLIC and _is_city_owner(actor):
+			_note_city_spend(bld.port_id, cash_li, SPEND_CAT_BUILD)
 
 	bld.locked_materials = {}
 	bld.missing_materials = {}
@@ -1814,8 +1847,110 @@ func apply_opening_init(
 			bld.cb_id = step["cb_id"]
 		if bool(step.get("staff", false)):
 			staffed_ports[port_id3] = true
-	for pid_staff in staffed_ports.keys():
+	## WP-63 (h)／C-08: staffed_ports sorted before staff walk.
+	var staff_ids: Array = staffed_ports.keys()
+	staff_ids.sort()
+	for pid_staff in staff_ids:
 		_opening_staff_port(String(pid_staff))
+	return errors
+
+
+func apply_opening_market_stock() -> Array:
+	## FRM-SYS08-21／D-97(c)／WP-62b: last opening step — GENESIS into MARKET.
+	## q = DEMAND_WEEKS × weekly_potential_demand + floori(OUTPUT_WEEKS × Σ full-staff W).
+	## Order (port_id, good_id) ascending; q=0 skip（no GENESIS event）.
+	assert(_loaded, "BuildingEconomy.apply_opening_market_stock before load")
+	var errors: Array = []
+	if not DemandModel.is_loaded():
+		errors.append(
+			_err(
+				ERR_SYS08_09,
+				"DemandModel",
+				null,
+				"DemandModel must be loaded before opening market stock (D-97c)"
+			)
+		)
+		_emit_errors(errors)
+		return errors
+	if not Params.has_prm(PRM_OPENING_STOCK_DEMAND_WEEKS) or not Params.has_prm(
+		PRM_OPENING_STOCK_OUTPUT_WEEKS
+	):
+		errors.append(
+			_err(
+				ERR_SYS08_09,
+				PRM_OPENING_STOCK_DEMAND_WEEKS,
+				null,
+				"opening stock PRMs missing (D-97c)"
+			)
+		)
+		_emit_errors(errors)
+		return errors
+	if not GoodsLedger.is_loaded():
+		errors.append(
+			_err(ERR_SYS08_09, "GoodsLedger", null, "GoodsLedger required for opening stock")
+		)
+		_emit_errors(errors)
+		return errors
+
+	var demand_w: int = Params.get_int(PRM_OPENING_STOCK_DEMAND_WEEKS)
+	var output_w: int = Params.get_int(PRM_OPENING_STOCK_OUTPUT_WEEKS)
+	var k: float = Params.get_float(PRM_OUTPUT_K)
+	## Σ full-staff weekly output W per (port, good) from opening workshops.
+	var out_sum: Dictionary = {}
+	var ports_b: Array = _buildings_by_port.keys()
+	ports_b.sort()
+	for pid_v in ports_b:
+		var port_id: String = String(pid_v)
+		for bld_v in _buildings_by_port.get(port_id, []):
+			var bld: Building = bld_v
+			if not _is_workshop(bld):
+				continue
+			var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
+			if def == null or def.output_good_id.is_empty():
+				continue
+			## 满编 W = max_workers × BASE_OUTPUT_PER_WORKER × K（FRM-SYS08-08）.
+			var w_full: float = float(def.max_workers) * float(def.base_output_per_worker) * k
+			var key: String = "%s|%s" % [port_id, def.output_good_id]
+			out_sum[key] = float(out_sum.get(key, 0.0)) + w_full
+
+	var ports: Array = []
+	for pv in PortRegistry.all_ids():
+		ports.append(String(pv))
+	ports.sort()
+	var goods: Array = []
+	for gv in GoodCatalog.all_ids():
+		goods.append(String(gv))
+	goods.sort()
+
+	for port_id2 in ports:
+		var mkt: Dictionary = GoodsLedger.make_market(String(port_id2))
+		for good_id in goods:
+			var pot: int = DemandModel.weekly_potential_demand(
+				StringName(String(port_id2)), StringName(String(good_id))
+			)
+			var w_sum: float = float(out_sum.get("%s|%s" % [String(port_id2), String(good_id)], 0.0))
+			var q: int = demand_w * pot + floori(float(output_w) * w_sum)
+			if q <= 0:
+				continue
+			var seq: int = GoodsLedger.transfer(
+				GoodsLedger.make_external(),
+				mkt,
+				StringName(String(good_id)),
+				q,
+				GoodsLedger.REASON_GENESIS,
+				REQUESTER_SYS08
+			)
+			if seq <= 0:
+				errors.append(
+					_err(
+						ERR_SYS08_10,
+						"opening_stock",
+						{"port_id": port_id2, "good_id": good_id, "q": q},
+						"GENESIS opening stock transfer failed"
+					)
+				)
+	if not errors.is_empty():
+		_emit_errors(errors)
 	return errors
 
 
@@ -1900,7 +2035,7 @@ func _find_slot_for_workshop(
 func _find_open_civil_slot(port_id: String, occupied: Dictionary = {}) -> StringName:
 	## Residences: innermost open civil first (FRM-SYS08-21).
 	var best: StringName = &""
-	var best_ring := 999999
+	var best_ring: int = RING_SENTINEL_UNSET
 	var best_id := ""
 	for s_v in _slots_by_port.get(port_id, []):
 		var s: Slot = s_v
@@ -2067,6 +2202,17 @@ func set_build_queue(port_id: String, steps: Array) -> void:
 	_queue_pos[port_id] = 0
 
 
+func city_queue_position(port_id: StringName) -> int:
+	## D-102(d)／C-14: next queue step index from 0; finished → step count; unknown port → −1 + last_error.
+	assert(_loaded, "BuildingEconomy.city_queue_position before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
+		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_position (D-102d)")
+		return -1
+	return int(_queue_pos.get(pid, 0))
+
+
 func _frm18_price(bld: Building) -> int:
 	var slot: Slot = _slot(bld.slot_id)
 	var land_li: int = 0
@@ -2079,6 +2225,15 @@ func _frm18_price(bld: Building) -> int:
 		Params.get_int(PRM_DAYS_PER_WEEK)
 	)
 	var week_income: int = _weekly_income_estimate(bld)
+	## D-102(b)／ERR-SYS08-14／EX-08-18-05: 週毛利 < 0 → fail + last_error；不得回 0 當價、不得成交.
+	if week_income < 0:
+		_record_fail(
+			ERR_SYS08_14,
+			"weekly_margin",
+			week_income,
+			"workshop weekly gross margin < 0; cannot quote buy price (D-102b／EX-08-18-05)"
+		)
+		return 0
 	var premium: float = Params.get_float(PRM_TRANSFER_PREMIUM)
 	var comp_w: int = Params.get_int(PRM_COMPENSATION_WEEKS)
 	var mid: float = (
@@ -2086,6 +2241,16 @@ func _frm18_price(bld: Building) -> int:
 		+ float(comp_w) * float(week_income)
 	)
 	return ceili(AmountQuantize.quantize_amount(mid))
+
+
+func _base_price_li(good_id: String) -> int:
+	## FRM-SYS08-18／WP-63 (a): always GoodDef.base_price_li, never mid_price.
+	if good_id.is_empty() or not GoodCatalog.is_loaded():
+		return 0
+	var g: GoodDef = GoodCatalog.get_good(good_id)
+	if g == null:
+		return 0
+	return g.base_price_li
 
 
 func _weekly_income_estimate(bld: Building) -> int:
@@ -2100,7 +2265,7 @@ func _weekly_income_estimate(bld: Building) -> int:
 			raw += float(int(occ.get(clazz.to_lower(), 0))) * float(int(spend.get(clazz, 0)))
 		return floori(AmountQuantize.quantize_amount(raw * share * (1.0 - mgmt)))
 	if _is_workshop(bld):
-		## FRM-SYS08-18／D-79: 週毛利＝週產出×基準價 − 週投入 − 週人工；刪 ×10.0。
+		## FRM-SYS08-18／D-79／D-92b／WP-63: 基準價；收入 floori；投入／人工 ceili.
 		var def: BuildingDef = _building_defs.get(String(bld.type), null) as BuildingDef
 		if def == null:
 			return 0
@@ -2112,33 +2277,34 @@ func _weekly_income_estimate(bld: Building) -> int:
 		var wage_base: int = Params.get_int(PRM_WAGE_BASE_LI)
 		var recipe_n: float = Params.get_float(PRM_RECIPE_N)
 		var week_out: float = float(workers) * float(def.base_output_per_worker) * k
-		var out_px: float = 0.0
-		if not def.output_good_id.is_empty():
-			out_px = MarketPricer.mid_price(StringName(bld.port_id), StringName(def.output_good_id))
+		var out_px: float = float(_base_price_li(def.output_good_id))
 		var revenue: float = week_out * out_px
 		var input_cost: float = 0.0
 		for inp_v in _recipe_inputs(def):
 			var inp: Dictionary = inp_v
 			var g: String = String(inp["good"])
-			var px: float = MarketPricer.mid_price(StringName(bld.port_id), StringName(g))
+			var px: float = float(_base_price_li(g))
 			input_cost += week_out * float(inp["qty"]) * recipe_n * px
 		var wage_cost: float = float(workers) * float(wage_base) * pow(k, wage_w)
 		var rev_li: int = floori(AmountQuantize.quantize_amount(revenue))
-		var in_li: int = floori(AmountQuantize.quantize_amount(input_cost))
-		var wag_li: int = floori(AmountQuantize.quantize_amount(wage_cost))
-		## D-79: result < 0 is a spec gap — return as-is, never clamp.
-		return rev_li - in_li - wag_li
+		var in_li: int = ceili(AmountQuantize.quantize_amount(input_cost))
+		var wag_li: int = ceili(AmountQuantize.quantize_amount(wage_cost))
+		var gross: int = rev_li - in_li - wag_li
+		## EX-08-18-05／D-102(b): < 0 → never clamp to 0; quote/buy set ERR-SYS08-14.
+		return gross
 	return 0
 
 
 func _step_garrison_procure(_day: int, _errors: Array) -> void:
-	## FRM-14／D-81: demand acc; buy min(floor(acc), market, affordable);
-	## fractional remainder carries; unmet whole units do not.
+	## FRM-14／D-92a: all-int acc；daily += GARRISON×RATE×ACC_SCALE；
+	## 1 擔 = DAYS_PER_WEEK×ACC_SCALE；不得先 ÷7 再量化.
 	var acc_scale: int = Params.get_int(PRM_ACC_SCALE)
 	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
 	var garrison: Array = Params.get_value(PRM_GARRISON)
 	var arms_per: float = Params.get_float(PRM_ARMS_PER)
 	var powder_per: float = Params.get_float(PRM_POWDER_PER)
+	var thresh: int = days_pw * acc_scale
+	## Quote provider registered once in SimLoop.boot（R9-65 C2）；tests set in fixtures.
 	var ports: Array = _slots_by_port.keys()
 	ports.sort()
 	for pid_v in ports:
@@ -2147,28 +2313,32 @@ func _step_garrison_procure(_day: int, _errors: Array) -> void:
 		var soldiers := 0
 		if lv >= 1 and lv <= garrison.size():
 			soldiers = int(garrison[lv - 1])
-		var add_arms: float = float(soldiers) * arms_per / float(days_pw) * float(acc_scale)
-		var add_powder: float = float(soldiers) * powder_per / float(days_pw) * float(acc_scale)
+		var add_arms: float = float(soldiers) * arms_per * float(acc_scale)
+		var add_powder: float = float(soldiers) * powder_per * float(acc_scale)
 		_acc_arms[port_id] = int(_acc_arms.get(port_id, 0)) + floori(
 			AmountQuantize.quantize_amount(add_arms)
 		)
 		_acc_powder[port_id] = int(_acc_powder.get(port_id, 0)) + floori(
 			AmountQuantize.quantize_amount(add_powder)
 		)
-		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, acc_scale)
-		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, acc_scale)
+		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, thresh)
+		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, thresh)
 
 
-func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
-	## FRM-14／D-97(d)／WP-67: validate CITY afford + MARKET stock ≥ q, then cash+goods.
-	## Later failure → offsetting cash post (keep original); never delete postings.
-	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
+func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, thresh: int) -> void:
+	## FRM-SYS08-14／D-111(d)／D-97(d)／WP-67: q = MIN(FLOOR(acc/thresh), MARKET, CITY-affordable).
+	## Cap MARKET first (no max_affordable overstock probes → ERR-SYS04-06).
+	## Goods fail after cash → offsetting post (keep original); spend → garrison_li.
+	var units := 0
+	if thresh > 0:
+		units = int(acc_map.get(port_id, 0) / thresh)
 	if units <= 0:
 		return
 	var city: StringName = CashLedger.make_city_id(port_id)
 	CashLedger.create_account(city, Account.Kind.CITY)
 	var market: Dictionary = GoodsLedger.make_market(port_id)
 	var stock: int = GoodsLedger.get_qty(market, good)
+	## Spec: stock short → buy MIN(..., MARKET) (FRM-SYS08-14); not a C-05 qty gap.
 	var q: int = mini(units, stock)
 	var price := 0
 	while q > 0:
@@ -2226,8 +2396,11 @@ func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, a
 			)
 			q = 0
 		break
-	## D-81: discard unmet whole units; keep fractional remainder (acc % scale).
-	acc_map[port_id] = int(acc_map.get(port_id, 0)) % acc_scale
+	## D-81／D-92a: discard unmet whole units; keep fractional remainder (acc % thresh).
+	if thresh > 0:
+		acc_map[port_id] = int(acc_map.get(port_id, 0)) % thresh
+	else:
+		acc_map[port_id] = 0
 
 
 func _step_rent_accrual() -> void:
@@ -2448,6 +2621,10 @@ func _season_city_build_queue(port_id: String) -> void:
 		# Upgrade cost if target_level > 1
 		if step.target_level > 1:
 			cost = _public_upgrade_cash(port_id, step.target_level)
+		## D-113(b)／FRM-SYS08-15: cost＝0 → still start + advance queue_pos (skip cash post).
+		## cost<0 = PUBLIC_UPGRADE_CASH_FAIL → ERR-SYS08-09 already recorded; stop (no skip).
+		if cost < 0:
+			break
 		if CashLedger.balance(city) < cost:
 			break
 		# Mark as started: advance pos (actual order_build needs free public slot — best-effort).
@@ -2459,17 +2636,20 @@ func _season_city_build_queue(port_id: String) -> void:
 
 
 func _public_upgrade_cash(port_id: String, to_level: int) -> int:
-	## FRM-SYS08-07: pop × UPGRADE_PER_CAPITA[級].CASH_LI; idx = to_level - 2 ([0]=L2,[1]=L3).
+	## FRM-SYS08-07／WP-63 (g): pop × UPGRADE_PER_CAPITA[級].CASH_LI;
+	## missing CASH_LI or level OOB → ERR-SYS08-09（不得回 0）.
 	var pop: int = 0
 	if _population != null:
 		pop = _population.population(StringName(port_id))
 	var arr: Array = Params.get_value(PRM_UPGRADE_PER_CAPITA)
 	var idx: int = _upgrade_level_index(to_level)
 	if idx < 0 or idx >= arr.size():
-		return 0
+		_record_fail(ERR_SYS08_09, "level", to_level, "UPGRADE_PER_CAPITA index OOB (WP-63 g)")
+		return PUBLIC_UPGRADE_CASH_FAIL
 	var row: Dictionary = arr[idx] as Dictionary
 	if not row.has("CASH_LI"):
-		return 0
+		_record_fail(ERR_SYS08_09, "UPGRADE_PER_CAPITA", idx, "CASH_LI key missing (WP-63 g)")
+		return PUBLIC_UPGRADE_CASH_FAIL
 	var cash_per: int = int(row["CASH_LI"])
 	return ceili(AmountQuantize.quantize_amount(float(pop) * float(cash_per)))
 
@@ -2488,53 +2668,70 @@ func _recompute_r(port_id: String) -> int:
 
 
 func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
-	# Find free public slot.
-	var slot_id: StringName = &""
-	for s_v in _slots_by_port.get(port_id, []):
-		var s: Slot = s_v
-		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
-			slot_id = s.slot_id
-			break
-	if slot_id == &"":
-		# Still advance? Spec: money enough → start. No slot → cannot start, don't skip.
-		return false
-	# Ensure a PUBLIC def exists for cb_id
+	## WP-65／A8／FRM-SYS08-15 D-81／D-111(b): L1 → same path as order_build；
+	## def from loaded buildings only（不得 invent BuildingDef）.
 	var type_id: String = step.cb_id
-	if not _building_defs.has(type_id):
-		var d := BuildingDef.new()
-		d.type = type_id
-		d.build_class = "PUBLIC"
-		d.tier = 0
-		d.max_workers = 0
-		d.base_output_per_worker = 0.0
-		_building_defs[type_id] = d
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(city, 0 - cost),
-			CashLedger.make_entry(CashLedger.ID_SINK, cost),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
+	if step.target_level <= BUILDING_LEVEL_MIN:
+		if not _building_defs.has(type_id):
+			## D-113(c): missing BuildingDef → ERR-SYS08-11; stop（queue_pos stuck, no skip）.
+			_record_fail(
+				ERR_SYS08_11, "type", type_id, "BuildingDef missing for city queue (FRM-SYS08-15)"
+			)
+			return false
+		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+		if not cash_map.has("PUBLIC"):
+			_record_fail(
+				ERR_SYS08_09, PRM_BUILD_CASH_LI, "PUBLIC", "BUILD_CASH_LI PUBLIC missing (A11)"
+			)
+			return false
+		var slot_id: StringName = _find_public_slot(port_id)
+		if slot_id == &"":
+			## D-113(c): no empty public slot → ERR-SYS08-01; stop; do not skip.
+			_record_fail(
+				ERR_SYS08_01, "public", type_id, "no public slot for city queue new-build (D-113c)"
+			)
+			return false
+		var bid: StringName = order_build(city, slot_id, StringName(type_id))
+		if bid == &"":
+			return false
+		## Spend noted inside order_build for CITY PUBLIC (D-102(e)); do not double-count.
+		return true
+	## Upgrade: find city-owned PUBLIC at level == target − 1；no new slot.
+	var target: Building = _find_city_public_upgrade_target(
+		port_id, city, StringName(step.cb_id), step.target_level - 1
 	)
-	if post_err != OK:
+	if target == null:
 		return false
-	_note_city_spend(port_id, cost, SPEND_CAT_BUILD)
-	var bld := Building.new()
-	bld.building_id = _next_bld_id(port_id)
-	bld.type = StringName(type_id)
-	bld.build_class = CLASS_PUBLIC
-	bld.cb_id = StringName(step.cb_id)
-	bld.owner = city
-	bld.port_id = port_id
-	bld.slot_id = slot_id
-	bld.level = maxi(BUILDING_LEVEL_MIN, step.target_level)
-	bld.state = Building.State.ACTIVE
-	bld.days_left = 0
-	var slot: Slot = _slot(slot_id)
-	slot.building_id = bld.building_id
-	slot.vacancy_start_day = -1
-	_register_building(bld)
+	var up_id: StringName = order_upgrade(city, target.building_id)
+	if up_id == &"":
+		return false
+	## D-113(b): cost＝0 skipped cash post inside order_upgrade; skip 0 spend note too.
+	if cost != 0:
+		_note_city_spend(port_id, cost, SPEND_CAT_BUILD)
 	return true
+
+
+func _find_city_public_upgrade_target(
+	port_id: String, city: StringName, cb: StringName, need_level: int
+) -> Building:
+	## Prefer lowest building_id among ACTIVE city PUBLIC matching cb_id／level.
+	var best: Building = null
+	var best_id := ""
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		if bld.owner != city or bld.build_class != CLASS_PUBLIC:
+			continue
+		if bld.state != Building.State.ACTIVE:
+			continue
+		if bld.cb_id != cb and bld.type != cb:
+			continue
+		if bld.level != need_level:
+			continue
+		var sid: String = String(bld.building_id)
+		if best == null or sid < best_id:
+			best = bld
+			best_id = sid
+	return best
 
 
 func _season_zone_open(port_id: String) -> void:
@@ -2745,6 +2942,105 @@ func _load_build_queues(queue_dir: String, errors: Array) -> void:
 		var arr: Array = _queue_by_port[pid]
 		arr.sort_custom(func(a: BuildStep, b: BuildStep) -> bool: return a.step < b.step)
 		_queue_pos[pid] = 0
+
+
+func _validate_build_queue_import_d97a(
+	city_by_port: Dictionary, opening_publics: Array, errors: Array
+) -> void:
+	## FRM-SYS08-21／D-97(a)／N1: slots + level continuity; ERR-SYS08-13; collect all (C-06).
+	## Opening buildings count as level 1 (or their tres level); unbuilt cb_id starts at 0.
+	var open_by_port: Dictionary = {}
+	for op_v in opening_publics:
+		var op: OpeningPublic = op_v as OpeningPublic
+		if op == null:
+			continue
+		if not open_by_port.has(op.port_id):
+			open_by_port[op.port_id] = []
+		(open_by_port[op.port_id] as Array).append(op)
+
+	## Only ports in PortRegistry（fixture boots must not validate unrelated formal ports）.
+	var ports: Array = []
+	for pid_v in PortRegistry.all_ids():
+		ports.append(String(pid_v))
+	ports.sort()
+
+	for pid_v2 in ports:
+		var port_id: String = String(pid_v2)
+		var slots: int = 0
+		if city_by_port.has(port_id):
+			slots = int((city_by_port[port_id] as CityCenterDef).public_slots)
+		var opens: Array = open_by_port.get(port_id, [])
+		var open_n: int = opens.size()
+		if open_n > slots:
+			errors.append(
+				_err(
+					ERR_SYS08_13,
+					"public_slots",
+					{
+						"port_id": port_id,
+						"step": 0,
+						"cb_id": "",
+						"value": open_n,
+						"public_slots": slots,
+						"opening_public": open_n,
+					},
+					"opening_public count exceeds public_slots (D-97a)"
+				)
+			)
+		var levels: Dictionary = {}
+		for op2_v in opens:
+			var op2: OpeningPublic = op2_v as OpeningPublic
+			## Opening building present → at least level 1 (tres level if higher).
+			var lv: int = maxi(1, int(op2.level))
+			levels[String(op2.cb_id)] = lv
+
+		var steps: Array = _queue_by_port.get(port_id, [])
+		var new_seen: int = 0
+		var remaining_new: int = maxi(0, slots - open_n)
+		for step_v in steps:
+			var step: BuildStep = step_v as BuildStep
+			if step == null:
+				continue
+			var cb: String = String(step.cb_id)
+			var cur: int = int(levels.get(cb, 0))
+			var expected: int = cur + 1
+			if step.target_level != expected:
+				errors.append(
+					_err(
+						ERR_SYS08_13,
+						"target_level",
+						{
+							"port_id": port_id,
+							"step": step.step,
+							"cb_id": cb,
+							"value": step.target_level,
+							"expected": expected,
+						},
+						"build_queue target_level must be current+1 (D-97a／EX skip-level)"
+					)
+				)
+			else:
+				levels[cb] = step.target_level
+
+			if step.target_level == 1:
+				new_seen += 1
+				if remaining_new < 0 or new_seen > remaining_new:
+					## EX-08-21-04: report the overflowing new-build step.
+					errors.append(
+						_err(
+							ERR_SYS08_13,
+							"public_slots",
+							{
+								"port_id": port_id,
+								"step": step.step,
+								"cb_id": cb,
+								"value": open_n + new_seen,
+								"public_slots": slots,
+								"opening_public": open_n,
+							},
+							"opening_public + target_level=1 exceeds public_slots (D-97a／EX-08-21-04)"
+						)
+					)
 
 
 func _clear_state() -> void:
