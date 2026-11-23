@@ -115,6 +115,34 @@ func test_WP67_garrison_goods_fail_restores_cash_and_stock() -> void:
 		e.handled = true
 
 
+func test_D102e_new_build_spend_build_upgrade_li() -> void:
+	## D-102(e): city new-build (target_level=1) → build_upgrade_li == BUILD_CASH_LI[PUBLIC].
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	var cash_map: Dictionary = Params.get_value("PRM-SYS08-BUILD_CASH_LI")
+	var expect: int = int(cash_map["PUBLIC"])
+	assert_gt(expect, 0)
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - expect * 2),
+			CashLedger.make_entry(city, expect * 2),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	## Ensure a free PUBLIC slot (layout may already have one).
+	var step := BuildStep.new()
+	step.port_id = PORT
+	step.step = 0
+	step.cb_id = "CB-10"
+	step.target_level = 1
+	## Register a PUBLIC def for cb so _try_start can invent if missing.
+	assert_true(BuildingEconomy._try_start_city_public(PORT, city, step, expect))
+	var cat: Dictionary = BuildingEconomy._season_spend_cat.get(PORT, {})
+	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_BUILD, 0)), expect)
+	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_OTHER, 0)), 0)
+
+
 func test_WP67_OBS05_queries_after_season() -> void:
 	## After season_step, queries return persisted values; unknown season → −1／{}.
 	_boot_world()

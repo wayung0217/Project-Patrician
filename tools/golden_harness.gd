@@ -209,7 +209,7 @@ func _write_day(
 		var win_json: String = _goods_window_json(goods, port_s, good_ids)
 		var bld_json: String = _buildings_json(be, port_s)
 		var res_json: String = _residences_json(be, pop, port_s)
-		## WP-67／OBS-05: public queries（settled seasons only; day-0 may be empty）.
+		## F5／mid-5: OBS-05 queries only after season settle; else blank + obs05_unsettled（no ERROR）.
 		var params_node: Node = get_root().get_node_or_null("Params")
 		var days_d: int = 0
 		if params_node != null:
@@ -219,19 +219,23 @@ func _write_day(
 			season_i = maxi(0, int(day / days_d) - 1)
 		var land_rent: String = ""
 		var vac_tax: String = ""
-		var spend_json: String = "{}"
+		var spend_json: String = ""
 		var note: String = ""
-		var rent_v: int = int(be.call("season_land_rent_li", pid, season_i))
-		var vac_v: int = int(be.call("season_vacancy_tax_li", pid, season_i))
-		var spend_v: Dictionary = be.call("city_spend_by_category", pid, season_i)
-		if rent_v >= 0:
-			land_rent = str(rent_v)
-		if vac_v >= 0:
-			vac_tax = str(vac_v)
-		if not spend_v.is_empty():
-			spend_json = JSON.stringify(spend_v)
-		if land_rent.is_empty() and vac_tax.is_empty() and spend_v.is_empty():
-			note = "obs05_season_unset"
+		var season_settled: bool = days_d > 0 and day >= (season_i + 1) * days_d
+		if season_settled:
+			var rent_v: int = int(be.call("season_land_rent_li", pid, season_i))
+			var vac_v: int = int(be.call("season_vacancy_tax_li", pid, season_i))
+			var spend_v: Dictionary = be.call("city_spend_by_category", pid, season_i)
+			if rent_v >= 0:
+				land_rent = str(rent_v)
+			if vac_v >= 0:
+				vac_tax = str(vac_v)
+			if not spend_v.is_empty():
+				spend_json = JSON.stringify(spend_v)
+			else:
+				spend_json = "{}"
+		else:
+			note = "obs05_unsettled"
 		f.store_line(
 			"port,%s,%s,%s,%s,%s,%s,%s,%s,%s,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",%s,%s,\"%s\",%s"
 			% [

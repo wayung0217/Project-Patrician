@@ -453,6 +453,9 @@ func order_build(actor: StringName, slot_key: StringName, type_id: StringName) -
 	)
 	if post_err != OK:
 		return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "construction cash post failed"))
+	## D-102(e)／OBS-05: CITY PUBLIC new-build cash → build_upgrade_li（not other_li）.
+	if build_class == CLASS_PUBLIC and _is_city_owner(actor):
+		_note_city_spend(slot.port_id, cash_li, SPEND_CAT_BUILD)
 
 	var bld := Building.new()
 	bld.building_id = _next_bld_id(slot.port_id)
@@ -553,6 +556,9 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 	)
 	if post_err != OK:
 		return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "upgrade cash post failed"))
+	## D-102(e)／OBS-05: CITY PUBLIC upgrade cash → build_upgrade_li.
+	if bld.build_class == CLASS_PUBLIC and _is_city_owner(actor):
+		_note_city_spend(bld.port_id, cash_li, SPEND_CAT_BUILD)
 
 	bld.locked_materials = {}
 	bld.missing_materials = {}
