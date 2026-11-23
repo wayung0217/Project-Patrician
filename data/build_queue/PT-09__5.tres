@@ -6,5 +6,5 @@
 script = ExtResource("1_viwgv")
 port_id = "PT-09"
 step = 5
-cb_id = "CB-10"
+cb_id = "CB-03"
 target_level = 2
