@@ -1,6 +1,5 @@
 extends Control
-## WP-61 Debug sea chart: ports + junctions + lanes from data/sea (and SeaLanes.nodes after boot).
-## Lane list: SeaLanes has no public lanes() enumerator → load res://data/sea/lanes/*.tres (介面缺口見 gaps).
+## WP-61／WP-62 Debug sea chart: ports + junctions + lanes via SeaLanes public API (D-95d).
 
 
 signal port_selected(port_id: StringName)
@@ -32,9 +31,10 @@ func reload_from_sea() -> void:
 			var n: SeaNode = n_variant as SeaNode
 			if n != null:
 				_nodes.append(n)
+		_load_lanes_from_sea_lanes()
 	else:
 		_load_nodes_from_dir(SeaLanes.NODES_DIR)
-	_load_lanes_from_dir(SeaLanes.LANES_DIR)
+		_load_lanes_from_dir(SeaLanes.LANES_DIR)
 	_recompute_bounds()
 	queue_redraw()
 
@@ -48,8 +48,32 @@ func _load_nodes_from_dir(dir_path: String) -> void:
 			_nodes.append(n)
 
 
+func _load_lanes_from_sea_lanes() -> void:
+	## D-95(d): SeaLanes.lane_ids() ascending + lane_endpoints for chart.
+	var by_id: Dictionary = {}
+	for n_variant in _nodes:
+		var n: SeaNode = n_variant as SeaNode
+		by_id[n.node_id] = n
+	for lid_variant in SeaLanes.lane_ids():
+		var lid: StringName = lid_variant
+		var ends: PackedStringArray = SeaLanes.lane_endpoints(lid)
+		if ends.size() < 2:
+			continue
+		var a_id: String = ends[0]
+		var b_id: String = ends[1]
+		if not by_id.has(a_id) or not by_id.has(b_id):
+			continue
+		var a: SeaNode = by_id[a_id]
+		var b: SeaNode = by_id[b_id]
+		_lanes.append({
+			"id": String(lid),
+			"a": Vector2(float(a.x), float(a.y)),
+			"b": Vector2(float(b.x), float(b.y)),
+		})
+
+
 func _load_lanes_from_dir(dir_path: String) -> void:
-	## Gap workaround: no SeaLanes.lanes() public API — read data files for chart only.
+	## Pre-boot fallback only (SeaLanes not loaded yet).
 	var by_id: Dictionary = {}
 	for n_variant in _nodes:
 		var n: SeaNode = n_variant as SeaNode

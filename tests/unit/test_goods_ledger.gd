@@ -187,6 +187,26 @@ func test_TST_SYS03_02_insufficient_balance_unchanged() -> void:
 	assert_eq(GoodsLedger.get_qty(market, good), 0)
 
 
+func test_TST_WP62_D95d_container_used() -> void:
+	## D-95(d): GoodsLedger.container_used(container) → occupied 擔.
+	assert_true(GoodsLedger.has_method("container_used"))
+	var good: StringName = StringName(GoodCatalog.all_ids()[0])
+	var hold: Dictionary = GoodsLedger.make_hold("SHIP-WP62", "ACTOR-WP62")
+	var provider := TestCapacityProvider.new()
+	provider.set_cap(hold, 10)
+	assert_eq(
+		GoodsLedger.register_capacity_provider(StringName(GoodsLedger.KIND_HOLD), provider),
+		GoodsLedger.CODE_OK
+	)
+	assert_eq(GoodsLedger.container_used(hold), 0)
+	var seq: int = GoodsLedger.transfer(
+		GoodsLedger.make_external(), hold, good, 3, GoodsLedger.REASON_GENESIS, &"TEST"
+	)
+	assert_gt(seq, 0)
+	assert_eq(GoodsLedger.container_used(hold), 3)
+	assert_eq(GoodsLedger.get_qty(hold, good), 3)
+
+
 func test_TST_SYS03_03_insufficient_capacity_all_or_nothing() -> void:
 	# TST-SYS03-03: 目的容器剩餘容量 3，transfer 4 → ERR-SYS03-03，全無
 	var good: StringName = StringName(GoodCatalog.all_ids()[0])
