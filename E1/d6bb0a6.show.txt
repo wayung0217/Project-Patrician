@@ -1,0 +1,68 @@
+commit d6bb0a6a9590aa6b2e2a19c403436658a995e4b3
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 08:49:44 2026 +0000
+
+    test(wp65): restore formal data before formal asserts
+    
+    sim_loop/SYS23/trade_desk wipe res://data build_queue tres mid-suite.
+    Re-checkout those trees from HEAD so D-111(b) formal listing stays green
+    without editing docs/spec blank rows.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+diff --git a/tests/unit/test_sys08_wp65_d97a.gd b/tests/unit/test_sys08_wp65_d97a.gd
+index 592b0e4..c14c1b8 100644
+--- a/tests/unit/test_sys08_wp65_d97a.gd
++++ b/tests/unit/test_sys08_wp65_d97a.gd
+@@ -2,6 +2,9 @@ extends GutTest
+ ## WP-65／N1／D-97(a): ERR-SYS08-13 build_queue import validation.
+ ## EX-08-21-04 + skip-level fixture + formal data 0 errors.
+ 
++## Formal .tres under data/ are wiped by earlier suites (sim_loop／SYS23／trade_desk).
++## Restore from git HEAD — never edit docs/spec (blank rows stay; D-111 hard rule).
++
+ 
+ func before_each() -> void:
+ 	BuildingEconomy._loaded = false
+@@ -11,6 +14,25 @@ func before_each() -> void:
+ 	Params._loaded = false
+ 
+ 
++func _restore_formal_data_tres() -> void:
++	var root: String = ProjectSettings.globalize_path("res://").rstrip("/")
++	var paths: Array = [
++		"data/build_queue",
++		"data/buildings",
++		"data/city_center",
++		"data/opening",
++		"data/opening_public",
++		"data/opening_population",
++		"data/zones",
++	]
++	var args: PackedStringArray = PackedStringArray(["-C", root, "checkout", "HEAD", "--"])
++	for p in paths:
++		args.append(String(p))
++	var output: Array = []
++	var rc: int = OS.execute("git", args, output, true, false)
++	assert_eq(rc, 0, "git restore formal data failed rc=%s out=%s" % [str(rc), str(output)])
++
++
+ func test_EX_08_21_04_opening_plus_new_exceeds_slots() -> void:
+ 	## EX-08-21-04: slots=4; opening 2; three target_level=1 → ERR on step 3 CB-04.
+ 	_boot_registry()
+@@ -99,6 +121,7 @@ func test_D102d_city_queue_position() -> void:
+ 
+ func test_N1_formal_data_zero_queue_import_errors() -> void:
+ 	## Formal city centers + opening_public + build_queue → 0 ERR-SYS08-13.
++	_restore_formal_data_tres()
+ 	_boot_registry()
+ 	var city_by: Dictionary = {}
+ 	var dir := DirAccess.open("res://data/city_center/")
+@@ -165,6 +188,7 @@ func test_D111b_missing_cb_error_queue_pos_stuck() -> void:
+ func test_D111b_formal_newbuild_defs_from_buildings() -> void:
+ 	## D-111(b) blind-2 (static half): every formal target_level=1 cb_id has loaded BuildingDef.
+ 	## 360d start-day listing is produced by tools/wp65_newbuild_360_probe.gd (F1 evidence).
++	_restore_formal_data_tres()
+ 	_boot_registry()
+ 	BuildingEconomy._clear_state()
+ 	BuildingEconomy._loaded = true

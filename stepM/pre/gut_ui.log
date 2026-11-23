@@ -1,0 +1,2221 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[4m
+
+res://tests/ui/test_wp61_debug_ui.gd
+[0m* test_WP61_scene_loads
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [8] test_scripts (res://addons/gut/gut.gd:1047)
+       [9] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [10] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [11] main (res://addons/gut/cli/gut_cli.gd:297)
+       [12] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [2] _ready (res://ui/debug_main.gd:43)
+       [3] test_WP61_scene_loads (res://tests/ui/test_wp61_debug_ui.gd:60)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed] [0m
+      at line 64
+* test_WP61_formal_boot_zero_errors
+ERROR: ShipRegistry.set_sailor_pool_provider called after load; ignored
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] set_sailor_pool_provider (res://autoload/ship_registry.gd:101)
+       [1] before_each (res://tests/ui/test_wp61_debug_ui.gd:25)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [2] _ready (res://ui/debug_main.gd:43)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [4] test_WP61_formal_boot_zero_errors (res://tests/ui/test_wp61_debug_ui.gd:69)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[31m    [Failed]:  [0mformal L1 boot must succeed with debug providers
+      at line 70
+[31m    [Failed] [0m
+      at line 71
+* test_WP61_advance_day_increments
+ERROR: ShipRegistry.set_sailor_pool_provider called after load; ignored
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] set_sailor_pool_provider (res://autoload/ship_registry.gd:101)
+       [1] before_each (res://tests/ui/test_wp61_debug_ui.gd:25)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [2] _ready (res://ui/debug_main.gd:43)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [4] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:79)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[31m    [Failed] [0m
+      at line 80
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] test_WP61_advance_day_increments (res://tests/ui/test_wp61_debug_ui.gd:84)
+       [2] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+[31m    [Failed]:  [0m[0] expected to equal [1]:  day must increment by 1 (errs=0)
+      at line 86
+* test_WP61_buy_reduces_cash_and_stock
+ERROR: ShipRegistry.set_sailor_pool_provider called after load; ignored
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] set_sailor_pool_provider (res://autoload/ship_registry.gd:101)
+       [1] before_each (res://tests/ui/test_wp61_debug_ui.gd:25)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [6] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [2] _ready (res://ui/debug_main.gd:43)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:39)
+       [4] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:91)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[31m    [Failed] [0m
+      at line 92
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp61_debug_ui.gd:47)
+       [2] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:93)
+       [3] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+[31m    [Failed]:  [0m[0] expected to be > than [0]:  player must have opening ship
+      at line 95
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+          at: test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:96)
+          GDScript backtrace (most recent call first):
+              [0] test_WP61_buy_reduces_cash_and_stock (res://tests/ui/test_wp61_debug_ui.gd:96)
+              [1] _boot_ui (res://tests/ui/test_wp61_debug_ui.gd:40)
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+    [2] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+    [3] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+    [4] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+    [5] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+    [6] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+    [7] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+    [8] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+    [9] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+    [10] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+    [11] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+    [12] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+    [13] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+    [14] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+    [15] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+    [16] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+    [17] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+    [18] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+    [19] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+    [20] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+    [21] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+    [22] <push_error>SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+    [23] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [24] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [25] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [26] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [27] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [28] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [29] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [30] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [31] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [32] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [33] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [34] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [35] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [36] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [37] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line 96
+[1m0/4 passed.
+[0m[4m
+
+res://tests/ui/test_wp62_m0_apis.gd
+[0m* test_TST_WP62_UI_capacity_shows_150_dan
+ERROR: ShipRegistry.set_sailor_pool_provider called after load; ignored
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] set_sailor_pool_provider (res://autoload/ship_registry.gd:101)
+       [1] before_each (res://tests/ui/test_wp62_m0_apis.gd:27)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [2] _ready (res://ui/debug_main.gd:43)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [4] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:76)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[31m    [Failed] [0m
+      at line 77
+[31m    [Failed]:  [0m[0] expected to be > than [0]:  
+      at line 79
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+          at: test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:80)
+          GDScript backtrace (most recent call first):
+              [0] test_TST_WP62_UI_capacity_shows_150_dan (res://tests/ui/test_wp62_m0_apis.gd:80)
+              [1] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+    [2] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+    [3] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+    [4] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+    [5] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+    [6] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+    [7] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+    [8] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+    [9] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+    [10] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+    [11] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+    [12] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+    [13] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+    [14] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+    [15] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+    [16] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+    [17] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+    [18] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+    [19] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+    [20] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+    [21] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+    [22] <push_error>SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+    [23] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line 80
+* test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade
+ERROR: ShipRegistry.set_sailor_pool_provider called after load; ignored
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] set_sailor_pool_provider (res://autoload/ship_registry.gd:101)
+       [1] before_each (res://tests/ui/test_wp62_m0_apis.gd:27)
+       [2] _run_test (res://addons/gut/gut.gd:612)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1243)
+       [1] apply_opening_init (res://autoload/population_model.gd:323)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [4] _ready (res://ui/debug_main.gd:43)
+       [5] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [6] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] boot_formal_l1 (res://ui/debug_boot.gd:66)
+       [2] _ready (res://ui/debug_main.gd:43)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:41)
+       [4] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:94)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[31m    [Failed] [0m
+      at line 95
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] _warmup_days (res://tests/ui/test_wp62_m0_apis.gd:49)
+       [2] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:96)
+       [3] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+SCRIPT ERROR: Out of bounds get index '0' (on base: 'Array')
+          at: test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:98)
+          GDScript backtrace (most recent call first):
+              [0] test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade (res://tests/ui/test_wp62_m0_apis.gd:98)
+              [1] _boot_ui (res://tests/ui/test_wp62_m0_apis.gd:42)
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+    [2] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+    [3] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+    [4] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+    [5] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+    [6] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+    [7] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+    [8] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+    [9] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+    [10] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+    [11] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+    [12] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+    [13] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+    [14] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+    [15] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+    [16] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+    [17] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+    [18] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+    [19] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+    [20] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+    [21] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+    [22] <push_error>SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+    [23] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [24] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [25] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [26] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [27] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [28] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [29] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [30] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [31] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [32] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [33] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [34] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [35] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [36] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [37] <engine-2>Out of bounds get index '0' (on base: 'Array')
+      at line 98
+[1m0/2 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m[4m
+res://tests/ui/test_wp61_debug_ui.gd
+[0m- test_WP61_scene_loads
+[31m    [Failed]:  [0m
+          at line 64
+- test_WP61_formal_boot_zero_errors
+[31m    [Failed]:  [0mformal L1 boot must succeed with debug providers
+          at line 70
+[31m    [Failed]:  [0m
+          at line 71
+- test_WP61_advance_day_increments
+[31m    [Failed]:  [0m
+          at line 80
+[31m    [Failed]:  [0m[0] expected to equal [1]:  day must increment by 1 (errs=0)
+          at line 86
+- test_WP61_buy_reduces_cash_and_stock
+[31m    [Failed]:  [0m
+          at line 92
+[31m    [Failed]:  [0m[0] expected to be > than [0]:  player must have opening ship
+          at line 95
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+    [2] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+    [3] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+    [4] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+    [5] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+    [6] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+    [7] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+    [8] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+    [9] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+    [10] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+    [11] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+    [12] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+    [13] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+    [14] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+    [15] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+    [16] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+    [17] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+    [18] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+    [19] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+    [20] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+    [21] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+    [22] <push_error>SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+    [23] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [24] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [25] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [26] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [27] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [28] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [29] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [30] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [31] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [32] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [33] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [34] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [35] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [36] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [37] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line 96
+[4m
+res://tests/ui/test_wp62_m0_apis.gd
+[0m- test_TST_WP62_UI_capacity_shows_150_dan
+[31m    [Failed]:  [0m
+          at line 77
+[31m    [Failed]:  [0m[0] expected to be > than [0]:  
+          at line 79
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+    [2] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+    [3] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+    [4] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+    [5] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+    [6] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+    [7] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+    [8] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+    [9] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+    [10] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+    [11] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+    [12] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+    [13] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+    [14] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+    [15] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+    [16] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+    [17] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+    [18] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+    [19] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+    [20] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+    [21] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+    [22] <push_error>SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+    [23] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line 80
+- test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade
+[31m    [Failed]:  [0m
+          at line 95
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+    [2] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+    [3] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+    [4] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+    [5] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+    [6] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+    [7] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+    [8] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+    [9] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+    [10] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+    [11] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+    [12] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+    [13] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+    [14] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+    [15] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+    [16] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+    [17] <push_error>PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+    [18] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+    [19] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+    [20] <push_error>DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+    [21] <push_error>DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+    [22] <push_error>SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+    [23] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [24] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [25] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [26] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [27] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [28] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [29] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [30] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [31] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [32] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [33] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [34] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [35] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [36] <push_error>SimLoop.tick_day called before successful boot (2.2-02)
+    [37] <engine-2>Out of bounds get index '0' (on base: 'Array')
+          at line 98
+
+Totals
+------
+Scripts               2
+Tests                 6
+Passing Tests      none
+Failing Tests         6
+Asserts            6/19
+Time              1.34s
+
+
+[31m---- 6 failing tests ----
+[0m
+WARNING: 522 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 65 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 3 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 7 RID allocations of type 'PN18TextServerAdvanced22ShapedTextDataAdvancedE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

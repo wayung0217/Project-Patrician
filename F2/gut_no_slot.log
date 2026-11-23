@@ -1,0 +1,70 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[4m
+
+res://tests/unit/test_sys08_wp65_d97a.gd
+[0m* test_D113c_no_public_slot_err_sys08_01
+ERROR: CashLedger: { "code": &"ERR-SYS05-04", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "seq", "value": <null>, "message": "GoodsLedger must be loaded for posting.seq" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/cash_ledger.gd:977)
+       [1] _fail (res://autoload/cash_ledger.gd:970)
+       [2] post (res://autoload/cash_ledger.gd:263)
+       [3] test_D113c_no_public_slot_err_sys08_01 (res://tests/unit/test_sys08_wp65_d97a.gd:207)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: BuildingEconomy: { "code": &"ERR-SYS08-01", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "public", "value": "CB-01", "message": "no public slot for city queue new-build (D-113c)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_fail (res://autoload/building_economy.gd:2850)
+       [1] _try_start_city_public (res://autoload/building_economy.gd:2536)
+       [2] test_D113c_no_public_slot_err_sys08_01 (res://tests/unit/test_sys08_wp65_d97a.gd:212)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[1m1/1 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Scripts               1
+Tests                 1
+Passing Tests         1
+Asserts               8
+Time              0.431s
+
+
+Ran Tests matching "test_D113c_no_public_slot_err_sys08_01"
+[32m---- All tests passed! ----
+[0m
+WARNING: 179 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 65 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

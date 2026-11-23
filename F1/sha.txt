@@ -1,0 +1,5 @@
+F1_local_pre_restack=79b89c64eb244c9b7beb683a062ecf9c463de8b5
+F1_restacked=1c87778083c0e98285cc1ff3fcb9745b5b3c5712
+F2_local_pre_restack=9b9747ec6124ca3216f122c39467149917b9e6a6
+F2_restacked=0614c3109a246b6d936258aded71b26f5600d97a
+note=GitHub restacked #60 onto post-#59 main; int-1757 merged restacked tip

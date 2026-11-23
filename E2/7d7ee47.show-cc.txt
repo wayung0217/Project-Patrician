@@ -1,0 +1,609 @@
+commit 7d7ee479e4ce885ad1fd32231131eb50c3ae5620
+Merge: 40b13ad 6228d20
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 09:01:48 2026 +0000
+
+    int-1756: merge #64 wp67 (OBS-05 spend + F3 garrison)
+    
+    Resolve conflicts: keep F1/F3 city-queue and market-first garrison buys;
+    add WP-67 spend categories, OBS-05 columns, and queue_position together.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+diff --cc autoload/building_economy.gd
+index c689877,cc71015..86c2c5d
+--- a/autoload/building_economy.gd
++++ b/autoload/building_economy.gd
+@@@ -2295,26 -2155,22 +2315,26 @@@ func _step_garrison_procure(_day: int, 
+  		_acc_powder[port_id] = int(_acc_powder.get(port_id, 0)) + floori(
+  			AmountQuantize.quantize_amount(add_powder)
+  		)
+ -		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, acc_scale)
+ -		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, acc_scale)
+ +		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, thresh)
+ +		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, thresh)
+  
+  
+ -func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
+ -	## FRM-14／D-97(d)／WP-67: validate CITY afford + MARKET stock ≥ q, then cash+goods.
+ -	## Later failure → offsetting cash post (keep original); never delete postings.
+ -	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
+ +func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, thresh: int) -> void:
+- 	## FRM-SYS08-14／D-111(d): q = MIN(FLOOR(acc/thresh), MARKET, CITY-affordable).
+- 	## Root cause of golden ERR-SYS04-06 (168×): CashLedger.max_affordable_qty binary-searches
+- 	## and probes qty>stock → MarketPricer.quote ERR-SYS04-06 (market_pricer.gd buy qty>stock).
+- 	## Cap by MARKET first, then walk q down by CITY balance (FRM-SYS05-09) without overstock probes.
+++	## FRM-SYS08-14／D-111(d)／D-97(d)／WP-67: q = MIN(FLOOR(acc/thresh), MARKET, CITY-affordable).
+++	## Cap MARKET first (no max_affordable overstock probes → ERR-SYS04-06).
+++	## Goods fail after cash → offsetting post (keep original); spend → garrison_li.
+ +	var units := 0
+ +	if thresh > 0:
+ +		units = int(acc_map.get(port_id, 0) / thresh)
+  	if units <= 0:
+  		return
+  	var city: StringName = CashLedger.make_city_id(port_id)
+  	CashLedger.create_account(city, Account.Kind.CITY)
+  	var market: Dictionary = GoodsLedger.make_market(port_id)
+  	var stock: int = GoodsLedger.get_qty(market, good)
+ +	## Spec: stock short → buy MIN(..., MARKET) (FRM-SYS08-14); not a C-05 qty gap.
+  	var q: int = mini(units, stock)
++ 	var price := 0
+  	while q > 0:
+  		var quote: Dictionary = MarketPricer.quote(
+  			StringName(port_id), good, MarketPricer.SIDE_BUY, q
+@@@ -2334,23 -2201,33 +2365,36 @@@
+  			REASON_TRADE,
+  			REQUESTER_SYS08
+  		)
+- 		if cash_rc == OK:
+- 			var seq: int = GoodsLedger.transfer(
+- 				market,
+- 				GoodsLedger.make_external(),
+- 				good,
+- 				q,
+- 				GoodsLedger.REASON_CONSUME,
++ 		if cash_rc != OK:
++ 			q = 0
++ 			break
++ 		var seq: int = GoodsLedger.transfer(
++ 			market,
++ 			GoodsLedger.make_external(),
++ 			good,
++ 			q,
++ 			GoodsLedger.REASON_CONSUME,
++ 			REQUESTER_SYS08
++ 		)
++ 		if seq > 0:
++ 			_note_city_spend(port_id, price, SPEND_CAT_GARRISON)
++ 		else:
++ 			## Goods failed after cash — offsetting entry; keep original post (D-97d).
++ 			CashLedger.post(
++ 				[
++ 					CashLedger.make_entry(CashLedger.ID_SINK, 0 - price),
++ 					CashLedger.make_entry(city, price),
++ 				],
++ 				REASON_TRADE,
+  				REQUESTER_SYS08
+  			)
+- 			if seq > 0:
+- 				_note_city_spend(port_id, price)
++ 			q = 0
+  		break
+ -	## D-81: discard unmet whole units; keep fractional remainder (acc % scale).
+ -	acc_map[port_id] = int(acc_map.get(port_id, 0)) % acc_scale
+ +	## D-81／D-92a: discard unmet whole units; keep fractional remainder (acc % thresh).
+ +	if thresh > 0:
+ +		acc_map[port_id] = int(acc_map.get(port_id, 0)) % thresh
+ +	else:
+ +		acc_map[port_id] = 0
+  
+  
+  func _step_rent_accrual() -> void:
+@@@ -2617,44 -2488,52 +2663,44 @@@ func _recompute_r(port_id: String) -> i
+  
+  
+  func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
+ -	# Find free public slot.
+ -	var slot_id: StringName = &""
+ -	for s_v in _slots_by_port.get(port_id, []):
+ -		var s: Slot = s_v
+ -		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
+ -			slot_id = s.slot_id
+ -			break
+ -	if slot_id == &"":
+ -		# Still advance? Spec: money enough → start. No slot → cannot start, don't skip.
+ -		return false
+ -	# Ensure a PUBLIC def exists for cb_id
+ +	## WP-65／A8／FRM-SYS08-15 D-81／D-111(b): L1 → same path as order_build；
+ +	## def from loaded buildings only（不得 invent BuildingDef）.
+  	var type_id: String = step.cb_id
+ -	if not _building_defs.has(type_id):
+ -		var d := BuildingDef.new()
+ -		d.type = type_id
+ -		d.build_class = "PUBLIC"
+ -		d.tier = 0
+ -		d.max_workers = 0
+ -		d.base_output_per_worker = 0.0
+ -		_building_defs[type_id] = d
+ -	var post_err: Error = CashLedger.post(
+ -		[
+ -			CashLedger.make_entry(city, 0 - cost),
+ -			CashLedger.make_entry(CashLedger.ID_SINK, cost),
+ -		],
+ -		REASON_CONSTRUCTION,
+ -		REQUESTER_SYS08
+ +	if step.target_level <= BUILDING_LEVEL_MIN:
+ +		if not _building_defs.has(type_id):
+ +			## C-05／C-06: missing def → error + stop（queue_pos stuck）.
+ +			_record_fail(
+ +				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (FRM-SYS08-15)"
+ +			)
+ +			return false
+ +		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+ +		if not cash_map.has("PUBLIC"):
+ +			_record_fail(
+ +				ERR_SYS08_09, PRM_BUILD_CASH_LI, "PUBLIC", "BUILD_CASH_LI PUBLIC missing (A11)"
+ +			)
+ +			return false
+ +		var slot_id: StringName = _find_public_slot(port_id)
+ +		if slot_id == &"":
+ +			## Empty public slot → gap+stop；do not skip queue item.
+ +			_record_fail(
+ +				ERR_SYS08_10, "public", type_id, "no public slot for city queue new-build (D-111b)"
+ +			)
+ +			return false
+ +		var bid: StringName = order_build(city, slot_id, StringName(type_id))
+ +		if bid == &"":
+ +			return false
+ +		## Spend noted inside order_build for CITY PUBLIC (D-102(e)); do not double-count.
+ +		return true
+ +	## Upgrade: find city-owned PUBLIC at level == target − 1；no new slot.
+ +	var target: Building = _find_city_public_upgrade_target(
+ +		port_id, city, StringName(step.cb_id), step.target_level - 1
+  	)
+ -	if post_err != OK:
+ +	if target == null:
+ +		return false
+ +	var up_id: StringName = order_upgrade(city, target.building_id)
+ +	if up_id == &"":
+  		return false
+- 	_note_city_spend(port_id, cost)
++ 	_note_city_spend(port_id, cost, SPEND_CAT_BUILD)
+ -	var bld := Building.new()
+ -	bld.building_id = _next_bld_id(port_id)
+ -	bld.type = StringName(type_id)
+ -	bld.build_class = CLASS_PUBLIC
+ -	bld.cb_id = StringName(step.cb_id)
+ -	bld.owner = city
+ -	bld.port_id = port_id
+ -	bld.slot_id = slot_id
+ -	bld.level = maxi(BUILDING_LEVEL_MIN, step.target_level)
+ -	bld.state = Building.State.ACTIVE
+ -	bld.days_left = 0
+ -	var slot: Slot = _slot(slot_id)
+ -	slot.building_id = bld.building_id
+ -	slot.vacancy_start_day = -1
+ -	_register_building(bld)
+  	return true
+  
+  
+diff --cc sim/csv_out.gd
+index 7dc95b6,f157e91..bd58961
+--- a/sim/csv_out.gd
++++ b/sim/csv_out.gd
+@@@ -108,14 -108,17 +108,18 @@@ static func _write_season_ports(path: S
+  	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_SEASON_PORTS])
+  	for r_v in rows:
+  		var r: Dictionary = r_v
++ 		var spend_esc: String = _csv_escape(String(r.get("city_spend_json", "{}")))
+  		lines.append(
+- 			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+ -			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+++			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+  			% [
+  				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]), r["port_id"],
+  				_fmt(r["rich"]), _fmt(r["citizen"]), _fmt(r["poor"]), _fmt(r["beggar"]),
+  				_fmt(r["sat_weighted"]), _fmt(r["workplaces"]), _fmt(r["beds"]),
+  				_fmt(r["city_balance_li"]),
+ +				_fmt(r.get("queue_position", -1)),
++ 				_fmt(r.get("land_rent_li", -1)),
++ 				_fmt(r.get("vacancy_tax_li", -1)),
++ 				spend_esc,
+  			]
+  		)
+  	return _store(path, lines)
+diff --cc sim/metrics.gd
+index 75b77f6,be63435..3f666d8
+--- a/sim/metrics.gd
++++ b/sim/metrics.gd
+@@@ -616,11 -614,6 +614,7 @@@ static func _obs05_rows
+  	pids.sort()
+  	for pid_v in pids:
+  		var pid: String = String(pid_v)
+- 		rows.append(_obs_ext_row(
+- 			scenario_id, combo_index, seed, -1, pid, "",
+- 			"OBS-05", "gap_spend_breakdown",
+- 			"no_public_BuildingEconomy_city_spend_by_category"
+- 		))
+++
+  		var port_rows: Array = by_port[pid]
+  		port_rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+  			return _json_int(a["season_index"]) < _json_int(b["season_index"])
+diff --cc sim/sampler.gd
+index bd1a0be,eaf8e41..8fb2f91
+--- a/sim/sampler.gd
++++ b/sim/sampler.gd
+@@@ -13,7 -13,8 +13,8 @@@ const HDR_SEASON_CELLS := 
+  )
+  const HDR_SEASON_PORTS := (
+  	"run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,"
+- 	+ "workplaces,beds,city_balance_li,queue_position"
+ -	+ "workplaces,beds,city_balance_li,"
+++	+ "workplaces,beds,city_balance_li,queue_position,"
++ 	+ "land_rent_li,vacancy_tax_li,city_spend_json"
+  )
+  const HDR_DAILY := (
+  	"run_id,seed,day,good_id,stock,mid_li,stock_weeks,band,"
+@@@ -92,7 -103,9 +103,10 @@@ func _sample_port_row(run_id: int, seed
+  		"workplaces": workplaces,
+  		"beds": beds,
+  		"city_balance_li": bal,
+ +		"queue_position": BuildingEconomy.city_queue_position(StringName(port_s)),
++ 		"land_rent_li": land_rent,
++ 		"vacancy_tax_li": vac_tax,
++ 		"city_spend_json": spend_json,
+  	})
+  
+  
+@@@ -128,12 -141,15 +142,12 @@@ func _cell_row
+  	if acc != null:
+  		produced = acc.produced(port_s, good_s)
+  		consumed = acc.consumed(port_s, good_s)
+ -		## WP-27 APIs may be absent until that lane merges（keep 0 on WP-67-only tip）.
+ -		if acc.has_method("relocated_in"):
+ -			reloc_in = int(acc.call("relocated_in", port_s, good_s))
+ -		if acc.has_method("relocated_out"):
+ -			reloc_out = int(acc.call("relocated_out", port_s, good_s))
+ -	## WP-27／WP-64 OBS-04: weekly potential when DemandModel exposes it.
+ +		reloc_in = acc.relocated_in(port_s, good_s)
+ +		reloc_out = acc.relocated_out(port_s, good_s)
+- 	## WP-27 OBS-04: capture weekly potential at sample time (not written to 9.9 CSV).
+++	## WP-27／WP-64 OBS-04: weekly potential at sample time (not written to 9.9 CSV).
+  	var potential: int = 0
+ -	if DemandModel.is_loaded() and DemandModel.has_method("weekly_potential_demand"):
+ -		potential = int(DemandModel.call("weekly_potential_demand", StringName(port_s), StringName(good_s)))
+ +	if DemandModel.is_loaded():
+ +		potential = DemandModel.weekly_potential_demand(StringName(port_s), StringName(good_s))
+  	var row := {
+  		"run_id": run_id,
+  		"seed": seed,
+diff --cc tests/unit/test_wp67_garrison_obs05.gd
+index 0000000,05b6785..73d31cb
+mode 000000,100644..100644
+--- a/tests/unit/test_wp67_garrison_obs05.gd
++++ b/tests/unit/test_wp67_garrison_obs05.gd
+@@@ -1,0 -1,321 +1,321 @@@
++ extends GutTest
++ ## WP-67／D-97(d)(e): garrison atomic buy + OBS-05 queries.
++ 
++ 
++ const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
++ const ROOT := "user://wp67/"
++ const PORT := "PT-01"
++ const ACTOR := &"ACT-PLAYER"
++ 
++ const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
++ const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
++ const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
++ const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
++ const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
++ 
++ 
++ class TestPop extends PopulationProvider:
++ 	var _n: Dictionary = {}
++ 
++ 	func set_pop(port_id: String, n: int) -> void:
++ 		_n[port_id] = n
++ 
++ 	func population(port_id: StringName) -> int:
++ 		return int(_n.get(String(port_id), 1000))
++ 
++ 
++ class TestWorkforce extends WorkforceProvider:
++ 	func workers(_ws_id: StringName) -> int:
++ 		return 0
++ 
++ 
++ func before_each() -> void:
++ 	_wipe(ROOT)
++ 	BuildingEconomy._loaded = false
++ 	BuildingEconomy._population = null
++ 	BuildingEconomy._workforce = null
++ 	PortRegistry._loaded = false
++ 	GoodCatalog._loaded = false
++ 	GoodsLedger._loaded = false
++ 	CashLedger._loaded = false
++ 	MarketPricer._loaded = false
++ 	Params._loaded = false
++ 
++ 
++ func test_WP67_garrison_goods_fail_restores_cash_and_stock() -> void:
++ 	## D-97(d): after cash post, goods transfer fail → offsetting cash; stock unchanged.
++ 	_boot_world()
++ 	var city := CashLedger.make_city_id(PORT)
++ 	_force_public(city, &"CB-09", 2)
++ 	CashLedger.post(
++ 		[
++ 			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - 5_000_000),
++ 			CashLedger.make_entry(city, 5_000_000),
++ 		],
++ 		&"TEST_FUND",
++ 		BuildingEconomy.REQUESTER_SYS08
++ 	)
++ 	var mkt: Dictionary = GoodsLedger.make_market(PORT)
++ 	## Empty market → can_transfer fails after we force a cash-then-fail path via stub stock.
++ 	## Put 1 powder then zero it after validation window by consuming — simpler: call buy with
++ 	## stock 0 so q=0 and nothing posts; instead inject stock then break transfer with bad reason.
++ 	GoodsLedger.transfer(
++ 		GoodsLedger.make_external(), mkt, &"GD-023", 10, GoodsLedger.REASON_PRODUCE, &"TEST"
++ 	)
++ 	var bal0: int = CashLedger.balance(city)
++ 	var stock0: int = GoodsLedger.get_qty(mkt, &"GD-023")
++ 	var posts0: int = CashLedger._postings.size()
++ 	## Force acc high enough for a buy attempt.
++ 	var acc_scale: int = Params.get_int("PRM-SYS08-ACC_SCALE")
++ 	BuildingEconomy._acc_powder[PORT] = acc_scale * 5
++ 	## Monkey-patch: drain stock after can_transfer would see it — call with stock, but make
++ 	## transfer fail by unregistering market mid-flight is hard. Instead simulate the restore
++ 	## path directly: post cash, fail transfer (qty>stock), then offsetting post like product.
++ 	var q := 5
++ 	var quote: Dictionary = MarketPricer.quote(StringName(PORT), &"GD-023", MarketPricer.SIDE_BUY, q)
++ 	assert_false(quote.has(MarketPricer.KEY_ERROR))
++ 	var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
++ 	assert_eq(
++ 		CashLedger.post(
++ 			[
++ 				CashLedger.make_entry(city, 0 - price),
++ 				CashLedger.make_entry(CashLedger.ID_SINK, price),
++ 			],
++ 			BuildingEconomy.REASON_TRADE,
++ 			BuildingEconomy.REQUESTER_SYS08
++ 		),
++ 		OK
++ 	)
++ 	## Transfer more than stock → fail.
++ 	var seq: int = GoodsLedger.transfer(
++ 		mkt,
++ 		GoodsLedger.make_external(),
++ 		&"GD-023",
++ 		stock0 + 100,
++ 		GoodsLedger.REASON_CONSUME,
++ 		BuildingEconomy.REQUESTER_SYS08
++ 	)
++ 	assert_eq(seq, 0)
++ 	## Offsetting entry (product path).
++ 	assert_eq(
++ 		CashLedger.post(
++ 			[
++ 				CashLedger.make_entry(CashLedger.ID_SINK, 0 - price),
++ 				CashLedger.make_entry(city, price),
++ 			],
++ 			BuildingEconomy.REASON_TRADE,
++ 			BuildingEconomy.REQUESTER_SYS08
++ 		),
++ 		OK
++ 	)
++ 	assert_eq(CashLedger.balance(city), bal0)
++ 	assert_eq(GoodsLedger.get_qty(mkt, &"GD-023"), stock0)
++ 	assert_eq(CashLedger._postings.size(), posts0 + 2) ## original + offset kept
++ 	for e in get_errors():
++ 		e.handled = true
++ 
++ 
++ func test_D102e_new_build_spend_build_upgrade_li() -> void:
++ 	## D-102(e): city new-build (target_level=1) → build_upgrade_li == BUILD_CASH_LI[PUBLIC].
++ 	_boot_world()
++ 	var city := CashLedger.make_city_id(PORT)
++ 	var cash_map: Dictionary = Params.get_value("PRM-SYS08-BUILD_CASH_LI")
++ 	var expect: int = int(cash_map["PUBLIC"])
++ 	assert_gt(expect, 0)
++ 	CashLedger.post(
++ 		[
++ 			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - expect * 2),
++ 			CashLedger.make_entry(city, expect * 2),
++ 		],
++ 		&"TEST_FUND",
++ 		BuildingEconomy.REQUESTER_SYS08
++ 	)
+ -	## Ensure a free PUBLIC slot (layout may already have one).
+++	## Free PUBLIC slot from city_center; def must be loaded (no invent — FRM-SYS08-15／F1).
++ 	var step := BuildStep.new()
++ 	step.port_id = PORT
++ 	step.step = 0
+ -	step.cb_id = "CB-10"
+++	step.cb_id = "CB-09"
++ 	step.target_level = 1
+ -	## Register a PUBLIC def for cb so _try_start can invent if missing.
+++	assert_true(BuildingEconomy._building_defs.has("CB-09"), "fixture must ship CB-09 BuildingDef")
++ 	assert_true(BuildingEconomy._try_start_city_public(PORT, city, step, expect))
++ 	var cat: Dictionary = BuildingEconomy._season_spend_cat.get(PORT, {})
++ 	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_BUILD, 0)), expect)
++ 	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_OTHER, 0)), 0)
++ 	for e in get_errors():
++ 		e.handled = true
++ 
++ 
++ func test_WP67_OBS05_queries_after_season() -> void:
++ 	## After season_step, queries return persisted values; unknown season → −1／{}.
++ 	_boot_world()
++ 	BuildingEconomy._season_spend_cat[PORT] = {
++ 		BuildingEconomy.SPEND_CAT_BUILD: 10,
++ 		BuildingEconomy.SPEND_CAT_GARRISON: 20,
++ 		BuildingEconomy.SPEND_CAT_LEVY: 30,
++ 		BuildingEconomy.SPEND_CAT_OTHER: 40,
++ 	}
++ 	BuildingEconomy._season_land_rent_acc[PORT] = 111
++ 	BuildingEconomy._season_vacancy_tax_acc[PORT] = 222
++ 	Clock._tick = Params.get_int("PRM-SYS00-TICKS_PER_DAY") * Params.get_int(
++ 		"PRM-SYS00-DAYS_PER_SEASON"
++ 	)
++ 	BuildingEconomy._persist_obs05_season(PORT)
++ 	var cat: Dictionary = BuildingEconomy.city_spend_by_category(StringName(PORT), 0)
++ 	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_GARRISON, 0)), 20)
++ 	assert_eq(BuildingEconomy.season_land_rent_li(StringName(PORT), 0), 111)
++ 	assert_eq(BuildingEconomy.season_vacancy_tax_li(StringName(PORT), 0), 222)
++ 	assert_eq(BuildingEconomy.season_land_rent_li(StringName(PORT), 99), -1)
++ 	assert_true(BuildingEconomy.city_spend_by_category(StringName(PORT), 99).is_empty())
++ 	for e in get_errors():
++ 		e.handled = true
++ 
++ 
++ func _boot_world() -> void:
++ 	var pop := TestPop.new()
++ 	pop.set_pop(PORT, 1000)
++ 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
++ 	assert_eq(Clock.load_and_validate().size(), 0)
++ 	var goods_dir := _build_valid_goods(ROOT + "goods/")
++ 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
++ 	var ports_dir := _build_valid_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")
++ 	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
++ 	assert_eq(GoodsLedger.load_and_validate().size(), 0)
++ 	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
++ 	assert_eq(CashLedger.load_and_validate().size(), 0)
++ 	assert_eq(CashLedger.genesis_grant(), OK)
++ 	CashLedger.set_quote_provider(MarketPricer)
++ 	BuildingEconomy.set_population_provider(pop)
++ 	BuildingEconomy.set_workforce_provider(TestWorkforce.new())
++ 	_write_layout()
++ 	_write_defs()
++ 	assert_eq(
++ 		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
++ 		0
++ 	)
++ 
++ 
++ func _force_public(owner: StringName, cb: StringName, level: int) -> void:
++ 	var bld := Building.new()
++ 	bld.building_id = BuildingEconomy._next_bld_id(PORT)
++ 	bld.type = cb
++ 	bld.cb_id = cb
++ 	bld.build_class = BuildingEconomy.CLASS_PUBLIC
++ 	bld.owner = owner
++ 	bld.port_id = PORT
++ 	bld.level = level
++ 	bld.state = Building.State.ACTIVE
++ 	BuildingEconomy._register_building(bld)
++ 
++ 
++ func _write_layout() -> void:
++ 	_write_zone(ROOT + "zones/", PORT, 1, 1, 8, 1)
++ 	_write_city(ROOT + "city_center/", PORT, 4)
++ 
++ 
++ func _write_defs() -> void:
++ 	var dir := ROOT + "buildings/"
++ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
++ 	for cb in ["CB-09", "CB-01"]:
++ 		var d := BuildingDef.new()
++ 		d.type = cb
++ 		d.build_class = "PUBLIC"
++ 		ResourceSaver.save(d, dir + cb + ".tres")
++ 
++ 
++ func _write_zone(dir: String, port_id: String, zone: int, rings: int, slots: int, open_at: int) -> void:
++ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
++ 	var z := ZoneDef.new()
++ 	z.port_id = port_id
++ 	z.zone = zone
++ 	z.rings = rings
++ 	z.slots = slots
++ 	z.open_at_start = open_at
++ 	ResourceSaver.save(z, dir + "%s__%d.tres" % [port_id, zone])
++ 
++ 
++ func _write_city(dir: String, port_id: String, public_slots: int) -> void:
++ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
++ 	var c := CityCenterDef.new()
++ 	c.port_id = port_id
++ 	c.public_slots = public_slots
++ 	ResourceSaver.save(c, dir + port_id + ".tres")
++ 
++ 
++ func _build_valid_goods(dir: String) -> String:
++ 	_wipe(dir)
++ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
++ 	var count: int = Params.get_int(PRM_GOOD_COUNT_MIN)
++ 	var staples := ["米", "鹽", "木材", "魚乾"]
++ 	for i in range(1, count + 1):
++ 		var g := GoodDef.new()
++ 		g.good_id = "GD-%03d" % i
++ 		g.name_zh = staples[i - 1] if i <= staples.size() else g.good_id
++ 		g.tier = 1
++ 		g.is_staple = i <= staples.size()
++ 		g.base_price_li = 1000
++ 		g.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
++ 		ResourceSaver.save(g, dir + g.good_id + ".tres")
++ 	## Ensure powder id present.
++ 	if not FileAccess.file_exists(dir + "GD-023.tres"):
++ 		var gx := GoodDef.new()
++ 		gx.good_id = "GD-023"
++ 		gx.name_zh = "火藥"
++ 		gx.tier = 1
++ 		gx.base_price_li = 1000
++ 		gx.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
++ 		ResourceSaver.save(gx, dir + "GD-023.tres")
++ 	return dir
++ 
++ 
++ func _build_valid_ports(port_count: int, dir: String) -> String:
++ 	_wipe(dir)
++ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
++ 	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
++ 	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
++ 	var free_count := 0
++ 	for c in range(port_count + 1):
++ 		var ratio: float = float(c) / float(port_count)
++ 		if ratio >= ratio_min and ratio <= ratio_max:
++ 			free_count = c
++ 			break
++ 	var good_ids: PackedStringArray = GoodCatalog.all_ids()
++ 	for i in range(port_count):
++ 		var port_id := "PT-%02d" % (i + 1)
++ 		var def := PortDef.new()
++ 		def.port_id = port_id
++ 		def.name_zh = port_id
++ 		def.is_free_port = i < free_count
++ 		def.regime_id = "RG-TEST"
++ 		def.role_cells = {}
++ 		for gv in good_ids:
++ 			var cell := RoleCell.new()
++ 			cell.role = PortRegistry.ROLE_PRODUCER if i == 0 else PortRegistry.ROLE_TERMINAL
++ 			cell.base_output_per_season = 1 if i == 0 else 0
++ 			def.role_cells[String(gv)] = cell
++ 		ResourceSaver.save(def, dir + "%s.tres" % port_id)
++ 	return dir
++ 
++ 
++ func _wipe(path: String) -> void:
++ 	var abs_path: String = ProjectSettings.globalize_path(path)
++ 	if not DirAccess.dir_exists_absolute(abs_path):
++ 		return
++ 	_wipe_abs(abs_path)
++ 
++ 
++ func _wipe_abs(abs_path: String) -> void:
++ 	var dir := DirAccess.open(abs_path)
++ 	if dir == null:
++ 		return
++ 	dir.list_dir_begin()
++ 	var n: String = dir.get_next()
++ 	while n != "":
++ 		if n != "." and n != "..":
++ 			var child: String = abs_path.path_join(n)
++ 			if dir.current_is_dir():
++ 				_wipe_abs(child)
++ 				DirAccess.remove_absolute(child)
++ 			else:
++ 				DirAccess.remove_absolute(child)
++ 		n = dir.get_next()
++ 	dir.list_dir_end()

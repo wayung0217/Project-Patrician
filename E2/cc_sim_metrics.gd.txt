@@ -1,0 +1,29 @@
+commit 7d7ee479e4ce885ad1fd32231131eb50c3ae5620
+Merge: 40b13ad 6228d20
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 09:01:48 2026 +0000
+
+    int-1756: merge #64 wp67 (OBS-05 spend + F3 garrison)
+    
+    Resolve conflicts: keep F1/F3 city-queue and market-first garrison buys;
+    add WP-67 spend categories, OBS-05 columns, and queue_position together.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+diff --cc sim/metrics.gd
+index 75b77f6,be63435..3f666d8
+--- a/sim/metrics.gd
++++ b/sim/metrics.gd
+@@@ -616,11 -614,6 +614,7 @@@ static func _obs05_rows
+  	pids.sort()
+  	for pid_v in pids:
+  		var pid: String = String(pid_v)
+- 		rows.append(_obs_ext_row(
+- 			scenario_id, combo_index, seed, -1, pid, "",
+- 			"OBS-05", "gap_spend_breakdown",
+- 			"no_public_BuildingEconomy_city_spend_by_category"
+- 		))
+++
+  		var port_rows: Array = by_port[pid]
+  		port_rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+  			return _json_int(a["season_index"]) < _json_int(b["season_index"])

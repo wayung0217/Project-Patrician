@@ -1,0 +1,15 @@
+commit 79b89c64eb244c9b7beb683a062ecf9c463de8b5
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 10:02:02 2026 +0000
+
+    F1 D-113(b): cost=0 city queue starts; skip 0-li cash post
+    
+    Replace 423437d cost<=0 stop: cost==0 still starts and advances
+    queue_pos; skip CashLedger.post when cash_li==0 (ledger rejects 0);
+    materials/days unchanged. cost<0 still stops (ERR-SYS08-09).
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ autoload/building_economy.gd             | 58 ++++++++++++++++++--------------
+ tests/unit/test_building_economy_wp23.gd | 55 ++++++++++++++++++++++++++++++
+ 2 files changed, 87 insertions(+), 26 deletions(-)

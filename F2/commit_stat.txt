@@ -1,0 +1,14 @@
+commit 9b9747ec6124ca3216f122c39467149917b9e6a6
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 10:02:43 2026 +0000
+
+    F2 D-113(c): city queue ERR-SYS08-11 / ERR-SYS08-01
+    
+    Missing BuildingDef → ERR-SYS08-11; no empty public slot →
+    ERR-SYS08-01; both stop without skipping. Update/add tests.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ autoload/building_economy.gd       |  9 ++++----
+ tests/unit/test_sys08_wp65_d97a.gd | 42 ++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 45 insertions(+), 6 deletions(-)

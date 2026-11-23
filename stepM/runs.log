@@ -1,0 +1,26 @@
+=== M pre gut unit+property RUN1 2026-11-23T10:03:42Z ===
+unit_rc=0
+=== M pre gut UI RUN1 2026-11-23T10:07:03Z ===
+ui_rc=1
+=== M pre golden RUN1 2026-11-23T10:07:09Z ===
+golden_rc=1
+=== M pre data restore after GUT wipe 2026-11-23T10:07:22Z ===
+=== M pre gut UI RUN2 2026-11-23T10:07:23Z ===
+ui_rc=0
+=== M pre golden RUN2 2026-11-23T10:10:12Z ===
+golden_rc=0
+=== M merge #59 2026-11-23T10:12:44Z ===
+merge_gh_rc=0
+=== M merge #59 async REST RUN1 2026-11-23T10:13:01Z ===
+async1_rc=0
+=== M merge-async #59 RUN2 2026-11-23T10:13:33Z ===
+put_rc=0
+=== poll 1 2026-11-23T10:13:55Z ===
+status=merged
+=== M delete #59 branch 2026-11-23T10:14:06Z ===
+=== M post gut unit+property RUN1 2026-11-23T10:14:09Z ===
+unit_rc=0
+=== M post gut UI RUN1 2026-11-23T10:17:21Z ===
+ui_rc=0
+=== M post golden RUN1 2026-11-23T10:19:57Z ===
+golden_rc=0

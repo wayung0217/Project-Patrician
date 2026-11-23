@@ -1,0 +1,11 @@
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-57/E3/I2/post.csv bytes=26709027
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-57/E3/I3/post.csv bytes=26825640
+IDENTICAL=0
+ROWS_A=6137 ROWS_B=6137
+DIFFS_BEGIN
+COL=buildings_json first_diff_day=0 diff_cells=361
+COL=land_rent_li first_diff_day=90 diff_cells=4336
+COL=vacancy_tax_li first_diff_day=90 diff_cells=4336
+COL=city_spend_json first_diff_day=0 diff_cells=5776
+COL=note first_diff_day=0 diff_cells=5776
+DIFFS_END

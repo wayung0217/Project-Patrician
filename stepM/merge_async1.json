@@ -1,0 +1,1 @@
+{"message":"Merging stacked PRs via this endpoint is not supported. Use the asynchronous merge endpoint instead.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request-asynchronously","status":"403"}gh: Merging stacked PRs via this endpoint is not supported. Use the asynchronous merge endpoint instead. (HTTP 403)

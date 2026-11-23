@@ -1,0 +1,12 @@
+commit 7d7ee479e4ce885ad1fd32231131eb50c3ae5620
+Merge: 40b13ad 6228d20
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 09:01:48 2026 +0000
+
+    int-1756: merge #64 wp67 (OBS-05 spend + F3 garrison)
+    
+    Resolve conflicts: keep F1/F3 city-queue and market-first garrison buys;
+    add WP-67 spend categories, OBS-05 columns, and queue_position together.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+

@@ -1,0 +1,189 @@
+commit 7d7ee479e4ce885ad1fd32231131eb50c3ae5620
+Merge: 40b13ad 6228d20
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 09:01:48 2026 +0000
+
+    int-1756: merge #64 wp67 (OBS-05 spend + F3 garrison)
+    
+    Resolve conflicts: keep F1/F3 city-queue and market-first garrison buys;
+    add WP-67 spend categories, OBS-05 columns, and queue_position together.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+diff --cc autoload/building_economy.gd
+index c689877,cc71015..86c2c5d
+--- a/autoload/building_economy.gd
++++ b/autoload/building_economy.gd
+@@@ -2295,26 -2155,22 +2315,26 @@@ func _step_garrison_procure(_day: int, 
+  		_acc_powder[port_id] = int(_acc_powder.get(port_id, 0)) + floori(
+  			AmountQuantize.quantize_amount(add_powder)
+  		)
+ -		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, acc_scale)
+ -		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, acc_scale)
+ +		_try_garrison_buy(port_id, GOOD_ARMS, _acc_arms, thresh)
+ +		_try_garrison_buy(port_id, GOOD_POWDER, _acc_powder, thresh)
+  
+  
+ -func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, acc_scale: int) -> void:
+ -	## FRM-14／D-97(d)／WP-67: validate CITY afford + MARKET stock ≥ q, then cash+goods.
+ -	## Later failure → offsetting cash post (keep original); never delete postings.
+ -	var units: int = int(acc_map.get(port_id, 0) / acc_scale)
+ +func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, thresh: int) -> void:
+- 	## FRM-SYS08-14／D-111(d): q = MIN(FLOOR(acc/thresh), MARKET, CITY-affordable).
+- 	## Root cause of golden ERR-SYS04-06 (168×): CashLedger.max_affordable_qty binary-searches
+- 	## and probes qty>stock → MarketPricer.quote ERR-SYS04-06 (market_pricer.gd buy qty>stock).
+- 	## Cap by MARKET first, then walk q down by CITY balance (FRM-SYS05-09) without overstock probes.
+++	## FRM-SYS08-14／D-111(d)／D-97(d)／WP-67: q = MIN(FLOOR(acc/thresh), MARKET, CITY-affordable).
+++	## Cap MARKET first (no max_affordable overstock probes → ERR-SYS04-06).
+++	## Goods fail after cash → offsetting post (keep original); spend → garrison_li.
+ +	var units := 0
+ +	if thresh > 0:
+ +		units = int(acc_map.get(port_id, 0) / thresh)
+  	if units <= 0:
+  		return
+  	var city: StringName = CashLedger.make_city_id(port_id)
+  	CashLedger.create_account(city, Account.Kind.CITY)
+  	var market: Dictionary = GoodsLedger.make_market(port_id)
+  	var stock: int = GoodsLedger.get_qty(market, good)
+ +	## Spec: stock short → buy MIN(..., MARKET) (FRM-SYS08-14); not a C-05 qty gap.
+  	var q: int = mini(units, stock)
++ 	var price := 0
+  	while q > 0:
+  		var quote: Dictionary = MarketPricer.quote(
+  			StringName(port_id), good, MarketPricer.SIDE_BUY, q
+@@@ -2334,23 -2201,33 +2365,36 @@@
+  			REASON_TRADE,
+  			REQUESTER_SYS08
+  		)
+- 		if cash_rc == OK:
+- 			var seq: int = GoodsLedger.transfer(
+- 				market,
+- 				GoodsLedger.make_external(),
+- 				good,
+- 				q,
+- 				GoodsLedger.REASON_CONSUME,
++ 		if cash_rc != OK:
++ 			q = 0
++ 			break
++ 		var seq: int = GoodsLedger.transfer(
++ 			market,
++ 			GoodsLedger.make_external(),
++ 			good,
++ 			q,
++ 			GoodsLedger.REASON_CONSUME,
++ 			REQUESTER_SYS08
++ 		)
++ 		if seq > 0:
++ 			_note_city_spend(port_id, price, SPEND_CAT_GARRISON)
++ 		else:
++ 			## Goods failed after cash — offsetting entry; keep original post (D-97d).
++ 			CashLedger.post(
++ 				[
++ 					CashLedger.make_entry(CashLedger.ID_SINK, 0 - price),
++ 					CashLedger.make_entry(city, price),
++ 				],
++ 				REASON_TRADE,
+  				REQUESTER_SYS08
+  			)
+- 			if seq > 0:
+- 				_note_city_spend(port_id, price)
++ 			q = 0
+  		break
+ -	## D-81: discard unmet whole units; keep fractional remainder (acc % scale).
+ -	acc_map[port_id] = int(acc_map.get(port_id, 0)) % acc_scale
+ +	## D-81／D-92a: discard unmet whole units; keep fractional remainder (acc % thresh).
+ +	if thresh > 0:
+ +		acc_map[port_id] = int(acc_map.get(port_id, 0)) % thresh
+ +	else:
+ +		acc_map[port_id] = 0
+  
+  
+  func _step_rent_accrual() -> void:
+@@@ -2617,44 -2488,52 +2663,44 @@@ func _recompute_r(port_id: String) -> i
+  
+  
+  func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
+ -	# Find free public slot.
+ -	var slot_id: StringName = &""
+ -	for s_v in _slots_by_port.get(port_id, []):
+ -		var s: Slot = s_v
+ -		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
+ -			slot_id = s.slot_id
+ -			break
+ -	if slot_id == &"":
+ -		# Still advance? Spec: money enough → start. No slot → cannot start, don't skip.
+ -		return false
+ -	# Ensure a PUBLIC def exists for cb_id
+ +	## WP-65／A8／FRM-SYS08-15 D-81／D-111(b): L1 → same path as order_build；
+ +	## def from loaded buildings only（不得 invent BuildingDef）.
+  	var type_id: String = step.cb_id
+ -	if not _building_defs.has(type_id):
+ -		var d := BuildingDef.new()
+ -		d.type = type_id
+ -		d.build_class = "PUBLIC"
+ -		d.tier = 0
+ -		d.max_workers = 0
+ -		d.base_output_per_worker = 0.0
+ -		_building_defs[type_id] = d
+ -	var post_err: Error = CashLedger.post(
+ -		[
+ -			CashLedger.make_entry(city, 0 - cost),
+ -			CashLedger.make_entry(CashLedger.ID_SINK, cost),
+ -		],
+ -		REASON_CONSTRUCTION,
+ -		REQUESTER_SYS08
+ +	if step.target_level <= BUILDING_LEVEL_MIN:
+ +		if not _building_defs.has(type_id):
+ +			## C-05／C-06: missing def → error + stop（queue_pos stuck）.
+ +			_record_fail(
+ +				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (FRM-SYS08-15)"
+ +			)
+ +			return false
+ +		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+ +		if not cash_map.has("PUBLIC"):
+ +			_record_fail(
+ +				ERR_SYS08_09, PRM_BUILD_CASH_LI, "PUBLIC", "BUILD_CASH_LI PUBLIC missing (A11)"
+ +			)
+ +			return false
+ +		var slot_id: StringName = _find_public_slot(port_id)
+ +		if slot_id == &"":
+ +			## Empty public slot → gap+stop；do not skip queue item.
+ +			_record_fail(
+ +				ERR_SYS08_10, "public", type_id, "no public slot for city queue new-build (D-111b)"
+ +			)
+ +			return false
+ +		var bid: StringName = order_build(city, slot_id, StringName(type_id))
+ +		if bid == &"":
+ +			return false
+ +		## Spend noted inside order_build for CITY PUBLIC (D-102(e)); do not double-count.
+ +		return true
+ +	## Upgrade: find city-owned PUBLIC at level == target − 1；no new slot.
+ +	var target: Building = _find_city_public_upgrade_target(
+ +		port_id, city, StringName(step.cb_id), step.target_level - 1
+  	)
+ -	if post_err != OK:
+ +	if target == null:
+ +		return false
+ +	var up_id: StringName = order_upgrade(city, target.building_id)
+ +	if up_id == &"":
+  		return false
+- 	_note_city_spend(port_id, cost)
++ 	_note_city_spend(port_id, cost, SPEND_CAT_BUILD)
+ -	var bld := Building.new()
+ -	bld.building_id = _next_bld_id(port_id)
+ -	bld.type = StringName(type_id)
+ -	bld.build_class = CLASS_PUBLIC
+ -	bld.cb_id = StringName(step.cb_id)
+ -	bld.owner = city
+ -	bld.port_id = port_id
+ -	bld.slot_id = slot_id
+ -	bld.level = maxi(BUILDING_LEVEL_MIN, step.target_level)
+ -	bld.state = Building.State.ACTIVE
+ -	bld.days_left = 0
+ -	var slot: Slot = _slot(slot_id)
+ -	slot.building_id = bld.building_id
+ -	slot.vacancy_start_day = -1
+ -	_register_building(bld)
+  	return true
+  
+  

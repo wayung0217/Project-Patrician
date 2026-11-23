@@ -1,0 +1,16 @@
+Merge made by the 'ort' strategy.
+ autoload/building_economy.gd                    | 291 ++++++++++++++++++------
+ sim/csv_out.gd                                  |   3 +-
+ sim/sampler.gd                                  |   3 +-
+ tests/fixtures/sim_loop_opening/build_queue.csv |  32 +--
+ tests/unit/test_building_economy_wp23.gd        | 210 ++++++++++++++++-
+ tests/unit/test_opening_wp24.gd                 |  26 ++-
+ tests/unit/test_sys08_wp65_d97a.gd              | 288 +++++++++++++++++++++++
+ tools/wp65_newbuild_360_probe.gd                | 114 ++++++++++
+ tools/wp65_queue_advance.gd                     | 199 ++++++++++++++++
+ tools/wp65_queue_advance.gd.uid                 |   1 +
+ 10 files changed, 1065 insertions(+), 102 deletions(-)
+ create mode 100644 tests/unit/test_sys08_wp65_d97a.gd
+ create mode 100644 tools/wp65_newbuild_360_probe.gd
+ create mode 100644 tools/wp65_queue_advance.gd
+ create mode 100644 tools/wp65_queue_advance.gd.uid

@@ -1,0 +1,20 @@
+F1=cd /agent/repos/Project-Patrician
+export PATH="$HOME/.local/bin:$PATH"
+STORE=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-57
+
+# Update F SHAs to restacked tips that actually merged
+echo "F1_local=79b89c64eb244c9b7beb683a062ecf9c463de8b5" > "$STORE/F1/sha.txt"
+echo "F1_restacked=1c87778$(git rev-parse 1c87778 | cut -c8-)" >> "$STORE/F1/sha.txt"
+git rev-parse 1c87778 | tee -a "$STORE/F1/sha.txt"
+git rev-parse 0614c31 | tee "$STORE/F2/sha_restacked.txt"
+echo "F1=$1c87778 F2=0614c31 (restacked on #60 after #59 merge); local pre-restack 79b89c6/9b9747e" | tee "$STORE/F1/restack_note.txt"
+
+# I1 gates: GUT full, golden, compare vs M post
+git checkout HEAD -- data/
+echo "=== I1 gut RUN1 $(date -u +%Y-%m-%dT%H:%M:%SZ) ===" | tee -a "$STORE/stepI/runs.log"
+godot --headless --path . -s res://addons/gut/gut_cmdln.gd -- \
+  -gdir=res://tests/unit,res://tests/property -ginclude_subdirs -gexit \
+  > "$STORE/stepI/I1/gut_unit.log" 2>&1
+echo "i1_gut_rc=$?" | tee -a "$STORE/stepI/runs.log"
+tail -20 "$STORE/stepI/I1/gut_unit.log"
+c87778 F2=0614c31 (restacked on #60 after #59 merge); local pre-restack 79b89c6/9b9747e

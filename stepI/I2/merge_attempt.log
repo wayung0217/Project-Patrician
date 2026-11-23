@@ -1,0 +1,12 @@
+Auto-merging autoload/building_economy.gd
+CONFLICT (content): Merge conflict in autoload/building_economy.gd
+Auto-merging sim/csv_out.gd
+CONFLICT (content): Merge conflict in sim/csv_out.gd
+Auto-merging sim/metrics.gd
+CONFLICT (content): Merge conflict in sim/metrics.gd
+Auto-merging sim/sampler.gd
+CONFLICT (content): Merge conflict in sim/sampler.gd
+Auto-merging tests/unit/test_sys23_wp26.gd
+CONFLICT (content): Merge conflict in tests/unit/test_sys23_wp26.gd
+Auto-merging tools/golden_harness.gd
+Automatic merge failed; fix conflicts and then commit the result.

@@ -1,0 +1,11 @@
+date: 2026-11-23T09:42:05Z
+main_tip: f56de55337e186e7dae7cdf1eb42f808653089a1
+B9:
+row8: 版本 | v6.99.165 | 。 |  |  | 
+--- header ---
+['\ufeffAI_README — AI 責任、工作範圍與工作流程', '', '', '', '', '']
+8: ['版本', 'v6.99.165', '。', '', '', '']
+--- counts ---
+docs/spec/build_queue.csv: total_after_header=353 nonblank=353 blank_rows=0
+docs/spec/opening_public.csv: total_after_header=116 nonblank=116 blank_rows=0
+gate: PASS (v6.99.165 / 353 / 116)

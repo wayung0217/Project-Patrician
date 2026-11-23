@@ -1,0 +1,7 @@
+autoload/building_economy.gd
+sim/csv_out.gd
+sim/metrics.gd
+sim/sampler.gd
+tests/unit/test_sys23_wp26.gd
+tests/unit/test_wp67_garrison_obs05.gd
+tools/golden_harness.gd

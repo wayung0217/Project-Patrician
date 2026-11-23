@@ -1,0 +1,15 @@
+=== I1 merge #60 2026-11-23T10:22:43Z ===
+merge_rc=0
+=== I1 gut RUN1 2026-11-23T10:23:02Z ===
+i1_gut_rc=0
+=== I1 golden RUN1 2026-11-23T10:25:54Z ===
+i1_golden_rc=0
+=== I2 merge #64 attempt 2026-11-23T10:28:41Z ===
+merge_rc=0
+I2 merge done 2026-11-23T10:30:26Z
+=== I2 gut RUN1 2026-11-23T10:30:32Z ===
+i2_gut_rc=1
+=== I2 gut RUN2 2026-11-23T10:34:23Z ===
+i2_gut_rc=0
+=== I2 golden RUN1 2026-11-23T10:37:59Z ===
+i2_golden_rc=0

@@ -1,0 +1,49 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestPop because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestWorkforce because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestCons because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestSat because it does not extend GutTest
+[4m
+
+res://tests/unit/test_building_economy_wp23.gd
+[0m* test_D113b_cost_zero_upgrade_starts_no_zero_post
+[1m1/1 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              4
+
+Scripts               1
+Tests                 1
+Passing Tests         1
+Asserts              17
+Time              0.464s
+
+
+Ran Tests matching "test_D113b_cost_zero_upgrade_starts_no_zero_post"
+[32m---- All tests passed! ----
+[0m
+WARNING: 184 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 70 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

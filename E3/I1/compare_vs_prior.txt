@@ -1,0 +1,10 @@
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-57/E3/base/post.csv bytes=26713223
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-57/E3/I1/post.csv bytes=26713225
+IDENTICAL=0
+ROWS_A=6137 ROWS_B=6137
+DIFFS_BEGIN
+COL=city_balance_li first_diff_day=104 diff_cells=54
+COL=goods_stock_weeks_json first_diff_day=104 diff_cells=66
+COL=goods_window_qty_json first_diff_day=104 diff_cells=30
+COL=buildings_json first_diff_day=104 diff_cells=22
+DIFFS_END
