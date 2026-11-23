@@ -2165,7 +2165,10 @@ func _step_garrison_procure(_day: int, _errors: Array) -> void:
 
 
 func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, thresh: int) -> void:
-	## FRM-14／WP-63 (d)：q = MIN(FLOOR(acc/thresh), MARKET, CashLedger.max_affordable_qty).
+	## FRM-SYS08-14／D-111(d): q = MIN(FLOOR(acc/thresh), MARKET, CITY-affordable).
+	## Root cause of golden ERR-SYS04-06 (168×): CashLedger.max_affordable_qty binary-searches
+	## and probes qty>stock → MarketPricer.quote ERR-SYS04-06 (market_pricer.gd buy qty>stock).
+	## Cap by MARKET first, then walk q down by CITY balance (FRM-SYS05-09) without overstock probes.
 	var units := 0
 	if thresh > 0:
 		units = int(acc_map.get(port_id, 0) / thresh)
@@ -2175,36 +2178,39 @@ func _try_garrison_buy(port_id: String, good: StringName, acc_map: Dictionary, t
 	CashLedger.create_account(city, Account.Kind.CITY)
 	var market: Dictionary = GoodsLedger.make_market(port_id)
 	var stock: int = GoodsLedger.get_qty(market, good)
-	## stock＝0 → q＝0；skip max_affordable（避免無庫存／未知貨的 quote 探針噪音）.
-	var q := 0
-	if stock > 0:
-		var afford: int = CashLedger.max_affordable_qty(city, StringName(port_id), good)
-		q = mini(units, mini(stock, afford))
-	if q > 0:
+	## Spec: stock short → buy MIN(..., MARKET) (FRM-SYS08-14); not a C-05 qty gap.
+	var q: int = mini(units, stock)
+	while q > 0:
 		var quote: Dictionary = MarketPricer.quote(
 			StringName(port_id), good, MarketPricer.SIDE_BUY, q
 		)
-		if not quote.has(MarketPricer.KEY_ERROR):
-			var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
-			var cash_rc: Error = CashLedger.post(
-				[
-					CashLedger.make_entry(city, 0 - price),
-					CashLedger.make_entry(CashLedger.ID_SINK, price),
-				],
-				REASON_TRADE,
+		if quote.has(MarketPricer.KEY_ERROR):
+			q = 0
+			break
+		var price: int = int(quote[MarketPricer.KEY_TOTAL_LI])
+		if price > CashLedger.balance(city):
+			q = q - 1
+			continue
+		var cash_rc: Error = CashLedger.post(
+			[
+				CashLedger.make_entry(city, 0 - price),
+				CashLedger.make_entry(CashLedger.ID_SINK, price),
+			],
+			REASON_TRADE,
+			REQUESTER_SYS08
+		)
+		if cash_rc == OK:
+			var seq: int = GoodsLedger.transfer(
+				market,
+				GoodsLedger.make_external(),
+				good,
+				q,
+				GoodsLedger.REASON_CONSUME,
 				REQUESTER_SYS08
 			)
-			if cash_rc == OK:
-				var seq: int = GoodsLedger.transfer(
-					market,
-					GoodsLedger.make_external(),
-					good,
-					q,
-					GoodsLedger.REASON_CONSUME,
-					REQUESTER_SYS08
-				)
-				if seq > 0:
-					_note_city_spend(port_id, price)
+			if seq > 0:
+				_note_city_spend(port_id, price)
+		break
 	## D-81／D-92a: discard unmet whole units; keep fractional remainder (acc % thresh).
 	if thresh > 0:
 		acc_map[port_id] = int(acc_map.get(port_id, 0)) % thresh
