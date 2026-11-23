@@ -37,6 +37,11 @@ const ACADEMY_MULT_UNIT := 1000
 ## A16／C-03: floor for ring-weight and u when exp／mod underflow (was 1.0e-9).
 const RING_WEIGHT_FLOOR := 1.0e-9
 const U_UNIT_FLOOR := 1.0e-9
+## EX-WP63: unset weighted-draw score floor (was bare −1.0e30).
+const SCORE_SENTINEL_MIN := -1.0e30
+## EX-WP63: workshop tier literals for citizen／rich gates (was bare 2／3).
+const WORKSHOP_TIER_CITIZEN := 2
+const WORKSHOP_TIER_RICH := 3
 const PRM_PF1 := "PRM-SYS07-PF1_RATE_WK"
 const PRM_PF2 := "PRM-SYS07-PF2_RATE_WK"
 const PRM_PF3 := "PRM-SYS07-PF3_RATE_WK"
@@ -677,7 +682,7 @@ func _compute_flows(
 	var flow_up1 := 0
 	if (
 		p.streak_up1 >= Params.get_int(PRM_UP1_STREAK)
-		and _active_tier_workshops(port_id, 2) >= Params.get_int(PRM_TIER2)
+		and _active_tier_workshops(port_id, WORKSHOP_TIER_CITIZEN) >= Params.get_int(PRM_TIER2)
 	):
 		flow_up1 = _moved(p, "acc_up1", s0_poor, Params.get_int(PRM_PF2), denom)
 	# PF-3
@@ -688,7 +693,7 @@ func _compute_flows(
 		and BuildingEconomy.public_level(StringName(port_id), CB_GUILD) > 0
 	)
 	if p.streak_up2 >= Params.get_int(PRM_UP2_STREAK) and (
-		_active_tier_workshops(port_id, 3) >= Params.get_int(PRM_TIER3) or academy_ok
+		_active_tier_workshops(port_id, WORKSHOP_TIER_RICH) >= Params.get_int(PRM_TIER3) or academy_ok
 	):
 		## A16／D-84c／FRM-SYS07-07: academy level 0 → mult = 1000／1000（no boost）.
 		var amult: Array = Params.get_value(PRM_ACADEMY)
@@ -1049,7 +1054,7 @@ func _place_one_in(port_id: String, day: int, clazz: String) -> bool:
 	var lambda: float = Params.get_float(PRM_LAMBDA)
 	var draw_seq: int = _next_draw_seq(PURPOSE_IN)
 	var best_id := ""
-	var best_score := -1.0e30
+	var best_score: float = SCORE_SENTINEL_MIN
 	for rid_v in _local_res_ids(port_id):
 		var rid: String = String(rid_v)
 		var r: Dictionary = _residents[rid]
@@ -1076,7 +1081,7 @@ func _pick_residence_with_class(
 	var lambda: float = Params.get_float(PRM_LAMBDA)
 	var draw_seq: int = _next_draw_seq(purpose)
 	var best_id := ""
-	var best_score := -1.0e30
+	var best_score: float = SCORE_SENTINEL_MIN
 	var is_up: bool = purpose == PURPOSE_UP
 	for rid_v in _local_res_ids(port_id):
 		var rid: String = String(rid_v)
