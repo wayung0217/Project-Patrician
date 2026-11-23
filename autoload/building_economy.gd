@@ -67,6 +67,12 @@ const PRM_BUILD_CASH_LI := "PRM-SYS08-BUILD_CASH_LI"
 const PRM_BUILD_MAT := "PRM-SYS08-BUILD_MAT"
 const PRM_BUILD_DAYS := "PRM-SYS08-BUILD_DAYS"
 const PRM_UPGRADE_PER_CAPITA := "PRM-SYS08-UPGRADE_PER_CAPITA"
+const PRM_ZONE_USED_MIN_PPM := "PRM-SYS08-ZONE_USED_MIN_PPM"
+const PRM_CITY_HOUSING_RESERVE_MULT := "PRM-SYS08-CITY_HOUSING_RESERVE_MULT"
+const PRM_CITY_HOUSING_MAX_PER_SEASON := "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON"
+const PRM_PPM_SCALE := "PRM-SYS06-PPM_SCALE"
+const PRM_HOUSE_CAPACITY := "PRM-SYS07-HOUSE_CAPACITY"
+const TYPE_RESIDENCE := "RB-01"
 ## EX-02: feasibility sentinel (unbounded) — not a business output.
 const FEAS_UNBOUNDED := 0x7fffffff
 ## EX-03: building level floor (spec enum base).
@@ -156,6 +162,8 @@ var _obs05_vacancy_tax: Dictionary = {}
 var _season_spend_cat: Dictionary = {} ## port → {build_upgrade_li,garrison_li,levy_li,other_li}
 var _season_land_rent_acc: Dictionary = {} ## port → int
 var _season_vacancy_tax_acc: Dictionary = {} ## port → int
+## WP-68／D-115(a): layers.CITY_HOUSING（sim only; default off）.
+var _city_housing_on: bool = false
 const SPEND_CAT_BUILD := "build_upgrade_li"
 const SPEND_CAT_GARRISON := "garrison_li"
 const SPEND_CAT_LEVY := "levy_li"
@@ -222,6 +230,7 @@ func load_and_validate(
 ) -> Array:
 	var errors: Array = []
 	_clear_state()
+	_city_housing_on = false ## fresh load; SimEngine re-applies layers.CITY_HOUSING
 
 	if not Params.is_loaded():
 		errors.append(
@@ -752,6 +761,7 @@ func season_step() -> Array:
 		_season_land_and_vacancy(port_id)
 		_season_city_build_queue(port_id)
 		_season_zone_open(port_id)
+		_season_city_auto_housing(port_id) ## FRM-SYS08-24 after zone open (D-101／D-115a)
 		_season_levy(port_id)
 		_persist_obs05_season(port_id)
 		_clear_season_accums(port_id)
@@ -1196,8 +1206,8 @@ func _validate_order_build(actor: StringName, slot_key: StringName, type_id: Str
 		if used_plots >= plot_cap:
 			errs.append(_err(ERR_SYS08_04, "kontor_plots", used_plots, "kontor plots full"))
 
-	# ERR-13 kontor prerequisite (D-12f); city public exempt; kontor itself exempt
-	if build_class != CLASS_KONTOR and build_class != CLASS_PUBLIC:
+	# ERR-13 kontor prerequisite (D-12f); CITY／PUBLIC／kontor exempt（city housing has no kontor）.
+	if build_class != CLASS_KONTOR and build_class != CLASS_PUBLIC and not _is_city_owner(actor):
 		if not _has_active_kontor(actor, slot.port_id):
 			errs.append(
 				_err(ERR_SYS08_13, "kontor", actor, "need active own kontor in port (D-12f)")
@@ -2202,6 +2212,32 @@ func set_build_queue(port_id: String, steps: Array) -> void:
 	_queue_pos[port_id] = 0
 
 
+func set_city_housing_layer(enabled: bool) -> void:
+	## D-115(a)／FRM-SYS08-24①: sim layers.CITY_HOUSING only（formal city_auto_housing = M4／M5）.
+	_city_housing_on = enabled
+
+
+func is_city_housing_on() -> bool:
+	return _city_housing_on
+
+
+func zone_built_ratio_ppm(port_id: StringName, next_zone: int) -> int:
+	## D-100／FRM-SYS08-16: 已建槽 ÷ 第 1..next_zone−1 民用槽，× PPM_SCALE；total＝0 → 0.
+	assert(_loaded, "BuildingEconomy.zone_built_ratio_ppm before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid):
+		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for zone_built_ratio_ppm")
+		return 0
+	var counts: Dictionary = _zone_built_counts(pid, next_zone)
+	var total: int = int(counts["total"])
+	if total <= 0:
+		return 0
+	var built: int = int(counts["built"])
+	var ppm_scale: int = Params.get_int(PRM_PPM_SCALE)
+	return floori(float(built * ppm_scale) / float(total))
+
+
 func city_queue_position(port_id: StringName) -> int:
 	## D-102(d)／C-14: next queue step index from 0; finished → step count; unknown port → −1 + last_error.
 	assert(_loaded, "BuildingEconomy.city_queue_position before load")
@@ -2842,6 +2878,9 @@ func _season_zone_open(port_id: String) -> void:
 	var idx: int = _zone_table_index(next_zone) ## EX-03 [0]=zone 2
 	if idx < 0 or idx >= costs.size():
 		return
+	## D-100: built-ratio gate（rules; not gated by CITY_HOUSING switch）.
+	if not _zone_built_ratio_ok(port_id, next_zone):
+		return
 	var cost: int = int(costs[idx])
 	var city: StringName = CashLedger.make_city_id(port_id)
 	if CashLedger.balance(city) < cost:
@@ -2868,6 +2907,138 @@ func _season_zone_open(port_id: String) -> void:
 		_max_open_zone[port_id] = next_zone
 		_recompute_r(port_id)
 		_zone_streak[port_id] = 0
+
+
+func _zone_built_ratio_ok(port_id: String, next_zone: int) -> bool:
+	## FRM-SYS08-16 D-100: built／total ≥ ZONE_USED_MIN_PPM／PPM_SCALE for zones 1..k−1.
+	if not Params.has_prm(PRM_ZONE_USED_MIN_PPM):
+		return true
+	var need_ppm: int = Params.get_int(PRM_ZONE_USED_MIN_PPM)
+	return zone_built_ratio_ppm(StringName(port_id), next_zone) >= need_ppm
+
+
+func _zone_built_counts(port_id: String, next_zone: int) -> Dictionary:
+	## Civil slots in zones 1..next_zone−1；exclude gathering belt／public／kontor.
+	var total := 0
+	var built := 0
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind != Slot.Kind.CIVIL:
+			continue
+		if s.zone < 1 or s.zone >= next_zone:
+			continue
+		if _is_gathering_belt(s):
+			continue
+		total = total + 1
+		if _civil_slot_counts_built(s):
+			built = built + 1
+	return {"total": total, "built": built}
+
+
+func _civil_slot_counts_built(slot: Slot) -> bool:
+	## D-100: any civil building on slot（含建造中／暫停）；空購地不算.
+	if slot.building_id == &"":
+		return false
+	var bld: Building = _buildings.get(String(slot.building_id), null) as Building
+	if bld == null:
+		return false
+	if bld.build_class == CLASS_PUBLIC or bld.build_class == CLASS_KONTOR:
+		return false
+	## RESIDENCE／IND1–3／WAREHOUSE in any state count.
+	return true
+
+
+func _season_city_auto_housing(port_id: String) -> void:
+	## FRM-SYS08-24／WP-68：after zone open；switch off → no-op.
+	if not _city_housing_on:
+		return
+	if not Params.has_prm(PRM_CITY_HOUSING_RESERVE_MULT):
+		return
+	if not Params.has_prm(PRM_CITY_HOUSING_MAX_PER_SEASON):
+		return
+	if not Params.has_prm(PRM_HOUSE_CAPACITY):
+		return
+	var house_cap: int = Params.get_int(PRM_HOUSE_CAPACITY)
+	var max_n: int = Params.get_int(PRM_CITY_HOUSING_MAX_PER_SEASON)
+	if max_n <= 0:
+		return
+	## ② uses PopulationModel public queries（not PopulationProvider — no class split）.
+	if not PopulationModel.is_loaded():
+		return
+	var pid_sn: StringName = StringName(port_id)
+	var beggars: int = PopulationModel.beggars(pid_sn)
+	## ②: beggars ≥ one residence capacity AND free beds = 0.
+	if beggars < house_cap:
+		return
+	var beds: int = PopulationModel.housing_capacity(pid_sn)
+	var residents: int = (
+		PopulationModel.population(pid_sn, PopulationModel.CLASS_POOR)
+		+ PopulationModel.population(pid_sn, PopulationModel.CLASS_CITIZEN)
+		+ PopulationModel.population(pid_sn, PopulationModel.CLASS_RICH)
+	)
+	var free_beds: int = beds - residents
+	if free_beds < 0:
+		free_beds = 0
+	if free_beds > 0:
+		return
+	if not _building_defs.has(TYPE_RESIDENCE):
+		_record_fail(ERR_SYS08_11, "type", TYPE_RESIDENCE, "RB-01 missing for city auto housing")
+		return
+	var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+	if not cash_map.has("RESIDENCE"):
+		_record_fail(ERR_SYS08_09, PRM_BUILD_CASH_LI, "RESIDENCE", "BUILD_CASH_LI RESIDENCE missing")
+		return
+	var build_cash: int = int(cash_map["RESIDENCE"])
+	var reserve_mult: int = Params.get_int(PRM_CITY_HOUSING_RESERVE_MULT)
+	var need_bal: int = build_cash * reserve_mult
+	var city: StringName = CashLedger.make_city_id(port_id)
+	CashLedger.create_account(city, Account.Kind.CITY)
+	var built_n := 0
+	while built_n < max_n:
+		## ③: balance ≥ reserve × build cash.
+		if CashLedger.balance(city) < need_bal:
+			break
+		## ⑤: outermost unowned／city empty civil slot.
+		var slot_id: StringName = _find_city_housing_slot(port_id)
+		if slot_id == &"":
+			break
+		var slot: Slot = _slot(slot_id)
+		if slot == null:
+			break
+		## Claim unowned land for CITY free（不買地）.
+		if slot.land_owner == &"":
+			slot.land_owner = city
+		elif not _is_city_owner(slot.land_owner):
+			break
+		## ⑥⑦: order_build RESIDENCE only.
+		var bid: StringName = order_build(city, slot_id, StringName(TYPE_RESIDENCE))
+		if bid == &"":
+			break
+		built_n = built_n + 1
+
+
+func _find_city_housing_slot(port_id: String) -> StringName:
+	## ⑤: open CIVIL empty；land_owner empty or CITY；outermost ring first.
+	var best: StringName = &""
+	var best_ring := -1
+	var best_id := ""
+	var city: StringName = CashLedger.make_city_id(port_id)
+	for s_v in _slots_by_port.get(port_id, []):
+		var s: Slot = s_v
+		if s.kind != Slot.Kind.CIVIL or not s.zone_open:
+			continue
+		if not _slot_free(s, {}):
+			continue
+		if _is_gathering_belt(s):
+			continue
+		if s.land_owner != &"" and s.land_owner != city:
+			continue
+		var sid: String = String(s.slot_id)
+		if s.ring > best_ring or (s.ring == best_ring and (best_id == "" or sid < best_id)):
+			best_ring = s.ring
+			best = s.slot_id
+			best_id = sid
+	return best
 
 
 func _season_levy(port_id: String) -> void:
@@ -3169,6 +3340,7 @@ func _clear_state() -> void:
 	_season_land_rent_acc = {}
 	_season_vacancy_tax_acc = {}
 	_land_held_days = {}
+	## Keep _city_housing_on: scenario layer switch（SimEngine）；not world state.
 	_loaded = false
 	_clear_last_error()
 

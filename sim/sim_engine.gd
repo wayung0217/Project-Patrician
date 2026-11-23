@@ -172,6 +172,12 @@ func _run_one_job(
 			"sampler": sampler,
 		}
 
+	## D-115(a)／WP-68: layers.CITY_HOUSING → BuildingEconomy（default off）.
+	var layers: Dictionary = scenario.get("layers", {}) as Dictionary
+	var city_housing: bool = bool(layers.get(SimScenarioValidator.KEY_CITY_HOUSING, false))
+	if BuildingEconomy.has_method("set_city_housing_layer"):
+		BuildingEconomy.set_city_housing_layer(city_housing)
+
 	if relocate_on:
 		var conv: Dictionary = SimRelocator.f_to_ppm(
 			float(scenario[SimScenarioValidator.KEY_RELOCATE_F]),
