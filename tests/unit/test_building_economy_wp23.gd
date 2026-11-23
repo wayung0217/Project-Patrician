@@ -599,6 +599,61 @@ func test_WP65_TST_city_queue_upgrade_no_new_slot() -> void:
 	assert_eq(int(BuildingEconomy._queue_pos.get(PORT, 0)), 1)
 
 
+func test_D113b_cost_zero_upgrade_starts_no_zero_post() -> void:
+	## D-113(b)／FRM-SYS08-15: cost＝0 (pop＝0 public upgrade fee) → still start,
+	## advance queue_pos, skip CashLedger 0-li post; materials／days apply.
+	_boot_world()
+	var pop: TestPop = BuildingEconomy._population as TestPop
+	pop.set_pop(PORT, 0)
+	var city := CashLedger.make_city_id(PORT)
+	var fee0: int = int(BuildingEconomy.public_upgrade_fee(StringName(PORT), 2)["CASH_LI"])
+	assert_eq(fee0, 0, "pop=0 upgrade fee must be 0 (D-113b)")
+	var slot_id: StringName = BuildingEconomy._find_public_slot(PORT)
+	assert_ne(slot_id, &"")
+	var b0 := Building.new()
+	b0.building_id = BuildingEconomy._next_bld_id(PORT)
+	b0.type = &"CB-01"
+	b0.build_class = &"PUBLIC"
+	b0.cb_id = &"CB-01"
+	b0.owner = city
+	b0.port_id = PORT
+	b0.slot_id = slot_id
+	b0.level = 1
+	b0.state = Building.State.ACTIVE
+	BuildingEconomy.get_slot(slot_id).building_id = b0.building_id
+	BuildingEconomy._register_building(b0)
+	var s0 := BuildStep.new()
+	s0.port_id = PORT
+	s0.step = 0
+	s0.cb_id = "CB-01"
+	s0.target_level = 2
+	BuildingEconomy.set_build_queue(PORT, [s0])
+	_stock_public_build_mats(PORT, 5000)
+	var seq_before: int = CashLedger.last_posting_seq()
+	var bal_before: int = CashLedger.balance(city)
+	BuildingEconomy.season_step()
+	assert_eq(int(BuildingEconomy._queue_pos.get(PORT, 0)), 1, "queue_pos must advance on cost=0")
+	var b1: Building = BuildingEconomy.get_building(b0.building_id)
+	assert_eq(b1.level, 2)
+	assert_true(
+		b1.state == Building.State.BUILDING or b1.state == Building.State.WAITING_MATERIAL
+	)
+	assert_gt(b1.days_left, 0, "BUILD_DAYS must still apply")
+	assert_eq(CashLedger.balance(city), bal_before, "CITY balance unchanged when fee=0")
+	## No CONSTRUCTION cash posting with amount 0 (CashLedger rejects 0; must skip).
+	for p_v in CashLedger._postings:
+		var p: Posting = p_v
+		if p.seq <= seq_before:
+			continue
+		if p.reason != BuildingEconomy.REASON_CONSTRUCTION:
+			continue
+		for e_v in p.entries:
+			var e: PostingEntry = e_v
+			assert_ne(e.amount, 0, "must not post 0-li CONSTRUCTION entry (D-113b)")
+	for e in get_errors():
+		e.handled = true
+
+
 func test_WP65_TST_city_queue_missing_upgrade_target_stops() -> void:
 	## WP-65：找不到可升級建築 → 停在該步、不跳過後續 L1.
 	_boot_world()

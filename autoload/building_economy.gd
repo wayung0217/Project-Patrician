@@ -454,18 +454,20 @@ func order_build(actor: StringName, slot_key: StringName, type_id: StringName) -
 	var days_map: Dictionary = Params.get_value(PRM_BUILD_DAYS)
 	var build_days: int = int(days_map[String(build_class)])
 
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(actor, 0 - cash_li),
-			CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
-	)
-	if post_err != OK:
-		return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "construction cash post failed"))
+	## D-113(b)／FRM-SYS08-15: cash_li＝0 → skip CashLedger.post (ledger rejects 0).
+	if cash_li != 0:
+		var post_err: Error = CashLedger.post(
+			[
+				CashLedger.make_entry(actor, 0 - cash_li),
+				CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
+			],
+			REASON_CONSTRUCTION,
+			REQUESTER_SYS08
+		)
+		if post_err != OK:
+			return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "construction cash post failed"))
 	## D-102(e)／OBS-05: CITY PUBLIC new-build cash → tracked city spend (build_upgrade_li on WP-67).
-	if build_class == CLASS_PUBLIC and _is_city_owner(actor):
+	if cash_li != 0 and build_class == CLASS_PUBLIC and _is_city_owner(actor):
 		_note_city_spend(slot.port_id, cash_li)
 
 	var bld := Building.new()
@@ -557,16 +559,19 @@ func order_upgrade(actor: StringName, bld_key: StringName) -> StringName:
 	else:
 		return StringName(_fail_sn(ERR_SYS08_03, "build_class", bld.build_class, "upgrade not allowed"))
 
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(actor, 0 - cash_li),
-			CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
-	)
-	if post_err != OK:
-		return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "upgrade cash post failed"))
+	## D-113(b)／FRM-SYS08-15: cash_li＝0 (e.g. public upgrade fee when pop＝0) → skip post;
+	## materials／days still apply. CashLedger rejects amount 0 (ERR-SYS05-05).
+	if cash_li != 0:
+		var post_err: Error = CashLedger.post(
+			[
+				CashLedger.make_entry(actor, 0 - cash_li),
+				CashLedger.make_entry(CashLedger.ID_SINK, cash_li),
+			],
+			REASON_CONSTRUCTION,
+			REQUESTER_SYS08
+		)
+		if post_err != OK:
+			return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "upgrade cash post failed"))
 
 	bld.locked_materials = {}
 	bld.missing_materials = {}
@@ -2569,10 +2574,9 @@ func _season_city_build_queue(port_id: String) -> void:
 		# Upgrade cost if target_level > 1
 		if step.target_level > 1:
 			cost = _public_upgrade_cash(port_id, step.target_level)
-		## D-111(c)／gaps: cost≤0 has no dedicated ERR. Cannot start → stop queue_pos
-		## (never CashLedger.post(0)). cost<0 = PUBLIC_UPGRADE_CASH_FAIL already ERR-SYS08-09.
-		## Not a fixture bypass: queues stay loaded; validation path unchanged (F2).
-		if cost <= 0:
+		## D-113(b)／FRM-SYS08-15: cost＝0 → still start + advance queue_pos (skip cash post).
+		## cost<0 = PUBLIC_UPGRADE_CASH_FAIL → ERR-SYS08-09 already recorded; stop (no skip).
+		if cost < 0:
 			break
 		if CashLedger.balance(city) < cost:
 			break
@@ -2654,7 +2658,9 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 	var up_id: StringName = order_upgrade(city, target.building_id)
 	if up_id == &"":
 		return false
-	_note_city_spend(port_id, cost)
+	## D-113(b): cost＝0 skipped cash post inside order_upgrade; skip 0 spend note too.
+	if cost != 0:
+		_note_city_spend(port_id, cost)
 	return true
 
 
