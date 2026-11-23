@@ -239,14 +239,12 @@ func test_EX_08_18_05_negative_gross_not_clamped() -> void:
 	## City-owned so quote／buy path runs; negative gross → fail + ERR-SYS08-14（not free）.
 	bld.owner = CashLedger.make_city_id(PORT)
 	assert_eq(BuildingEconomy.quote_city_building(bid), 0)
-	var qerr: Variant = BuildingEconomy.last_error()
-	assert_typeof(qerr, TYPE_DICTIONARY)
-	assert_eq(String((qerr as Dictionary).get("code", "")), "ERR-SYS08-14")
+	assert_eq(String(BuildingEconomy.last_error().get("code", "")), "ERR-SYS08-14")
 	assert_eq(BuildingEconomy.buy_city_building(ACTOR, bid), 0)
-	var berr: Variant = BuildingEconomy.last_error()
-	assert_typeof(berr, TYPE_DICTIONARY)
-	assert_eq(String((berr as Dictionary).get("code", "")), "ERR-SYS08-14")
+	assert_eq(String(BuildingEconomy.last_error().get("code", "")), "ERR-SYS08-14")
 	assert_eq(bld.owner, CashLedger.make_city_id(PORT))
+	for e in get_errors():
+		e.handled = true
 
 
 func test_R9_65_C1_negative_margin_buy_fails() -> void:
@@ -261,10 +259,12 @@ func test_R9_65_C1_negative_margin_buy_fails() -> void:
 	bld.owner = CashLedger.make_city_id(PORT)
 	assert_lt(BuildingEconomy._weekly_income_estimate(bld), 0)
 	assert_eq(BuildingEconomy.quote_city_building(bid), 0)
-	assert_eq(String((BuildingEconomy.last_error() as Dictionary).get("code", "")), "ERR-SYS08-14")
+	assert_eq(String(BuildingEconomy.last_error().get("code", "")), "ERR-SYS08-14")
 	assert_eq(BuildingEconomy.buy_city_building(ACTOR, bid), 0)
-	assert_eq(String((BuildingEconomy.last_error() as Dictionary).get("code", "")), "ERR-SYS08-14")
+	assert_eq(String(BuildingEconomy.last_error().get("code", "")), "ERR-SYS08-14")
 	assert_eq(bld.owner, CashLedger.make_city_id(PORT))
+	for e in get_errors():
+		e.handled = true
 
 
 func test_WP63_TST_reverse_last_post_keeps_original() -> void:
