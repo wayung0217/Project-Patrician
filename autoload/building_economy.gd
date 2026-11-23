@@ -2569,8 +2569,11 @@ func _season_city_build_queue(port_id: String) -> void:
 		# Upgrade cost if target_level > 1
 		if step.target_level > 1:
 			cost = _public_upgrade_cash(port_id, step.target_level)
-		## D-111(c): no cost≤0 silent break（C-06）. Spec has no ERR for cost≤0 → gaps.md.
-		## PUBLIC_UPGRADE_CASH_FAIL (−1) still cannot start; treat as unaffordable stop.
+		## D-111(c)／gaps: cost≤0 has no dedicated ERR. Cannot start → stop queue_pos
+		## (never CashLedger.post(0)). cost<0 = PUBLIC_UPGRADE_CASH_FAIL already ERR-SYS08-09.
+		## Not a fixture bypass: queues stay loaded; validation path unchanged (F2).
+		if cost <= 0:
+			break
 		if CashLedger.balance(city) < cost:
 			break
 		# Mark as started: advance pos (actual order_build needs free public slot — best-effort).
