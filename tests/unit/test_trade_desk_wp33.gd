@@ -36,6 +36,7 @@ const DEMAND_RATE_SCALE := 100
 const DEMAND_PPM_SCALE := 1000000
 const DEMAND_WEIGHT_SUM := 100
 
+## WP-69／D-114(d): formal dirs are read-only for boot; do not wipe／import into them.
 const FORMAL_ZONES_DIR := "res://data/zones/"
 const FORMAL_BUILDINGS_DIR := "res://data/buildings/"
 const FORMAL_OPENING_DIR := "res://data/opening/"
@@ -74,7 +75,7 @@ class _Consume0 extends ConsumptionProvider:
 
 func before_each() -> void:
 	_wipe_dir(ROOT)
-	_wipe_formal_opening_tres()
+	# WP-69／D-114(d): never wipe res://data.
 	_reset_trade_desk()
 	ShipRegistry._loaded = false
 	ShipRegistry._sailor_pool = null
@@ -89,10 +90,6 @@ func before_each() -> void:
 	PopulationModel._sat_input = null
 	DemandModel._clear_state()
 	SeaLanes._loaded = false
-
-
-func after_each() -> void:
-	_wipe_formal_opening_tres()
 
 
 func test_WP59_qualification_provider_base_push_error_2_1_03() -> void:
@@ -705,48 +702,13 @@ func _prepare_sim_fixtures() -> Dictionary:
 
 
 func _install_opening_fixtures() -> void:
-	var wp17: Dictionary = CsvImport.run_batch_wp17(
-		OPENING_FIXTURE_CSV,
-		FORMAL_ZONES_DIR,
-		FORMAL_BUILDINGS_DIR,
-		FORMAL_OPENING_DIR,
-		FORMAL_BUILD_QUEUE_DIR
-	)
-	assert_true(wp17["ok"], "opening wp17: %s" % str(wp17.get("errors", [])))
-	var wp18: Dictionary = CsvImport.run_batch_wp18(
-		OPENING_FIXTURE_CSV, FORMAL_CITY_CENTER_DIR, FORMAL_OPENING_PUBLIC_DIR
-	)
-	assert_true(wp18["ok"], "opening wp18: %s" % str(wp18.get("errors", [])))
-	var pop: Dictionary = CsvImport.run_batch_opening_population(
-		OPENING_FIXTURE_CSV,
-		FORMAL_OPENING_POP_DIR,
-		OPENING_FIXTURE_CSV.path_join("ports.csv")
-	)
-	assert_true(pop["ok"], "opening pop: %s" % str(pop.get("errors", [])))
+	## WP-69／D-114(d): no-op — boot uses committed formal opening (read-only).
+	pass
 
 
 func _wipe_formal_opening_tres() -> void:
-	for dir_path in [
-		FORMAL_ZONES_DIR, FORMAL_BUILDINGS_DIR, FORMAL_OPENING_DIR,
-		FORMAL_BUILD_QUEUE_DIR, FORMAL_CITY_CENTER_DIR, FORMAL_OPENING_PUBLIC_DIR,
-		FORMAL_OPENING_POP_DIR,
-	]:
-		_wipe_tres_only(dir_path)
-
-
-func _wipe_tres_only(dir: String) -> void:
-	var abs_path := ProjectSettings.globalize_path(dir)
-	DirAccess.make_dir_recursive_absolute(abs_path)
-	var d := DirAccess.open(dir)
-	if d == null:
-		return
-	d.list_dir_begin()
-	var fn := d.get_next()
-	while fn != "":
-		if not d.current_is_dir() and fn.ends_with(".tres"):
-			d.remove(fn)
-		fn = d.get_next()
-	d.list_dir_end()
+	## WP-69／D-114(d): deleted wipe of res://data opening trees.
+	pass
 
 
 func _build_goods(dir: String) -> String:
@@ -754,7 +716,8 @@ func _build_goods(dir: String) -> String:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
 	if not Params.is_loaded():
 		Params.load_and_validate(PARAMS_FIXTURE)
-	var count: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	## WP-69: match committed formal good count so BE opening workshops resolve.
+	var count: int = maxi(Params.get_int(PRM_GOOD_COUNT_MIN), _count_formal_goods())
 	var staples: Array = [
 		{"id": "GD-001", "name": "米", "build": false},
 		{"id": "GD-002", "name": "鹽", "build": false},
@@ -843,6 +806,22 @@ func _make_good(
 	var seasons: int = Params.get_int(PRM_SEASONS_PER_YEAR)
 	def.season_mask = (1 << seasons) - 1
 	return def
+
+
+func _count_formal_goods() -> int:
+	## Read-only count of committed res://data/goods/*.tres (WP-69; no writes).
+	var n := 0
+	var d := DirAccess.open(GoodCatalog.GOODS_DIR)
+	if d == null:
+		return 0
+	d.list_dir_begin()
+	var fn := d.get_next()
+	while fn != "":
+		if not d.current_is_dir() and fn.ends_with(".tres"):
+			n += 1
+		fn = d.get_next()
+	d.list_dir_end()
+	return n
 
 
 func _wipe_dir(path: String) -> void:
