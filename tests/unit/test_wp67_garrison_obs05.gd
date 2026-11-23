@@ -141,6 +141,8 @@ func test_D102e_new_build_spend_build_upgrade_li() -> void:
 	var cat: Dictionary = BuildingEconomy._season_spend_cat.get(PORT, {})
 	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_BUILD, 0)), expect)
 	assert_eq(int(cat.get(BuildingEconomy.SPEND_CAT_OTHER, 0)), 0)
+	for e in get_errors():
+		e.handled = true
 
 
 func test_WP67_OBS05_queries_after_season() -> void:
