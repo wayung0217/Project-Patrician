@@ -61,6 +61,22 @@ const PRM_ACADEMY := "PRM-SYS07-ACADEMY_MULT"
 const PRM_LOOK_MANSION := "PRM-SYS07-LOOK_MANSION_RICH"
 const PRM_LOOK_TILE := "PRM-SYS07-LOOK_TILE_MID"
 const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
+const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
+const PRM_PPM_SCALE := "PRM-SYS06-PPM_SCALE"
+## FRM-SYS07-16／17（D-104(h)(j)）
+const PRM_ABUND_START := "PRM-SYS07-ABUND_START_WEEKS"
+const PRM_ABUND_FULL := "PRM-SYS07-ABUND_FULL_WEEKS"
+const PRM_EXCESS_RATE := "PRM-SYS07-EXCESS_RATE_PPM"
+const PRM_ABUND_BONUS := "PRM-SYS07-ABUND_BONUS_MAX_PPM"
+const PRM_SCARCE_START := "PRM-SYS07-SCARCE_START_WEEKS"
+
+const FLOW_KEY_PF1 := "PF-1"
+const FLOW_KEY_PF2 := "PF-2"
+const FLOW_KEY_PF3 := "PF-3"
+const FLOW_KEY_PF4 := "PF-4"
+const FLOW_KEY_PF5 := "PF-5"
+const FLOW_KEY_PF6 := "PF-6"
+const REQUESTER_SYS07 := &"SYS-07"
 
 const CB_TEMPLE := &"CB-04"
 const CB_ALMS := &"CB-15"
@@ -86,6 +102,10 @@ var _pending_pop_ports: Array = []
 var _pending_sat_ports: Array = []
 ## WP-55 A13: per daily_port／opening — purpose → next draw_seq (FRM-SYS07-12／D-83a).
 var _draw_seq_by_purpose: Dictionary = {}
+## D-110(i): season → port → {PF-1..PF-6: int}; sealed seasons only via season_flow_counts.
+var _season_flow_acc: Dictionary = {} ## "season|port" → Dictionary
+var _season_flow_settled: Dictionary = {} ## season_index:int → true
+var _last_flow_season: int = -1
 
 
 func _ready() -> void:
@@ -162,6 +182,30 @@ func is_loaded() -> bool:
 
 func last_error() -> Dictionary:
 	return _last_error.duplicate(true)
+
+
+func season_flow_counts(port_id: StringName, season_index: int) -> Dictionary:
+	## D-110(i): PF-1…PF-6 headcounts for a settled season; unsettled → {} + last_error.
+	assert(_loaded, "PopulationModel.season_flow_counts before load")
+	_clear_last()
+	var pid: String = String(port_id)
+	if not _ports.has(pid):
+		_record(ERR_SYS07_08, "port_id", port_id, "unknown port for season_flow_counts")
+		return {}
+	if not bool(_season_flow_settled.get(season_index, false)):
+		_record(ERR_SYS07_08, "season_index", season_index, "season not settled (season_flow_counts)")
+		return {}
+	var key: String = _season_flow_key(season_index, pid)
+	if not _season_flow_acc.has(key):
+		return {
+			FLOW_KEY_PF1: 0,
+			FLOW_KEY_PF2: 0,
+			FLOW_KEY_PF3: 0,
+			FLOW_KEY_PF4: 0,
+			FLOW_KEY_PF5: 0,
+			FLOW_KEY_PF6: 0,
+		}
+	return (_season_flow_acc[key] as Dictionary).duplicate()
 
 
 func get_population_provider() -> PopulationProvider:
@@ -475,12 +519,19 @@ func _port_registry_has(port_id: String) -> bool:
 
 func daily_step(day: int) -> Array:
 	## 14-03: after workshop produce; ports ascending; S0 → flows → apply once.
+	## FRM-SYS07-16／17: excess＋A/S before sat (lane B; SimLoop still runs CONSUME later).
 	assert(_loaded, "PopulationModel.daily_step before load")
 	var errors: Array = []
+	var season: int = _season_of_day(day)
+	if _last_flow_season >= 0 and season > _last_flow_season:
+		_season_flow_settled[_last_flow_season] = true
+	_last_flow_season = season
 	var ports: Array = _ports.keys()
 	ports.sort()
 	for pid_v in ports:
-		_daily_port(String(pid_v), day, errors)
+		_daily_port(String(pid_v), day, season, errors)
+	if _is_season_last_day(day):
+		_season_flow_settled[season] = true
 	return errors
 
 
@@ -493,7 +544,7 @@ func flush_signals() -> void:
 	_pending_sat_ports = []
 
 
-func _daily_port(port_id: String, day: int, errors: Array) -> void:
+func _daily_port(port_id: String, day: int, season: int, errors: Array) -> void:
 	var p: PortPop = _ensure_port(port_id)
 	_draw_seq_by_purpose = {}
 	# ① S0
@@ -509,6 +560,8 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 	if not bool(_opening_placed.get(port_id, false)):
 		_opening_place_full(port_id, p, day, errors)
 		_opening_placed[port_id] = true
+	# FRM-SYS07-16／17: abundance／scarcity／excess before satisfaction.
+	var as_state: Dictionary = _apply_abund_scarce_excess(port_id, errors)
 	# ② sat targets + inertia
 	_update_satisfaction(p, port_id, errors)
 	_pending_sat_ports.append(port_id)
@@ -516,8 +569,9 @@ func _daily_port(port_id: String, day: int, errors: Array) -> void:
 	_update_streaks(p)
 	# ④ flows from S0
 	var flows: Dictionary = _compute_flows(
-		port_id, p, s0_poor, s0_cit, s0_rich, s0_beg, s0_sat_p, s0_sat_c, s0_sat_r
+		port_id, p, s0_poor, s0_cit, s0_rich, s0_beg, s0_sat_p, s0_sat_c, s0_sat_r, as_state
 	)
+	_accumulate_season_flows(season, port_id, flows)
 	# ⑤ apply once
 	p.beggar = p.beggar + int(flows["in"]) - int(flows["out_beg"])
 	p.poor = (
@@ -654,7 +708,8 @@ func _compute_flows(
 	s0_beg: int,
 	s0_sat_p: int,
 	s0_sat_c: int,
-	s0_sat_r: int
+	s0_sat_r: int,
+	as_state: Dictionary = {}
 ) -> Dictionary:
 	var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
 	var rate_scale: int = Params.get_int(PRM_RATE_SCALE)
@@ -673,18 +728,26 @@ func _compute_flows(
 		wavg = floori(
 			float(s0_poor * s0_sat_p + s0_cit * s0_sat_c + s0_rich * s0_sat_r) / float(residents0)
 		)
+	var a_poor: int = int(as_state.get("A_POOR", 0))
+	var a_cit: int = int(as_state.get("A_CITIZEN", 0))
+	var a_rich: int = int(as_state.get("A_RICH", 0))
+	var s_poor: int = int(as_state.get("S_POOR", 0))
+	var s_cit: int = int(as_state.get("S_CITIZEN", 0))
+	var s_rich: int = int(as_state.get("S_RICH", 0))
 	# PF-1
 	var flow_in := 0
 	if wavg >= Params.get_int(PRM_SAT_IN_MIN) and free_beds > 0 and s0_beg < cap:
 		var base_in: int = mini(free_beds, cap - s0_beg)
-		flow_in = _moved(p, "acc_in", base_in, Params.get_int(PRM_PF1), denom)
+		var rate1: int = _rate_with_bonus(Params.get_int(PRM_PF1), a_poor)
+		flow_in = _moved(p, "acc_in", base_in, rate1, denom)
 	# PF-2
 	var flow_up1 := 0
 	if (
 		p.streak_up1 >= Params.get_int(PRM_UP1_STREAK)
 		and _active_tier_workshops(port_id, WORKSHOP_TIER_CITIZEN) >= Params.get_int(PRM_TIER2)
 	):
-		flow_up1 = _moved(p, "acc_up1", s0_poor, Params.get_int(PRM_PF2), denom)
+		var rate2: int = _rate_with_bonus(Params.get_int(PRM_PF2), a_cit)
+		flow_up1 = _moved(p, "acc_up1", s0_poor, rate2, denom)
 	# PF-3
 	var flow_up2 := 0
 	var academy_ok: bool = (
@@ -704,14 +767,17 @@ func _compute_flows(
 		if academy_lv >= 1 and amult.size() > 0:
 			mult = int(amult[mini(academy_lv, amult.size()) - 1])
 		var rate3: int = (Params.get_int(PRM_PF3) * mult) / ACADEMY_MULT_UNIT
+		rate3 = _rate_with_bonus(rate3, a_rich)
 		flow_up2 = _moved(p, "acc_up2", s0_cit, rate3, denom)
-	# PF-4 / PF-5
+	# PF-4 / PF-5 — scarcity multiplies only when already triggered (FRM-SYS07-17).
 	var flow_dn2 := 0
 	if s0_sat_r < Params.get_int(PRM_SAT_DOWN_MAX):
-		flow_dn2 = _moved(p, "acc_dn2", s0_rich, Params.get_int(PRM_PF4), denom)
+		var rate4: int = _rate_with_bonus(Params.get_int(PRM_PF4), s_rich)
+		flow_dn2 = _moved(p, "acc_dn2", s0_rich, rate4, denom)
 	var flow_dn1 := 0
 	if s0_sat_c < Params.get_int(PRM_SAT_DOWN_MAX):
-		flow_dn1 = _moved(p, "acc_dn1", s0_cit, Params.get_int(PRM_PF5), denom)
+		var rate5: int = _rate_with_bonus(Params.get_int(PRM_PF5), s_cit)
+		flow_dn1 = _moved(p, "acc_dn1", s0_cit, rate5, denom)
 	# PF-6
 	var flow_out_beg := 0
 	var flow_out_poor := 0
@@ -721,14 +787,16 @@ func _compute_flows(
 		if s0_sat_p < out_max:
 			base_beg = s0_beg
 		base_beg = maxi(base_beg, s0_beg - cap)
-		flow_out_beg = _moved(p, "acc_out_beg", base_beg, Params.get_int(PRM_PF6_BEGGAR), denom)
+		var rate6b: int = _rate_with_bonus(Params.get_int(PRM_PF6_BEGGAR), s_poor)
+		flow_out_beg = _moved(p, "acc_out_beg", base_beg, rate6b, denom)
 	if s0_beg == 0:
 		var base_poor := 0
 		if s0_sat_p < out_max:
 			base_poor = s0_poor
 		var overflow: int = maxi(0, residents0 - beds)
 		base_poor = maxi(base_poor, overflow)
-		flow_out_poor = _moved(p, "acc_out_poor", base_poor, Params.get_int(PRM_PF6), denom)
+		var rate6: int = _rate_with_bonus(Params.get_int(PRM_PF6), s_poor)
+		flow_out_poor = _moved(p, "acc_out_poor", base_poor, rate6, denom)
 	return {
 		"in": flow_in,
 		"up1": flow_up1,
@@ -744,13 +812,180 @@ func _moved(p: PortPop, acc_key: String, base: int, rate_wk: int, denom: int) ->
 	## FRM-SYS07-11／A16: integer floor division (non-negative).
 	if base <= 0 or rate_wk <= 0 or denom <= 0:
 		return 0
-	var acc: int = int(p.acc.get(acc_key, 0)) + base * rate_wk
+	## FRM-SYS07-05..10: product checked before ÷ (int64 path in GDScript).
+	var product: int = base * rate_wk
+	var acc: int = int(p.acc.get(acc_key, 0)) + product
 	var moved: int = acc / denom
 	if moved > base:
 		moved = base
 	acc = acc - moved * denom
 	p.acc[acc_key] = acc
 	return moved
+
+
+func _rate_with_bonus(rate_wk: int, class_as_ppm: int) -> int:
+	## FRM-SYS07-16／17: rate × (PPM ＋ BONUS × A÷PPM) ÷ PPM. BONUS＝0 → identity.
+	if rate_wk <= 0:
+		return 0
+	if not Params.has_prm(StringName(PRM_ABUND_BONUS)) or not Params.has_prm(StringName(PRM_PPM_SCALE)):
+		return rate_wk
+	var bonus_max: int = Params.get_int(PRM_ABUND_BONUS)
+	var ppm: int = Params.get_int(PRM_PPM_SCALE)
+	if ppm <= 0 or bonus_max <= 0 or class_as_ppm <= 0:
+		return rate_wk
+	var factor_num: int = ppm + (bonus_max * class_as_ppm) / ppm
+	return (rate_wk * factor_num) / ppm
+
+
+func _apply_abund_scarce_excess(port_id: String, errors: Array) -> Dictionary:
+	## FRM-SYS07-16／17: per-good a/s, class baskets, EXCESS_CONSUME transfers.
+	var out := {
+		"A_POOR": 0,
+		"A_CITIZEN": 0,
+		"A_RICH": 0,
+		"S_POOR": 0,
+		"S_CITIZEN": 0,
+		"S_RICH": 0,
+	}
+	if not Params.has_prm(StringName(PRM_ABUND_START)):
+		return out
+	if not GoodsLedger.is_loaded() or not GoodCatalog.is_loaded():
+		return out
+	if not DemandModel.is_loaded() and not DemandModel.has_potential_demand_provider():
+		return out
+	var start_w: int = Params.get_int(PRM_ABUND_START)
+	var full_w: int = Params.get_int(PRM_ABUND_FULL)
+	var scarce_w: int = Params.get_int(PRM_SCARCE_START)
+	var excess_ppm: int = Params.get_int(PRM_EXCESS_RATE)
+	var ppm: int = Params.get_int(PRM_PPM_SCALE)
+	if ppm <= 0 or full_w <= start_w:
+		errors.append(
+			_err(ERR_SYS07_08, PRM_ABUND_FULL, full_w, "ABUND_FULL_WEEKS must be > ABUND_START_WEEKS")
+		)
+		return out
+	var a_by_good: Dictionary = {}
+	var s_by_good: Dictionary = {}
+	var good_ids: Array = []
+	for gid_v in GoodCatalog.all_ids():
+		good_ids.append(String(gid_v))
+	good_ids.sort()
+	for good_s in good_ids:
+		var good_sn: StringName = StringName(good_s)
+		var demand: int = DemandModel.weekly_potential_demand(StringName(port_id), good_sn)
+		var stock: int = GoodsLedger.get_qty(GoodsLedger.make_market(port_id), good_sn)
+		var a_g: int = 0
+		var s_g: int = 0
+		if demand > 0:
+			var start_stock: int = start_w * demand
+			var full_stock: int = full_w * demand
+			var scarce_stock: int = scarce_w * demand
+			if stock <= start_stock:
+				a_g = 0
+			elif stock >= full_stock:
+				a_g = ppm
+			else:
+				a_g = floori(float((stock - start_stock) * ppm) / float(full_stock - start_stock))
+			if stock >= scarce_stock:
+				s_g = 0
+			elif stock <= 0:
+				s_g = ppm
+			else:
+				s_g = floori(float((scarce_stock - stock) * ppm) / float(scarce_stock))
+			## Excess consume: over START weeks of demand (FRM-SYS07-16).
+			var over: int = stock - start_stock
+			if over > 0 and excess_ppm > 0:
+				var x: int = mini(over, floori(float(over * excess_ppm) / float(ppm)))
+				if x > 0:
+					var rc: int = GoodsLedger.transfer(
+						GoodsLedger.make_market(port_id),
+						GoodsLedger.make_external(),
+						good_sn,
+						x,
+						GoodsLedger.REASON_EXCESS_CONSUME,
+						REQUESTER_SYS07
+					)
+					if rc == 0:
+						errors.append(
+							_err(
+								ERR_SYS07_08,
+								"EXCESS_CONSUME",
+								GoodsLedger.last_error(),
+								"excess consume transfer failed"
+							)
+						)
+		a_by_good[good_s] = a_g
+		s_by_good[good_s] = s_g
+	out["A_POOR"] = _class_basket_ppm(CLASS_POOR, a_by_good)
+	out["A_CITIZEN"] = _class_basket_ppm(CLASS_CITIZEN, a_by_good)
+	out["A_RICH"] = _class_basket_ppm(CLASS_RICH, a_by_good)
+	out["S_POOR"] = _class_basket_ppm(CLASS_POOR, s_by_good)
+	out["S_CITIZEN"] = _class_basket_ppm(CLASS_CITIZEN, s_by_good)
+	out["S_RICH"] = _class_basket_ppm(CLASS_RICH, s_by_good)
+	return out
+
+
+func _class_basket_ppm(clazz: StringName, by_good: Dictionary) -> int:
+	## A_k／S_k = Σ w×v ÷ Σ w (satisfaction_weights; good_id asc).
+	if not DemandModel.is_loaded():
+		return 0
+	var w_sum: int = DemandModel.sat_weight_sum(clazz)
+	if w_sum <= 0:
+		return 0
+	var keys: Array = by_good.keys()
+	keys.sort()
+	var acc: int = 0
+	for g_v in keys:
+		var g: String = String(g_v)
+		var w: int = DemandModel.sat_weight_pct(clazz, StringName(g))
+		if w <= 0:
+			continue
+		acc = acc + w * int(by_good[g])
+	return floori(float(acc) / float(w_sum))
+
+
+func _accumulate_season_flows(season: int, port_id: String, flows: Dictionary) -> void:
+	var key: String = _season_flow_key(season, port_id)
+	if not _season_flow_acc.has(key):
+		_season_flow_acc[key] = {
+			FLOW_KEY_PF1: 0,
+			FLOW_KEY_PF2: 0,
+			FLOW_KEY_PF3: 0,
+			FLOW_KEY_PF4: 0,
+			FLOW_KEY_PF5: 0,
+			FLOW_KEY_PF6: 0,
+		}
+	var bucket: Dictionary = _season_flow_acc[key]
+	bucket[FLOW_KEY_PF1] = int(bucket[FLOW_KEY_PF1]) + int(flows.get("in", 0))
+	bucket[FLOW_KEY_PF2] = int(bucket[FLOW_KEY_PF2]) + int(flows.get("up1", 0))
+	bucket[FLOW_KEY_PF3] = int(bucket[FLOW_KEY_PF3]) + int(flows.get("up2", 0))
+	bucket[FLOW_KEY_PF4] = int(bucket[FLOW_KEY_PF4]) + int(flows.get("dn2", 0))
+	bucket[FLOW_KEY_PF5] = int(bucket[FLOW_KEY_PF5]) + int(flows.get("dn1", 0))
+	bucket[FLOW_KEY_PF6] = (
+		int(bucket[FLOW_KEY_PF6]) + int(flows.get("out_beg", 0)) + int(flows.get("out_poor", 0))
+	)
+	_season_flow_acc[key] = bucket
+
+
+func _season_flow_key(season: int, port_id: String) -> String:
+	return "%d|%s" % [season, port_id]
+
+
+func _season_of_day(day: int) -> int:
+	if day < 1:
+		return 0
+	var dps: int = 1
+	if Params.has_prm(StringName(PRM_DAYS_PER_SEASON)):
+		dps = maxi(1, Params.get_int(PRM_DAYS_PER_SEASON))
+	return floori(float(day - 1) / float(dps))
+
+
+func _is_season_last_day(day: int) -> bool:
+	if day < 1:
+		return false
+	var dps: int = 1
+	if Params.has_prm(StringName(PRM_DAYS_PER_SEASON)):
+		dps = maxi(1, Params.get_int(PRM_DAYS_PER_SEASON))
+	return ((day - 1) % dps) + 1 == dps
 
 
 func _active_tier_workshops(port_id: String, tier: int) -> int:
@@ -1170,6 +1405,12 @@ func _validate_params() -> Array:
 		PRM_ACADEMY,
 		PRM_LOOK_MANSION,
 		PRM_LOOK_TILE,
+		PRM_ABUND_START,
+		PRM_ABUND_FULL,
+		PRM_EXCESS_RATE,
+		PRM_ABUND_BONUS,
+		PRM_SCARCE_START,
+		PRM_PPM_SCALE,
 	]
 	for key in required:
 		if not Params.has_prm(StringName(key)):
@@ -1224,6 +1465,9 @@ func _clear_state() -> void:
 	_port_res_ids = {}
 	_opening_placed = {}
 	_draw_seq_by_purpose = {}
+	_season_flow_acc = {}
+	_season_flow_settled = {}
+	_last_flow_season = -1
 	_loaded = false
 	_pending_pop_ports = []
 	_pending_sat_ports = []
