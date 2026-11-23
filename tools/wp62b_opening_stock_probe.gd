@@ -44,8 +44,9 @@ func _go() -> void:
 	for i in range(mini(TOP_N, cells.size())):
 		var c: Dictionary = cells[i]
 		print("rank=%d port=%s good=%s q=%d" % [i + 1, c["port"], c["good"], c["q"]])
-	var cons: Variant = goods.call("check_conservation")
-	print("WP62B_CONSERVATION %s" % str(cons))
+		## F6: check_conservation() -> int; avoid SCRIPT ERROR assigning int into StringName/Variant slot.
+		var cons: int = int(goods.call("check_conservation"))
+		print("WP62B_CONSERVATION %d" % cons)
 	print("WP62B_BOOT_ERRORS 0")
 	print("WP62B OK")
 	quit(0)
