@@ -145,6 +145,50 @@ func test_D102e_new_build_spend_build_upgrade_li() -> void:
 		e.handled = true
 
 
+func test_D114b_city_upgrade_spend_counted_once() -> void:
+	## D-114(b): one city PUBLIC upgrade → build_upgrade_li and quarterly city spend
+	## each rise by the upgrade fee exactly once (order_upgrade notes; queue path does not).
+	_boot_world()
+	var city := CashLedger.make_city_id(PORT)
+	_force_public(city, &"CB-09", 1)
+	var fee: int = BuildingEconomy._public_upgrade_cash(PORT, 2)
+	assert_gt(fee, 0)
+	CashLedger.post(
+		[
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - fee * 2),
+			CashLedger.make_entry(city, fee * 2),
+		],
+		&"TEST_FUND",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	var spend0: int = int(BuildingEconomy._season_city_spend.get(PORT, 0))
+	var cat0: Dictionary = (
+		BuildingEconomy._season_spend_cat.get(PORT, BuildingEconomy._empty_spend_cat()) as Dictionary
+	).duplicate()
+	var step := BuildStep.new()
+	step.port_id = PORT
+	step.step = 0
+	step.cb_id = "CB-09"
+	step.target_level = 2
+	assert_true(BuildingEconomy._try_start_city_public(PORT, city, step, fee))
+	var spend1: int = int(BuildingEconomy._season_city_spend.get(PORT, 0))
+	assert_eq(spend1 - spend0, fee)
+	var cat1: Dictionary = BuildingEconomy._season_spend_cat.get(PORT, {}) as Dictionary
+	assert_eq(
+		int(cat1.get(BuildingEconomy.SPEND_CAT_BUILD, 0))
+		- int(cat0.get(BuildingEconomy.SPEND_CAT_BUILD, 0)),
+		fee
+	)
+	Clock._tick = Params.get_int("PRM-SYS00-TICKS_PER_DAY") * Params.get_int(
+		"PRM-SYS00-DAYS_PER_SEASON"
+	)
+	BuildingEconomy._persist_obs05_season(PORT)
+	var settled: Dictionary = BuildingEconomy.city_spend_by_category(StringName(PORT), 0)
+	assert_eq(int(settled.get(BuildingEconomy.SPEND_CAT_BUILD, 0)), fee)
+	for e in get_errors():
+		e.handled = true
+
+
 func test_WP67_OBS05_queries_after_season() -> void:
 	## After season_step, queries return persisted values; unknown season → −1／{}.
 	_boot_world()

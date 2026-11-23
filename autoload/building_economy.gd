@@ -2705,9 +2705,8 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 	var up_id: StringName = order_upgrade(city, target.building_id)
 	if up_id == &"":
 		return false
-	## D-113(b): cost＝0 skipped cash post inside order_upgrade; skip 0 spend note too.
-	if cost != 0:
-		_note_city_spend(port_id, cost, SPEND_CAT_BUILD)
+	## D-114(b): spend noted inside order_upgrade (SPEND_CAT_BUILD); do not double-count here.
+	## D-113(b): cash_li＝0 skips post＋spend note inside order_upgrade.
 	return true
 
 
