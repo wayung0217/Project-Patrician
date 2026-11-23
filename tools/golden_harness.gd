@@ -3,6 +3,8 @@ extends SceneTree
 ## 用法：
 ##   godot --headless --path . -s res://tools/golden_harness.gd -- \
 ##     --out <abs.csv> --days 360 --seed 1
+## D-111(e)／F6 gated run (counts ERROR + SCRIPT ERROR in log; non-zero if >0):
+##   tools/run_golden_gated.sh --godot /path/to/godot --out <abs.csv> --days 360
 ## 預設 360 日；輸出寬表＋逐日欄位雜湊列（row_kind=hash）。
 
 
