@@ -30,6 +30,7 @@ const ERR_SYS08_09 := &"ERR-SYS08-09"
 const ERR_SYS08_10 := &"ERR-SYS08-10"
 const ERR_SYS08_12 := &"ERR-SYS08-12"
 const ERR_SYS08_13 := &"ERR-SYS08-13"
+const ERR_SYS08_14 := &"ERR-SYS08-14" ## D-102(b)／FRM-SYS08-18: 工坊週毛利為負，無法報收購價
 
 const CODE_PARAMS_NOT_LOADED := &"PARAMS_NOT_LOADED"
 const CODE_PORT_REGISTRY_NOT_LOADED := &"PORT_REGISTRY_NOT_LOADED"
@@ -2081,9 +2082,14 @@ func _frm18_price(bld: Building) -> int:
 		Params.get_int(PRM_DAYS_PER_WEEK)
 	)
 	var week_income: int = _weekly_income_estimate(bld)
-	## WP-63 (e)／R9-65 C1／EX-08-18-05: 週毛利 < 0 → 不得帶進收購價（回 0 使 buy 失敗）.
-	## No fitting ERR-SYS08（見 evening gaps C1）；不得自創 GAP／ERR（C-05／C-06）.
+	## D-102(b)／ERR-SYS08-14／EX-08-18-05: 週毛利 < 0 → fail + last_error；不得回 0 當價、不得成交.
 	if week_income < 0:
+		_record_fail(
+			ERR_SYS08_14,
+			"weekly_margin",
+			week_income,
+			"workshop weekly gross margin < 0; cannot quote buy price (D-102b／EX-08-18-05)"
+		)
 		return 0
 	var premium: float = Params.get_float(PRM_TRANSFER_PREMIUM)
 	var comp_w: int = Params.get_int(PRM_COMPENSATION_WEEKS)
@@ -2141,8 +2147,7 @@ func _weekly_income_estimate(bld: Building) -> int:
 		var in_li: int = ceili(AmountQuantize.quantize_amount(input_cost))
 		var wag_li: int = ceili(AmountQuantize.quantize_amount(wage_cost))
 		var gross: int = rev_li - in_li - wag_li
-		## WP-63 (e)／EX-08-18-05: < 0 → never clamp to 0; _frm18_price refuses quote.
-		## Gap: no ERR-SYS08 for this path (C1 stopped; see gaps.md).
+		## EX-08-18-05／D-102(b): < 0 → never clamp to 0; quote/buy set ERR-SYS08-14.
 		return gross
 	return 0
 

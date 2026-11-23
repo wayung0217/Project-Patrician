@@ -226,7 +226,7 @@ func test_EX_08_18_04_salt_floor_revenue() -> void:
 
 
 func test_EX_08_18_05_negative_gross_not_clamped() -> void:
-	## EX-08-18-05：WAGE_BASE=10000 → 毛利 −308721；不得 clamp 為 0（C1：無合適 ERR → gaps）.
+	## EX-08-18-05／D-102(b)：WAGE_BASE=10000 → 毛利 −308721；quote/buy → ERR-SYS08-14.
 	var wf := TestWorkforce.new()
 	_boot_world(wf)
 	Params._values["PRM-SYS08-WAGE_BASE_LI"] = 10000
@@ -236,15 +236,21 @@ func test_EX_08_18_05_negative_gross_not_clamped() -> void:
 	var bld: Building = BuildingEconomy.get_building(bid)
 	var inc: int = BuildingEconomy._weekly_income_estimate(bld)
 	assert_eq(inc, -308721)
-	## City-owned so quote／buy path runs; negative gross → 0／fail（not free）.
+	## City-owned so quote／buy path runs; negative gross → fail + ERR-SYS08-14（not free）.
 	bld.owner = CashLedger.make_city_id(PORT)
 	assert_eq(BuildingEconomy.quote_city_building(bid), 0)
+	var qerr: Variant = BuildingEconomy.last_error()
+	assert_typeof(qerr, TYPE_DICTIONARY)
+	assert_eq(String((qerr as Dictionary).get("code", "")), "ERR-SYS08-14")
 	assert_eq(BuildingEconomy.buy_city_building(ACTOR, bid), 0)
+	var berr: Variant = BuildingEconomy.last_error()
+	assert_typeof(berr, TYPE_DICTIONARY)
+	assert_eq(String((berr as Dictionary).get("code", "")), "ERR-SYS08-14")
 	assert_eq(bld.owner, CashLedger.make_city_id(PORT))
 
 
 func test_R9_65_C1_negative_margin_buy_fails() -> void:
-	## R9-65 高-3：週毛利 < 0 → quote 0、buy 失敗，不得 0 元成交.
+	## R9-65／D-102(b)：週毛利 < 0 → ERR-SYS08-14；不得 0 元成交.
 	var wf := TestWorkforce.new()
 	_boot_world(wf)
 	Params._values["PRM-SYS08-WAGE_BASE_LI"] = 10000
@@ -255,7 +261,9 @@ func test_R9_65_C1_negative_margin_buy_fails() -> void:
 	bld.owner = CashLedger.make_city_id(PORT)
 	assert_lt(BuildingEconomy._weekly_income_estimate(bld), 0)
 	assert_eq(BuildingEconomy.quote_city_building(bid), 0)
+	assert_eq(String((BuildingEconomy.last_error() as Dictionary).get("code", "")), "ERR-SYS08-14")
 	assert_eq(BuildingEconomy.buy_city_building(ACTOR, bid), 0)
+	assert_eq(String((BuildingEconomy.last_error() as Dictionary).get("code", "")), "ERR-SYS08-14")
 	assert_eq(bld.owner, CashLedger.make_city_id(PORT))
 
 
