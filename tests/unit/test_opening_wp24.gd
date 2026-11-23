@@ -400,10 +400,7 @@ func test_WP54_V1_opening_processing_outermost_ring() -> void:
 	_write_layout_multi()
 	_write_defs()
 	_save_def(ROOT + "buildings/", "WS-SALT", "IND2", "GD-002", 1, 1.0)
-	assert_eq(
-		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
-		0
-	)
+	assert_eq(_load_be_legal_queue().size(), 0)
 	_write_opening_tres()
 	var ow := OpeningWorkshop.new()
 	ow.port_id = PORT_A
@@ -508,10 +505,7 @@ func _boot_with_opening() -> void:
 	BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
 	_write_layout_multi()
 	_write_defs()
-	assert_eq(
-		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
-		0
-	)
+	assert_eq(_load_be_legal_queue().size(), 0)
 	_write_opening_tres()
 	assert_eq(PopulationModel.apply_opening_init(ROOT + "opening_population/").size(), 0)
 	assert_eq(
@@ -606,9 +600,19 @@ func _boot_modules_only() -> void:
 	BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
 	_write_layout_multi()
 	_write_defs()
-	assert_eq(
-		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
-		0
+	assert_eq(_load_be_legal_queue().size(), 0)
+
+
+func _load_be_legal_queue() -> Array:
+	## D-111(c): coherent boots pass legal (empty) build_queue + opening_public — same validate path.
+	var qdir := ROOT + "build_queue_legal/"
+	var odir := ROOT + "opening_public_legal/"
+	_wipe(qdir)
+	_wipe(odir)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(qdir))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(odir))
+	return BuildingEconomy.load_and_validate(
+		ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/", qdir, odir
 	)
 
 
