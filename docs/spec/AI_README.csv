@@ -5,8 +5,8 @@
 項目,內容,,,,
 Workbook 名稱,遊戲開發建議書（Game Design & Implementation Proposal）,,,,
 擁有者,Rex Tsoi,,,,
-最後更新日期,2026-11-22,,,,
-版本,v6.99.124,,,,
+最後更新日期,2026-11-23,,,,
+版本,v6.99.131,,,,
 最高回覆格式指令,"每次回覆 Rex 時，第一行必須原樣寫 Hi Rex，再另起一行寫正文。不論是回答、確認、追問或進度回報，都適用。｜Owner 2026-11-21：每次提到派工單（如 17-45）、決策（D-xx）、審查（R9-xx）或 WP 時，必須附可點擊的儲存格連結，格式：[文字](https://apexfs-my.sharepoint.com/personal/rex_tsoi_apexgroup_com/Documents/Project%20Patrician/Project%20Patrician.xlsx?web=1&activeCell=%27工作表名%27!儲存格)，儲存格位置以當下實際列號為準（每次插列後重新查）。｜Owner 2026-11-21：不要每次回覆都提醒 Owner commit docs/spec；只在「要派工給 Cursor 之前」才說明需要 commit 哪個版本。沒有要派工的回覆，不提 commit、也不提要不要傳給 Cursor。｜Owner 2026-11-21 格式約定：單格長說明文字（同列右側全空）一律合併橫跨表寬並自動換行，不靠加寬欄位；欄寬依表格資料列決定。新增說明列時照辦。
 ｜Owner 2026-11-21：審計與逐行閱讀類回覆，一律附「進度」：已讀／未讀各佔百分之幾（分項：production、docs/spec、data、tests、tests/fixtures），並列出還沒讀的清單；百分比的分母與口徑要寫明，不得估算成沒有分母的數字。",,,,
 1. AI 的責任（Responsibilities）,,,,,
@@ -55,6 +55,7 @@ S9e,派工前規格完備檢查（Owner 2026-11-22，D-88e）,寫派工單前，
 S9f,公式數值例與測試先行（Owner 2026-11-22，D-88c、f）,AI 在 frm_examples 工作表為每條要實作或修正的 FRM 寫 1 至 5 個「輸入 → 正確輸出」例，並隨 docs/spec 匯出為 frm_examples.csv。測試的期望值只能取自此檔，不得用與產品碼相同的公式計算（禁止鏡像測試）。數值例中的輸入若非正式 PRM，標「示範值」。測試先行（先派只寫測試的包、再派實作包）於 WP-59 之後的第一個系統包試行一次。,frm_examples；派工單,,
 S9g,派工優先序（Owner 2026-11-22 硬規則）,派工一律依優先序排定，派工單標明每包的優先級：P1 正確性修復（會讓模擬結果失真的缺陷，例如 WP-52 至 59）；P2 模擬器校準線（WP-60 十年首跑、WP-27 第二層運貨者、G-10 指標門檻、試驗值回填）；P3 可玩與試玩回饋（WP-61、M2 匯出規則）；P4 MVP 系統包（依 M3 至 M5 里程碑）；P5 外殼（美術、音效、Steam）。同一則派工內，資源不足時先跑高優先的線；低優先的線不得占用高優先線要改的檔案。模擬器跑的期間，Owner 同步試玩，兩者並行。,派工單、00_Overview 第〇節 B,,
 S9h,黃金輸出必須看得見行為變更（Owner 2026-11-22，D-96c）,★ 周末大審計那批問題能一路漏網，主因是 30 日黃金輸出太粗（R9-64 高-3）：七個修復包改了行為，黃金雜湊全部相同。因此：① 回歸比對一律用黃金輸出 v2（WP-66：360 日，含價格、建築逐棟、住戶、地租、城市支出、逐日雜湊）；② 凡改變行為的子項，黃金 v2 必須出現差異，報告逐欄說明由哪個子項造成；③ 某子項確實不改任何欄位時，必須另附定向探針證明改動有被執行；④ 零差異又無探針＝未證實（S9 ③），不得建議合併；⑤ AI 審查時先自行讀完 Cursor 已交的全部材料（含 diff 逐行），讀不完才請 Cursor 補，不得以補交代替審查。,派工訊息、第 9 節 R 系列,,
+S9i,分支與交付包衛生（Owner 2026-11-22，D-98e）,① PR 合併當天刪除其分支；② 同時開著的分支（含審查分支）不超過 8 條，超過先清理再開新分支；③ 每份工作報告第一段附 git branch -r 清單；④ 交付包不超過 150 MB，不放 build／.godot／匯出執行檔；⑤ 關 PR 或刪分支遇權限錯誤，即列給 Owner 手動處理，不重試；⑥ 刪分支前須證明已併入 main（git merge-base --is-ancestor 或 git cherry），並在報告記分支名與完整 SHA。,派工訊息、工作報告,,
 ,,,,,
 ★ 鐵則：每完成一個 Task，必須回到 AI_README 檢查並更新（S7）。未更新 = Task 未完成。,,,,,
 ,,,,,
@@ -126,25 +127,25 @@ T-R7,命名規範（Godot）,Node 用 PascalCase；腳本檔 snake_case.gd；Sig
 T-R8,介面契約,跨模組溝通只能經由 Signal 或 Autoload 單例的公開 API。禁止硬寫跨場景 get_node 路徑；需取得外部節點時使用 @export NodePath、Group 或依賴注入。每個模組須列出「對外信號」與「對外函數」兩張清單。,,,
 T-R9,可測試性與驗收準則,每個系統須附 Given／When／Then 驗收案例與可觀察輸出（信號、狀態值、UI 變化），供開發 AI 自測；無驗收準則的規格視為未完成。,,,
 T-R10,變更紀錄義務,任何數值、信號、函數簽名或介面變更，必須同步更新來源 Sheet 與本頁第 8 節更新日誌，並註明受影響模組。,,,
-,,,,,
-6.1 引擎基準（Engine Baseline）— 已由 Owner 鎖定，開發 AI 不得自行變更；變更需走第 8 節更新日誌,,,,來源與狀態,
-編號,項目,決定,說明／對規格的影響,已查核：4.7.2-stable 為 2026-08-18 發布之最新穩定版；4.8 仍為 beta3（2026-11-09）故不採用。來源 godotengine.org/download/archive，取得日期 2026-11-16。狀態 Locked,
-B-01,引擎版本,Godot 4.7.2 (stable),所有 API、節點名稱與語法以 Godot 4.x / GDScript 2.0 撰寫（typed GDScript、signal 關鍵字、@export、await）。禁止混用 3.x 寫法。,Owner 預設。狀態 Locked（C# 例外需核准）,
-B-02,腳本語言,GDScript 為主,預設全專案 GDScript；不引入 C#／.NET。注意：Steam 商店版 Godot 不含 .NET 支援，若日後要用 C# 需改用官方 .NET 版本並由 Owner 核准。,Owner 於 2026-11-16 拍板採 2D 等距。狀態 Locked — 阻塞項 Q-01 解除,
-B-03,維度,2D 等距（Isometric）,技術上為純 2D：Node2D 體系 + Y-sort 深度排序 + TileMapLayer，不使用 3D 攝影機投影、深度緩衝或 3D 碰撞層。視覺採等距視角以取得立體感。資產管線：以 3D 建模配固定等距鏡頭與固定光照批次渲染為 2D 圖素，或以 Scenario 訓練風格模型配 ControlNet Sketch 產出；最終進入專案的資產一律為 2D 圖素，3D 僅作中間工具（見 07_Market M-145、M-147 至 M-150）。,Owner 指定。狀態 Locked,
-B-04,目標平台,PC / Windows 優先，Steam 上架,存檔路徑走 user://；需定義基準解析度、視窗縮放模式（stretch mode / aspect）、以及 Steam Deck 相容性是否納入範圍。,Owner 指定；手把排除為 [假設]。狀態 Locked,
-B-05,輸入方式,鍵盤 + 滑鼠,所有輸入必須經 Input Map 具名動作（禁止直接判斷 scancode）；動作清單需在 05_TechSpec 全列並含預設綁定與可重綁規則。手把支援預設排 P2 不做。,Owner 指定。狀態 Locked,
-B-06,連線架構,單機（無即時多人）,不設權威端、不使用 MultiplayerAPI／RPC；所有遊戲狀態以本機為唯一真實來源。此決定事後變更等同重寫，視為 Locked。,Owner 指定需有 Steam 雲端。狀態 [待確認] — 列為阻塞項 Q-02,
+,,,,來源與狀態,
+6.1 引擎基準（Engine Baseline）— 已由 Owner 鎖定，開發 AI 不得自行變更；變更需走第 8 節更新日誌,,,,已查核：4.7.2-stable 為 2026-08-18 發布之最新穩定版；4.8 仍為 beta3（2026-11-09）故不採用。來源 godotengine.org/download/archive，取得日期 2026-11-16。狀態 Locked,
+編號,項目,決定,說明／對規格的影響,Owner 預設。狀態 Locked（C# 例外需核准）,
+B-01,引擎版本,Godot 4.7.2 (stable),所有 API、節點名稱與語法以 Godot 4.x / GDScript 2.0 撰寫（typed GDScript、signal 關鍵字、@export、await）。禁止混用 3.x 寫法。,Owner 於 2026-11-16 拍板採 2D 等距。狀態 Locked — 阻塞項 Q-01 解除,
+B-02,腳本語言,GDScript 為主,預設全專案 GDScript；不引入 C#／.NET。注意：Steam 商店版 Godot 不含 .NET 支援，若日後要用 C# 需改用官方 .NET 版本並由 Owner 核准。,Owner 指定。狀態 Locked,
+B-03,維度,2D 等距（Isometric）,技術上為純 2D：Node2D 體系 + Y-sort 深度排序 + TileMapLayer，不使用 3D 攝影機投影、深度緩衝或 3D 碰撞層。視覺採等距視角以取得立體感。資產管線：以 3D 建模配固定等距鏡頭與固定光照批次渲染為 2D 圖素，或以 Scenario 訓練風格模型配 ControlNet Sketch 產出；最終進入專案的資產一律為 2D 圖素，3D 僅作中間工具（見 07_Market M-145、M-147 至 M-150）。,Owner 指定；手把排除為 [假設]。狀態 Locked,
+B-04,目標平台,PC / Windows 優先，Steam 上架,存檔路徑走 user://；需定義基準解析度、視窗縮放模式（stretch mode / aspect）、以及 Steam Deck 相容性是否納入範圍。,Owner 指定。狀態 Locked,
+B-05,輸入方式,鍵盤 + 滑鼠,所有輸入必須經 Input Map 具名動作（禁止直接判斷 scancode）；動作清單需在 05_TechSpec 全列並含預設綁定與可重綁規則。手把支援預設排 P2 不做。,Owner 指定需有 Steam 雲端。狀態 [待確認] — 列為阻塞項 Q-02,
+B-06,連線架構,單機（無即時多人）,不設權威端、不使用 MultiplayerAPI／RPC；所有遊戲狀態以本機為唯一真實來源。此決定事後變更等同重寫，視為 Locked。,,
 B-07,Steam 服務,Steam Cloud 存檔為 P0；其餘功能待確認,GDScript 需透過 GodotSteam（GDExtension）接入 Steamworks。存檔須設計為單一可同步目錄、含版本號與衝突處理規則（Auto-Cloud 無法解衝突，須自定最後寫入時間比對）。成就、排行榜、Rich Presence、Steam Input、Workshop 等是否納入需逐項確認。,,
-,,,,,
-6.2 核准例外清單（Approved Exceptions）— 僅 Owner 審核通過的 priority hack／magic number 可列入；未列於此表者一律禁用,,,,核准人,核准日期
-編號,類型,內容,理由,-,-
+,,,,核准人,核准日期
+6.2 核准例外清單（Approved Exceptions）— 僅 Owner 審核通過的 priority hack／magic number 可列入；未列於此表者一律禁用,,,,-,-
+編號,類型,內容,理由,Owner（2026-11-21 追認，D-84）,2026-11-21
 EX-01,演算法常數,core/rng.gd 的 FNV／SplitMix64 雜湊常數與位元位移量（FNV_OFFSET、FNV_PRIME、SPLITMIX_*、位移 16／27／30／31／32／48／64、0xffff）,雜湊演算法定義的一部分，不是遊戲業務值；僅限 core/rng.gd,Owner（2026-11-21 追認，D-84）,2026-11-21
 EX-02,哨兵值,以具名 const 宣告並註解用途的哨兵：不可達距離（1 << 30）、最佳環初值、最佳分數初值（-1.0e30）、權重下界（1.0e-9）、INPUT_FAILURE（-1.0）,比較用初值不是業務值；不得出現在任何輸出或存檔；新增哨兵須先登記,Owner（2026-11-21 追認，D-84）,2026-11-21
 EX-03,規格列舉,規格定義的列舉整數：PortRegistry.Role（1／2／3）、ShipRegistry.DRAFT_*（0／1／2）、工坊層級 2／3,值由規格列舉定義（C-03 原文「規格定義的列舉」）；須以具名 const／enum 宣告,Owner（2026-11-21 追認，D-84）,2026-11-21
 EX-04,計時,Time.get_ticks_msec() 僅限 sim/ 目錄、僅用於 elapsed_ms,報表欄位，不影響模擬結果；決定性比對（同種子同結果）必須排除 elapsed_ms；autoload、core 仍禁用 Time.*（D-78）,Owner（2026-11-21 追認，D-84）,2026-11-21
 EX-05,數字解析,tools/csv_import.gd 解析十進位字串時的位權 10（place × 10、n % 10、n / 10）,字串解析演算法，不是業務值；僅限該檔,Owner（2026-11-21 追認，D-84）,2026-11-21
-EX-06,單位換算基數,規格單位字典定義的換算基數：‰ ＝ 1000（PRM-SYS07-ACADEMY_MULT 單位）,規格無對應 PRM；以具名 const 宣告並註解單位。百萬分率改讀 PRM-SYS07-RATE_SCALE，每週日數改讀 PRM-SYS04-DAYS_PER_WEEK，不屬本例外,Owner（2026-11-21 追認，D-84）,2026-11-21
+EX-06,單位換算基數,規格單位字典定義的換算基數：‰ ＝ 1000（PRM-SYS07-ACADEMY_MULT 單位）,規格無對應 PRM；以具名 const 宣告並註解單位。百萬分率改讀 PRM-SYS07-RATE_SCALE，每週日數改讀 PRM-SYS04-DAYS_PER_WEEK，不屬本例外,,
 ,,,,,
 7. 下一步待辦（Next Actions）— 完成者改狀態，不刪列,,,,,
 編號,待辦事項,狀態,備註／位置,,
@@ -162,7 +163,7 @@ N11,docs/spec 一次 commit,進行中,工作簿 v6.99.47 已由 Owner commit 至
 ,,,,,
 8. 更新日誌（Change Log）— 每個 Task 完成後在表尾新增一列，依版本連續排列,,,,,
 日期,版本,變更內容,影響 Sheet,,
-2026-11-22,v0.1,建立 AI_README：責任、工作範圍、工作流程、Sheet 索引、命名規範、更新日誌。,AI_README,,
+2026-11-23,v0.1,建立 AI_README：責任、工作範圍、工作流程、Sheet 索引、命名規範、更新日誌。,AI_README,,
 2026-11-16,v0.2,新增第 8 節：Godot 技術交付規格與硬規則（規格顆粒度至節點／信號／函數、禁未審 magic number 與 priority hack、追問義務、核准例外清單）。,AI_README,,
 2026-11-16,v0.3,新增 8.1 引擎基準：鎖定 Godot 4.7.2 / GDScript / 鍵鼠 / 單機 / Steam 上架；B-03 維度與 B-07 Steam 服務範圍列為阻塞待確認。,AI_README,,
 2026-11-16,v0.4,建立 07_Market：完成大航海家與海商王兩系列的底層系統拆解（M-01 至 M-20）、成功要素（M-21 至 M-28）、詬病根因分析（M-29 至 M-38）、待決策點（M-39 至 M-45）與 16 項來源清單；N3 標記完成；ID 規範新增 M-xx 與 B-xx。,AI_README、07_Market,,
@@ -450,6 +451,13 @@ N11,docs/spec 一次 commit,進行中,工作簿 v6.99.47 已由 Owner commit 至
 2026-11-22,v6.99.122,派工 17-51 起草：GitHub 分支清理（A 至 G 七類歸類規則、刪前記 SHA、403 改由 Owner 手動關）；線 A、B、C 依 R9-65 修正（高-1 至高-3、中-1 至中-9）；補證據（步 0 五件、黃金輸出雜湊溢位、CI 加 SCRIPT ERROR 閘門、線 D tests/ui）；重建整合 int-1751 並重跑步 Z；不合併任何產品 PR。,05_TechSpec；AI_README,,
 2026-11-22,v6.99.123,17-51 已發送（Owner 22:13）；WP 狀態同步：WP-52 至 61 完成（17-50 步 0 已合併），WP-27、63 至 66 進行中，WP-62 PR 待審；00_Overview 進度隨公式更新。,05_TechSpec；AI_README；00_Overview,,
 2026-11-22,v6.99.124,"D-97 七項裁決（Owner：按建議做）：04_Content 第 6 節 6 港隊列修正；03_Systems FRM-SYS08-21 加開局市場庫存與隊列匯入驗證 ERR-SYS08-13、FRM-SYS08-14 加原子化；frm_examples EX-08-21-01 至 04；draft_ships_stock 開局庫存改整數需求（合計 111,639 擔）；新立 WP-67；派工 17-52。D-98 五項討論建議起草待審。",05_TechSpec；03_Systems；04_Content；frm_examples；draft_ships_stock；AI_README,,
+2026-11-22,v6.99.125,D-98 五項全部核准：03_Systems MET-01 加註（L1 不判 pass）；新建 draft_capacity 產能對照表（28 貨，12 貨比值 > 1.2、3 貨產能不足，火藥、武器、繩索因未計營房與建材耗用顯示有產無需）；AI_README 新增 S9i 分支與交付包衛生；17-52 已發送。,03_Systems；draft_capacity；AI_README；05_TechSpec,,
+2026-11-22,v6.99.126,D-99：第二批五項討論。draft_capacity 加每工人產出與毛利試算（降產出會讓 8 種過剩貨工坊轉虧），建議暫不改數值、待 17-52 結果改做同港工坊轉換；新建 M0_試玩清單（13 步）；WP-35 測試包派工時點。,05_TechSpec；draft_capacity；M0_試玩清單；AI_README,,
+2026-11-22,v6.99.127,D-99(a) 定案：開局只求大致平衡，不追求完全平衡；校準只處理極端個案（建議判準：比值 > 2 或 < 0.5 且價格長期卡地板或天花板）。寫入 03_Systems GP-04 加註、draft_capacity 說明列。,05_TechSpec；03_Systems；draft_capacity；AI_README,,
+2026-11-22,v6.99.128,新建 draft_open_params：12 項「無值」參數的試驗值提案（擴區門檻與費用、商館升級、空跑日數、AI 人數預設、聲望與商籍門檻、申請費與年例、撤銷規則），待 Owner 審。,draft_open_params；AI_README,,
+2026-11-22,v6.99.129,D-100：12 項無值參數試驗值核准（第 1 項加 Owner 的「已建比例 70%」第二道門檻，FRM-SYS08-16 加註、新 PRM ZONE_USED_MIN_PPM）；03_Systems 16 列 PRM 值更新；sim_overrides_draft 新增 4 列。,05_TechSpec；03_Systems；sim_overrides_draft；draft_open_params；AI_README,,
+2026-11-22,v6.99.130,D-101 城市自建住宅（開關功能，新局自選）：03_Systems 新增 FRM-SYS08-24（寫於 FRM-SYS08-16 加註）、兩個新 PRM；新立 WP-68（含 D-100 已建比例門檻）。,05_TechSpec；03_Systems；sim_overrides_draft；AI_README,,
+2026-11-23,v6.99.131,R9-66：evening-17-51（17-51＋17-52）全量審查（82 檔：完整 78、部分 4；黃金輸出與十年模擬逐格重算；代碼差異只交 2 份、產品碼逐行覆蓋 0%）：高 4（交付缺 7 ���差異、整合分支額外修改放寬驗證、證據自相矛盾、E4 證明無效）、中 6；#65 雜湊獨立驗證可合併，其餘產品 PR 暫不合併。D-102 六項起草（追認 3 個測試注入名、ERR-SYS08-14、富人凍結結案、city_queue_position、OBS-05 新建歸類、ERR-SYS08-13 一律適用）；03_Systems FRM-SYS08-18、OBS-05 加註；派工 17-53。,,,
 9. ★ 交接摘要（Handover）— 新 AI 對話接手前必讀；每次交接覆寫本節,,,,,
 項目,內容,,,,
 專案,東亞海域轉口商經營模擬（1550–1650 東海三角，開局 1630），Godot 4.7.2＋GDScript＋2D 等距。本工作簿＝全部規格；寫程式由 Cursor 依 05_TechSpec 執行。,,,,
