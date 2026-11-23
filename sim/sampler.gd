@@ -137,12 +137,15 @@ func _cell_row(
 	if acc != null:
 		produced = acc.produced(port_s, good_s)
 		consumed = acc.consumed(port_s, good_s)
-		reloc_in = acc.relocated_in(port_s, good_s)
-		reloc_out = acc.relocated_out(port_s, good_s)
-	## WP-27 OBS-04: capture weekly potential at sample time (not written to 9.9 CSV).
+		## WP-27 APIs may be absent until that lane merges（keep 0 on WP-67-only tip）.
+		if acc.has_method("relocated_in"):
+			reloc_in = int(acc.call("relocated_in", port_s, good_s))
+		if acc.has_method("relocated_out"):
+			reloc_out = int(acc.call("relocated_out", port_s, good_s))
+	## WP-27／WP-64 OBS-04: weekly potential when DemandModel exposes it.
 	var potential: int = 0
-	if DemandModel.is_loaded():
-		potential = DemandModel.weekly_potential_demand(StringName(port_s), StringName(good_s))
+	if DemandModel.is_loaded() and DemandModel.has_method("weekly_potential_demand"):
+		potential = int(DemandModel.call("weekly_potential_demand", StringName(port_s), StringName(good_s)))
 	var row := {
 		"run_id": run_id,
 		"seed": seed,
