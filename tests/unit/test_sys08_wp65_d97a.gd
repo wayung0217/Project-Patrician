@@ -77,6 +77,23 @@ func test_EX_08_21_skip_level_fixture_err_sys08_13() -> void:
 	assert_true(hit, "skip-level fixture must report ERR-SYS08-13")
 
 
+func test_D102d_city_queue_position() -> void:
+	## D-102(d): city_queue_position returns next index; unknown port → −1 + last_error.
+	_boot_registry()
+	BuildingEconomy._clear_state()
+	BuildingEconomy._loaded = true
+	BuildingEconomy._slots_by_port["PT-10"] = []
+	BuildingEconomy.set_build_queue("PT-10", [_step("PT-10", 0, "CB-01", 2), _step("PT-10", 1, "CB-02", 1)])
+	assert_eq(BuildingEconomy.city_queue_position(StringName("PT-10")), 0)
+	BuildingEconomy._queue_pos["PT-10"] = 2
+	assert_eq(BuildingEconomy.city_queue_position(StringName("PT-10")), 2)
+	assert_eq(BuildingEconomy.city_queue_position(StringName("PT-NOPE")), -1)
+	assert_eq(
+		String(BuildingEconomy.last_error().get("code", "")),
+		String(BuildingEconomy.ERR_SYS08_08)
+	)
+
+
 func test_N1_formal_data_zero_queue_import_errors() -> void:
 	## Formal city centers + opening_public + build_queue → 0 ERR-SYS08-13.
 	_boot_registry()

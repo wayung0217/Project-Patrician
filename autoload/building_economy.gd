@@ -307,10 +307,8 @@ func load_and_validate(
 	var city_by_port: Dictionary = _load_city_centers(city_center_dir, errors)
 	_building_defs = _load_building_defs(buildings_dir, errors)
 	_load_build_queues(BUILD_QUEUE_DIR, errors)
-	## D-97(a)／N1／FRM-SYS08-21: queue import validation ERR-SYS08-13（C-06 collect all）.
-	## Only on formal city_center path — fixtures must not cross-check formal queue.
-	## Also skip when fixture boots omit city centers for some PortRegistry ports.
-	var formal_city_boot: bool = city_center_dir == CITY_CENTER_DIR
+	## D-97(a)／D-102(f)／FRM-SYS08-21: ERR-SYS08-13 on ALL data（含 fixture）；不得 formal-only skip.
+	## Skip only when fixture boots omit city centers for some PortRegistry ports（無法對齊驗證）.
 	var registry_ports: Array = []
 	for rp_v in PortRegistry.all_ids():
 		registry_ports.append(String(rp_v))
@@ -319,7 +317,7 @@ func load_and_validate(
 		if not city_by_port.has(String(rp2)):
 			city_covers_registry = false
 			break
-	if formal_city_boot and city_covers_registry:
+	if city_covers_registry:
 		var opening_load_errs: Array = []
 		var opening_publics: Array = _load_opening_public(OPENING_PUBLIC_DIR, opening_load_errs)
 		for oe in opening_load_errs:
@@ -2068,6 +2066,17 @@ func set_build_queue(port_id: String, steps: Array) -> void:
 	copy.sort_custom(func(a: BuildStep, b: BuildStep) -> bool: return a.step < b.step)
 	_queue_by_port[port_id] = copy
 	_queue_pos[port_id] = 0
+
+
+func city_queue_position(port_id: StringName) -> int:
+	## D-102(d)／C-14: next queue step index from 0; finished → step count; unknown port → −1 + last_error.
+	assert(_loaded, "BuildingEconomy.city_queue_position before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
+		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_position (D-102d)")
+		return -1
+	return int(_queue_pos.get(pid, 0))
 
 
 func _frm18_price(bld: Building) -> int:
