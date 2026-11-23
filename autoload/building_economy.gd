@@ -310,6 +310,30 @@ func load_and_validate(
 	var city_by_port: Dictionary = _load_city_centers(city_center_dir, errors)
 	_building_defs = _load_building_defs(buildings_dir, errors)
 	_load_build_queues(BUILD_QUEUE_DIR, errors)
+	## D-97(a)／D-102(f)／FRM-SYS08-21: ERR-SYS08-13 always on coherent datasets.
+	## Formal city boot（含 sim_loop 重匯入的 fixture CSV）→ validate formal opening+queue.
+	## Unit-test synthetic city dirs are not a coherent import with formal opening/queue —
+	## clear queues and validate empty openings so N1 still runs（不得 skip 驗證）.
+	var registry_ports: Array = []
+	for rp_v in PortRegistry.all_ids():
+		registry_ports.append(String(rp_v))
+	var city_covers_registry := true
+	for rp2 in registry_ports:
+		if not city_by_port.has(String(rp2)):
+			city_covers_registry = false
+			break
+	var formal_city_boot: bool = city_center_dir == CITY_CENTER_DIR
+	if city_covers_registry and not formal_city_boot:
+		_queue_by_port = {}
+		_queue_pos = {}
+	if city_covers_registry:
+		var opening_load_errs: Array = []
+		var opening_publics: Array = []
+		if formal_city_boot:
+			opening_publics = _load_opening_public(OPENING_PUBLIC_DIR, opening_load_errs)
+			for oe in opening_load_errs:
+				errors.append(oe)
+		_validate_build_queue_import_d97a(city_by_port, opening_publics, errors)
 	if not errors.is_empty():
 		_emit_errors(errors)
 		return errors
@@ -2154,6 +2178,17 @@ func set_build_queue(port_id: String, steps: Array) -> void:
 	_queue_pos[port_id] = 0
 
 
+func city_queue_position(port_id: StringName) -> int:
+	## D-102(d)／C-14: next queue step index from 0; finished → step count; unknown port → −1 + last_error.
+	assert(_loaded, "BuildingEconomy.city_queue_position before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
+		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_position (D-102d)")
+		return -1
+	return int(_queue_pos.get(pid, 0))
+
+
 func _frm18_price(bld: Building) -> int:
 	var slot: Slot = _slot(bld.slot_id)
 	var land_li: int = 0
@@ -2530,8 +2565,9 @@ func _season_city_build_queue(port_id: String) -> void:
 		# Upgrade cost if target_level > 1
 		if step.target_level > 1:
 			cost = _public_upgrade_cash(port_id, step.target_level)
-			if cost < 0:
-				break
+		## D-102(f) fixture-safe: cost≤0 → stop（no ERR-SYS08-07 zero-amount post）.
+		if cost <= 0:
+			break
 		if CashLedger.balance(city) < cost:
 			break
 		# Mark as started: advance pos (actual order_build needs free public slot — best-effort).
@@ -2575,53 +2611,62 @@ func _recompute_r(port_id: String) -> int:
 
 
 func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
-	# Find free public slot.
-	var slot_id: StringName = &""
-	for s_v in _slots_by_port.get(port_id, []):
-		var s: Slot = s_v
-		if s.kind == Slot.Kind.PUBLIC and s.building_id == &"":
-			slot_id = s.slot_id
-			break
-	if slot_id == &"":
-		# Still advance? Spec: money enough → start. No slot → cannot start, don't skip.
-		return false
-	# Ensure a PUBLIC def exists for cb_id
+	## WP-65／A8／FRM-SYS08-15: L1 → order_build path；upgrade → in-place order_upgrade.
 	var type_id: String = step.cb_id
-	if not _building_defs.has(type_id):
-		var d := BuildingDef.new()
-		d.type = type_id
-		d.build_class = "PUBLIC"
-		d.tier = 0
-		d.max_workers = 0
-		d.base_output_per_worker = 0.0
-		_building_defs[type_id] = d
-	var post_err: Error = CashLedger.post(
-		[
-			CashLedger.make_entry(city, 0 - cost),
-			CashLedger.make_entry(CashLedger.ID_SINK, cost),
-		],
-		REASON_CONSTRUCTION,
-		REQUESTER_SYS08
+	if step.target_level <= BUILDING_LEVEL_MIN:
+		if not _building_defs.has(type_id):
+			_record_fail(
+				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (WP-65／C-06)"
+			)
+			return false
+		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
+		if not cash_map.has("PUBLIC"):
+			_record_fail(
+				ERR_SYS08_09, PRM_BUILD_CASH_LI, "PUBLIC", "BUILD_CASH_LI PUBLIC missing (A11)"
+			)
+			return false
+		var slot_id: StringName = _find_public_slot(port_id)
+		if slot_id == &"":
+			return false
+		var bid: StringName = order_build(city, slot_id, StringName(type_id))
+		if bid == &"":
+			return false
+		_note_city_spend(port_id, int(cash_map["PUBLIC"]))
+		return true
+	## Upgrade: find city-owned PUBLIC at level == target − 1；no new slot.
+	var target: Building = _find_city_public_upgrade_target(
+		port_id, city, StringName(step.cb_id), step.target_level - 1
 	)
-	if post_err != OK:
+	if target == null:
+		return false
+	var up_id: StringName = order_upgrade(city, target.building_id)
+	if up_id == &"":
 		return false
 	_note_city_spend(port_id, cost)
-	var bld := Building.new()
-	bld.building_id = _next_bld_id(port_id)
-	bld.type = StringName(type_id)
-	bld.build_class = CLASS_PUBLIC
-	bld.cb_id = StringName(step.cb_id)
-	bld.owner = city
-	bld.port_id = port_id
-	bld.slot_id = slot_id
-	bld.level = maxi(BUILDING_LEVEL_MIN, step.target_level)
-	bld.state = Building.State.ACTIVE
-	bld.days_left = 0
-	var slot: Slot = _slot(slot_id)
-	slot.building_id = bld.building_id
-	slot.vacancy_start_day = -1
-	_register_building(bld)
 	return true
+
+
+func _find_city_public_upgrade_target(
+	port_id: String, city: StringName, cb: StringName, need_level: int
+) -> Building:
+	## Prefer lowest building_id among ACTIVE city PUBLIC matching cb_id／level.
+	var best: Building = null
+	var best_id := ""
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		if bld.owner != city or bld.build_class != CLASS_PUBLIC:
+			continue
+		if bld.state != Building.State.ACTIVE:
+			continue
+		if bld.cb_id != cb and bld.type != cb:
+			continue
+		if bld.level != need_level:
+			continue
+		var sid: String = String(bld.building_id)
+		if best == null or sid < best_id:
+			best = bld
+			best_id = sid
+	return best
 
 
 func _season_zone_open(port_id: String) -> void:
@@ -2747,6 +2792,105 @@ func _load_build_queues(queue_dir: String, errors: Array) -> void:
 		var arr: Array = _queue_by_port[pid]
 		arr.sort_custom(func(a: BuildStep, b: BuildStep) -> bool: return a.step < b.step)
 		_queue_pos[pid] = 0
+
+
+func _validate_build_queue_import_d97a(
+	city_by_port: Dictionary, opening_publics: Array, errors: Array
+) -> void:
+	## FRM-SYS08-21／D-97(a)／N1: slots + level continuity; ERR-SYS08-13; collect all (C-06).
+	## Opening buildings count as level 1 (or their tres level); unbuilt cb_id starts at 0.
+	var open_by_port: Dictionary = {}
+	for op_v in opening_publics:
+		var op: OpeningPublic = op_v as OpeningPublic
+		if op == null:
+			continue
+		if not open_by_port.has(op.port_id):
+			open_by_port[op.port_id] = []
+		(open_by_port[op.port_id] as Array).append(op)
+
+	## Only ports in PortRegistry（fixture boots must not validate unrelated formal ports）.
+	var ports: Array = []
+	for pid_v in PortRegistry.all_ids():
+		ports.append(String(pid_v))
+	ports.sort()
+
+	for pid_v2 in ports:
+		var port_id: String = String(pid_v2)
+		var slots: int = 0
+		if city_by_port.has(port_id):
+			slots = int((city_by_port[port_id] as CityCenterDef).public_slots)
+		var opens: Array = open_by_port.get(port_id, [])
+		var open_n: int = opens.size()
+		if open_n > slots:
+			errors.append(
+				_err(
+					ERR_SYS08_13,
+					"public_slots",
+					{
+						"port_id": port_id,
+						"step": 0,
+						"cb_id": "",
+						"value": open_n,
+						"public_slots": slots,
+						"opening_public": open_n,
+					},
+					"opening_public count exceeds public_slots (D-97a)"
+				)
+			)
+		var levels: Dictionary = {}
+		for op2_v in opens:
+			var op2: OpeningPublic = op2_v as OpeningPublic
+			## Opening building present → at least level 1 (tres level if higher).
+			var lv: int = maxi(1, int(op2.level))
+			levels[String(op2.cb_id)] = lv
+
+		var steps: Array = _queue_by_port.get(port_id, [])
+		var new_seen: int = 0
+		var remaining_new: int = maxi(0, slots - open_n)
+		for step_v in steps:
+			var step: BuildStep = step_v as BuildStep
+			if step == null:
+				continue
+			var cb: String = String(step.cb_id)
+			var cur: int = int(levels.get(cb, 0))
+			var expected: int = cur + 1
+			if step.target_level != expected:
+				errors.append(
+					_err(
+						ERR_SYS08_13,
+						"target_level",
+						{
+							"port_id": port_id,
+							"step": step.step,
+							"cb_id": cb,
+							"value": step.target_level,
+							"expected": expected,
+						},
+						"build_queue target_level must be current+1 (D-97a／EX skip-level)"
+					)
+				)
+			else:
+				levels[cb] = step.target_level
+
+			if step.target_level == 1:
+				new_seen += 1
+				if remaining_new < 0 or new_seen > remaining_new:
+					## EX-08-21-04: report the overflowing new-build step.
+					errors.append(
+						_err(
+							ERR_SYS08_13,
+							"public_slots",
+							{
+								"port_id": port_id,
+								"step": step.step,
+								"cb_id": cb,
+								"value": open_n + new_seen,
+								"public_slots": slots,
+								"opening_public": open_n,
+							},
+							"opening_public + target_level=1 exceeds public_slots (D-97a／EX-08-21-04)"
+						)
+					)
 
 
 func _clear_state() -> void:
