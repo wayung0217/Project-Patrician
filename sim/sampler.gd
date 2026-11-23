@@ -26,12 +26,15 @@ var season_cells: Array = [] ## Dictionary rows
 var season_ports: Array = []
 var daily_rows: Dictionary = {} ## port_id -> Array of rows
 var conservation_hits: int = 0
+## WP-27 OBS-04／05 long-table rows (not part of 9.9 five CSV).
+var obs_ext_rows: Array = []
 
 
 func reset_run() -> void:
 	season_cells.clear()
 	season_ports.clear()
 	daily_rows.clear()
+	obs_ext_rows.clear()
 	conservation_hits = 0
 	if acc != null:
 		acc.reset_counters()
@@ -119,9 +122,17 @@ func _cell_row(
 		band = MarketPricer.indicator_band(ratio)
 	var produced: int = 0
 	var consumed: int = 0
+	var reloc_in: int = 0
+	var reloc_out: int = 0
 	if acc != null:
 		produced = acc.produced(port_s, good_s)
 		consumed = acc.consumed(port_s, good_s)
+		reloc_in = acc.relocated_in(port_s, good_s)
+		reloc_out = acc.relocated_out(port_s, good_s)
+	## WP-27 OBS-04: capture weekly potential at sample time (not written to 9.9 CSV).
+	var potential: int = 0
+	if DemandModel.is_loaded():
+		potential = DemandModel.weekly_potential_demand(StringName(port_s), StringName(good_s))
 	var row := {
 		"run_id": run_id,
 		"seed": seed,
@@ -133,8 +144,9 @@ func _cell_row(
 		"band": band,
 		"produced": produced,
 		"consumed": consumed,
-		"relocated_in": 0,
-		"relocated_out": 0,
+		"relocated_in": reloc_in,
+		"relocated_out": reloc_out,
+		"_weekly_potential": potential,
 	}
 	if is_season:
 		row["season_index"] = season_index
