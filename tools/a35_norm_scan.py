@@ -42,6 +42,18 @@ D95A_CALL_RE = re.compile(
     + "|".join(re.escape(n) for n in D95A_TEST_HELPERS)
     + r")\s*\("
 )
+# D-102(a)／A35 R8：potential_demand_provider 測試輔助；產品碼只准 sim_loop.gd 呼叫.
+D102A_PROVIDER_HELPERS = (
+    "set_potential_demand_provider",
+    "clear_potential_demand_provider",
+    "has_potential_demand_provider",
+)
+D102A_CALL_RE = re.compile(
+    r"\b(?:"
+    + "|".join(re.escape(n) for n in D102A_PROVIDER_HELPERS)
+    + r")\s*\("
+)
+D102A_ALLOW_REL = "autoload/sim_loop.gd"
 # Product dirs scanned for R8 (exclude tools／tests).
 R8_PRODUCT_TOP = {"autoload", "core", "sim", "ui"}
 
@@ -63,7 +75,7 @@ BANNED_RE = re.compile(
 DIR_LIST_RE = re.compile(r"\blist_dir_begin\s*\(")
 SORT_RE = re.compile(r"\b(sort|sort_custom)\s*\(")
 TEST_FUNC_RE = re.compile(r"^\s*func\s+(test_[A-Za-z0-9_]+)\s*\(")
-TST_OK_RE = re.compile(r"(TST_|SYS\d|_SYS|_PROP_|PROP_|WP\d|R2_|R\d)")
+TST_OK_RE = re.compile(r"(TST_|EX_|SYS\d|_SYS|_PROP_|PROP_|WP\d|R2_|R\d)")
 ID_TOKEN_RE = re.compile(r"\b((?:FRM|ERR|PRM|TST|WRN)-[A-Z0-9-]+)\b")
 COMMENT_ID_RE = re.compile(r"#.*\b((?:FRM|ERR|PRM|TST|WRN)-[A-Z0-9-]+)\b")
 
@@ -192,13 +204,19 @@ def scan_file(path: Path, root: Path, hits: dict[str, list]) -> None:
                 if re.search(rf'const\s+\w+.*["\']' + re.escape(tok), raw):
                     continue
                 hits["R7"].append(f"{rel}:{i}:{tok}:{raw.strip()}")
-        # R8: D-95(a) test helpers called from product (autoload/core/sim/ui).
+        # R8: D-95(a) + D-102(a) test helpers called from product (autoload/core/sim/ui).
         if is_r8_product(rel):
             # Skip the defining func lines themselves.
             if re.match(r"^\s*func\s+", raw):
                 continue
             for m in D95A_CALL_RE.finditer(code_ns):
                 hits["R8"].append(f"{rel}:{i}:D95a_helper_call:{raw.strip()}")
+            # D-102(a): provider helpers — allow only sim_loop.gd.
+            if rel != D102A_ALLOW_REL:
+                for m in D102A_CALL_RE.finditer(code_ns):
+                    hits["R8"].append(
+                        f"{rel}:{i}:D102a_provider_helper_call:{raw.strip()}"
+                    )
 
 
 def main() -> int:

@@ -58,6 +58,8 @@ const REASON_UNLOAD := &"UNLOAD"
 const REASON_CONSTRUCT_USE := &"CONSTRUCT_USE"
 const REASON_CONFISCATE := &"CONFISCATE"
 const REASON_SEA_LOSS := &"SEA_LOSS"
+## FRM-SYS23-05／D-97(b): simulator-only reason; arming is layers.RELOCATE in SimEngine (no enable API).
+const REASON_SIM_RELOCATE := &"SIM_RELOCATE"
 
 ## Container Dictionary schema (TechSpec MARKET(port)／WAREHOUSE(owner,port)／HOLD(ship)／CONFISCATED／外部).
 ## Exact key names not in D 欄 — see PR 缺口 (C-05).
@@ -116,6 +118,8 @@ var _offtake_epoch_day: int = DAY_SENTINEL_UNSET
 
 func _ready() -> void:
 	_clear_state()
+
+
 
 
 func load_and_validate() -> Array:
@@ -260,6 +264,11 @@ func _validate_transfer_preconditions(
 	# ERR-SYS03-04 — SEA_LOSS 停用（OQ-08 7c）
 	if reason == REASON_SEA_LOSS:
 		_fail(ERR_SYS03_04, FIELD_REASON, reason, "SEA_LOSS disabled")
+		return {}
+	# FRM-SYS23-05／D-97(b)／TST-SYS23-07: SIM_RELOCATE only from SYS-23 relocator.
+	# Scenario layers.RELOCATE is enforced in SimEngine (no GoodsLedger enable API).
+	if reason == REASON_SIM_RELOCATE and _requester != &"SYS-23":
+		_fail(ERR_SYS03_04, FIELD_REASON, reason, "SIM_RELOCATE disabled (non-sim)")
 		return {}
 
 	# ERR-SYS03-01 — qty ≤ 0 或非整數
@@ -899,6 +908,7 @@ func _clear_state() -> void:
 	_offtake_pending = {}
 	_offtake_snapshot = {}
 	_offtake_epoch_day = DAY_SENTINEL_UNSET
+	## D-97(b): no GoodsLedger relocate enable flag to clear.
 	_clear_last_error()
 
 

@@ -6,5 +6,5 @@
 script = ExtResource("1_2bugb")
 port_id = "PT-16"
 step = 6
-cb_id = "CB-10"
+cb_id = "CB-04"
 target_level = 2
