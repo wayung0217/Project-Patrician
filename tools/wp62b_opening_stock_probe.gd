@@ -14,8 +14,11 @@ func _init() -> void:
 
 func _go() -> void:
 	var boot: Dictionary = _boot_formal()
+	var boot_errs: Array = boot.get("errors", [])
+	## D-111(f)／F4: print measured boot error count (not a hardcoded 0).
+	print("WP62B_BOOT_ERRORS %d" % boot_errs.size())
 	if not bool(boot.get("ok")):
-		push_error("WP62B boot failed: %s" % str(boot.get("errors")))
+		push_error("WP62B boot failed: %s" % str(boot_errs))
 		quit(2)
 		return
 	var root: Window = get_root()
@@ -44,10 +47,9 @@ func _go() -> void:
 	for i in range(mini(TOP_N, cells.size())):
 		var c: Dictionary = cells[i]
 		print("rank=%d port=%s good=%s q=%d" % [i + 1, c["port"], c["good"], c["q"]])
-		## F6: check_conservation() -> int; avoid SCRIPT ERROR assigning int into StringName/Variant slot.
-		var cons: int = int(goods.call("check_conservation"))
-		print("WP62B_CONSERVATION %d" % cons)
-	print("WP62B_BOOT_ERRORS 0")
+	## D-111(f)／F4: conservation once at end (not inside TOP_N loop).
+	var cons: int = int(goods.call("check_conservation"))
+	print("WP62B_CONSERVATION %d" % cons)
 	print("WP62B OK")
 	quit(0)
 
