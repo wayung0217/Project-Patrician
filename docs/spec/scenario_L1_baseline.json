@@ -109,6 +109,8 @@
         "GD-004": 250
       }
     },
+    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
+    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
     "PRM-SYS08-CLASS_SPEND_LI": {
       "POOR": 568,
       "CITIZEN": 1561,
@@ -191,6 +193,7 @@
     ],
     "PRM-SYS08-ZONE_SAT_DAYS": 28,
     "PRM-SYS08-ZONE_SAT_MIN": 600,
+    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
     "PRM-SYS13-BUILD_DAYS": {
       "SH-01": 30,
       "SH-02": 40,

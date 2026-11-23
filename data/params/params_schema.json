@@ -603,6 +603,19 @@
     "type": "int",
     "min": 1
   },
+  "PRM-SYS08-ZONE_USED_MIN_PPM": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": {
+    "type": "int",
+    "min": 0
+  },
   "PRM-SYS17-MERCHANT_COUNT_MAX": {
     "type": "int",
     "min": 1
