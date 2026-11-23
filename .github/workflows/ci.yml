@@ -26,12 +26,28 @@ jobs:
           set -euo pipefail
           ./godot --headless --path . --import
 
-      - name: Run GUT unit tests
+      - name: Run GUT unit + property tests
         run: |
           set -euo pipefail
           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
             -gdir=res://tests/unit,res://tests/property \
-            -gexit
+            -gexit 2>&1 | tee gut_unit.log
+          # E4／evening-17-51: fail CI if any SCRIPT ERROR appears in GUT log
+          if grep -F "SCRIPT ERROR" gut_unit.log; then
+            echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
+            exit 1
+          fi
+
+      - name: Run GUT UI tests
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+            -gdir=res://tests/ui \
+            -gexit 2>&1 | tee gut_ui.log
+          if grep -F "SCRIPT ERROR" gut_ui.log; then
+            echo "::error::SCRIPT ERROR detected in GUT UI log (ci-script-error-gate)"
+            exit 1
+          fi
 
       - name: A35 norm scan (report-only)
         continue-on-error: true
