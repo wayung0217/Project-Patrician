@@ -7,6 +7,7 @@ func before_each() -> void:
 	BuildingEconomy._loaded = false
 	PortRegistry._loaded = false
 	GoodCatalog._loaded = false
+	CashLedger._loaded = false
 	Params._loaded = false
 
 
@@ -124,6 +125,75 @@ func test_N1_formal_data_zero_queue_import_errors() -> void:
 			n13 += 1
 			print("N1 unexpected: ", e_v)
 	assert_eq(n13, 0, "formal data must yield 0 ERR-SYS08-13; got %d" % n13)
+
+
+func test_D111b_missing_cb_error_queue_pos_stuck() -> void:
+	## D-111(b) blind-1: missing BuildingDef → error; queue_pos unchanged (no skip).
+	_boot_registry()
+	assert_eq(CashLedger.load_and_validate().size(), 0)
+	BuildingEconomy._clear_state()
+	BuildingEconomy._loaded = true
+	BuildingEconomy._building_defs = {}
+	BuildingEconomy._slots_by_port["PT-10"] = []
+	BuildingEconomy.set_build_queue("PT-10", [_step("PT-10", 0, "CB-MISSING", 1)])
+	assert_eq(BuildingEconomy.city_queue_position(StringName("PT-10")), 0)
+	var city: StringName = CashLedger.make_city_id("PT-10")
+	CashLedger.create_account(city, Account.Kind.CITY)
+	## Fund CITY so cost gate does not mask the missing-def stop.
+	var fund: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI").get("PUBLIC", 0)) + 1
+	CashLedger.post(
+		[CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - fund), CashLedger.make_entry(city, fund)],
+		&"TEST_TOP_UP",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	var started: bool = BuildingEconomy._try_start_city_public(
+		"PT-10", city, BuildingEconomy._queue_by_port["PT-10"][0] as BuildStep, fund
+	)
+	assert_false(started, "missing CB must not start")
+	assert_eq(
+		String(BuildingEconomy.last_error().get("code", "")),
+		String(BuildingEconomy.ERR_SYS08_08)
+	)
+	assert_eq(BuildingEconomy.city_queue_position(StringName("PT-10")), 0, "queue_pos must stay")
+	## Season queue path: still stuck at 0 (no skip).
+	BuildingEconomy._season_city_build_queue("PT-10")
+	assert_eq(int(BuildingEconomy._queue_pos.get("PT-10", -1)), 0)
+	for e in get_errors():
+		e.handled = true
+
+
+func test_D111b_formal_newbuild_defs_from_buildings() -> void:
+	## D-111(b) blind-2 (static half): every formal target_level=1 cb_id has loaded BuildingDef.
+	## 360d start-day listing is produced by tools/wp65_newbuild_360_probe.gd (F1 evidence).
+	_boot_registry()
+	BuildingEconomy._clear_state()
+	BuildingEconomy._loaded = true
+	var load_errs: Array = []
+	BuildingEconomy._building_defs = BuildingEconomy._load_building_defs(
+		BuildingEconomy.BUILDINGS_DIR, load_errs
+	)
+	assert_eq(load_errs.size(), 0, str(load_errs))
+	BuildingEconomy._load_build_queues(BuildingEconomy.BUILD_QUEUE_DIR, [])
+	var listed: PackedStringArray = PackedStringArray()
+	var missing := 0
+	var ports: Array = BuildingEconomy._queue_by_port.keys()
+	ports.sort()
+	for pid_v in ports:
+		var pid: String = String(pid_v)
+		for step_v in BuildingEconomy._queue_by_port[pid]:
+			var step: BuildStep = step_v as BuildStep
+			if step == null or step.target_level != 1:
+				continue
+			var cb: String = String(step.cb_id)
+			listed.append("%s|%s|step=%s" % [pid, cb, str(step.step)])
+			if not BuildingEconomy._building_defs.has(cb):
+				missing += 1
+				print("D111b missing def: port=%s cb=%s" % [pid, cb])
+	assert_eq(missing, 0, "formal new-builds must have BuildingDef; missing=%d" % missing)
+	assert_gt(listed.size(), 0, "expected formal new-build rows")
+	print("D111b_FORMAL_NEWBUILDS count=%d" % listed.size())
+	for line in listed:
+		print("D111b_NEWBUILD %s" % line)
 
 
 func _boot_registry() -> void:
