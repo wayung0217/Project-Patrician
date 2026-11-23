@@ -43,6 +43,8 @@ const PRM_SALVAGE_RATE := "PRM-SYS13-SALVAGE_RATE"
 const PRM_DAYS_PER_SEASON := "PRM-SYS00-DAYS_PER_SEASON"
 const PRM_DAYS_PER_WEEK := "PRM-SYS04-DAYS_PER_WEEK"
 const HOLD_CHECK_FAILURE := -1 ## EX-02
+## EX-WP63: unreachable SeaLanes path distance sentinel (was bare 1<<30).
+const DIST_UNREACHABLE := 1 << 30
 
 ## 03_Systems 10.7「無值」keys — missing → ERR-SYS13-12 (D-19f a).
 const NOVALUE_PRMS: Array[String] = [
@@ -719,7 +721,7 @@ func _dist_waypoints(from_node: String, to_node: String) -> int:
 		return 0
 	var p: Array = SeaLanes.path(from_node, to_node)
 	if p.is_empty():
-		return 1 << 30
+		return DIST_UNREACHABLE
 	return _path_waypoints(p)
 
 
