@@ -629,7 +629,10 @@ static func _obs05_rows(
 			var rent_v: int = _json_int(r.get("land_rent_li", -1))
 			var vac_v: int = _json_int(r.get("vacancy_tax_li", -1))
 			var spend_s: String = String(r.get("city_spend_json", ""))
-			if rent_v < 0 or vac_v < 0 or spend_s.is_empty() or spend_s == "{}":
+			if (
+				BuildingEconomy.is_loaded()
+				and (rent_v < 0 or vac_v < 0 or spend_s.is_empty() or spend_s == "{}")
+			):
 				var sn: StringName = StringName(pid)
 				if rent_v < 0:
 					rent_v = BuildingEconomy.season_land_rent_li(sn, season_i)

@@ -80,12 +80,16 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 	var beds: int = PopulationModel.housing_capacity(StringName(port_s))
 	var city_id: StringName = CashLedger.make_city_id(port_s)
 	var bal: int = CashLedger.balance(city_id)
-	## WP-67／D-97(e) OBS-05: public queries only.
+	## WP-67／D-97(e) OBS-05: public queries only when BuildingEconomy loaded.
 	var pid: StringName = StringName(port_s)
-	var land_rent: int = BuildingEconomy.season_land_rent_li(pid, season_index)
-	var vac_tax: int = BuildingEconomy.season_vacancy_tax_li(pid, season_index)
-	var spend: Dictionary = BuildingEconomy.city_spend_by_category(pid, season_index)
-	var spend_json: String = "{}" if spend.is_empty() else JSON.stringify(spend)
+	var land_rent := -1
+	var vac_tax := -1
+	var spend_json := "{}"
+	if BuildingEconomy.is_loaded():
+		land_rent = BuildingEconomy.season_land_rent_li(pid, season_index)
+		vac_tax = BuildingEconomy.season_vacancy_tax_li(pid, season_index)
+		var spend: Dictionary = BuildingEconomy.city_spend_by_category(pid, season_index)
+		spend_json = "{}" if spend.is_empty() else JSON.stringify(spend)
 	season_ports.append({
 		"run_id": run_id,
 		"seed": seed,
