@@ -1,0 +1,290 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestConsumptionProvider because it does not extend GutTest
+[4m
+
+res://tests/unit/test_sim_loop.gd
+[0m* test_WP59_consumption_provider_base_push_error_2_1_03
+ERROR: ConsumptionProvider.consume_qty: base interface called; override required (2.1-03)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] consume_qty (res://core/interfaces/consumption_provider.gd:15)
+       [1] test_WP59_consumption_provider_base_push_error_2_1_03 (res://tests/unit/test_sim_loop.gd:128)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [4] test_scripts (res://addons/gut/gut.gd:1047)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [7] main (res://addons/gut/cli/gut_cli.gd:297)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_WP59_autoload_order_2_2_01
+* test_TST_SYS07_20_simloop_boot_sat_provider_detection
+* test_WP59_D30a_missing_demand_refuses_boot
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "user://sim_loop_goods/missing_demand/", "value": <null>, "message": "demand tables dir missing (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] test_WP59_D30a_missing_demand_refuses_boot (res://tests/unit/test_sim_loop.gd:241)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] test_WP59_D30a_missing_demand_refuses_boot (res://tests/unit/test_sim_loop.gd:241)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-12", "file": "res://autoload/trade_desk.gd", "field": "qualification_provider", "value": <null>, "message": "QualificationProvider must be injected before boot (ERR-SYS05-12)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot_gate_errors (res://autoload/trade_desk.gd:378)
+       [1] boot (res://autoload/sim_loop.gd:169)
+       [2] test_WP59_D30a_missing_demand_refuses_boot (res://tests/unit/test_sim_loop.gd:241)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-14", "file": "res://autoload/trade_desk.gd", "field": "trade_observers", "value": <null>, "message": "TradeObserver list must be injected before boot (ERR-SYS05-14)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot_gate_errors (res://autoload/trade_desk.gd:388)
+       [1] boot (res://autoload/sim_loop.gd:169)
+       [2] test_WP59_D30a_missing_demand_refuses_boot (res://tests/unit/test_sim_loop.gd:241)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D30a_complete_demand_boots
+* test_WP59_boot_requires_consumption_provider_2_3_03
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "user://sim_loop_goods/missing_demand_provider/", "value": <null>, "message": "demand tables dir missing (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] test_WP59_boot_requires_consumption_provider_2_3_03 (res://tests/unit/test_sim_loop.gd:292)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] test_WP59_boot_requires_consumption_provider_2_3_03 (res://tests/unit/test_sim_loop.gd:292)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+ERROR: SimLoop.tick_day called before successful boot (2.2-02)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:223)
+       [1] test_WP59_boot_requires_consumption_provider_2_3_03 (res://tests/unit/test_sim_loop.gd:306)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_boot_collects_all_module_errors_2_2_02
+ERROR: GoodCatalog: { "code": &"ERR-SYS01-04", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "goods_count", "value": 0, "message": "goods count out of PRM-SYS01 range" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:106)
+       [2] boot (res://autoload/sim_loop.gd:98)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: GoodCatalog: { "code": &"ERR-SYS01-05", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "is_staple", "value": "米", "message": "staple must appear exactly once: 米" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:106)
+       [2] boot (res://autoload/sim_loop.gd:98)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: GoodCatalog: { "code": &"ERR-SYS01-05", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "is_staple", "value": "鹽", "message": "staple must appear exactly once: 鹽" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:106)
+       [2] boot (res://autoload/sim_loop.gd:98)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: GoodCatalog: { "code": &"ERR-SYS01-05", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "is_staple", "value": "魚乾", "message": "staple must appear exactly once: 魚乾" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:106)
+       [2] boot (res://autoload/sim_loop.gd:98)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: GoodCatalog: { "code": &"ERR-SYS01-05", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "is_staple", "value": "木材", "message": "staple must appear exactly once: 木材" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:106)
+       [2] boot (res://autoload/sim_loop.gd:98)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PortRegistry: { "code": &"GOOD_CATALOG_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "user://sim_loop_ports/empty_p/", "field": "GoodCatalog", "value": <null>, "message": "GoodCatalog must load_and_validate before PortRegistry" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/port_registry.gd:752)
+       [1] load_and_validate (res://autoload/port_registry.gd:104)
+       [2] boot (res://autoload/sim_loop.gd:99)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SeaLanes: { "code": &"PORT_REGISTRY_NOT_LOADED", "sys": &"SYS-14", "detail": { "file": "user://sim_loop_sea/empty_sea/nodes/", "field": "PortRegistry", "value": <null>, "message": "PortRegistry must load_and_validate before SeaLanes" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/sea_lanes.gd:679)
+       [1] load_and_validate (res://autoload/sea_lanes.gd:101)
+       [2] boot (res://autoload/sim_loop.gd:100)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: BuildingEconomy: { "code": &"PORT_REGISTRY_NOT_LOADED", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "PortRegistry", "value": <null>, "message": "PortRegistry must load_and_validate before BuildingEconomy" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/building_economy.gd:3103)
+       [1] load_and_validate (res://autoload/building_economy.gd:247)
+       [2] boot (res://autoload/sim_loop.gd:116)
+       [3] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-12", "file": "res://autoload/trade_desk.gd", "field": "qualification_provider", "value": <null>, "message": "QualificationProvider must be injected before boot (ERR-SYS05-12)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot_gate_errors (res://autoload/trade_desk.gd:378)
+       [1] boot (res://autoload/sim_loop.gd:169)
+       [2] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-14", "file": "res://autoload/trade_desk.gd", "field": "trade_observers", "value": <null>, "message": "TradeObserver list must be injected before boot (ERR-SYS05-14)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot_gate_errors (res://autoload/trade_desk.gd:388)
+       [1] boot (res://autoload/sim_loop.gd:169)
+       [2] test_WP59_boot_collects_all_module_errors_2_2_02 (res://tests/unit/test_sim_loop.gd:323)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_boot_day_zero_and_genesis_grant_D03_D05
+* test_WP59_first_tick_runs_k0_produce_D05
+* test_WP59_boot_success_and_tick_advances_clock_2_3_01
+* test_WP59_tick_consume_ascending_order_no_role_cell_produce_2_3_03
+* test_WP59_step6_emits_day_ticked_after_writes_D05
+* test_WP59_tick_paused_push_error_no_progress
+ERROR: SimLoop.tick_day called while Clock.is_paused=true (GP-01)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] tick_day (res://autoload/sim_loop.gd:226)
+       [1] test_WP59_tick_paused_push_error_no_progress (res://tests/unit/test_sim_loop.gd:434)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_season_cutoff_close_season_index_zero_D05
+* test_WP59_consume_shortage_err_sys03_02_into_day_errors_D05
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-02", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 3, "message": "insufficient balance" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] _fail (res://autoload/goods_ledger.gd:1145)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:302)
+       [3] transfer (res://autoload/goods_ledger.gd:220)
+       [4] _run_daily_consume (res://autoload/sim_loop.gd:360)
+       [5] tick_day (res://autoload/sim_loop.gd:260)
+       [6] test_WP59_consume_shortage_err_sys03_02_into_day_errors_D05 (res://tests/unit/test_sim_loop.gd:470)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimLoop CONSUME transfer failed port=PT-01 good=GD-001 qty=3 info={ "code": &"ERR-SYS03-02", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 3, "message": "insufficient balance" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _run_daily_consume (res://autoload/sim_loop.gd:379)
+       [1] tick_day (res://autoload/sim_loop.gd:260)
+       [2] test_WP59_consume_shortage_err_sys03_02_into_day_errors_D05 (res://tests/unit/test_sim_loop.gd:470)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_conservation_runs_on_tick_when_debug_prm
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-05", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "good_id", "value": { "good": "GD-001", "actual": 1, "expected": 0 }, "message": "conservation violated" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] check_conservation (res://autoload/goods_ledger.gd:407)
+       [2] maybe_check_conservation_on_tick (res://autoload/goods_ledger.gd:421)
+       [3] tick_day (res://autoload/sim_loop.gd:263)
+       [4] test_WP59_conservation_runs_on_tick_when_debug_prm (res://tests/unit/test_sim_loop.gd:500)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_no_public_subday_methods_D07
+* test_TST_SYS13_16_tick_day_clock_matches_advance_one_day
+* test_WP59_D08j_public_api_names_match_ruling
+* test_WP59_D08j_set_consumption_provider_ignored_after_boot
+ERROR: SimLoop.set_consumption_provider called after boot (D-08j); ignored
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] set_consumption_provider (res://autoload/sim_loop.gd:47)
+       [1] test_WP59_D08j_set_consumption_provider_ignored_after_boot (res://tests/unit/test_sim_loop.gd:570)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D08e_register_capacity_provider_before_boot_applies
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 10, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] _fail (res://autoload/goods_ledger.gd:1145)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:313)
+       [3] transfer (res://autoload/goods_ledger.gd:220)
+       [4] test_WP59_D08e_register_capacity_provider_before_boot_applies (res://tests/unit/test_sim_loop.gd:599)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D08e_register_capacity_provider_ignored_after_boot
+ERROR: SimLoop.register_capacity_provider called after boot (D-08e／D-08j); ignored
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] register_capacity_provider (res://autoload/sim_loop.gd:56)
+       [1] test_WP59_D08e_register_capacity_provider_ignored_after_boot (res://tests/unit/test_sim_loop.gd:620)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D08e_duplicate_kind_err_sys03_06_blocks_boot
+ERROR: SimLoop: { "code": &"ERR-SYS03-06", "sys": &"SYS-03", "detail": { "file": "res://autoload/sim_loop.gd", "field": "CapacityProvider", "value": "WAREHOUSE", "message": "duplicate CapacityProvider for kind (D-08e DUPLICATE_PROVIDER)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] register_capacity_provider (res://autoload/sim_loop.gd:69)
+       [1] test_WP59_D08e_duplicate_kind_err_sys03_06_blocks_boot (res://tests/unit/test_sim_loop.gd:640)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+[1m23/23 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              1
+
+Scripts               1
+Tests                23
+Passing Tests        23
+Asserts             650
+Time              385.349s
+
+
+[32m---- All tests passed! ----
+[0m

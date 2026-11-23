@@ -1,0 +1,37 @@
+===== ENSURE ON MAIN 2026-11-23T13:39:33Z =====
+Already on 'main'
+Your branch is up to date with 'origin/main'.
+HEAD is now at 8149f4e 	 20261123-21:34-Update-docs-specs
+8149f4e1cc5f3ccb2b616edf0bbe25224cd322db
+===== IMPORT PROJECT =====
+[  73% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  80% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  86% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[   6% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[  13% ] [90m[1mreimport[22m | AnonymousPro-Bold.ttf[39m[0m
+[  20% ] [90m[1mreimport[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[  26% ] [90m[1mreimport[22m | AnonymousPro-Italic.ttf[39m[0m
+[  33% ] [90m[1mreimport[22m | CourierPrime-Bold.ttf[39m[0m
+[  40% ] [90m[1mreimport[22m | CourierPrime-BoldItalic.ttf[39m[0m
+[  46% ] [90m[1mreimport[22m | CourierPrime-Italic.ttf[39m[0m
+[  53% ] [90m[1mreimport[22m | LobsterTwo-Bold.ttf[39m[0m
+[  60% ] [90m[1mreimport[22m | LobsterTwo-BoldItalic.ttf[39m[0m
+[  66% ] [90m[1mreimport[22m | LobsterTwo-Italic.ttf[39m[0m
+[  73% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[  80% ] [90m[1mreimport[22m | AnonymousPro-Bold.ttf[39m[0m
+[  86% ] [90m[1mreimport[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[  93% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (14 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+import_rc=0

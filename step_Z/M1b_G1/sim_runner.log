@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=M1b_G1 jobs=2
+sim_runner_child_argv: /home/ubuntu/bin/godot --headless --path /agent/repos/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/ubuntu/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.json
+sim_runner_child_argv: /home/ubuntu/bin/godot --headless --path /agent/repos/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/ubuntu/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_1.json
+sim_runner: wrote outputs under user://sim_out/M1b_G1/

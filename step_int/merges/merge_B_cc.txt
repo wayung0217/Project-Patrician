@@ -1,0 +1,14 @@
+commit 494a696ff19c6aff7ac14677882e3da4f81196bc
+Merge: 5d5d31f 6b38ae0
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 15:03:57 2026 +0000
+
+    Merge laneB pop-demand into int-1755
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ autoload/goods_ledger.gd                      |  14 +-
+ autoload/population_model.gd                  | 268 +++++++++++++++-
+ core/demand_model.gd                          |  56 +++-
+ tests/unit/test_lane_b_pop_demand_1755.gd     | 431 ++++++++++++++++++++++++++
+ tests/unit/test_lane_b_pop_demand_1755.gd.uid |   1 +
+ 5 files changed, 753 insertions(+), 17 deletions(-)

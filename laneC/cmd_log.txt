@@ -1,0 +1,227 @@
+=== 2026-11-23T14:19:39Z laneC start ===
+godot ok
+=== 2026-11-23T14:20:42Z rebase onto ef70d42 ===
+3991515247a4546f0572159d08d6b51c864dc3b0
+=== 2026-11-23T14:23:31Z GUT lane C tests ===
+=== 2026-11-23T14:23:54Z GUT sys23 ===
+=== 2026-11-23T14:27:05Z GUT unit+property full ===
+=== 2026-11-23T14:27:18Z GUT unit,property ===
+=== 2026-11-23T14:29:51Z golden gated ===
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1248)
+       [1] apply_opening_init (res://autoload/population_model.gd:328)
+       [2] boot (res://autoload/sim_loop.gd:119)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:747)
+       [1] load_and_validate (res://core/demand_model.gd:111)
+       [2] boot (res://autoload/sim_loop.gd:127)
+       [3] _boot_formal (res://tools/golden_harness.gd:142)
+       [4] _main (res://tools/golden_harness.gd:43)
+       [5] _process (res://tools/golden_harness.gd:27)
+ERROR: SimLoop: { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot (res://autoload/sim_loop.gd:164)
+       [1] _boot_formal (res://tools/golden_harness.gd:142)
+       [2] _main (res://tools/golden_harness.gd:43)
+       [3] _process (res://tools/golden_harness.gd:27)
+ERROR: golden_harness: boot failed: [{ "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "opening_population", "value": "res://data/opening_population/", "message": "opening population dir empty or missing" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-01", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-15", "message": "missing opening population for port" } }, { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-16", "message": "missing opening population for port" } }, { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/rates", "value": <null>, "message": "demand rates missing or empty (D-25b／D-30a)" } }, { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://data/demand/weights", "value": <null>, "message": "demand weights missing or empty (D-25b／D-30a)" } }, { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj", "value": <null>, "message": "no DemandRate resources" } }, { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct", "value": <null>, "message": "no SatisfactionWeight resources" } }, { "code": "ERR-SIMLOOP-PROVIDER_MISSING", "file": "res://autoload/sim_loop.gd", "field": "ConsumptionProvider", "value": <null>, "message": "ConsumptionProvider must be injected before boot (2.3-03)" }]
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _main (res://tools/golden_harness.gd:45)
+       [1] _process (res://tools/golden_harness.gd:27)
+GOLDEN_GATE ERROR=23 SCRIPT_ERROR=0 godot_rc=1 log=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/laneC/golden/run.log
+=== 2026-11-23T14:30:01Z golden after data restore ===
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+GOLDEN_V2: boot_ok seed=1 days=360 out=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/laneC/golden/out.csv
+GOLDEN_V2: wrote /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/laneC/golden/out.csv
+GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/laneC/golden/run.log
+GOLDEN_GATE PASS
+remote: 
+remote: Create a pull request for 'cursor/laneC-queue-outputs-a116' on GitHub by visiting:        
+remote:      https://github.com/wayung0217/Project-Patrician/pull/new/cursor/laneC-queue-outputs-a116        
+remote: 
+To https://github.com/wayung0217/Project-Patrician
+ * [new branch]      cursor/laneC-queue-outputs-a116 -> cursor/laneC-queue-outputs-a116
+branch 'cursor/laneC-queue-outputs-a116' set up to track 'origin/cursor/laneC-queue-outputs-a116'.

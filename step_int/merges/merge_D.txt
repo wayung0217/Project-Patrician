@@ -1,0 +1,20 @@
+Merge made by the 'ort' strategy.
+ autoload/building_economy.gd             | 176 +++++++++++++-
+ data/params/params_schema.json           |  13 +
+ docs/spec/scenario_L1_baseline.json      |   3 +
+ docs/spec/scenario_L2_f005.json          |   3 +
+ docs/spec/scenario_L2_f010.json          |   3 +
+ docs/spec/scenario_L2_f020.json          |   3 +
+ docs/spec/scenario_M1b_G0.json           |   6 +-
+ docs/spec/scenario_M1b_G0H.json          | 389 ++++++++++++++++++++++++++++++
+ docs/spec/scenario_M1b_G1.json           |   6 +-
+ docs/spec/scenario_M1b_G2.json           |   6 +-
+ sim/scenario_validator.gd                |   7 +-
+ sim/sim_engine.gd                        |   6 +
+ tests/fixtures/params_all_keys.json      |   5 +-
+ tests/unit/test_wp68_city_housing.gd     | 399 +++++++++++++++++++++++++++++++
+ tests/unit/test_wp68_city_housing.gd.uid |   1 +
+ 15 files changed, 1018 insertions(+), 8 deletions(-)
+ create mode 100644 docs/spec/scenario_M1b_G0H.json
+ create mode 100644 tests/unit/test_wp68_city_housing.gd
+ create mode 100644 tests/unit/test_wp68_city_housing.gd.uid

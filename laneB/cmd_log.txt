@@ -1,0 +1,490 @@
+=== 2026-11-23T14:15:44Z laneB start ===
+Switched to a new branch 'cursor/lane-b-pop-demand-003b'
+=== 2026-11-23T14:15:52Z checkout lane-b @ 8057f9f563411c51c60be1c275d91667e78468b7 ===
+=== 2026-11-23T14:19:10Z installed godot 4.7.2.stable.official.ed1daf0bf ===
+=== 2026-11-23T14:20:34Z rebase onto ef70d421 ===
+From https://github.com/wayung0217/Project-Patrician
+ * branch            cursor/step0-m1b-params-data-0638 -> FETCH_HEAD
+   8057f9f..ef70d42  cursor/step0-m1b-params-data-0638 -> origin/cursor/step0-m1b-params-data-0638
+                                                                                Successfully rebased and updated refs/heads/cursor/lane-b-pop-demand-003b.
+=== 2026-11-23T14:25:22Z run laneB gut ===
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (224 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | GutErrorTracker[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | GutMain[39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | GutConstants[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | GutTrackedError[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | GutHookScript[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | GutInputFactory[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | GutInputSender[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | GutStringUtils[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | GutTest[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | GutUtils[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | BrokerProvider[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | CapacityProvider[39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | ConsumptionProvider[39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | PopulationProvider[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | QualificationProvider[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | SailorPoolProvider[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | SatisfactionInputProvider[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | ShipEventObserver[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | TradeObserver[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | WorkforceProvider[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | Account[39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | AmountQuantize[39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | Building[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | BuildingDef[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | BuildStep[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | ChargeSchedule[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | CityCenterDef[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | DemandRate[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | ErrorInfoUtil[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | GoodDef[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | OpeningPopulation[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | OpeningPublic[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | OpeningWorkshop[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | PortDef[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | Posting[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | PostingEntry[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | PriceCurve[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RoleCell[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | SatisfactionWeight[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | SeasonLedgerReport[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | SeaLane[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | SeaNode[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | SeaRegion[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | Ship[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | Slot[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | SubstitutionRule[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | TransferEvent[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | ZoneDef[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | Rng[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | SimCsvOut[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | SimGridExpand[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | SimJsonInt[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | SimMetrics[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | SimParamsMerge[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | SimRelocator[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | SimSampler[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | SimScenarioValidator[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | SimBrokerFixture[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | SimEngine[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | SimQualificationFixture[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | SimTradeObserverFixture[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | SimTransferAcc[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | FixtureQualificationProvider[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | FixtureTradeObserver[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | FixtureBuilders[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | ParamsFixtures[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | PropStream[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | DebugBrokerProvider[39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | DebugQualificationProvider[39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | DebugTradeObserver[39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | DebugBoot[39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | DebugConfig[39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | FormatTael[39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (171 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Bold.ttf[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Italic.ttf[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Regular.ttf[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | CourierPrime-Bold.ttf[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | CourierPrime-BoldItalic.ttf[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | CourierPrime-Italic.ttf[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | CourierPrime-Regular.ttf[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Bold.ttf[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | LobsterTwo-BoldItalic.ttf[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Italic.ttf[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Regular.ttf[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | arrow.png[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | play.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | eyey.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | Folder.svg[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | green.png[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | GutIconV2_base.png[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | GutIconV2_no_shine.png[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | HSplitContainer.svg[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | red.png[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | Script.svg[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | VSplitContainer.svg[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | yellow.png[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | icon.png[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | source_code_pro.fnt[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | price_curve.csv[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | role_cells.csv[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | price_curve.csv[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | role_cells.csv[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | good_def_extra_column.csv[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | good_def_missing_column.csv[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | good_def_type_mismatch.csv[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | good_def_valid.csv[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | port_def_valid.csv[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (14 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   6% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  13% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  20% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  26% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  33% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  40% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  46% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  53% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  60% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  66% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  73% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  80% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  86% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[   6% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[  13% ] [90m[1mreimport[22m | AnonymousPro-Bold.ttf[39m[0m
+[  20% ] [90m[1mreimport[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[  26% ] [90m[1mreimport[22m | AnonymousPro-Italic.ttf[39m[0m
+[  33% ] [90m[1mreimport[22m | CourierPrime-Bold.ttf[39m[0m
+[  40% ] [90m[1mreimport[22m | CourierPrime-BoldItalic.ttf[39m[0m
+[  46% ] [90m[1mreimport[22m | CourierPrime-Italic.ttf[39m[0m
+[  53% ] [90m[1mreimport[22m | LobsterTwo-Bold.ttf[39m[0m
+[  60% ] [90m[1mreimport[22m | LobsterTwo-BoldItalic.ttf[39m[0m
+[  66% ] [90m[1mreimport[22m | LobsterTwo-Italic.ttf[39m[0m
+[  73% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[  80% ] [90m[1mreimport[22m | AnonymousPro-Bold.ttf[39m[0m
+[  86% ] [90m[1mreimport[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[  93% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (14 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+=== gut laneB rc=0 ===
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.
+=== 2026-11-23T14:26:31Z gut laneB retry ===
+40:Totals
+46:Passing Tests        11
+=== 2026-11-23T14:26:45Z gut related suites ===
+=== 2026-11-23T14:27:09Z full gut unit+property ===
+GUT_RC=0
+=== 2026-11-23T14:30:29Z restore res://data after GUT wipe ===
+[cursor/lane-b-pop-demand-003b ec900bc] Lane B: FRM-SYS07-16/17 abundance+scarcity, FRM-SYS08-25 queue mat demand
+ 4 files changed, 752 insertions(+), 17 deletions(-)
+ create mode 100644 tests/unit/test_lane_b_pop_demand_1755.gd
+[cursor/lane-b-pop-demand-003b 6b38ae0] Add GUT uid for Lane B pop/demand tests
+ 1 file changed, 1 insertion(+)
+ create mode 100644 tests/unit/test_lane_b_pop_demand_1755.gd.uid
+remote: 
+remote: Create a pull request for 'cursor/lane-b-pop-demand-003b' on GitHub by visiting:        
+remote:      https://github.com/wayung0217/Project-Patrician/pull/new/cursor/lane-b-pop-demand-003b        
+remote: 
+To https://github.com/wayung0217/Project-Patrician
+ * [new branch]      cursor/lane-b-pop-demand-003b -> cursor/lane-b-pop-demand-003b
+branch 'cursor/lane-b-pop-demand-003b' set up to track 'origin/cursor/lane-b-pop-demand-003b'.

@@ -1,0 +1,17 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+SCRIPT ERROR: Compile Error: Identifier not found: Params
+          at: GDScript::reload (res://autoload/port_registry.gd:97)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+          at: GDScript::reload (res://tools/csv_import.gd:0)
+SCRIPT ERROR: Compile Error: Failed to compile depended scripts.
+          at: GDScript::reload (res://tools/step0_csv_import_all.gd:0)
+ERROR: Failed to load script "res://tools/step0_csv_import_all.gd" with error "Compilation failed".
+   at: load (modules/gdscript/gdscript_resource_format.cpp:46)
+BATCH D-08i ok=true written=45 errors=0
+BATCH WP-17 ok=true written=544 errors=0
+BATCH WP-18 ok=true written=132 errors=0
+BATCH opening_population ok=true written=16 errors=0
+BATCH WP-29 ok=true written=91 errors=0
+BATCH WP-34 ok=true written=63 errors=0
+CSV_IMPORT_ALL ok=true

@@ -1,0 +1,128 @@
+[
+  {
+    "step": "step_Z",
+    "label": "M1b_G0",
+    "dir": "M1b_G0",
+    "timing": "wall_s=399.079 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "e0f98114cfca63103e219ad1398a17bd",
+      "season_ports.csv": "2a5a05ef0b92336a5eded15a27a87c04",
+      "season_cells.csv": "0ffccf3ccae99abe4150a0f0badcf2a8",
+      "obs_ext.csv": "8fadcc32ce1e6ca8b65df30db5edf645",
+      "trader_summary.csv": "65bbac5fd218e75a45a27c1ccfe06ee1"
+    }
+  },
+  {
+    "step": "step_Z",
+    "label": "M1b_G1",
+    "dir": "M1b_G1",
+    "timing": "wall_s=377.798 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "c0e8614c963489b3e037c8177e3abc2b",
+      "season_ports.csv": "4f47ca08d3866dd205fa45e327a27699",
+      "season_cells.csv": "c89e3a5796dc7803664072a3c870c824",
+      "obs_ext.csv": "0bd9670c3272044ad794b9e55fa5d4b8",
+      "trader_summary.csv": "65bbac5fd218e75a45a27c1ccfe06ee1"
+    }
+  },
+  {
+    "step": "step_Z",
+    "label": "M1b_G2",
+    "dir": "M1b_G2",
+    "timing": "wall_s=377.517 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "0d8b50288e2c2fa45be71100c201fb4f",
+      "season_ports.csv": "6a34b535d72370fcfeaf5351bc2d804a",
+      "season_cells.csv": "2ae929db96d170e8f8e978a3c6b27c26",
+      "obs_ext.csv": "064b1c950c7cbbda7f70563ea4de1c5f",
+      "trader_summary.csv": "65bbac5fd218e75a45a27c1ccfe06ee1"
+    }
+  },
+  {
+    "step": "step_Z",
+    "label": "M1b_G0_traders_off",
+    "dir": "M1b_G0_traders_off",
+    "timing": "wall_s=185.988 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "594724a1131264f973bdcbc8391e5931",
+      "season_ports.csv": "c4ca94b97e9b09b3cc169bf8c9901cab",
+      "season_cells.csv": "5e32ea609362c98c4b9978466f75dbac",
+      "obs_ext.csv": "18fca96b4397ca4927c7df6e0713c5bb",
+      "trader_summary.csv": "61b6d98adaa81e5bdb26ea243e42e896"
+    }
+  },
+  {
+    "step": "step_Z2",
+    "label": "M1b_G0H",
+    "dir": "M1b_G0H",
+    "timing": "wall_s=373.586 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "40d2132e25e1ae1b392148b0904e538e",
+      "season_ports.csv": "2a5a05ef0b92336a5eded15a27a87c04",
+      "season_cells.csv": "0ffccf3ccae99abe4150a0f0badcf2a8",
+      "obs_ext.csv": "46983f9ef756d62257d63d710a51e9c5",
+      "trader_summary.csv": "65bbac5fd218e75a45a27c1ccfe06ee1"
+    }
+  },
+  {
+    "step": "step_Z3",
+    "label": "seed2",
+    "dir": "M1b_G0_seed2",
+    "timing": "wall_s=184.700 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "0401e6265a9e2b816ffa8d1794fbf1a0",
+      "season_ports.csv": "c1113e2a43904428f823a3ed4fce983e",
+      "season_cells.csv": "619472a07a056e7ab40c780eed65cbd9",
+      "obs_ext.csv": "7eaf09e51791dd034c6289724fe4e0a9",
+      "trader_summary.csv": "d45af010ab4cd74e2d373732c1d9e1f8"
+    }
+  },
+  {
+    "step": "step_Z3",
+    "label": "seed3",
+    "dir": "M1b_G0_seed3",
+    "timing": "wall_s=185.288 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "358e58b584795d4a38f510cf0120abfb",
+      "season_ports.csv": "c2aea94e3c0222dfa1b7711adfa03144",
+      "season_cells.csv": "d0424c1e1aaa7d6e6172a43a3caa7d12",
+      "obs_ext.csv": "5552f5cc9cdf979ff93a21049643c373",
+      "trader_summary.csv": "15d356baaed640075d330d54e0dcbd2e"
+    }
+  },
+  {
+    "step": "step_Z4",
+    "label": "H0_10y",
+    "dir": "M1b_G0_10y_H0",
+    "timing": "wall_s=296.950 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "d693b35324c92f7f753d4ff2439846f5",
+      "season_ports.csv": "259ac8a6129da5c574b11c646bf84f87",
+      "season_cells.csv": "bd675f34c9260702842ba7977a76a6f9",
+      "obs_ext.csv": "08fa03110d9acc1404b241a519bff32c",
+      "trader_summary.csv": "74b73f7809880ba12993308e457d2867"
+    }
+  },
+  {
+    "step": "step_Z4",
+    "label": "H1_10y",
+    "dir": "M1b_G0H_10y",
+    "timing": "wall_s=318.886 rc=0",
+    "status": "\u5b8c\u6210",
+    "md5": {
+      "summary.csv": "778978a574172899fa2477e584628428",
+      "season_ports.csv": "259ac8a6129da5c574b11c646bf84f87",
+      "season_cells.csv": "bd675f34c9260702842ba7977a76a6f9",
+      "obs_ext.csv": "02e0ba9fc232fb83c12a2954f49eaf6d",
+      "trader_summary.csv": "74b73f7809880ba12993308e457d2867"
+    }
+  }
+]

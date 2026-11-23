@@ -1,0 +1,180 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestPop because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestWorkforce because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestCapacityProvider because it does not extend GutTest
+[4m
+
+res://tests/unit/test_goods_ledger.gd
+[0m* test_WP59_next_seq_starts_at_1_and_increments
+* test_WP59_capacity_provider_base_push_error
+ERROR: CapacityProvider.capacity: base interface called; override required (2.1-03)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] capacity (res://core/interfaces/capacity_provider.gd:14)
+       [1] test_WP59_capacity_provider_base_push_error (res://tests/unit/test_goods_ledger.gd:130)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [4] test_scripts (res://addons/gut/gut.gd:1047)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [7] main (res://addons/gut/cli/gut_cli.gd:297)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_TST_SYS03_01_conservation_violated_on_manual_mutate
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-05", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "good_id", "value": { "good": "GD-001", "actual": 2, "expected": 1 }, "message": "conservation violated" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] check_conservation (res://autoload/goods_ledger.gd:409)
+       [2] test_TST_SYS03_01_conservation_violated_on_manual_mutate (res://tests/unit/test_goods_ledger.gd:153)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_TST_SYS03_02_insufficient_balance_unchanged
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-02", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 6, "message": "insufficient balance" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] _fail (res://autoload/goods_ledger.gd:1153)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:304)
+       [3] transfer (res://autoload/goods_ledger.gd:222)
+       [4] test_TST_SYS03_02_insufficient_balance_unchanged (res://tests/unit/test_goods_ledger.gd:180)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [7] test_scripts (res://addons/gut/gut.gd:1047)
+       [8] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [9] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [10] main (res://addons/gut/cli/gut_cli.gd:297)
+       [11] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_TST_WP62_D95d_container_used
+* test_TST_SYS03_03_insufficient_capacity_all_or_nothing
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 4, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] _fail (res://autoload/goods_ledger.gd:1153)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:315)
+       [3] transfer (res://autoload/goods_ledger.gd:222)
+       [4] test_TST_SYS03_03_insufficient_capacity_all_or_nothing (res://tests/unit/test_goods_ledger.gd:229)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS03_03_no_provider_is_capacity_error
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 1, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] _fail (res://autoload/goods_ledger.gd:1153)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:315)
+       [3] transfer (res://autoload/goods_ledger.gd:222)
+       [4] test_TST_SYS03_03_no_provider_is_capacity_error (res://tests/unit/test_goods_ledger.gd:247)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D05_consume_shortage_err_sys03_02_all_or_nothing
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-02", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 3, "message": "insufficient balance" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] _fail (res://autoload/goods_ledger.gd:1153)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:304)
+       [3] transfer (res://autoload/goods_ledger.gd:222)
+       [4] test_WP59_D05_consume_shortage_err_sys03_02_all_or_nothing (res://tests/unit/test_goods_ledger.gd:263)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS03_04_season_produce_sums_to_q
+* test_TST_SYS03_05_sea_loss_rejected
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-04", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "reason", "value": &"SEA_LOSS", "message": "SEA_LOSS disabled" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] _fail (res://autoload/goods_ledger.gd:1153)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:268)
+       [3] transfer (res://autoload/goods_ledger.gd:222)
+       [4] test_TST_SYS03_05_sea_loss_rejected (res://tests/unit/test_goods_ledger.gd:316)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS03_06_market_unbounded_over_ten_seasons
+* test_WP59_transfer_seq_and_timestamp_match
+* test_WP59_transfer_event_day_uses_injected_set_day
+* test_WP59_qty_zero_is_err_01
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-01", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 0, "message": "qty must be integer > 0" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] _fail (res://autoload/goods_ledger.gd:1153)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:278)
+       [3] transfer (res://autoload/goods_ledger.gd:222)
+       [4] test_WP59_qty_zero_is_err_01 (res://tests/unit/test_goods_ledger.gd:382)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D08d_container_id_unique_formats
+* test_WP59_D08e_duplicate_provider_err_sys03_06
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-06", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "kind", "value": &"HOLD", "message": "duplicate capacity provider" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] register_capacity_provider (res://autoload/goods_ledger.gd:157)
+       [2] test_WP59_D08e_duplicate_provider_err_sys03_06 (res://tests/unit/test_goods_ledger.gd:433)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D08e_unregistered_kind_err_sys03_03
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 1, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] _fail (res://autoload/goods_ledger.gd:1153)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:315)
+       [3] transfer (res://autoload/goods_ledger.gd:222)
+       [4] test_WP59_D08e_unregistered_kind_err_sys03_03 (res://tests/unit/test_goods_ledger.gd:452)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D08f_conservation_violated_signal_params
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-05", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "good_id", "value": { "good": "GD-001", "actual": 2, "expected": 1 }, "message": "conservation violated" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] check_conservation (res://autoload/goods_ledger.gd:409)
+       [2] test_WP59_D08f_conservation_violated_signal_params (res://tests/unit/test_goods_ledger.gd:472)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D08f_goods_transferred_event_param
+[1m19/19 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              3
+
+Scripts               1
+Tests                19
+Passing Tests        19
+Asserts            1309
+Time              0.992s
+
+
+[32m---- All tests passed! ----
+[0m

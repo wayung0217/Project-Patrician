@@ -1,0 +1,1300 @@
+diff --git a/autoload/building_economy.gd b/autoload/building_economy.gd
+index d9220e5..a6e11ff 100644
+--- a/autoload/building_economy.gd
++++ b/autoload/building_economy.gd
+@@ -67,6 +67,12 @@ const PRM_BUILD_CASH_LI := "PRM-SYS08-BUILD_CASH_LI"
+ const PRM_BUILD_MAT := "PRM-SYS08-BUILD_MAT"
+ const PRM_BUILD_DAYS := "PRM-SYS08-BUILD_DAYS"
+ const PRM_UPGRADE_PER_CAPITA := "PRM-SYS08-UPGRADE_PER_CAPITA"
++const PRM_ZONE_USED_MIN_PPM := "PRM-SYS08-ZONE_USED_MIN_PPM"
++const PRM_CITY_HOUSING_RESERVE_MULT := "PRM-SYS08-CITY_HOUSING_RESERVE_MULT"
++const PRM_CITY_HOUSING_MAX_PER_SEASON := "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON"
++const PRM_PPM_SCALE := "PRM-SYS06-PPM_SCALE"
++const PRM_HOUSE_CAPACITY := "PRM-SYS07-HOUSE_CAPACITY"
++const TYPE_RESIDENCE := "RB-01"
+ ## EX-02: feasibility sentinel (unbounded) — not a business output.
+ const FEAS_UNBOUNDED := 0x7fffffff
+ ## EX-03: building level floor (spec enum base).
+@@ -156,6 +162,8 @@ var _obs05_vacancy_tax: Dictionary = {}
+ var _season_spend_cat: Dictionary = {} ## port → {build_upgrade_li,garrison_li,levy_li,other_li}
+ var _season_land_rent_acc: Dictionary = {} ## port → int
+ var _season_vacancy_tax_acc: Dictionary = {} ## port → int
++## WP-68／D-115(a): layers.CITY_HOUSING（sim only; default off）.
++var _city_housing_on: bool = false
+ const SPEND_CAT_BUILD := "build_upgrade_li"
+ const SPEND_CAT_GARRISON := "garrison_li"
+ const SPEND_CAT_LEVY := "levy_li"
+@@ -222,6 +230,7 @@ func load_and_validate(
+ ) -> Array:
+ 	var errors: Array = []
+ 	_clear_state()
++	_city_housing_on = false ## fresh load; SimEngine re-applies layers.CITY_HOUSING
+ 
+ 	if not Params.is_loaded():
+ 		errors.append(
+@@ -752,6 +761,7 @@ func season_step() -> Array:
+ 		_season_land_and_vacancy(port_id)
+ 		_season_city_build_queue(port_id)
+ 		_season_zone_open(port_id)
++		_season_city_auto_housing(port_id) ## FRM-SYS08-24 after zone open (D-101／D-115a)
+ 		_season_levy(port_id)
+ 		_persist_obs05_season(port_id)
+ 		_clear_season_accums(port_id)
+@@ -1196,8 +1206,8 @@ func _validate_order_build(actor: StringName, slot_key: StringName, type_id: Str
+ 		if used_plots >= plot_cap:
+ 			errs.append(_err(ERR_SYS08_04, "kontor_plots", used_plots, "kontor plots full"))
+ 
+-	# ERR-13 kontor prerequisite (D-12f); city public exempt; kontor itself exempt
+-	if build_class != CLASS_KONTOR and build_class != CLASS_PUBLIC:
++	# ERR-13 kontor prerequisite (D-12f); CITY／PUBLIC／kontor exempt（city housing has no kontor）.
++	if build_class != CLASS_KONTOR and build_class != CLASS_PUBLIC and not _is_city_owner(actor):
+ 		if not _has_active_kontor(actor, slot.port_id):
+ 			errs.append(
+ 				_err(ERR_SYS08_13, "kontor", actor, "need active own kontor in port (D-12f)")
+@@ -2202,6 +2212,32 @@ func set_build_queue(port_id: String, steps: Array) -> void:
+ 	_queue_pos[port_id] = 0
+ 
+ 
++func set_city_housing_layer(enabled: bool) -> void:
++	## D-115(a)／FRM-SYS08-24①: sim layers.CITY_HOUSING only（formal city_auto_housing = M4／M5）.
++	_city_housing_on = enabled
++
++
++func is_city_housing_on() -> bool:
++	return _city_housing_on
++
++
++func zone_built_ratio_ppm(port_id: StringName, next_zone: int) -> int:
++	## D-100／FRM-SYS08-16: 已建槽 ÷ 第 1..next_zone−1 民用槽，× PPM_SCALE；total＝0 → 0.
++	assert(_loaded, "BuildingEconomy.zone_built_ratio_ppm before load")
++	_clear_last_error()
++	var pid: String = String(port_id)
++	if not _slots_by_port.has(pid):
++		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for zone_built_ratio_ppm")
++		return 0
++	var counts: Dictionary = _zone_built_counts(pid, next_zone)
++	var total: int = int(counts["total"])
++	if total <= 0:
++		return 0
++	var built: int = int(counts["built"])
++	var ppm_scale: int = Params.get_int(PRM_PPM_SCALE)
++	return floori(float(built * ppm_scale) / float(total))
++
++
+ func city_queue_position(port_id: StringName) -> int:
+ 	## D-102(d)／C-14: next queue step index from 0; finished → step count; unknown port → −1 + last_error.
+ 	assert(_loaded, "BuildingEconomy.city_queue_position before load")
+@@ -2842,6 +2878,9 @@ func _season_zone_open(port_id: String) -> void:
+ 	var idx: int = _zone_table_index(next_zone) ## EX-03 [0]=zone 2
+ 	if idx < 0 or idx >= costs.size():
+ 		return
++	## D-100: built-ratio gate（rules; not gated by CITY_HOUSING switch）.
++	if not _zone_built_ratio_ok(port_id, next_zone):
++		return
+ 	var cost: int = int(costs[idx])
+ 	var city: StringName = CashLedger.make_city_id(port_id)
+ 	if CashLedger.balance(city) < cost:
+@@ -2870,6 +2909,138 @@ func _season_zone_open(port_id: String) -> void:
+ 		_zone_streak[port_id] = 0
+ 
+ 
++func _zone_built_ratio_ok(port_id: String, next_zone: int) -> bool:
++	## FRM-SYS08-16 D-100: built／total ≥ ZONE_USED_MIN_PPM／PPM_SCALE for zones 1..k−1.
++	if not Params.has_prm(PRM_ZONE_USED_MIN_PPM):
++		return true
++	var need_ppm: int = Params.get_int(PRM_ZONE_USED_MIN_PPM)
++	return zone_built_ratio_ppm(StringName(port_id), next_zone) >= need_ppm
++
++
++func _zone_built_counts(port_id: String, next_zone: int) -> Dictionary:
++	## Civil slots in zones 1..next_zone−1；exclude gathering belt／public／kontor.
++	var total := 0
++	var built := 0
++	for s_v in _slots_by_port.get(port_id, []):
++		var s: Slot = s_v
++		if s.kind != Slot.Kind.CIVIL:
++			continue
++		if s.zone < 1 or s.zone >= next_zone:
++			continue
++		if _is_gathering_belt(s):
++			continue
++		total = total + 1
++		if _civil_slot_counts_built(s):
++			built = built + 1
++	return {"total": total, "built": built}
++
++
++func _civil_slot_counts_built(slot: Slot) -> bool:
++	## D-100: any civil building on slot（含建造中／暫停）；空購地不算.
++	if slot.building_id == &"":
++		return false
++	var bld: Building = _buildings.get(String(slot.building_id), null) as Building
++	if bld == null:
++		return false
++	if bld.build_class == CLASS_PUBLIC or bld.build_class == CLASS_KONTOR:
++		return false
++	## RESIDENCE／IND1–3／WAREHOUSE in any state count.
++	return true
++
++
++func _season_city_auto_housing(port_id: String) -> void:
++	## FRM-SYS08-24／WP-68：after zone open；switch off → no-op.
++	if not _city_housing_on:
++		return
++	if not Params.has_prm(PRM_CITY_HOUSING_RESERVE_MULT):
++		return
++	if not Params.has_prm(PRM_CITY_HOUSING_MAX_PER_SEASON):
++		return
++	if not Params.has_prm(PRM_HOUSE_CAPACITY):
++		return
++	var house_cap: int = Params.get_int(PRM_HOUSE_CAPACITY)
++	var max_n: int = Params.get_int(PRM_CITY_HOUSING_MAX_PER_SEASON)
++	if max_n <= 0:
++		return
++	## ② uses PopulationModel public queries（not PopulationProvider — no class split）.
++	if not PopulationModel.is_loaded():
++		return
++	var pid_sn: StringName = StringName(port_id)
++	var beggars: int = PopulationModel.beggars(pid_sn)
++	## ②: beggars ≥ one residence capacity AND free beds = 0.
++	if beggars < house_cap:
++		return
++	var beds: int = PopulationModel.housing_capacity(pid_sn)
++	var residents: int = (
++		PopulationModel.population(pid_sn, PopulationModel.CLASS_POOR)
++		+ PopulationModel.population(pid_sn, PopulationModel.CLASS_CITIZEN)
++		+ PopulationModel.population(pid_sn, PopulationModel.CLASS_RICH)
++	)
++	var free_beds: int = beds - residents
++	if free_beds < 0:
++		free_beds = 0
++	if free_beds > 0:
++		return
++	if not _building_defs.has(TYPE_RESIDENCE):
++		_record_fail(ERR_SYS08_11, "type", TYPE_RESIDENCE, "RB-01 missing for city auto housing")
++		return
++	var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
++	if not cash_map.has("RESIDENCE"):
++		_record_fail(ERR_SYS08_09, PRM_BUILD_CASH_LI, "RESIDENCE", "BUILD_CASH_LI RESIDENCE missing")
++		return
++	var build_cash: int = int(cash_map["RESIDENCE"])
++	var reserve_mult: int = Params.get_int(PRM_CITY_HOUSING_RESERVE_MULT)
++	var need_bal: int = build_cash * reserve_mult
++	var city: StringName = CashLedger.make_city_id(port_id)
++	CashLedger.create_account(city, Account.Kind.CITY)
++	var built_n := 0
++	while built_n < max_n:
++		## ③: balance ≥ reserve × build cash.
++		if CashLedger.balance(city) < need_bal:
++			break
++		## ⑤: outermost unowned／city empty civil slot.
++		var slot_id: StringName = _find_city_housing_slot(port_id)
++		if slot_id == &"":
++			break
++		var slot: Slot = _slot(slot_id)
++		if slot == null:
++			break
++		## Claim unowned land for CITY free（不買地）.
++		if slot.land_owner == &"":
++			slot.land_owner = city
++		elif not _is_city_owner(slot.land_owner):
++			break
++		## ⑥⑦: order_build RESIDENCE only.
++		var bid: StringName = order_build(city, slot_id, StringName(TYPE_RESIDENCE))
++		if bid == &"":
++			break
++		built_n = built_n + 1
++
++
++func _find_city_housing_slot(port_id: String) -> StringName:
++	## ⑤: open CIVIL empty；land_owner empty or CITY；outermost ring first.
++	var best: StringName = &""
++	var best_ring := -1
++	var best_id := ""
++	var city: StringName = CashLedger.make_city_id(port_id)
++	for s_v in _slots_by_port.get(port_id, []):
++		var s: Slot = s_v
++		if s.kind != Slot.Kind.CIVIL or not s.zone_open:
++			continue
++		if not _slot_free(s, {}):
++			continue
++		if _is_gathering_belt(s):
++			continue
++		if s.land_owner != &"" and s.land_owner != city:
++			continue
++		var sid: String = String(s.slot_id)
++		if s.ring > best_ring or (s.ring == best_ring and (best_id == "" or sid < best_id)):
++			best_ring = s.ring
++			best = s.slot_id
++			best_id = sid
++	return best
++
++
+ func _season_levy(port_id: String) -> void:
+ 	## FRM-17: thr = threshold × avg season spend; levy = FLOOR((bal−thr)×rate) → SINK.
+ 	var city: StringName = CashLedger.make_city_id(port_id)
+@@ -3169,6 +3340,7 @@ func _clear_state() -> void:
+ 	_season_land_rent_acc = {}
+ 	_season_vacancy_tax_acc = {}
+ 	_land_held_days = {}
++	## Keep _city_housing_on: scenario layer switch（SimEngine）；not world state.
+ 	_loaded = false
+ 	_clear_last_error()
+ 
+diff --git a/data/params/params_schema.json b/data/params/params_schema.json
+index d578142..bc0b72d 100644
+--- a/data/params/params_schema.json
++++ b/data/params/params_schema.json
+@@ -603,6 +603,19 @@
+     "type": "int",
+     "min": 1
+   },
++  "PRM-SYS08-ZONE_USED_MIN_PPM": {
++    "type": "int",
++    "min": 0,
++    "max": 1000000
++  },
++  "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": {
++    "type": "int",
++    "min": 1
++  },
++  "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": {
++    "type": "int",
++    "min": 0
++  },
+   "PRM-SYS17-MERCHANT_COUNT_MAX": {
+     "type": "int",
+     "min": 1
+diff --git a/docs/spec/scenario_L1_baseline.json b/docs/spec/scenario_L1_baseline.json
+index 4657f05..eac71cb 100644
+--- a/docs/spec/scenario_L1_baseline.json
++++ b/docs/spec/scenario_L1_baseline.json
+@@ -109,6 +109,8 @@
+         "GD-004": 250
+       }
+     },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
+     "PRM-SYS08-CLASS_SPEND_LI": {
+       "POOR": 568,
+       "CITIZEN": 1561,
+@@ -191,6 +193,7 @@
+     ],
+     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+     "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
+     "PRM-SYS13-BUILD_DAYS": {
+       "SH-01": 30,
+       "SH-02": 40,
+diff --git a/docs/spec/scenario_L2_f005.json b/docs/spec/scenario_L2_f005.json
+index 9e8139b..7ea7cb1 100644
+--- a/docs/spec/scenario_L2_f005.json
++++ b/docs/spec/scenario_L2_f005.json
+@@ -110,6 +110,8 @@
+         "GD-004": 250
+       }
+     },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
+     "PRM-SYS08-CLASS_SPEND_LI": {
+       "POOR": 568,
+       "CITIZEN": 1561,
+@@ -190,6 +192,7 @@
+     ],
+     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+     "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
+     "PRM-SYS13-BUILD_DAYS": {
+       "SH-01": 30,
+       "SH-02": 40,
+diff --git a/docs/spec/scenario_L2_f010.json b/docs/spec/scenario_L2_f010.json
+index 5f48bf5..27d9d7a 100644
+--- a/docs/spec/scenario_L2_f010.json
++++ b/docs/spec/scenario_L2_f010.json
+@@ -110,6 +110,8 @@
+         "GD-004": 250
+       }
+     },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
+     "PRM-SYS08-CLASS_SPEND_LI": {
+       "POOR": 568,
+       "CITIZEN": 1561,
+@@ -190,6 +192,7 @@
+     ],
+     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+     "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
+     "PRM-SYS13-BUILD_DAYS": {
+       "SH-01": 30,
+       "SH-02": 40,
+diff --git a/docs/spec/scenario_L2_f020.json b/docs/spec/scenario_L2_f020.json
+index 2878831..91faec9 100644
+--- a/docs/spec/scenario_L2_f020.json
++++ b/docs/spec/scenario_L2_f020.json
+@@ -110,6 +110,8 @@
+         "GD-004": 250
+       }
+     },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
+     "PRM-SYS08-CLASS_SPEND_LI": {
+       "POOR": 568,
+       "CITIZEN": 1561,
+@@ -190,6 +192,7 @@
+     ],
+     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+     "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
+     "PRM-SYS13-BUILD_DAYS": {
+       "SH-01": 30,
+       "SH-02": 40,
+diff --git a/docs/spec/scenario_M1b_G0.json b/docs/spec/scenario_M1b_G0.json
+index 3805b3e..332d072 100644
+--- a/docs/spec/scenario_M1b_G0.json
++++ b/docs/spec/scenario_M1b_G0.json
+@@ -8,7 +8,8 @@
+   "layers": {
+     "RELOCATE": false,
+     "TRADERS": true,
+-    "QUAL_OPEN": true
++    "QUAL_OPEN": true,
++    "CITY_HOUSING": false
+   },
+   "overrides": {
+     "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
+@@ -111,6 +112,8 @@
+         "GD-004": 250
+       }
+     },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
+     "PRM-SYS08-CLASS_SPEND_LI": {
+       "POOR": 568,
+       "CITIZEN": 1561,
+@@ -193,6 +196,7 @@
+     ],
+     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+     "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
+     "PRM-SYS13-BUILD_DAYS": {
+       "SH-01": 30,
+       "SH-02": 40,
+diff --git a/docs/spec/scenario_M1b_G0H.json b/docs/spec/scenario_M1b_G0H.json
+new file mode 100644
+index 0000000..6ce1d33
+--- /dev/null
++++ b/docs/spec/scenario_M1b_G0H.json
+@@ -0,0 +1,389 @@
++{
++  "scenario_id": "M1b_G0H",
++  "years": 5,
++  "warmup_years": 1,
++  "seeds": [
++    1
++  ],
++  "layers": {
++    "RELOCATE": false,
++    "TRADERS": true,
++    "QUAL_OPEN": true,
++    "CITY_HOUSING": true
++  },
++  "overrides": {
++    "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
++    "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 4,
++    "PRM-SYS05-START_CASH": 150000,
++    "PRM-SYS07-ABUND_FULL_WEEKS": 12,
++    "PRM-SYS07-ABUND_START_WEEKS": 8,
++    "PRM-SYS07-ACADEMY_MULT": [
++      1000,
++      1500,
++      2000
++    ],
++    "PRM-SYS07-ALMS_FLOOR": [
++      50,
++      100,
++      180
++    ],
++    "PRM-SYS07-EXCESS_RATE_PPM": 20000,
++    "PRM-SYS07-HOUSEHOLD_SIZE": 4,
++    "PRM-SYS07-HOUSE_CAPACITY": 100,
++    "PRM-SYS07-LAMBDA_RING": 0.35,
++    "PRM-SYS07-LOOK_MANSION_RICH": 500,
++    "PRM-SYS07-LOOK_TILE_MID": 400,
++    "PRM-SYS07-PF1_RATE_WK": 50000,
++    "PRM-SYS07-PF2_RATE_WK": 10000,
++    "PRM-SYS07-PF3_RATE_WK": 5000,
++    "PRM-SYS07-PF4_RATE_WK": 20000,
++    "PRM-SYS07-PF5_RATE_WK": 20000,
++    "PRM-SYS07-PF6_BEGGAR_RATE_WK": 60000,
++    "PRM-SYS07-PF6_RATE_WK": 30000,
++    "PRM-SYS07-RATE_SCALE": 1000000,
++    "PRM-SYS07-SAT_DOWN_MAX": 400,
++    "PRM-SYS07-SAT_IN_MIN": 400,
++    "PRM-SYS07-SAT_MAX_STEP": 10,
++    "PRM-SYS07-SAT_OUT_MAX": 300,
++    "PRM-SYS07-SAT_SCALE": 1000,
++    "PRM-SYS07-SAT_UP1_MIN": 600,
++    "PRM-SYS07-SAT_UP2_MIN": 700,
++    "PRM-SYS07-SCARCE_START_WEEKS": 2,
++    "PRM-SYS07-TEMPLE_BONUS": [
++      20,
++      40,
++      70
++    ],
++    "PRM-SYS07-TIER2_MIN_ACTIVE": 2,
++    "PRM-SYS07-TIER3_MIN_ACTIVE": 1,
++    "PRM-SYS07-UNEMPLOYED_CAP_PPM": 100000,
++    "PRM-SYS07-UP1_STREAK_DAYS": 28,
++    "PRM-SYS07-UP2_STREAK_DAYS": 56,
++    "PRM-SYS08-ACC_SCALE": 1000000,
++    "PRM-SYS08-ARMS_PER_SOLDIER_WK": 0.01,
++    "PRM-SYS08-BASE_LAND_LI": 212000,
++    "PRM-SYS08-BUILD_CASH_LI": {
++      "RESIDENCE": 100000,
++      "WAREHOUSE": 80000,
++      "IND1": 150000,
++      "IND2": 200000,
++      "IND3": 300000,
++      "PUBLIC": 500000,
++      "KONTOR": 500000
++    },
++    "PRM-SYS08-BUILD_DAYS": {
++      "RESIDENCE": 28,
++      "WAREHOUSE": 21,
++      "IND1": 42,
++      "IND2": 56,
++      "IND3": 70,
++      "PUBLIC": 84,
++      "KONTOR": 84
++    },
++    "PRM-SYS08-BUILD_MAT": {
++      "RESIDENCE": {
++        "GD-003": 40,
++        "GD-004": 50
++      },
++      "WAREHOUSE": {
++        "GD-003": 50,
++        "GD-004": 30
++      },
++      "IND1": {
++        "GD-003": 60,
++        "GD-004": 40
++      },
++      "IND2": {
++        "GD-003": 80,
++        "GD-004": 100
++      },
++      "IND3": {
++        "GD-003": 100,
++        "GD-004": 150,
++        "GD-021": 10
++      },
++      "PUBLIC": {
++        "GD-003": 150,
++        "GD-004": 250
++      },
++      "KONTOR": {
++        "GD-003": 150,
++        "GD-004": 250
++      }
++    },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
++    "PRM-SYS08-CLASS_SPEND_LI": {
++      "POOR": 568,
++      "CITIZEN": 1561,
++      "RICH": 3372
++    },
++    "PRM-SYS08-COMPENSATION_WEEKS": 52,
++    "PRM-SYS08-DEMAND_BASIS": 1,
++    "PRM-SYS08-GARRISON": [
++      50,
++      150,
++      400
++    ],
++    "PRM-SYS08-HOUSING_SHARE": 0.15,
++    "PRM-SYS08-KONTOR_CAP": [
++      2000,
++      3500,
++      5000
++    ],
++    "PRM-SYS08-KONTOR_PLOTS": 5,
++    "PRM-SYS08-KONTOR_UPGRADE": [
++      {
++        "CASH_LI": 0,
++        "DAYS": 1,
++        "GD-003": 0
++      },
++      {
++        "CASH_LI": 0,
++        "DAYS": 1,
++        "GD-003": 0
++      }
++    ],
++    "PRM-SYS08-LAND_RENT_RATE_YEAR": 0.06,
++    "PRM-SYS08-LEVY_RATE": 0,
++    "PRM-SYS08-LEVY_THRESHOLD_SEASONS": 4,
++    "PRM-SYS08-MGMT_FEE": 0.3,
++    "PRM-SYS08-OPENING_MIN_WORKSHOPS": 1,
++    "PRM-SYS08-OPENING_STOCK_DEMAND_WEEKS": 4,
++    "PRM-SYS08-OPENING_STOCK_OUTPUT_WEEKS": 2,
++    "PRM-SYS08-OUTPUT_PER_WORKER_K": 1.83,
++    "PRM-SYS08-POP_UNIT": 1000,
++    "PRM-SYS08-POWDER_PER_SOLDIER_WK": 0.01,
++    "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS": 4,
++    "PRM-SYS08-RECIPE_KEEP_N": 0.6,
++    "PRM-SYS08-RING_ALPHA": 0.25,
++    "PRM-SYS08-SCARCITY_FLOOR": 0.15,
++    "PRM-SYS08-TRANSFER_PREMIUM": 0.25,
++    "PRM-SYS08-UPGRADE_PER_CAPITA": [
++      {
++        "CASH_LI": 10000,
++        "GD-003": 0.3,
++        "GD-004": 0.5
++      },
++      {
++        "CASH_LI": 40000,
++        "GD-003": 1,
++        "GD-004": 1.5,
++        "GD-021": 0.1
++      }
++    ],
++    "PRM-SYS08-VACANCY_GRACE_DAYS": 84,
++    "PRM-SYS08-VACANCY_RATE": [
++      0.2,
++      0.35,
++      0.5
++    ],
++    "PRM-SYS08-WAGE_BASE_LI": 2500,
++    "PRM-SYS08-WAGE_SHARE_W": 1,
++    "PRM-SYS08-WAREHOUSE_CAP": 1000,
++    "PRM-SYS08-ZONE_OPEN_COST_LI": [
++      2000000,
++      4000000,
++      6000000,
++      8000000
++    ],
++    "PRM-SYS08-ZONE_POP_MIN": [
++      2500,
++      4500,
++      6500,
++      8500
++    ],
++    "PRM-SYS08-ZONE_SAT_DAYS": 28,
++    "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
++    "PRM-SYS13-BUILD_DAYS": {
++      "SH-01": 30,
++      "SH-02": 40,
++      "SH-03": 45,
++      "SH-04": 75
++    },
++    "PRM-SYS13-BUILD_MATERIALS": {
++      "SH-01": {
++        "GD-003": 60,
++        "GD-017": 10,
++        "GD-021": 3
++      },
++      "SH-02": {
++        "GD-003": 50,
++        "GD-017": 10,
++        "GD-021": 3
++      },
++      "SH-03": {
++        "GD-003": 80,
++        "GD-017": 15,
++        "GD-021": 5
++      },
++      "SH-04": {
++        "GD-003": 200,
++        "GD-017": 40,
++        "GD-021": 15
++      }
++    },
++    "PRM-SYS13-CAPACITY": {
++      "SH-01": 150,
++      "SH-02": 100,
++      "SH-03": 250,
++      "SH-04": 600
++    },
++    "PRM-SYS13-CREW": {
++      "SH-01": 10,
++      "SH-02": 12,
++      "SH-03": 8,
++      "SH-04": 30
++    },
++    "PRM-SYS13-CREW_WAGE_WK": 2500,
++    "PRM-SYS13-PRICE_CASH": {
++      "SH-01": 300000,
++      "SH-02": 400000,
++      "SH-03": 450000,
++      "SH-04": 1200000
++    },
++    "PRM-SYS13-REPAIR_RATE_SEASON": 0.02,
++    "PRM-SYS13-SALVAGE_RATE": 0.5,
++    "PRM-SYS13-TICKS_PER_WAYPOINT": {
++      "SH-01": 12,
++      "SH-02": 9,
++      "SH-03": 12,
++      "SH-04": 14
++    },
++    "PRM-SYS13-YARD_CONCURRENT": [
++      1,
++      2,
++      3
++    ],
++    "PRM-SYS15-DECAY_DAYS": 28,
++    "PRM-SYS15-DIRECTION_DEADBAND_PPM": 20000,
++    "PRM-SYS15-DIVERGENCE_HI_PPM": 300000,
++    "PRM-SYS15-DIVERGENCE_LO_PPM": 100000,
++    "PRM-SYS15-PUBLIC_DELAY_TICKS": 0,
++    "PRM-SYS15-WEEKS_SCALE": 100,
++    "PRM-SYS15-WINDOW_DAYS": 28,
++    "PRM-SYS17-EXPLORE_QTY": 50,
++    "PRM-SYS17-EXPLORE_RATE": 0.05,
++    "PRM-SYS17-IDLE_DAYS_MAX": 5,
++    "PRM-SYS17-LOSS_TOL_PPM": 50000,
++    "PRM-SYS17-MERCHANT_COUNT_MAX": 48,
++    "PRM-SYS17-PROFIT_MIN_LI": 0,
++    "PRM-SYS17-SHIP_MIX": [
++      3,
++      3,
++      3,
++      3,
++      3,
++      3,
++      3,
++      3,
++      3,
++      3,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      2,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1
++    ],
++    "PRM-SYS17-START_CASH": 1000000,
++    "PRM-SYS17-TIER_MIX": [
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1,
++      1
++    ]
++  },
++  "grid": {
++    "PRM-SYS07-ABUND_BONUS_MAX_PPM": [
++      0,
++      250000
++    ]
++  },
++  "daily_detail_ports": [],
++  "thresholds": {
++    "TH-01": 0.4,
++    "TH-01b": 0.6,
++    "TH-02": 3,
++    "TH-03": 0.05,
++    "TH-04": 100,
++    "TH-05a": 1
++  }
++}
+diff --git a/docs/spec/scenario_M1b_G1.json b/docs/spec/scenario_M1b_G1.json
+index 5b2ab1b..f83a27e 100644
+--- a/docs/spec/scenario_M1b_G1.json
++++ b/docs/spec/scenario_M1b_G1.json
+@@ -8,7 +8,8 @@
+   "layers": {
+     "RELOCATE": false,
+     "TRADERS": true,
+-    "QUAL_OPEN": true
++    "QUAL_OPEN": true,
++    "CITY_HOUSING": false
+   },
+   "overrides": {
+     "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
+@@ -111,6 +112,8 @@
+         "GD-004": 250
+       }
+     },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
+     "PRM-SYS08-CLASS_SPEND_LI": {
+       "POOR": 568,
+       "CITIZEN": 1561,
+@@ -193,6 +196,7 @@
+     ],
+     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+     "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
+     "PRM-SYS13-BUILD_DAYS": {
+       "SH-01": 30,
+       "SH-02": 40,
+diff --git a/docs/spec/scenario_M1b_G2.json b/docs/spec/scenario_M1b_G2.json
+index f31693f..c3a8d2b 100644
+--- a/docs/spec/scenario_M1b_G2.json
++++ b/docs/spec/scenario_M1b_G2.json
+@@ -8,7 +8,8 @@
+   "layers": {
+     "RELOCATE": false,
+     "TRADERS": true,
+-    "QUAL_OPEN": true
++    "QUAL_OPEN": true,
++    "CITY_HOUSING": false
+   },
+   "overrides": {
+     "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
+@@ -111,6 +112,8 @@
+         "GD-004": 250
+       }
+     },
++    "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
++    "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
+     "PRM-SYS08-CLASS_SPEND_LI": {
+       "POOR": 568,
+       "CITIZEN": 1561,
+@@ -193,6 +196,7 @@
+     ],
+     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+     "PRM-SYS08-ZONE_SAT_MIN": 600,
++    "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
+     "PRM-SYS13-BUILD_DAYS": {
+       "SH-01": 30,
+       "SH-02": 40,
+diff --git a/sim/scenario_validator.gd b/sim/scenario_validator.gd
+index 9a85e04..c7d27c5 100644
+--- a/sim/scenario_validator.gd
++++ b/sim/scenario_validator.gd
+@@ -23,8 +23,11 @@ const KEY_THRESHOLDS := "thresholds"
+ const KEY_RELOCATE := "RELOCATE"
+ const KEY_TRADERS := "TRADERS"
+ const KEY_QUAL_OPEN := "QUAL_OPEN"
+-## D-109(e)／D-110／17-55: optional sim switches; RELOCATE remains required.
+-const ALLOWED_LAYER_KEYS: PackedStringArray = [KEY_RELOCATE, KEY_TRADERS, KEY_QUAL_OPEN]
++const KEY_CITY_HOUSING := "CITY_HOUSING"
++## D-109(e)／D-110／D-115／17-55: optional sim switches; RELOCATE remains required.
++const ALLOWED_LAYER_KEYS: PackedStringArray = [
++	KEY_RELOCATE, KEY_TRADERS, KEY_QUAL_OPEN, KEY_CITY_HOUSING
++]
+ 
+ const SCHEMA_PATH := "res://data/params/params_schema.json"
+ 
+diff --git a/sim/sim_engine.gd b/sim/sim_engine.gd
+index 9d7b5ba..a7ddcc2 100644
+--- a/sim/sim_engine.gd
++++ b/sim/sim_engine.gd
+@@ -172,6 +172,12 @@ func _run_one_job(
+ 			"sampler": sampler,
+ 		}
+ 
++	## D-115(a)／WP-68: layers.CITY_HOUSING → BuildingEconomy（default off）.
++	var layers: Dictionary = scenario.get("layers", {}) as Dictionary
++	var city_housing: bool = bool(layers.get(SimScenarioValidator.KEY_CITY_HOUSING, false))
++	if BuildingEconomy.has_method("set_city_housing_layer"):
++		BuildingEconomy.set_city_housing_layer(city_housing)
++
+ 	if relocate_on:
+ 		var conv: Dictionary = SimRelocator.f_to_ppm(
+ 			float(scenario[SimScenarioValidator.KEY_RELOCATE_F]),
+diff --git a/tests/fixtures/params_all_keys.json b/tests/fixtures/params_all_keys.json
+index 206d69d..f8427ea 100644
+--- a/tests/fixtures/params_all_keys.json
++++ b/tests/fixtures/params_all_keys.json
+@@ -378,5 +378,8 @@
+   "PRM-SYS17-EXPLORE_QTY": 50,
+   "PRM-SYS17-PROFIT_MIN_LI": 0,
+   "PRM-SYS17-IDLE_DAYS_MAX": 5,
+-  "PRM-SYS17-LOSS_TOL_PPM": 50000
++  "PRM-SYS17-LOSS_TOL_PPM": 50000,
++  "PRM-SYS08-ZONE_USED_MIN_PPM": 700000,
++  "PRM-SYS08-CITY_HOUSING_RESERVE_MULT": 2,
++  "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1
+ }
+diff --git a/tests/unit/test_wp68_city_housing.gd b/tests/unit/test_wp68_city_housing.gd
+new file mode 100644
+index 0000000..8c7d477
+--- /dev/null
++++ b/tests/unit/test_wp68_city_housing.gd
+@@ -0,0 +1,399 @@
++extends GutTest
++## WP-68／D-115(a)／FRM-SYS08-24＋D-100 built-ratio.
++## Fixtures／in-memory only；no git；no res://data writes (D-114d).
++
++
++const PORT := "PT-10"
++
++
++func before_each() -> void:
++	BuildingEconomy._loaded = false
++	PortRegistry._loaded = false
++	GoodCatalog._loaded = false
++	GoodsLedger._loaded = false
++	CashLedger._loaded = false
++	Params._loaded = false
++	PopulationModel._loaded = false
++	BuildingEconomy.set_city_housing_layer(false)
++	## Swallow expected push_error from failed order_build／validate paths.
++	for e in get_errors():
++		e.handled = true
++
++
++func test_WP68_switch_off_never_runs() -> void:
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(false)
++	_prep_port_with_empty_slot()
++	_force_housing_trigger_conditions()
++	var before: int = _residence_count()
++	BuildingEconomy._season_city_auto_housing(PORT)
++	assert_eq(_residence_count(), before, "switch off → no housing build")
++
++
++func test_WP68_02_beggars_below_capacity_no_build() -> void:
++	## ② beggars < HOUSE_CAPACITY → no build.
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(true)
++	_prep_port_with_empty_slot()
++	_inject_pop(0, 0, 0, 10) ## beggars 10 < 100
++	_zero_free_beds_by_filling()
++	var before: int = _residence_count()
++	BuildingEconomy._season_city_auto_housing(PORT)
++	assert_eq(_residence_count(), before)
++
++
++func test_WP68_02_free_beds_blocks() -> void:
++	## ② free beds > 0 → no build even with many beggars.
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(true)
++	_prep_port_with_empty_slot()
++	## One empty ACTIVE residence → beds=100, residents=0 → free>0.
++	_add_active_residence("BLD-R-EMPTY")
++	_inject_pop(0, 0, 0, 200)
++	var before: int = _residence_count()
++	BuildingEconomy._season_city_auto_housing(PORT)
++	assert_eq(_residence_count(), before)
++
++
++func test_WP68_03_insufficient_reserve_no_build() -> void:
++	## ③ balance < 2× build cash → no build.
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(true)
++	_prep_port_with_empty_slot()
++	_force_housing_trigger_conditions()
++	var city: StringName = CashLedger.make_city_id(PORT)
++	var build_cash: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["RESIDENCE"])
++	## Fund less than 2×.
++	_set_city_balance(city, build_cash)
++	var before: int = _residence_count()
++	BuildingEconomy._season_city_auto_housing(PORT)
++	assert_eq(_residence_count(), before)
++
++
++func test_WP68_04_max_per_season() -> void:
++	## ④ MAX_PER_SEASON＝1 → at most one.
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(true)
++	_prep_port_with_empty_slot(3)
++	_force_housing_trigger_conditions()
++	var city: StringName = CashLedger.make_city_id(PORT)
++	var build_cash: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["RESIDENCE"])
++	_set_city_balance(city, build_cash * 10)
++	## One season_step call：MAX_PER_SEASON＝1 → exactly one new residence even with many empty slots.
++	var before: int = _residence_count()
++	BuildingEconomy._season_city_auto_housing(PORT)
++	assert_eq(_residence_count(), before + 1)
++
++
++func test_WP68_05_outermost_unowned_only() -> void:
++	## ⑤ prefers outermost；skips player-owned.
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(true)
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	_register_rb01()
++	var city: StringName = CashLedger.make_city_id(PORT)
++	CashLedger.create_account(city, Account.Kind.CITY)
++	var s_inner := _make_civil_slot("SL-IN", 1, 1, city)
++	var s_outer := _make_civil_slot("SL-OUT", 1, 5, city)
++	var s_player := _make_civil_slot("SL-PL", 1, 9, &"ACTOR-P1")
++	BuildingEconomy._slots_by_port[PORT] = [s_inner, s_outer, s_player]
++	BuildingEconomy._slots[String(s_inner.slot_id)] = s_inner
++	BuildingEconomy._slots[String(s_outer.slot_id)] = s_outer
++	BuildingEconomy._slots[String(s_player.slot_id)] = s_player
++	BuildingEconomy._buildings_by_port[PORT] = []
++	_force_housing_trigger_conditions()
++	_set_city_balance(city, int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["RESIDENCE"]) * 4)
++	BuildingEconomy._season_city_auto_housing(PORT)
++	## Outer city slot should be occupied；player slot untouched.
++	## Inner may hold the beds filler residence from _force_housing_trigger_conditions.
++	assert_ne(s_outer.building_id, &"")
++	assert_eq(s_player.building_id, &"")
++	assert_ne(s_outer.building_id, s_inner.building_id)
++
++
++func test_WP68_05_no_empty_slot_no_build() -> void:
++	## ⑤ no empty slot → no build this season.
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(true)
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	_register_rb01()
++	BuildingEconomy._slots_by_port[PORT] = []
++	BuildingEconomy._buildings_by_port[PORT] = []
++	_force_housing_trigger_conditions()
++	var city: StringName = CashLedger.make_city_id(PORT)
++	_set_city_balance(city, int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["RESIDENCE"]) * 4)
++	var before: int = _residence_count()
++	BuildingEconomy._season_city_auto_housing(PORT)
++	assert_eq(_residence_count(), before)
++
++
++func test_WP68_07_only_residence() -> void:
++	## ⑦ path only calls order_build RESIDENCE（RB-01）.
++	_boot_min()
++	BuildingEconomy.set_city_housing_layer(true)
++	_prep_port_with_empty_slot()
++	_force_housing_trigger_conditions()
++	var city: StringName = CashLedger.make_city_id(PORT)
++	_set_city_balance(city, int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["RESIDENCE"]) * 4)
++	BuildingEconomy._season_city_auto_housing(PORT)
++	for bld_v in BuildingEconomy._buildings_by_port.get(PORT, []):
++		var bld: Building = bld_v
++		if bld.owner == city:
++			assert_eq(String(bld.build_class), "RESIDENCE")
++			assert_eq(String(bld.type), "RB-01")
++
++
++func test_D100_built_ratio_below_blocks() -> void:
++	## Built-ratio 未達 → zone open blocked.
++	_boot_min()
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	var city: StringName = CashLedger.make_city_id(PORT)
++	CashLedger.create_account(city, Account.Kind.CITY)
++	## Zone 1: 10 civil slots, 0 built → ratio 0 < 700000.
++	var slots: Array = []
++	for i in range(10):
++		var s := _make_civil_slot("SL-%d" % i, 1, 1 + i, city)
++		s.zone_open = true
++		slots.append(s)
++		BuildingEconomy._slots[String(s.slot_id)] = s
++	## Zone 2 closed target.
++	var s2 := _make_civil_slot("SL-Z2", 2, 20, city)
++	s2.zone_open = false
++	slots.append(s2)
++	BuildingEconomy._slots[String(s2.slot_id)] = s2
++	BuildingEconomy._slots_by_port[PORT] = slots
++	BuildingEconomy._max_open_zone[PORT] = 1
++	BuildingEconomy._zone_streak[PORT] = Params.get_int("PRM-SYS08-ZONE_SAT_DAYS")
++	_set_city_balance(city, 999999999)
++	assert_eq(BuildingEconomy.zone_built_ratio_ppm(StringName(PORT), 2), 0)
++	BuildingEconomy._season_zone_open(PORT)
++	assert_eq(int(BuildingEconomy._max_open_zone.get(PORT, -1)), 1, "must not open zone 2")
++
++
++func test_D100_built_ratio_exactly_ok() -> void:
++	## Exactly 70% built → may open (other gates pass).
++	_boot_min()
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	_register_rb01()
++	var city: StringName = CashLedger.make_city_id(PORT)
++	CashLedger.create_account(city, Account.Kind.CITY)
++	var slots: Array = []
++	## 10 slots zone 1; 7 with buildings（含 BUILDING／PAUSED）.
++	for i in range(10):
++		var s := _make_civil_slot("SL-%d" % i, 1, 1 + i, city)
++		s.zone_open = true
++		slots.append(s)
++		BuildingEconomy._slots[String(s.slot_id)] = s
++		if i < 7:
++			var b := Building.new()
++			b.building_id = StringName("BLD-%d" % i)
++			b.type = &"RB-01"
++			b.build_class = BuildingEconomy.CLASS_RESIDENCE
++			b.owner = city
++			b.port_id = PORT
++			b.slot_id = s.slot_id
++			b.state = Building.State.BUILDING if i % 2 == 0 else Building.State.PAUSED
++			s.building_id = b.building_id
++			BuildingEconomy._buildings[String(b.building_id)] = b
++	var s2 := _make_civil_slot("SL-Z2", 2, 20, city)
++	s2.zone_open = false
++	slots.append(s2)
++	BuildingEconomy._slots[String(s2.slot_id)] = s2
++	BuildingEconomy._slots_by_port[PORT] = slots
++	BuildingEconomy._buildings_by_port[PORT] = []
++	BuildingEconomy._max_open_zone[PORT] = 1
++	BuildingEconomy._zone_streak[PORT] = Params.get_int("PRM-SYS08-ZONE_SAT_DAYS")
++	_set_city_balance(city, 999999999)
++	var ppm: int = BuildingEconomy.zone_built_ratio_ppm(StringName(PORT), 2)
++	assert_eq(ppm, 700000)
++	BuildingEconomy._season_zone_open(PORT)
++	assert_eq(int(BuildingEconomy._max_open_zone.get(PORT, -1)), 2)
++
++
++func test_D100_under_construction_and_paused_count() -> void:
++	## 建造中＋暫停算已建；空購地不算.
++	_boot_min()
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	var city: StringName = CashLedger.make_city_id(PORT)
++	var s_build := _make_civil_slot("SL-B", 1, 1, city)
++	var s_pause := _make_civil_slot("SL-P", 1, 2, city)
++	var s_empty_bought := _make_civil_slot("SL-E", 1, 3, &"ACTOR-P1") ## purchased empty
++	s_build.zone_open = true
++	s_pause.zone_open = true
++	s_empty_bought.zone_open = true
++	var b1 := Building.new()
++	b1.building_id = &"BLD-B"
++	b1.build_class = BuildingEconomy.CLASS_RESIDENCE
++	b1.type = &"RB-01"
++	b1.state = Building.State.WAITING_MATERIAL
++	b1.port_id = PORT
++	b1.slot_id = s_build.slot_id
++	s_build.building_id = b1.building_id
++	var b2 := Building.new()
++	b2.building_id = &"BLD-P"
++	b2.build_class = BuildingEconomy.CLASS_IND1
++	b2.type = &"IB-01"
++	b2.state = Building.State.PAUSED
++	b2.port_id = PORT
++	b2.slot_id = s_pause.slot_id
++	s_pause.building_id = b2.building_id
++	BuildingEconomy._buildings[String(b1.building_id)] = b1
++	BuildingEconomy._buildings[String(b2.building_id)] = b2
++	BuildingEconomy._slots = {
++		"SL-B": s_build, "SL-P": s_pause, "SL-E": s_empty_bought
++	}
++	BuildingEconomy._slots_by_port[PORT] = [s_build, s_pause, s_empty_bought]
++	var counts: Dictionary = BuildingEconomy._zone_built_counts(PORT, 2)
++	assert_eq(int(counts["total"]), 3)
++	assert_eq(int(counts["built"]), 2)
++
++
++func test_WP68_scenario_layer_city_housing_allowed() -> void:
++	## Minimal fixture（avoid pre-existing M1b override／grid ABUND overlap）.
++	var sc := {
++		"scenario_id": "wp68_city_housing_layer",
++		"years": 2,
++		"warmup_years": 0,
++		"seeds": [1],
++		"layers": {"RELOCATE": false, "CITY_HOUSING": true},
++	}
++	var path := ParamsFixtures.write_user_dict(sc, "scenario_wp68_city_housing.json")
++	var r: Dictionary = SimScenarioValidator.validate_file(path)
++	assert_true(bool(r.get("ok", false)), str(r.get("errors", [])))
++	var out: Dictionary = r["scenario"]
++	assert_true(bool((out["layers"] as Dictionary).get("CITY_HOUSING", false)))
++
++
++func _boot_min() -> void:
++	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
++	## CashLedger.post requires GoodsLedger seq（A22）.
++	assert_eq(GoodsLedger.load_and_validate().size(), 0)
++	assert_eq(CashLedger.load_and_validate().size(), 0)
++	## Goods／ports optional for most unit paths；load if present for order_build mats.
++	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path("res://data/goods/")):
++		GoodCatalog.load_and_validate("res://data/goods/")
++	if DirAccess.dir_exists_absolute(ProjectSettings.globalize_path("res://data/ports/")):
++		PortRegistry.load_and_validate("res://data/ports/")
++
++
++func _register_rb01() -> void:
++	var def := BuildingDef.new()
++	def.type = "RB-01"
++	def.build_class = "RESIDENCE"
++	def.tier = 0
++	def.max_workers = 0
++	def.base_output_per_worker = 0.0
++	BuildingEconomy._building_defs["RB-01"] = def
++
++
++func _prep_port_with_empty_slot(n: int = 1) -> void:
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	_register_rb01()
++	var city: StringName = CashLedger.make_city_id(PORT)
++	CashLedger.create_account(city, Account.Kind.CITY)
++	var slots: Array = []
++	for i in range(n):
++		var s := _make_civil_slot("SL-%d" % i, 1, 3 + i, city)
++		s.zone_open = true
++		slots.append(s)
++		BuildingEconomy._slots[String(s.slot_id)] = s
++	BuildingEconomy._slots_by_port[PORT] = slots
++	BuildingEconomy._buildings_by_port[PORT] = []
++
++
++func _make_civil_slot(sid: String, zone: int, ring: int, owner: StringName) -> Slot:
++	var s := Slot.new()
++	s.slot_id = StringName(sid)
++	s.kind = Slot.Kind.CIVIL
++	s.port_id = PORT
++	s.zone = zone
++	s.ring = ring
++	s.land_owner = owner
++	s.building_id = &""
++	s.zone_open = true
++	return s
++
++
++func _force_housing_trigger_conditions() -> void:
++	## beggars ≥ HOUSE_CAP and free beds = 0 via full occupancy on existing residences.
++	var cap: int = Params.get_int("PRM-SYS07-HOUSE_CAPACITY")
++	## Ensure at least one residence so beds==cap with residents==cap → free=0.
++	if _residence_count() == 0:
++		_add_active_residence("BLD-R-FULL")
++	_inject_pop(cap, 0, 0, cap)
++
++
++func _zero_free_beds_by_filling() -> void:
++	pass
++
++
++func _inject_pop(poor: int, citizen: int, rich: int, beggar: int) -> void:
++	## Use PopulationModel.set_port_state（product reads PopulationModel）.
++	if not PopulationModel.is_loaded():
++		PopulationModel.reset_runtime_state()
++		PopulationModel._loaded = true
++	PopulationModel.set_port_state(PORT, poor, citizen, rich, beggar)
++
++
++func _add_active_residence(bid: String) -> void:
++	var city: StringName = CashLedger.make_city_id(PORT)
++	var b := Building.new()
++	b.building_id = StringName(bid)
++	b.type = &"RB-01"
++	b.build_class = BuildingEconomy.CLASS_RESIDENCE
++	b.owner = city
++	b.port_id = PORT
++	b.state = Building.State.ACTIVE
++	BuildingEconomy._buildings[String(b.building_id)] = b
++	if not BuildingEconomy._buildings_by_port.has(PORT):
++		BuildingEconomy._buildings_by_port[PORT] = []
++	(BuildingEconomy._buildings_by_port[PORT] as Array).append(b)
++	## Attach to first free slot if any.
++	for s_v in BuildingEconomy._slots_by_port.get(PORT, []):
++		var s: Slot = s_v
++		if s.building_id == &"":
++			s.building_id = b.building_id
++			b.slot_id = s.slot_id
++			break
++
++
++func _residence_count() -> int:
++	var n := 0
++	for bld_v in BuildingEconomy._buildings_by_port.get(PORT, []):
++		var bld: Building = bld_v
++		if bld.build_class == BuildingEconomy.CLASS_RESIDENCE:
++			n += 1
++	## Also count via _buildings map for safety.
++	if n == 0:
++		for id_v in BuildingEconomy._buildings.keys():
++			var b2: Building = BuildingEconomy._buildings[id_v]
++			if b2.port_id == PORT and b2.build_class == BuildingEconomy.CLASS_RESIDENCE:
++				n += 1
++	return n
++
++
++func _set_city_balance(city: StringName, want: int) -> void:
++	CashLedger.create_account(city, Account.Kind.CITY)
++	var bal: int = CashLedger.balance(city)
++	if bal == want:
++		return
++	if bal < want:
++		var add: int = want - bal
++		CashLedger.post(
++			[CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - add), CashLedger.make_entry(city, add)],
++			&"TEST_TOP_UP",
++			BuildingEconomy.REQUESTER_SYS08
++		)
++	else:
++		var sub: int = bal - want
++		CashLedger.post(
++			[CashLedger.make_entry(city, 0 - sub), CashLedger.make_entry(CashLedger.ID_SINK, sub)],
++			&"TEST_DRAIN",
++			BuildingEconomy.REQUESTER_SYS08
++		)
+diff --git a/tests/unit/test_wp68_city_housing.gd.uid b/tests/unit/test_wp68_city_housing.gd.uid
+new file mode 100644
+index 0000000..a284a66
+--- /dev/null
++++ b/tests/unit/test_wp68_city_housing.gd.uid
+@@ -0,0 +1 @@
++uid://cce8k72cvtcf8

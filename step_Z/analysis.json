@@ -1,0 +1,576 @@
+[
+  {
+    "label": "M1b_G0",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1730,
+          "citizen": 8681,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.05028338904229036,
+          "s_citizen": 0.2523179770382212,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1185,
+          "citizen": 4488,
+          "poor": 13571,
+          "beggar": 1121,
+          "total": 20365,
+          "s_rich": 0.05818806776331942,
+          "s_citizen": 0.22037809968082495,
+          "s_poor": 0.666388411490302,
+          "s_beggar": 0.05504542106555364
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 42,
+          "2": 11,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      },
+      {
+        "run_id": "1",
+        "open": {
+          "rich": 1730,
+          "citizen": 8729,
+          "poor": 22427,
+          "beggar": 1534,
+          "total": 34420,
+          "s_rich": 0.050261475886112725,
+          "s_citizen": 0.25360255665310866,
+          "s_poor": 0.6515688553166763,
+          "s_beggar": 0.044567112144102264
+        },
+        "y5": {
+          "rich": 1195,
+          "citizen": 4511,
+          "poor": 12981,
+          "beggar": 1179,
+          "total": 19866,
+          "s_rich": 0.06015302526930434,
+          "s_citizen": 0.22707137823416892,
+          "s_poor": 0.6534279673814557,
+          "s_beggar": 0.05934762911507097
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9709821428571429,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 44,
+          "2": 9,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G1",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1728,
+          "citizen": 7970,
+          "poor": 23228,
+          "beggar": 1484,
+          "total": 34410,
+          "s_rich": 0.05021795989537925,
+          "s_citizen": 0.23161871548968324,
+          "s_poor": 0.6750363266492299,
+          "s_beggar": 0.043126997965707646
+        },
+        "y5": {
+          "rich": 1212,
+          "citizen": 3387,
+          "poor": 14552,
+          "beggar": 1126,
+          "total": 20277,
+          "s_rich": 0.059772155644326086,
+          "s_citizen": 0.16703654386743602,
+          "s_poor": 0.7176604034127336,
+          "s_beggar": 0.055530897075504265
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9732142857142857,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 392,
+          "0": 44,
+          "2": 9,
+          "1": 2,
+          "3": 1
+        },
+        "m1b_three_bars": false
+      },
+      {
+        "run_id": "1",
+        "open": {
+          "rich": 1728,
+          "citizen": 7978,
+          "poor": 23221,
+          "beggar": 1495,
+          "total": 34422,
+          "s_rich": 0.05020045319853582,
+          "s_citizen": 0.2317703794085178,
+          "s_poor": 0.6745976410435187,
+          "s_beggar": 0.04343152634942769
+        },
+        "y5": {
+          "rich": 1202,
+          "citizen": 3451,
+          "poor": 14095,
+          "beggar": 1183,
+          "total": 19931,
+          "s_rich": 0.060308062816717675,
+          "s_citizen": 0.1731473583864332,
+          "s_poor": 0.707189804826652,
+          "s_beggar": 0.05935477397019718
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9709821428571429,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 392,
+          "0": 43,
+          "2": 10,
+          "1": 2,
+          "3": 1
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G2",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1725,
+          "citizen": 8686,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.050138061328295305,
+          "s_citizen": 0.25246330475221623,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1190,
+          "citizen": 4487,
+          "poor": 13554,
+          "beggar": 1118,
+          "total": 20349,
+          "s_rich": 0.05847953216374269,
+          "s_citizen": 0.22050223598211213,
+          "s_poor": 0.6660769570986289,
+          "s_beggar": 0.05494127475551624
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 42,
+          "2": 11,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      },
+      {
+        "run_id": "1",
+        "open": {
+          "rich": 1726,
+          "citizen": 8733,
+          "poor": 22427,
+          "beggar": 1534,
+          "total": 34420,
+          "s_rich": 0.05014526438117373,
+          "s_citizen": 0.25371876815804767,
+          "s_poor": 0.6515688553166763,
+          "s_beggar": 0.044567112144102264
+        },
+        "y5": {
+          "rich": 1184,
+          "citizen": 4511,
+          "poor": 13025,
+          "beggar": 1181,
+          "total": 19901,
+          "s_rich": 0.05949449776393146,
+          "s_citizen": 0.2266720265313301,
+          "s_poor": 0.6544897241344656,
+          "s_beggar": 0.05934375157027285
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9709821428571429,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 44,
+          "2": 9,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G0_traders_off",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1730,
+          "citizen": 8681,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.05028338904229036,
+          "s_citizen": 0.2523179770382212,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1185,
+          "citizen": 4488,
+          "poor": 13571,
+          "beggar": 1121,
+          "total": 20365,
+          "s_rich": 0.05818806776331942,
+          "s_citizen": 0.22037809968082495,
+          "s_poor": 0.666388411490302,
+          "s_beggar": 0.05504542106555364
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 42,
+          "2": 11,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G0H",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1730,
+          "citizen": 8681,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.05028338904229036,
+          "s_citizen": 0.2523179770382212,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1185,
+          "citizen": 4488,
+          "poor": 13571,
+          "beggar": 1121,
+          "total": 20365,
+          "s_rich": 0.05818806776331942,
+          "s_citizen": 0.22037809968082495,
+          "s_poor": 0.666388411490302,
+          "s_beggar": 0.05504542106555364
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 42,
+          "2": 11,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      },
+      {
+        "run_id": "1",
+        "open": {
+          "rich": 1730,
+          "citizen": 8729,
+          "poor": 22427,
+          "beggar": 1534,
+          "total": 34420,
+          "s_rich": 0.050261475886112725,
+          "s_citizen": 0.25360255665310866,
+          "s_poor": 0.6515688553166763,
+          "s_beggar": 0.044567112144102264
+        },
+        "y5": {
+          "rich": 1195,
+          "citizen": 4511,
+          "poor": 12981,
+          "beggar": 1179,
+          "total": 19866,
+          "s_rich": 0.06015302526930434,
+          "s_citizen": 0.22707137823416892,
+          "s_poor": 0.6534279673814557,
+          "s_beggar": 0.05934762911507097
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9709821428571429,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 44,
+          "2": 9,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G0_seed2",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1730,
+          "citizen": 8681,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.05028338904229036,
+          "s_citizen": 0.2523179770382212,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1185,
+          "citizen": 4488,
+          "poor": 13571,
+          "beggar": 1121,
+          "total": 20365,
+          "s_rich": 0.05818806776331942,
+          "s_citizen": 0.22037809968082495,
+          "s_poor": 0.666388411490302,
+          "s_beggar": 0.05504542106555364
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 42,
+          "2": 11,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G0_seed3",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1730,
+          "citizen": 8681,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.05028338904229036,
+          "s_citizen": 0.2523179770382212,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1185,
+          "citizen": 4488,
+          "poor": 13571,
+          "beggar": 1121,
+          "total": 20365,
+          "s_rich": 0.05818806776331942,
+          "s_citizen": 0.22037809968082495,
+          "s_poor": 0.666388411490302,
+          "s_beggar": 0.05504542106555364
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "0": 42,
+          "2": 11,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G0_10y_H0",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1730,
+          "citizen": 8681,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.05028338904229036,
+          "s_citizen": 0.2523179770382212,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1158,
+          "citizen": 4646,
+          "poor": 12778,
+          "beggar": 1491,
+          "total": 20073,
+          "s_rich": 0.0576894335674787,
+          "s_citizen": 0.23145518856174963,
+          "s_poor": 0.6365764957903651,
+          "s_beggar": 0.07427888208040652
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "2": 11,
+          "0": 42,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  },
+  {
+    "label": "M1b_G0H_10y",
+    "opening_total": 34200,
+    "combos": [
+      {
+        "run_id": "0",
+        "open": {
+          "rich": 1730,
+          "citizen": 8681,
+          "poor": 22476,
+          "beggar": 1518,
+          "total": 34405,
+          "s_rich": 0.05028338904229036,
+          "s_citizen": 0.2523179770382212,
+          "s_poor": 0.6532771399505886,
+          "s_beggar": 0.04412149396889987
+        },
+        "y5": {
+          "rich": 1158,
+          "citizen": 4646,
+          "poor": 12778,
+          "beggar": 1491,
+          "total": 20073,
+          "s_rich": 0.0576894335674787,
+          "s_citizen": 0.23145518856174963,
+          "s_poor": 0.6365764957903651,
+          "s_beggar": 0.07427888208040652
+        },
+        "class_criteria": false,
+        "tier_order_same": true,
+        "cash_not_mono_rising": true,
+        "mono_rising_ports": 4,
+        "ports": 16,
+        "floor_ceiling_pct": 0.9665178571428571,
+        "floor_ceiling_pass": false,
+        "band_counts": {
+          "4": 391,
+          "2": 11,
+          "0": 42,
+          "1": 2,
+          "3": 2
+        },
+        "m1b_three_bars": false
+      }
+    ]
+  }
+]

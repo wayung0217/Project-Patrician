@@ -1,0 +1,21 @@
+===== 0-0 VERSION GATE =====
+date: 2026-11-23T13:38:26Z
+HEAD: 8149f4e1cc5f3ccb2b616edf0bbe25224cd322db
+
+--- AI_README.csv B9 ---
+B9='v6.99.170'
+  row7: A='擁有者' B='Rex Tsoi'
+  row8: A='最後更新日期' B='2026-11-23'
+  row9: A='版本' B='v6.99.170'
+  row10: A='最高回覆格式指令' B='每次回覆 Rex 時，第一行必須原樣寫 Hi Rex，再另起一行寫正文。不論是回答、確認、追問或進度回報，都適用。｜Owner 2026-11-21：每次提到派工單（如 17-45）、決策（D-xx）、審查（R9-xx）或 WP 時，必須附可點擊的儲存格連結，格式：[文字](https://apexfs-my.sharepoint.com/personal/rex_tsoi_apexgroup_com/Documents/Project%20Patrician/Project%20Patrician.xlsx?web=1&activeCell=%27工作表名%27!儲存格)，儲存格位置以當下實際列號為準（每次插列後重新查）。｜Owner 2026-11-21：不要每次回覆都提醒 Owner commit docs/spec；只在「要派工給 Cursor 之前」才說明需要 commit 哪個版本。沒有要派工的回覆，不提 commit、也不提要不要傳給 Cursor。｜Owner 2026-11-21 格式約定：單格長說明文字（同列右側全空）一律合併橫跨表寬並自動換行，不靠加寬欄位；欄寬依表格資料列決定。新增說明列時照辦。\n｜Owner 2026-11-21：審計與逐行閱讀類回覆，一律附「進度」：已讀／未讀各佔百分之幾（分項：production、docs/spec、data、tests、tests/fixtures），並列出還沒讀的清單；百分比的分母與口徑要寫明，不得估算成沒有分母的數字。'
+  row11: A='1. AI 的責任（Responsibilities）' B=''
+  row12: A='編號' B='責任項目'
+
+--- Row counts (data rows excluding header) ---
+demand_rates: 28 (expected 28) [OK]  total_lines=29
+opening_workshops: 82 (expected 82) [OK]  total_lines=83
+opening_population: 16 (expected 16) [OK]  total_lines=17
+build_queue: 353 (expected 353) [OK]  total_lines=354
+opening_public: 116 (expected 116) [OK]  total_lines=117
+frm_examples: 37 (expected 37) [OK]  total_lines=38
+GATE: PASS

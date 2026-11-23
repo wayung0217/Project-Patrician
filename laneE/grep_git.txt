@@ -1,0 +1,7 @@
+===== grep -rn git tests/ =====
+tests/unit/test_sys08_wp65_d97a.gd:5:## WP-69／D-114(d): suites must not wipe res://data or call git (removed d6bb0a6 restore).
+tests/unit/test_port_registry.gd:361:func test_D08_TST_port_id_format_three_digits_rejects() -> void:
+tests/unit/test_sys23_wp26.gd:164:	## Write summary CSV and assert OBS-03 cell is empty (not the digit 0).
+tests/unit/test_csv_import_wp34.gd:143:	## D-40a: digit budget from scale (100 → 2 places); 5.941 exceeds.
+tests/unit/test_csv_import_wp34.gd:146:	assert_eq(String(c["error"]), "too many fractional digits")
+tests/fixtures/wp24_out_pop/.gitignore:2:!.gitignore

@@ -1,0 +1,39 @@
+laneE WP-69 cmd log
+base_product=8057f9f563411c51c60be1c275d91667e78468b7
+step0_tip=ef70d4214274d90cc6bb1150eb3d64c14e898523
+branch=cursor/wp69-test-hygiene-f3ea
+
+===== GUT RUN1 summary =====
+12464:Scripts              43
+12465:Tests               525
+12466:Passing Tests       525
+12468:Time              1706.916s
+12471:[32m---- All tests passed! ----
+porcelain_run1:
+(empty=clean)
+===== GUT RUN2 summary =====
+12464:Scripts              43
+12465:Tests               525
+12466:Passing Tests       525
+12468:Time              1699.747s
+12471:[32m---- All tests passed! ----
+===== UI summary =====
+66:Scripts               2
+67:Tests                 6
+68:Passing Tests         6
+70:Time              157.938s
+73:[32m---- All tests passed! ----
+porcelain_run2+ui:
+(empty=clean)
+===== grep git =====
+===== grep -rn git tests/ =====
+tests/unit/test_sys08_wp65_d97a.gd:5:## WP-69／D-114(d): suites must not wipe res://data or call git (removed d6bb0a6 restore).
+tests/unit/test_port_registry.gd:361:func test_D08_TST_port_id_format_three_digits_rejects() -> void:
+tests/unit/test_sys23_wp26.gd:164:	## Write summary CSV and assert OBS-03 cell is empty (not the digit 0).
+tests/unit/test_csv_import_wp34.gd:143:	## D-40a: digit budget from scale (100 → 2 places); 5.941 exceeds.
+tests/unit/test_csv_import_wp34.gd:146:	assert_eq(String(c["error"]), "too many fractional digits")
+tests/fixtures/wp24_out_pop/.gitignore:2:!.gitignore
+===== test names =====
+before=531 after=531
+only_before=0 only_after=0
+IDENTICAL

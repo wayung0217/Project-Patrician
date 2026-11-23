@@ -1,0 +1,3 @@
+從 ui-1755（1fd181a，含 int-1755＋除錯面板）匯出：M0 除錯主畫面可看商人面板（id／船數／港口或在途／現金／狀態）與港口開放區數、累積已建比例；城市自建住宅「數量」為 C-05 缺口（無公開查詢）。
+解壓 ProjectPatrician-win.zip 得 exe+pck（同目錄），Windows x86_64 執行；preset 來自 #58 export_presets.cfg（Godot 4.7.2）。
+正式 L1 boot 仍可能因 G-INT-01 未 set_layers 而使商人名冊空／靜止；面板 API 已接上，城市自建住房開關有層旗標但計數欄顯示缺口說明。

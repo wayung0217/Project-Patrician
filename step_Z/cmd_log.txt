@@ -1,0 +1,55 @@
+===== STEP Z START 2026-11-23T15:19:45Z tip=int_tip=c13249e65181bb0bb38a6005a4aed9b84abaa7a2 deadline_utc=1795482000 =====
+c13249e65181bb0bb38a6005a4aed9b84abaa7a2
+===== RUN M1b_G0 remain_s=34814 2026-11-23T15:19:46Z =====
+wall_s=1.167 rc=1
+===== STEP Z RETRY fix ABUND override/grid 2026-11-23T15:20:37Z deadline=1795482000 =====
+===== RUN M1b_G0 remain_s=34761 2026-11-23T15:20:39Z =====
+wall_s=399.079 rc=0
+copy from /home/ubuntu/.local/share/godot/app_userdata/Project Patrician/sim_out/M1b_G0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=39.9079 from G0
+===== RUN M1b_G1 remain_s=34301 2026-11-23T15:28:19Z =====
+ETA_est_s=399 years=5 combos=2 yr_cost=39.9079
+wall_s=377.798 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=37.7798
+===== RUN M1b_G2 remain_s=33897 2026-11-23T15:35:03Z =====
+ETA_est_s=377 years=5 combos=2 yr_cost=37.7798
+wall_s=377.517 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=37.7517
+===== RUN M1b_G0_traders_off remain_s=33499 2026-11-23T15:41:41Z =====
+ETA_est_s=188 years=5 combos=1 yr_cost=37.7517
+wall_s=185.988 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=37.1976
+===== STEP Z CORE DONE 2026-11-23T15:45:09Z YR_COST=37.1976 =====
+===== RUN M1b_G0H remain_s=33289 2026-11-23T15:45:11Z =====
+ETA_est_s=371 years=5 combos=2 yr_cost=37.1976
+wall_s=373.586 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=37.3586
+===== Z2 DONE 2026-11-23T15:51:47Z =====
+===== RUN M1b_G0_seed2 remain_s=32891 2026-11-23T15:51:49Z =====
+ETA_est_s=186 years=5 combos=1 yr_cost=37.3586
+wall_s=184.700 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=36.94
+===== RUN M1b_G0_seed3 remain_s=32687 2026-11-23T15:55:13Z =====
+ETA_est_s=184 years=5 combos=1 yr_cost=36.94
+wall_s=185.288 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=37.0576
+===== Z3 DONE 2026-11-23T15:58:40Z =====
+===== RUN M1b_G0_10y_H0 remain_s=32478 2026-11-23T15:58:42Z =====
+ETA_est_s=370 years=10 combos=1 yr_cost=37.0576
+wall_s=296.950 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=29.695
+===== RUN M1b_G0H_10y remain_s=32151 2026-11-23T16:04:09Z =====
+ETA_est_s=296 years=10 combos=1 yr_cost=29.695
+wall_s=318.886 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0
+updated YR_COST=31.888600000000004
+===== Z4 DONE 2026-11-23T16:09:51Z =====
+===== ALL Z GROUPS FINISHED 2026-11-23T16:09:53Z =====

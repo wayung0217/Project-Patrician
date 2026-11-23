@@ -1,0 +1,12 @@
+lane=A
+wp=WP-36
+pack=17-55
+branch=cursor/lane-a-wp36-traders-26f5
+base=cursor/step0-m1b-params-data-0638
+step0_head_product=8057f9f563411c51c60be1c275d91667e78468b7
+step0_tip_rebased=ef70d4214274d90cc6bb1150eb3d64c14e898523
+tip_sha=14b22ee629a7385319ebf30be0abb77db87509ce
+gut=21/21 pass (test_trader_registry_wp36)
+autoload_order=pass
+status=PASS_WITH_GAPS
+pr=https://github.com/wayung0217/Project-Patrician/pull/72

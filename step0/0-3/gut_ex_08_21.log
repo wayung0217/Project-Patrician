@@ -1,0 +1,1197 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[4m
+
+res://tests/unit/test_opening_stock_wp62b.gd
+[0m* test_EX_08_21_01_wanggang_rice_opening_stock
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[15] expected to equal [0]:  
+      at line 37
+ERROR: GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:77)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:76)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 37
+ERROR: PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/port_registry.gd:752)
+       [1] load_and_validate (res://autoload/port_registry.gd:99)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:77)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 37
+ERROR: GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/goods_ledger.gd:1162)
+       [1] load_and_validate (res://autoload/goods_ledger.gd:131)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:78)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 37
+ERROR: CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/cash_ledger.gd:987)
+       [1] load_and_validate (res://autoload/cash_ledger.gd:122)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:79)
+       [3] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:37)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 37
+ERROR: BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/building_economy.gd:3103)
+       [1] apply_opening_market_stock (res://autoload/building_economy.gd:1892)
+       [2] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:40)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 40
+SCRIPT ERROR: Assertion failed: GoodsLedger.get_qty before load_and_validate
+          at: get_qty (res://autoload/goods_ledger.gd:328)
+          GDScript backtrace (most recent call first):
+              [0] get_qty (res://autoload/goods_ledger.gd:328)
+              [1] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:42)
+              [2] _run_test (res://addons/gut/gut.gd:622)
+              [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+              [4] test_scripts (res://addons/gut/gut.gd:1047)
+              [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+              [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+              [7] main (res://addons/gut/cli/gut_cli.gd:297)
+              [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[0] expected to equal [1051]:  
+      at line 42
+SCRIPT ERROR: Assertion failed: GoodsLedger.check_conservation before load_and_validate
+          at: check_conservation (res://autoload/goods_ledger.gd:376)
+          GDScript backtrace (most recent call first):
+              [0] check_conservation (res://autoload/goods_ledger.gd:376)
+              [1] test_EX_08_21_01_wanggang_rice_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:43)
+              [2] _run_test (res://addons/gut/gut.gd:622)
+              [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+              [4] test_scripts (res://addons/gut/gut.gd:1047)
+              [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+              [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+              [7] main (res://addons/gut/cli/gut_cli.gd:297)
+              [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [2] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [3] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [4] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [5] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [6] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [7] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [8] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [9] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [10] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [11] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [12] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [13] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [14] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [15] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [16] <push_error>GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+    [17] <push_error>PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+    [18] <push_error>GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+    [19] <push_error>CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+    [20] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+    [21] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [22] <engine-2>Assertion failed: GoodsLedger.check_conservation before load_and_validate
+      at line -1
+* test_EX_08_21_02_yuegang_brick_opening_stock
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[15] expected to equal [0]:  
+      at line 51
+ERROR: GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:77)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:76)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 51
+ERROR: PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/port_registry.gd:752)
+       [1] load_and_validate (res://autoload/port_registry.gd:99)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:77)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 51
+ERROR: GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/goods_ledger.gd:1162)
+       [1] load_and_validate (res://autoload/goods_ledger.gd:131)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:78)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 51
+ERROR: CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/cash_ledger.gd:987)
+       [1] load_and_validate (res://autoload/cash_ledger.gd:122)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:79)
+       [3] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:51)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 51
+ERROR: BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/building_economy.gd:3103)
+       [1] apply_opening_market_stock (res://autoload/building_economy.gd:1892)
+       [2] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:54)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 54
+SCRIPT ERROR: Assertion failed: GoodsLedger.get_qty before load_and_validate
+          at: get_qty (res://autoload/goods_ledger.gd:328)
+          GDScript backtrace (most recent call first):
+              [0] get_qty (res://autoload/goods_ledger.gd:328)
+              [1] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:56)
+              [2] _run_test (res://addons/gut/gut.gd:622)
+              [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+              [4] test_scripts (res://addons/gut/gut.gd:1047)
+              [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+              [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+              [7] main (res://addons/gut/cli/gut_cli.gd:297)
+              [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[0] expected to equal [499]:  
+      at line 56
+SCRIPT ERROR: Assertion failed: GoodsLedger.check_conservation before load_and_validate
+          at: check_conservation (res://autoload/goods_ledger.gd:376)
+          GDScript backtrace (most recent call first):
+              [0] check_conservation (res://autoload/goods_ledger.gd:376)
+              [1] test_EX_08_21_02_yuegang_brick_opening_stock (res://tests/unit/test_opening_stock_wp62b.gd:57)
+              [2] _run_test (res://addons/gut/gut.gd:622)
+              [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+              [4] test_scripts (res://addons/gut/gut.gd:1047)
+              [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+              [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+              [7] main (res://addons/gut/cli/gut_cli.gd:297)
+              [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [2] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [3] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [4] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [5] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [6] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [7] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [8] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [9] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [10] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [11] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [12] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [13] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [14] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [15] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [16] <push_error>GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+    [17] <push_error>PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+    [18] <push_error>GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+    [19] <push_error>CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+    [20] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+    [21] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [22] <engine-2>Assertion failed: GoodsLedger.check_conservation before load_and_validate
+      at line -1
+* test_EX_08_21_03_zero_q_skips_genesis
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:72)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[15] expected to equal [0]:  
+      at line 63
+ERROR: GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/good_catalog.gd:288)
+       [1] load_and_validate (res://autoload/good_catalog.gd:77)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:76)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 63
+ERROR: PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/port_registry.gd:752)
+       [1] load_and_validate (res://autoload/port_registry.gd:99)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:77)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 63
+ERROR: GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/goods_ledger.gd:1162)
+       [1] load_and_validate (res://autoload/goods_ledger.gd:131)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:78)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 63
+ERROR: CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/cash_ledger.gd:987)
+       [1] load_and_validate (res://autoload/cash_ledger.gd:122)
+       [2] _boot (res://tests/unit/test_opening_stock_wp62b.gd:79)
+       [3] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:63)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 63
+SCRIPT ERROR: Assertion failed: GoodsLedger.get_qty before load_and_validate
+          at: get_qty (res://autoload/goods_ledger.gd:328)
+          GDScript backtrace (most recent call first):
+              [0] get_qty (res://autoload/goods_ledger.gd:328)
+              [1] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:65)
+              [2] _run_test (res://addons/gut/gut.gd:622)
+              [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+              [4] test_scripts (res://addons/gut/gut.gd:1047)
+              [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+              [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+              [7] main (res://addons/gut/cli/gut_cli.gd:297)
+              [8] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/building_economy.gd:3103)
+       [1] apply_opening_market_stock (res://autoload/building_economy.gd:1892)
+       [2] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:66)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+      at line 66
+SCRIPT ERROR: Assertion failed: GoodsLedger.get_qty before load_and_validate
+          at: get_qty (res://autoload/goods_ledger.gd:328)
+          GDScript backtrace (most recent call first):
+              [0] get_qty (res://autoload/goods_ledger.gd:328)
+              [1] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:67)
+              [2] _run_test (res://addons/gut/gut.gd:622)
+              [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+              [4] test_scripts (res://addons/gut/gut.gd:1047)
+              [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+              [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+              [7] main (res://addons/gut/cli/gut_cli.gd:297)
+              [8] _init (res://addons/gut/gut_cmdln.gd:39)
+SCRIPT ERROR: Assertion failed: GoodsLedger.check_conservation before load_and_validate
+          at: check_conservation (res://autoload/goods_ledger.gd:376)
+          GDScript backtrace (most recent call first):
+              [0] check_conservation (res://autoload/goods_ledger.gd:376)
+              [1] test_EX_08_21_03_zero_q_skips_genesis (res://tests/unit/test_opening_stock_wp62b.gd:68)
+              [2] _run_test (res://addons/gut/gut.gd:622)
+              [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+              [4] test_scripts (res://addons/gut/gut.gd:1047)
+              [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+              [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+              [7] main (res://addons/gut/cli/gut_cli.gd:297)
+              [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [2] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [3] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [4] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [5] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [6] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [7] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [8] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [9] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [10] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [11] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [12] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [13] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [14] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [15] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [16] <push_error>GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+    [17] <push_error>PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+    [18] <push_error>GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+    [19] <push_error>CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+    [20] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [21] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+    [22] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [23] <engine-2>Assertion failed: GoodsLedger.check_conservation before load_and_validate
+      at line -1
+[1m0/3 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m[4m
+res://tests/unit/test_opening_stock_wp62b.gd
+[0m- test_EX_08_21_01_wanggang_rice_opening_stock
+[31m    [Failed]:  [0m[15] expected to equal [0]:  
+          at line 37
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 37
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 37
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 37
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 37
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 40
+[31m    [Failed]:  [0m[0] expected to equal [1051]:  
+          at line 42
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [2] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [3] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [4] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [5] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [6] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [7] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [8] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [9] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [10] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [11] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [12] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [13] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [14] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [15] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [16] <push_error>GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+    [17] <push_error>PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+    [18] <push_error>GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+    [19] <push_error>CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+    [20] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+    [21] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [22] <engine-2>Assertion failed: GoodsLedger.check_conservation before load_and_validate
+          at line -1
+- test_EX_08_21_02_yuegang_brick_opening_stock
+[31m    [Failed]:  [0m[15] expected to equal [0]:  
+          at line 51
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 51
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 51
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 51
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 51
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 54
+[31m    [Failed]:  [0m[0] expected to equal [499]:  
+          at line 56
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [2] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [3] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [4] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [5] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [6] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [7] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [8] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [9] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [10] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [11] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [12] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [13] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [14] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [15] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [16] <push_error>GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+    [17] <push_error>PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+    [18] <push_error>GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+    [19] <push_error>CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+    [20] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+    [21] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [22] <engine-2>Assertion failed: GoodsLedger.check_conservation before load_and_validate
+          at line -1
+- test_EX_08_21_03_zero_q_skips_genesis
+[31m    [Failed]:  [0m[15] expected to equal [0]:  
+          at line 63
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 63
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 63
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 63
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 63
+[31m    [Failed]:  [0m[1] expected to equal [0]:  
+          at line 66
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_BONUS_MAX_PPM", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [2] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_FULL_WEEKS", "value": 12.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [3] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-ABUND_START_WEEKS", "value": 8.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [4] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-EXCESS_RATE_PPM", "value": 20000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [5] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS07-SCARCE_START_WEEKS", "value": 2.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [6] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS", "value": 4.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [7] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_QTY", "value": 50.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [8] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-EXPLORE_RATE", "value": 0.05, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [9] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-IDLE_DAYS_MAX", "value": 5.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [10] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-LOSS_TOL_PPM", "value": 50000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [11] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-MERCHANT_COUNT_MAX", "value": 48.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [12] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-PROFIT_MIN_LI", "value": 0.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [13] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-SHIP_MIX", "value": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [14] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-START_CASH", "value": 1000000.0, "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [15] <push_error>Params: { "code": "UNKNOWN_KEY", "file": "user://params_sys05_demo.json", "field": "PRM-SYS17-TIER_MIX", "value": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "message": "key not in TechSpec §4 / WP-16 params.json schema" }
+    [16] <push_error>GoodCatalog: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-01", "detail": { "file": "res://data/goods/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodCatalog" } }
+    [17] <push_error>PortRegistry: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-02", "detail": { "file": "res://data/ports/", "field": "Params", "value": <null>, "message": "Params must load_and_validate before PortRegistry" } }
+    [18] <push_error>GoodsLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before GoodsLedger" } }
+    [19] <push_error>CashLedger: { "code": &"PARAMS_NOT_LOADED", "sys": &"SYS-05", "detail": { "file": "res://autoload/cash_ledger.gd", "field": "Params", "value": <null>, "message": "Params must load_and_validate before CashLedger" } }
+    [20] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [21] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-09", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "GoodsLedger", "value": <null>, "message": "GoodsLedger required for opening stock" } }
+    [22] <engine-2>Assertion failed: GoodsLedger.get_qty before load_and_validate
+    [23] <engine-2>Assertion failed: GoodsLedger.check_conservation before load_and_validate
+          at line -1
+
+Totals
+------
+Scripts               1
+Tests                 3
+Passing Tests      none
+Failing Tests         3
+Asserts            5/28
+Time              0.551s
+
+
+[31m---- 3 failing tests ----
+[0m
+WARNING: 311 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 66 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

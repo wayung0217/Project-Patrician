@@ -1,0 +1,303 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestPop because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestWorkforce because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestConsZero because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestCapUnlimited because it does not extend GutTest
+[4m
+
+res://tests/unit/test_demand_model_wp22.gd
+[0m* test_ERR_SYS06_01_negative_rate_rejects_boot
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "rate_cj.POOR.GD-001", "value": -1, "message": "consumption rate negative" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:116)
+       [2] test_ERR_SYS06_01_negative_rate_rejects_boot (res://tests/unit/test_demand_model_wp22.gd:133)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_ERR_SYS06_01_missing_demand_dir_rejects
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "user://wp22_demand/no_demand_dir/", "value": <null>, "message": "demand tables dir missing (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:116)
+       [2] test_ERR_SYS06_01_missing_demand_dir_rejects (res://tests/unit/test_demand_model_wp22.gd:146)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_WP59_D40c_bad_tres_load_collects_filename
+ERROR: res://tests/fixtures/demand/out/rates/BAD-D40.tres:1 - Parse Error: Expected '['.
+   at: _printerr (scene/resources/resource_format_text.cpp:41)
+   GDScript backtrace (most recent call first):
+       [0] _load_tres_dir (res://core/demand_model.gd:445)
+       [1] _load_tables (res://core/demand_model.gd:404)
+       [2] load_and_validate (res://core/demand_model.gd:110)
+       [3] test_WP59_D40c_bad_tres_load_collects_filename (res://tests/unit/test_demand_model_wp22.gd:164)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: Failed loading resource: res://tests/fixtures/demand/out/rates/BAD-D40.tres.
+   at: _load (core/io/resource_loader.cpp:317)
+   GDScript backtrace (most recent call first):
+       [0] _load_tres_dir (res://core/demand_model.gd:445)
+       [1] _load_tables (res://core/demand_model.gd:404)
+       [2] load_and_validate (res://core/demand_model.gd:110)
+       [3] test_WP59_D40c_bad_tres_load_collects_filename (res://tests/unit/test_demand_model_wp22.gd:164)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "BAD-D40.tres", "value": <null>, "message": "failed to load .tres (D-40c)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:116)
+       [2] test_WP59_D40c_bad_tres_load_collects_filename (res://tests/unit/test_demand_model_wp22.gd:164)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0mcorrupt .tres parse
+[34m[ExpectedError][0m
+* test_WP59_D40c_missing_substitutions_dir_fails
+ERROR: DemandModel: { "code": &"ERR-SYS06-03", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "res://tests/fixtures/demand/out/substitutions", "value": <null>, "message": "substitutions subdir missing (D-40c)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:116)
+       [2] test_WP59_D40c_missing_substitutions_dir_fails (res://tests/unit/test_demand_model_wp22.gd:189)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_WP59_D40c_empty_substitutions_dir_passes
+* test_ERR_SYS06_02_weight_sum_rejects_boot
+ERROR: DemandModel: { "code": &"ERR-SYS06-02", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "sat_weight_pct.POOR", "value": 99, "message": "class sat weights must sum to PRM-SYS06-WEIGHT_SUM" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:116)
+       [2] test_ERR_SYS06_02_weight_sum_rejects_boot (res://tests/unit/test_demand_model_wp22.gd:218)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_ERR_SYS06_03_subst_cap_rejects_boot
+ERROR: DemandModel: { "code": &"ERR-SYS06-03", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "subst.cap_ppm", "value": 1000001, "message": "substitution cap out of bounds" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:116)
+       [2] test_ERR_SYS06_03_subst_cap_rejects_boot (res://tests/unit/test_demand_model_wp22.gd:235)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_ERR_SYS06_04_negative_population
+ERROR: DemandModel: { "code": &"ERR-SYS06-04", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PT-01.POOR", "value": -1, "message": "class population negative" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record (res://core/demand_model.gd:794)
+       [1] _has_neg_pop (res://core/demand_model.gd:600)
+       [2] _w_num (res://core/demand_model.gd:584)
+       [3] weekly_demand (res://core/demand_model.gd:123)
+       [4] test_ERR_SYS06_04_negative_population (res://tests/unit/test_demand_model_wp22.gd:251)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS06_01_rice_week_demand_calibration_port
+* test_TST_SYS06_02_market_size_target
+* test_TST_SYS06_03_daily_share_sums_to_week
+* test_TST_SYS06_04_sat_weights_sum_100
+* test_TST_SYS06_05_rice_shortage_triggers_fish_subst
+* test_TST_SYS06_06_paused_workshops_zero_input_consume
+* test_TST_SYS06_07_double_pop_doubles_citizen_demand
+* test_TST_SYS06_07b_paused_workshops_no_input_after_double_pop_setup
+* test_TST_SYS06_08_cotton_zero_poor_sat_unchanged_cloth_subst
+* test_TST_SYS06_09_brocade_zero_only_rich_sat_drops
+* test_TST_SYS06_10_consume_equals_min_demand_stock
+* test_TST_SYS07_16_beggar_sat_necessities_only
+ERROR: DemandModel: { "code": &"ERR-SYS06-04", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "class", "value": &"BEGGAR", "message": "unknown class for sat input (beggar has no sat)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record (res://core/demand_model.gd:794)
+       [1] satisfaction_input (res://core/demand_model.gd:226)
+       [2] test_TST_SYS07_16_beggar_sat_necessities_only (res://tests/unit/test_demand_model_wp22.gd:515)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-08", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "class", "value": &"BEGGAR", "message": "unknown class" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record (res://autoload/population_model.gd:1483)
+       [1] satisfaction (res://autoload/population_model.gd:333)
+       [2] test_TST_SYS07_16_beggar_sat_necessities_only (res://tests/unit/test_demand_model_wp22.gd:519)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS06_11_small_port_low_volume_averages
+* test_TST_SYS06_12_deterministic_replay
+* test_TST_SYS06_13_unmet_only_after_flush
+* test_TST_SYS06_14_missing_prm_refuses_boot
+ERROR: Params: { "code": "MISSING_KEY", "file": "user://params_missing_PRM-SYS06-WEIGHT_SUM.json", "field": "PRM-SYS06-WEIGHT_SUM", "value": <null>, "message": "required PRM key missing" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:598)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "Params", "value": <null>, "message": "Params must load first (required PRMs)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:601)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS04-DAYS_PER_WEEK", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:601)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-JIN_PER_DAN", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:601)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-RATE_SCALE", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:601)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-PPM_SCALE", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:601)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-WEIGHT_SUM", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:601)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: Params: { "code": "MISSING_KEY", "file": "user://params_missing_PRM-SYS04-DAYS_PER_WEEK.json", "field": "PRM-SYS04-DAYS_PER_WEEK", "value": <null>, "message": "required PRM key missing" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/params.gd:626)
+       [1] load_and_validate (res://autoload/params.gd:104)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:606)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "Params", "value": <null>, "message": "Params must load first (required PRMs)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:609)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS04-DAYS_PER_WEEK", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:609)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-JIN_PER_DAN", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:609)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-RATE_SCALE", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:609)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-PPM_SCALE", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:609)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: DemandModel: { "code": &"ERR-SYS06-06", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "PRM-SYS06-WEIGHT_SUM", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:108)
+       [2] test_TST_SYS06_14_missing_prm_refuses_boot (res://tests/unit/test_demand_model_wp22.gd:609)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+[1m24/24 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              4
+
+Scripts               1
+Tests                24
+Passing Tests        24
+Asserts             555
+Time              2.464s
+
+
+[32m---- All tests passed! ----
+[0m

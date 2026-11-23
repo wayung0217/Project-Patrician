@@ -1,0 +1,144 @@
+===== GUT autoload order + cash genesis 2026-11-23T14:27:31Z =====
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WARNING: res://addons/gut/GutScene.tscn:3 - ext_resource, invalid UID: uid://bw7tukh738kw1 - using text path instead: res://addons/gut/GutScene.gd
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/GutScene.tscn:4 - ext_resource, invalid UID: uid://duxblir3vu8x7 - using text path instead: res://addons/gut/gui/NormalGui.tscn
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/NormalGui.tscn:3 - ext_resource, invalid UID: uid://cstkhwkpajvqu - using text path instead: res://addons/gut/gui/GutSceneTheme.tres
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/GutSceneTheme.tres:3 - ext_resource, invalid UID: uid://c6c7gnx36opr0 - using text path instead: res://addons/gut/fonts/AnonymousPro-Regular.ttf
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/NormalGui.tscn:4 - ext_resource, invalid UID: uid://blvhsbnsvfyow - using text path instead: res://addons/gut/gui/gut_gui.gd
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/NormalGui.tscn:5 - ext_resource, invalid UID: uid://bnh0lslf4yh87 - using text path instead: res://addons/gut/fonts/CourierPrime-Regular.ttf
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/NormalGui.tscn:6 - ext_resource, invalid UID: uid://bvrqqgjpyouse - using text path instead: res://addons/gut/gui/ResizeHandle.tscn
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/ResizeHandle.tscn:3 - ext_resource, invalid UID: uid://duf6rfdqr6yoc - using text path instead: res://addons/gut/gui/ResizeHandle.gd
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/GutScene.tscn:5 - ext_resource, invalid UID: uid://cnqqdfsn80ise - using text path instead: res://addons/gut/gui/MinGui.tscn
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/MinGui.tscn:3 - ext_resource, invalid UID: uid://cstkhwkpajvqu - using text path instead: res://addons/gut/gui/GutSceneTheme.tres
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/MinGui.tscn:4 - ext_resource, invalid UID: uid://bnh0lslf4yh87 - using text path instead: res://addons/gut/fonts/CourierPrime-Regular.ttf
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/MinGui.tscn:5 - ext_resource, invalid UID: uid://blvhsbnsvfyow - using text path instead: res://addons/gut/gui/gut_gui.gd
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/MinGui.tscn:6 - ext_resource, invalid UID: uid://bvrqqgjpyouse - using text path instead: res://addons/gut/gui/ResizeHandle.tscn
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:55)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/RunExternally.tscn:3 - ext_resource, invalid UID: uid://bi8pg352un4om - using text path instead: res://addons/gut/gui/RunExternally.gd
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @static_initializer (res://addons/gut/utils.gd:60)
+         [1] _static_init (res://addons/gut/gut_loader.gd:40)
+         [2] @static_initializer (res://addons/gut/gut_loader.gd:1)
+         [3] _init (res://addons/gut/gut_cmdln.gd:24)
+WARNING: res://addons/gut/gui/GutRunner.tscn:3 - ext_resource, invalid UID: uid://eg8k46gd42a4 - using text path instead: res://addons/gut/gui/GutRunner.gd
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @implicit_new (res://addons/gut/cli/gut_cli.gd:5)
+         [1] _init (res://addons/gut/gut_cmdln.gd:36)
+WARNING: res://addons/gut/gui/GutRunner.tscn:4 - ext_resource, invalid UID: uid://m28heqtswbuq - using text path instead: res://addons/gut/GutScene.tscn
+     at: load (scene/resources/resource_format_text.cpp:501)
+     GDScript backtrace (most recent call first):
+         [0] @implicit_new (res://addons/gut/cli/gut_cli.gd:5)
+         [1] _init (res://addons/gut/gut_cmdln.gd:36)
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestConsumptionProvider because it does not extend GutTest
+[4m
+
+res://tests/unit/test_sim_loop.gd
+[0m* test_WP59_autoload_order_2_2_01
+[1m1/1 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              1
+
+Scripts               1
+Tests                 1
+Passing Tests         1
+Asserts               7
+Time              0.419s
+
+
+Ran Tests matching "test_WP59_autoload_order_2_2_01"
+[32m---- All tests passed! ----
+[0m
+gut_sim_rc=0

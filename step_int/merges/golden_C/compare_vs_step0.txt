@@ -1,0 +1,3 @@
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step0/0-4/golden/out.csv bytes=26062718
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_C/out.csv bytes=26062718
+IDENTICAL=1

@@ -1,0 +1,674 @@
+===== INT-1755 START 2026-11-23T14:53:00Z =====
+step0_tip=ef70d4214274d90cc6bb1150eb3d64c14e898523
+branch=cursor/int-1755-merge-0a6e
+4.7.2.stable.official.ed1daf0bf
+===== MERGE C 2026-11-23T14:53:04Z =====
+Merge made by the 'ort' strategy.
+ autoload/building_economy.gd                     | 100 ++++++++++++
+ sim/csv_out.gd                                   |  49 +++++-
+ sim/sampler.gd                                   | 179 ++++++++++++++++++++-
+ sim/sim_engine.gd                                |   5 +
+ sim/sim_runner.gd                                |   4 +
+ sim/transfer_acc.gd                              |  16 ++
+ tests/unit/test_d110_lane_c_queue_outputs.gd     | 192 +++++++++++++++++++++++
+ tests/unit/test_d110_lane_c_queue_outputs.gd.uid |   1 +
+ tests/unit/test_sys23_wp26.gd                    |   4 +-
+ 9 files changed, 542 insertions(+), 8 deletions(-)
+ create mode 100644 tests/unit/test_d110_lane_c_queue_outputs.gd
+ create mode 100644 tests/unit/test_d110_lane_c_queue_outputs.gd.uid
+merge_C_rc=0
+8a02133d16e3ed4a5fdab0b9203bdf79e3e24bcf
+C tip expected 7101e9c; HEAD=8a02133d16e3ed4a5fdab0b9203bdf79e3e24bcf
+===== GODOT IMPORT post-C 2026-11-23T14:53:34Z =====
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (224 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | GutErrorTracker[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | GutMain[39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | GutConstants[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | GutTrackedError[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | GutHookScript[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | GutInputFactory[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | GutInputSender[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | GutStringUtils[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | GutTest[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | GutUtils[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | BrokerProvider[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | CapacityProvider[39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | ConsumptionProvider[39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | PopulationProvider[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | QualificationProvider[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | SailorPoolProvider[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | SatisfactionInputProvider[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | ShipEventObserver[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | TradeObserver[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | WorkforceProvider[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | Account[39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | AmountQuantize[39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | Building[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | BuildingDef[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | BuildStep[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | ChargeSchedule[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | CityCenterDef[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | DemandRate[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | ErrorInfoUtil[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | GoodDef[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | OpeningPopulation[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | OpeningPublic[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | OpeningWorkshop[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | PortDef[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | Posting[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | PostingEntry[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | PriceCurve[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RoleCell[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | SatisfactionWeight[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | SeasonLedgerReport[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | SeaLane[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | SeaNode[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | SeaRegion[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | Ship[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | Slot[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | SubstitutionRule[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | TransferEvent[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | ZoneDef[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | Rng[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | SimCsvOut[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | SimGridExpand[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | SimJsonInt[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | SimMetrics[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | SimParamsMerge[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | SimRelocator[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | SimSampler[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | SimScenarioValidator[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | SimBrokerFixture[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | SimEngine[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | SimQualificationFixture[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | SimTradeObserverFixture[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | SimTransferAcc[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | FixtureQualificationProvider[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | FixtureTradeObserver[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | FixtureBuilders[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | ParamsFixtures[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | PropStream[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | DebugBrokerProvider[39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | DebugQualificationProvider[39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | DebugTradeObserver[39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | DebugBoot[39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | DebugConfig[39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | FormatTael[39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (171 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Bold.ttf[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Italic.ttf[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Regular.ttf[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | CourierPrime-Bold.ttf[39m[0m
+[   2% ] [90m[1m_update_scan_actions[22m | CourierPrime-BoldItalic.ttf[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | CourierPrime-Italic.ttf[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | CourierPrime-Regular.ttf[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Bold.ttf[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | LobsterTwo-BoldItalic.ttf[39m[0m
+[   5% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Italic.ttf[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Regular.ttf[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | arrow.png[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | play.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | eyey.png[39m[0m
+[   8% ] [90m[1m_update_scan_actions[22m | Folder.svg[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | green.png[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | GutIconV2_base.png[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | GutIconV2_no_shine.png[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | HSplitContainer.svg[39m[0m
+[  11% ] [90m[1m_update_scan_actions[22m | red.png[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | Script.svg[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | VSplitContainer.svg[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | yellow.png[39m[0m
+[  13% ] [90m[1m_update_scan_actions[22m | icon.png[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | source_code_pro.fnt[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | price_curve.csv[39m[0m
+[  16% ] [90m[1m_update_scan_actions[22m | role_cells.csv[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | price_curve.csv[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | role_cells.csv[39m[0m
+[  19% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  22% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  24% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  27% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  30% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+[  33% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  36% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  38% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  41% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  44% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  47% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  49% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  52% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  55% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  58% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  61% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  63% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  66% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  69% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  72% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  74% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  77% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+[  80% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  83% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  86% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  88% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  91% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+[  94% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | good_def_extra_column.csv[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | good_def_missing_column.csv[39m[0m
+[  97% ] [90m[1m_update_scan_actions[22m | good_def_type_mismatch.csv[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | good_def_valid.csv[39m[0m
+[  98% ] [90m[1m_update_scan_actions[22m | port_def_valid.csv[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (14 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   6% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  13% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  20% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  26% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  33% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  40% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  46% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  53% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  60% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  66% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  73% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  80% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  86% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[   6% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[  13% ] [90m[1mreimport[22m | AnonymousPro-Bold.ttf[39m[0m
+[  20% ] [90m[1mreimport[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[  26% ] [90m[1mreimport[22m | AnonymousPro-Italic.ttf[39m[0m
+[  33% ] [90m[1mreimport[22m | CourierPrime-Bold.ttf[39m[0m
+[  40% ] [90m[1mreimport[22m | CourierPrime-BoldItalic.ttf[39m[0m
+[  46% ] [90m[1mreimport[22m | CourierPrime-Italic.ttf[39m[0m
+[  53% ] [90m[1mreimport[22m | LobsterTwo-Bold.ttf[39m[0m
+[  60% ] [90m[1mreimport[22m | LobsterTwo-BoldItalic.ttf[39m[0m
+[  66% ] [90m[1mreimport[22m | LobsterTwo-Italic.ttf[39m[0m
+[  73% ] [90m[1mreimport[22m | source_code_pro.fnt[39m[0m
+[  80% ] [90m[1mreimport[22m | AnonymousPro-Bold.ttf[39m[0m
+[  86% ] [90m[1mreimport[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+[  93% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (14 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+import_rc=0
+===== GUT unit+property post-C 2026-11-23T14:53:43Z =====
+gut_C_rc=0
+SCRIPT_ERROR=0
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] _fail (res://autoload/goods_ledger.gd:1145)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:302)
+       [3] transfer (res://autoload/goods_ledger.gd:220)
+       [4] test_PROP_FRM_SYS03_02_failed_transfer_leaves_both_sides_unchanged (res://tests/property/test_PROP_transfer_all_or_nothing.gd:111)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[1m1/1 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings             39
+
+Scripts              44
+Tests               532
+Passing Tests       532
+Asserts           11611
+Time              129.95s
+
+
+[32m---- All tests passed! ----
+[0m
+===== restore res://data post-C gut 2026-11-23T14:56:00Z =====
+===== GOLDEN gated post-C 2026-11-23T14:56:18Z =====
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+GOLDEN_V2: boot_ok seed=1 days=360 out=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_C/out.csv
+GOLDEN_V2: wrote /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_C/out.csv
+GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_C/run.log
+GOLDEN_GATE PASS
+golden_C_rc=0
+===== golden_compare post-C vs step0 =====
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step0/0-4/golden/out.csv bytes=26062718
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_C/out.csv bytes=26062718
+IDENTICAL=1
+===== golden_compare post-C vs laneC =====
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/laneC/golden/out.csv bytes=26062718
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_C/out.csv bytes=26062718
+IDENTICAL=1
+===== MERGE D 2026-11-23T14:58:43Z =====
+Merge made by the 'ort' strategy.
+ autoload/building_economy.gd             | 176 +++++++++++++-
+ data/params/params_schema.json           |  13 +
+ docs/spec/scenario_L1_baseline.json      |   3 +
+ docs/spec/scenario_L2_f005.json          |   3 +
+ docs/spec/scenario_L2_f010.json          |   3 +
+ docs/spec/scenario_L2_f020.json          |   3 +
+ docs/spec/scenario_M1b_G0.json           |   6 +-
+ docs/spec/scenario_M1b_G0H.json          | 389 ++++++++++++++++++++++++++++++
+ docs/spec/scenario_M1b_G1.json           |   6 +-
+ docs/spec/scenario_M1b_G2.json           |   6 +-
+ sim/scenario_validator.gd                |   7 +-
+ sim/sim_engine.gd                        |   6 +
+ tests/fixtures/params_all_keys.json      |   5 +-
+ tests/unit/test_wp68_city_housing.gd     | 399 +++++++++++++++++++++++++++++++
+ tests/unit/test_wp68_city_housing.gd.uid |   1 +
+ 15 files changed, 1018 insertions(+), 8 deletions(-)
+ create mode 100644 docs/spec/scenario_M1b_G0H.json
+ create mode 100644 tests/unit/test_wp68_city_housing.gd
+ create mode 100644 tests/unit/test_wp68_city_housing.gd.uid
+merge_D_rc=0
+5d5d31fe4e79abafdad145718b63c2cf3f65c5c3
+conflicts_D=none (clean ort merge)
+===== GUT unit+property post-D 2026-11-23T14:58:53Z =====
+gut_D_rc=0 SCRIPT_ERROR=0
+11102:Passing Tests       544
+11107:[32m---- All tests passed! ----
+===== GOLDEN gated post-D 2026-11-23T15:01:11Z =====
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+GOLDEN_V2: boot_ok seed=1 days=360 out=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_D/out.csv
+GOLDEN_V2: wrote /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_D/out.csv
+GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_D/run.log
+GOLDEN_GATE PASS
+golden_D_rc=0
+===== golden_compare post-D vs prev =====
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_C/out.csv bytes=26062718
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_D/out.csv bytes=26062718
+IDENTICAL=1
+===== golden_compare post-D vs lane =====
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/laneD/golden/out.csv bytes=26062718
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_D/out.csv bytes=26062718
+IDENTICAL=1
+===== MERGE B 2026-11-23T15:03:56Z =====
+Merge made by the 'ort' strategy.
+ autoload/goods_ledger.gd                      |  14 +-
+ autoload/population_model.gd                  | 268 +++++++++++++++-
+ core/demand_model.gd                          |  56 +++-
+ tests/unit/test_lane_b_pop_demand_1755.gd     | 431 ++++++++++++++++++++++++++
+ tests/unit/test_lane_b_pop_demand_1755.gd.uid |   1 +
+ 5 files changed, 753 insertions(+), 17 deletions(-)
+ create mode 100644 tests/unit/test_lane_b_pop_demand_1755.gd
+ create mode 100644 tests/unit/test_lane_b_pop_demand_1755.gd.uid
+merge_B_rc=0
+494a696ff19c6aff7ac14677882e3da4f81196bc
+conflicts_B=none (clean ort merge)
+===== GUT unit+property post-B 2026-11-23T15:04:07Z =====
+gut_B_rc=0 SCRIPT_ERROR=0
+Passing Tests       555
+[32m---- All tests passed! ----
+===== GOLDEN gated post-B 2026-11-23T15:07:25Z =====
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+GOLDEN_V2: boot_ok seed=1 days=360 out=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_B/out.csv
+GOLDEN_V2: wrote /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_B/out.csv
+GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_B/run.log
+GOLDEN_GATE PASS
+golden_B_rc=0
+===== golden_compare post-B vs prev =====
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_D/out.csv bytes=26062718
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_B/out.csv bytes=26054828
+IDENTICAL=0
+ROWS_A=6137 ROWS_B=6137
+DIFFS_BEGIN
+COL=poor first_diff_day=96 diff_cells=740
+COL=citizen first_diff_day=89 diff_cells=671
+COL=rich first_diff_day=89 diff_cells=272
+COL=beggar first_diff_day=93 diff_cells=610
+COL=city_balance_li first_diff_day=90 diff_cells=1175
+COL=goods_mid_json first_diff_day=1 diff_cells=3143
+COL=goods_stock_weeks_json first_diff_day=1 diff_cells=5509
+COL=goods_window_qty_json first_diff_day=9 diff_cells=1111
+COL=buildings_json first_diff_day=1 diff_cells=360
+COL=residences_json first_diff_day=89 diff_cells=796
+DIFFS_END
+===== MERGE A 2026-11-23T15:10:07Z =====
+Merge made by the 'ort' strategy.
+ autoload/cash_ledger.gd                     |   6 +-
+ autoload/sim_loop.gd                        |  20 +-
+ autoload/trader_registry.gd                 | 969 ++++++++++++++++++++++++++++
+ autoload/trader_registry.gd.uid             |   1 +
+ core/trade_evaluator.gd                     | 179 +++++
+ core/trade_evaluator.gd.uid                 |   1 +
+ project.godot                               |   7 +-
+ tests/unit/test_sim_loop.gd                 |   5 +-
+ tests/unit/test_trader_registry_wp36.gd     | 412 ++++++++++++
+ tests/unit/test_trader_registry_wp36.gd.uid |   1 +
+ 10 files changed, 1594 insertions(+), 7 deletions(-)
+ create mode 100644 autoload/trader_registry.gd
+ create mode 100644 autoload/trader_registry.gd.uid
+ create mode 100644 core/trade_evaluator.gd
+ create mode 100644 core/trade_evaluator.gd.uid
+ create mode 100644 tests/unit/test_trader_registry_wp36.gd
+ create mode 100644 tests/unit/test_trader_registry_wp36.gd.uid
+merge_A_rc=0
+c13249e65181bb0bb38a6005a4aed9b84abaa7a2
+conflicts_A=none (clean ort merge)
+===== GUT unit+property post-A 2026-11-23T15:10:29Z =====
+gut_A_rc=0 SCRIPT_ERROR=0
+Passing Tests       576
+[32m---- All tests passed! ----
+===== GOLDEN gated post-A 2026-11-23T15:13:41Z =====
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+GOLDEN_V2: boot_ok seed=1 days=360 out=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_A/out.csv
+GOLDEN_V2: wrote /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_A/out.csv
+GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_A/run.log
+GOLDEN_GATE PASS
+golden_A_rc=0
+===== golden_compare post-A vs prev =====
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_B/out.csv bytes=26054828
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step_int/merges/golden_A/out.csv bytes=26054828
+IDENTICAL=1
+===== SKIP E 2026-11-23T15:16:06Z =====
+Lane E SKIPPED (D-115)
+Agent bc-c106bd70-66a6-5345-982a-068f355ff3ea status=RUNNING at int merge time
+Deliverable evening-17-55/laneE/ incomplete: only smoke logs + test_names_before.txt; no tip_sha, report.md, PR, or branch ready.
+int_tip=c13249e65181bb0bb38a6005a4aed9b84abaa7a2
+c13249e Merge laneA wp36-traders into int-1755 Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+494a696 Merge laneB pop-demand into int-1755 Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+5d5d31f Merge laneD city-housing into int-1755 Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+8a02133 Merge laneC queue-outputs into int-1755 Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+8603d8c Lane D: WP-68 CITY_HOUSING + D-100 built-ratio gate
+7101e9c Lane C: D-110(d)(i) season outputs + shortfall query
+6b38ae0 Add GUT uid for Lane B pop/demand tests
+ec900bc Lane B: FRM-SYS07-16/17 abundance+scarcity, FRM-SYS08-25 queue mat demand
+14b22ee WP-36: TraderRegistry + TradeEvaluator for M1b traders
+3991515 Lane C: D-110(b) city_queue_material_shortfall + queue_state
+===== PUSH 2026-11-23T15:16:36Z =====
+remote: 
+remote: Create a pull request for 'cursor/int-1755-merge-0a6e' on GitHub by visiting:        
+remote:      https://github.com/wayung0217/Project-Patrician/pull/new/cursor/int-1755-merge-0a6e        
+remote: 
+To https://github.com/wayung0217/Project-Patrician
+ * [new branch]      cursor/int-1755-merge-0a6e -> cursor/int-1755-merge-0a6e
+branch 'cursor/int-1755-merge-0a6e' set up to track 'origin/cursor/int-1755-merge-0a6e'.

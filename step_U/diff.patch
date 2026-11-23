@@ -1,0 +1,166 @@
+diff --git a/ui/debug_main.gd b/ui/debug_main.gd
+index 1cca190..e65a0cb 100644
+--- a/ui/debug_main.gd
++++ b/ui/debug_main.gd
+@@ -22,12 +22,14 @@ var _accum_sec: float = 0.0
+ 
+ var _sea_map: Control
+ var _market_tree: Tree
++var _traders_tree: Tree
+ var _player_label: Label
+ var _msg_log: RichTextLabel
+ var _status_label: Label
+ var _day_label: Label
+ var _cash_label: Label
+ var _port_label: Label
++var _port_zones_label: Label
+ var _good_option: OptionButton
+ var _qty_spin: SpinBox
+ var _ship_option: OptionButton
+@@ -115,6 +117,11 @@ func _build_ui() -> void:
+ 	_port_label = Label.new()
+ 	left.add_child(_port_label)
+ 
++	## D-115(e)／Step U: port panel zones (open count, built-ratio, auto-housing).
++	_port_zones_label = Label.new()
++	_port_zones_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
++	left.add_child(_port_zones_label)
++
+ 	var right := VBoxContainer.new()
+ 	right.custom_minimum_size = Vector2(float(DebugConfig.PANEL_MIN_WIDTH), 0)
+ 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+@@ -137,6 +144,19 @@ func _build_ui() -> void:
+ 	_player_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ 	right.add_child(_player_label)
+ 
++	## D-115(e)／Step U: traders panel (id, ships, port/transit, cash, status).
++	right.add_child(_section("散商（TraderRegistry）"))
++	_traders_tree = Tree.new()
++	_traders_tree.size_flags_vertical = Control.SIZE_EXPAND_FILL
++	_traders_tree.columns = 5
++	_traders_tree.column_titles_visible = true
++	var trader_headers := ["id", "船數", "船位／在途", "現金", "狀態"]
++	for i in range(trader_headers.size()):
++		_traders_tree.set_column_title(i, trader_headers[i])
++		_traders_tree.set_column_expand(i, true)
++	_traders_tree.custom_minimum_size = Vector2(0, 120)
++	right.add_child(_traders_tree)
++
+ 	right.add_child(_section("交易"))
+ 	var trade_row := HBoxContainer.new()
+ 	right.add_child(trade_row)
+@@ -432,6 +452,114 @@ func _refresh_all() -> void:
+ 	_port_label.text = "選定港：%s（點海圖選港）" % pname
+ 	_refresh_market()
+ 	_refresh_player()
++	_refresh_traders()
++	_refresh_port_zones()
++
++
++func _refresh_traders() -> void:
++	## 03_Systems 17.1 H: all_trader_ids／get_trader／is_frozen；ShipRegistry.ship_info；CashLedger.balance.
++	if _traders_tree == null:
++		return
++	_traders_tree.clear()
++	var root: TreeItem = _traders_tree.create_item()
++	if not _booted:
++		return
++	if not TraderRegistry.is_loaded():
++		var note: TreeItem = _traders_tree.create_item(root)
++		note.set_text(0, "（TraderRegistry 未載入 — G-INT-01／layers.TRADERS）")
++		return
++	var ids: PackedStringArray = TraderRegistry.all_trader_ids()
++	if ids.is_empty():
++		var empty: TreeItem = _traders_tree.create_item(root)
++		var en_s: String = "on" if TraderRegistry.is_enabled() else "off"
++		empty.set_text(0, "（無名冊；enabled=%s）" % en_s)
++		return
++	for tid_v in ids:
++		var tid: StringName = StringName(tid_v)
++		var t_v: Variant = TraderRegistry.get_trader(tid)
++		if t_v == null or typeof(t_v) != TYPE_DICTIONARY:
++			continue
++		var t: Dictionary = t_v
++		var acct: StringName = StringName(t.get("account_id", &""))
++		var ship_ids: Array = t.get("ship_ids", [])
++		var ship_bits: PackedStringArray = PackedStringArray()
++		for sid_v in ship_ids:
++			var sid: StringName = StringName(sid_v)
++			var info: Dictionary = ShipRegistry.ship_info(sid)
++			if info.is_empty():
++				ship_bits.append("%s=?" % String(sid))
++				continue
++			var st: StringName = StringName(info.get("state", &""))
++			if st == Ship.STATE_SAILING:
++				ship_bits.append(
++					"%s:在途→%s" % [String(sid), str(info.get("dest_port", ""))]
++				)
++			else:
++				ship_bits.append(
++					"%s:港=%s" % [String(sid), str(info.get("port_id", ""))]
++				)
++		var cash_li: int = 0
++		if acct != &"" and CashLedger.has_account(acct):
++			cash_li = CashLedger.balance(acct)
++		var status: String = _trader_status_label(t, acct)
++		var row: TreeItem = _traders_tree.create_item(root)
++		row.set_text(0, String(tid))
++		row.set_text(1, str(ship_ids.size()))
++		row.set_text(2, "；".join(ship_bits) if not ship_bits.is_empty() else "—")
++		row.set_text(3, FormatTael.format_tael(cash_li))
++		row.set_text(4, status)
++
++
++func _trader_status_label(t: Dictionary, account_id: StringName) -> String:
++	## Dispatch: active／idle／frozen（retired shown when mode＝RETIRED）.
++	if account_id != &"" and TraderRegistry.is_frozen(account_id):
++		return "frozen"
++	if bool(t.get("retired", false)):
++		return "retired"
++	var mode: StringName = StringName(t.get("mode", TraderRegistry.MODE_IDLE))
++	if mode == TraderRegistry.MODE_RETIRED:
++		return "retired"
++	if mode == TraderRegistry.MODE_IDLE:
++		return "idle"
++	return "active"
++
++
++func _refresh_port_zones() -> void:
++	## Open zone count via slots_for_port（WP-18）；built-ratio via zone_built_ratio_ppm（D-100）.
++	## city auto-housing count：C-05 gap（no public counter）— see evening-17-55/step_U/gaps.md.
++	if _port_zones_label == null:
++		return
++	if not _booted or _selected_port == &"" or not BuildingEconomy.is_loaded():
++		_port_zones_label.text = "區域：—"
++		return
++	var pid: String = String(_selected_port)
++	var open_zones: Dictionary = {} ## zone:int → true
++	var max_open: int = -1
++	for s_v in BuildingEconomy.slots_for_port(pid):
++		var s: Slot = s_v
++		if s == null or s.kind != Slot.Kind.CIVIL:
++			continue
++		if not s.zone_open:
++			continue
++		open_zones[s.zone] = true
++		if s.zone > max_open:
++			max_open = s.zone
++	var open_count: int = open_zones.size()
++	var next_zone: int = max_open + 1
++	var built_ppm: int = 0
++	var built_s: String = "—"
++	if next_zone >= 1:
++		built_ppm = BuildingEconomy.zone_built_ratio_ppm(StringName(pid), next_zone)
++		built_s = "%s ppm（累計 zones 1..%s；次區＝%s）" % [
++			str(built_ppm), str(maxi(0, next_zone - 1)), str(next_zone)
++		]
++	var housing_layer: String = (
++		"on" if BuildingEconomy.is_city_housing_on() else "off"
++	)
++	_port_zones_label.text = (
++		"區域：開區數＝%s；已建比例＝%s；城市自建住宅數＝[C-05 gap：無公開計數查詢]（layer CITY_HOUSING＝%s）"
++		% [str(open_count), built_s, housing_layer]
++	)
+ 
+ 
+ func _refresh_market() -> void:

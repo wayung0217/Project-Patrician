@@ -1,0 +1,80 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestPop because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestWorkforce because it does not extend GutTest
+[4m
+
+res://tests/unit/test_wp67_garrison_obs05.gd
+[0m* test_WP67_garrison_goods_fail_restores_cash_and_stock
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-02", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 110, "message": "insufficient balance" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] _fail (res://autoload/goods_ledger.gd:1145)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:302)
+       [3] transfer (res://autoload/goods_ledger.gd:220)
+       [4] test_WP67_garrison_goods_fail_restores_cash_and_stock (res://tests/unit/test_wp67_garrison_obs05.gd:90)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [7] test_scripts (res://addons/gut/gut.gd:1047)
+       [8] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [9] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [10] main (res://addons/gut/cli/gut_cli.gd:297)
+       [11] _init (res://addons/gut/gut_cmdln.gd:39)
+* test_D102e_new_build_spend_build_upgrade_li
+* test_D114b_city_upgrade_spend_counted_once
+* test_WP67_OBS05_queries_after_season
+ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 99, "message": "season not settled (OBS-05)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_fail (res://autoload/building_economy.gd:3094)
+       [1] season_land_rent_li (res://autoload/building_economy.gd:2899)
+       [2] test_WP67_OBS05_queries_after_season (res://tests/unit/test_wp67_garrison_obs05.gd:211)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 99, "message": "season not settled (OBS-05)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_fail (res://autoload/building_economy.gd:3094)
+       [1] city_spend_by_category (res://autoload/building_economy.gd:2884)
+       [2] test_WP67_OBS05_queries_after_season (res://tests/unit/test_wp67_garrison_obs05.gd:212)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[1m4/4 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              2
+
+Scripts               1
+Tests                 4
+Passing Tests         4
+Asserts              58
+Time              0.527s
+
+
+[32m---- All tests passed! ----
+[0m
+WARNING: 186 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 68 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

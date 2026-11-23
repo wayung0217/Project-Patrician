@@ -1,0 +1,19 @@
+commit c13249e65181bb0bb38a6005a4aed9b84abaa7a2
+Merge: 494a696 14b22ee
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 15:10:08 2026 +0000
+
+    Merge laneA wp36-traders into int-1755
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ autoload/cash_ledger.gd                     |   6 +-
+ autoload/sim_loop.gd                        |  20 +-
+ autoload/trader_registry.gd                 | 969 ++++++++++++++++++++++++++++
+ autoload/trader_registry.gd.uid             |   1 +
+ core/trade_evaluator.gd                     | 179 +++++
+ core/trade_evaluator.gd.uid                 |   1 +
+ project.godot                               |   7 +-
+ tests/unit/test_sim_loop.gd                 |   5 +-
+ tests/unit/test_trader_registry_wp36.gd     | 412 ++++++++++++
+ tests/unit/test_trader_registry_wp36.gd.uid |   1 +
+ 10 files changed, 1594 insertions(+), 7 deletions(-)

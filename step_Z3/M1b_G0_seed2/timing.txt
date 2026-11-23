@@ -1,0 +1,2 @@
+wall_s=184.700 rc=0
+ERROR_lines=0 SCRIPT_ERROR=0

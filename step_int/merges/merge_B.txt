@@ -1,0 +1,9 @@
+Merge made by the 'ort' strategy.
+ autoload/goods_ledger.gd                      |  14 +-
+ autoload/population_model.gd                  | 268 +++++++++++++++-
+ core/demand_model.gd                          |  56 +++-
+ tests/unit/test_lane_b_pop_demand_1755.gd     | 431 ++++++++++++++++++++++++++
+ tests/unit/test_lane_b_pop_demand_1755.gd.uid |   1 +
+ 5 files changed, 753 insertions(+), 17 deletions(-)
+ create mode 100644 tests/unit/test_lane_b_pop_demand_1755.gd
+ create mode 100644 tests/unit/test_lane_b_pop_demand_1755.gd.uid

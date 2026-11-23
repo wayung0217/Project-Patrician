@@ -1,0 +1,817 @@
+diff --git a/autoload/building_economy.gd b/autoload/building_economy.gd
+index 33c9cb5..d9220e5 100644
+--- a/autoload/building_economy.gd
++++ b/autoload/building_economy.gd
+@@ -2213,6 +2213,106 @@ func city_queue_position(port_id: StringName) -> int:
+ 	return int(_queue_pos.get(pid, 0))
+ 
+ 
++## D-110(d) queue_state tokens（卡錢／卡料／施工中／已走完）.
++const QUEUE_STATE_CASH := "卡錢"
++const QUEUE_STATE_MAT := "卡料"
++const QUEUE_STATE_BUILD := "施工中"
++const QUEUE_STATE_DONE := "已走完"
++
++
++func city_queue_material_shortfall(port_id: StringName) -> Dictionary:
++	## D-110(b)／FRM-SYS08-25: good_id → 缺料擔（升序鍵）；非 WAITING_MATERIAL → {}；
++	## 查無港 → {} + last_error（D-08c）.
++	assert(_loaded, "BuildingEconomy.city_queue_material_shortfall before load")
++	_clear_last_error()
++	var pid: String = String(port_id)
++	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
++		_record_fail(
++			ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_material_shortfall (D-110b)"
++		)
++		return {}
++	var waiting: Building = _city_queue_waiting_building(pid)
++	if waiting == null:
++		return {}
++	return _material_shortfall_of(waiting)
++
++
++func city_queue_state(port_id: StringName) -> String:
++	## D-110(d): 卡錢／卡料／施工中／已走完. Required for season_ports（reads private queue）.
++	assert(_loaded, "BuildingEconomy.city_queue_state before load")
++	_clear_last_error()
++	var pid: String = String(port_id)
++	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
++		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_state (D-110d)")
++		return ""
++	## In-progress city public (WAITING／BUILDING) wins even if queue_pos already advanced.
++	if _city_queue_waiting_building(pid) != null:
++		return QUEUE_STATE_MAT
++	if _city_public_in_state(pid, Building.State.BUILDING) != null:
++		return QUEUE_STATE_BUILD
++	var steps: Array = _queue_by_port.get(pid, [])
++	var pos: int = int(_queue_pos.get(pid, 0))
++	if pos >= steps.size():
++		return QUEUE_STATE_DONE
++	return QUEUE_STATE_CASH
++
++
++func _city_queue_waiting_building(port_id: String) -> Building:
++	## City-owned PUBLIC at port in WAITING_MATERIAL（only city queue, not player／AI）.
++	return _city_public_in_state(port_id, Building.State.WAITING_MATERIAL)
++
++
++func _city_public_in_state(port_id: String, want_state: int) -> Building:
++	var best: Building = null
++	var best_id := ""
++	for bld_v in _buildings_by_port.get(port_id, []):
++		var bld: Building = bld_v
++		if not _is_city_owner(bld.owner):
++			continue
++		if bld.build_class != CLASS_PUBLIC:
++			continue
++		if bld.state != want_state:
++			continue
++		var sid: String = String(bld.building_id)
++		if best == null or sid < best_id:
++			best = bld
++			best_id = sid
++	return best
++
++
++func _material_shortfall_of(bld: Building) -> Dictionary:
++	## 缺料 ＝ 配方 − 已到料（locked）；prefer missing_materials when set.
++	var out: Dictionary = {}
++	if not bld.missing_materials.is_empty():
++		var keys: Array = bld.missing_materials.keys()
++		keys.sort()
++		for g_v in keys:
++			var g: String = String(g_v)
++			var q: int = int(bld.missing_materials[g_v])
++			if q > 0:
++				out[g] = q
++		return out
++	var recipe: Dictionary = {}
++	if bld.build_class == CLASS_PUBLIC and bld.level > BUILDING_LEVEL_MIN:
++		var fee: Dictionary = public_upgrade_fee(StringName(bld.port_id), bld.level)
++		recipe = (fee.get("MAT", {}) as Dictionary).duplicate(true)
++	else:
++		var mat_root: Dictionary = Params.get_value(PRM_BUILD_MAT)
++		var row: Variant = mat_root.get(String(bld.build_class), {})
++		if typeof(row) == TYPE_DICTIONARY:
++			recipe = (row as Dictionary).duplicate(true)
++	var rkeys: Array = recipe.keys()
++	rkeys.sort()
++	for g_v2 in rkeys:
++		var gs: String = String(g_v2)
++		var need: int = int(recipe[g_v2])
++		var got: int = int(bld.locked_materials.get(gs, 0))
++		var miss: int = need - got
++		if miss > 0:
++			out[gs] = miss
++	return out
++
++
+ func _frm18_price(bld: Building) -> int:
+ 	var slot: Slot = _slot(bld.slot_id)
+ 	var land_li: int = 0
+diff --git a/sim/csv_out.gd b/sim/csv_out.gd
+index bd58961..6b57e14 100644
+--- a/sim/csv_out.gd
++++ b/sim/csv_out.gd
+@@ -80,6 +80,12 @@ static func write_all(
+ 		paths.append(obs_path)
+ 	else:
+ 		failed.append(obs_path)
++	## D-110(d): trader_summary.csv
++	var trader_path: String = d + "trader_summary.csv"
++	if _write_trader_summary(trader_path, sampler.trader_summary_rows):
++		paths.append(trader_path)
++	else:
++		failed.append(trader_path)
+ 	return {
+ 		"ok": failed.is_empty(),
+ 		"paths": paths,
+@@ -92,13 +98,14 @@ static func _write_season_cells(path: String, rows: Array) -> bool:
+ 	for r_v in rows:
+ 		var r: Dictionary = r_v
+ 		lines.append(
+-			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
++			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+ 			% [
+ 				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]),
+ 				r["port_id"], r["good_id"],
+ 				_fmt(r["stock"]), _fmt(r["mid_li"]), _fmt(r["stock_weeks"]), _fmt(r["band"]),
+ 				_fmt(r["produced"]), _fmt(r["consumed"]),
+ 				_fmt(r["relocated_in"]), _fmt(r["relocated_out"]),
++				_fmt(r.get("excess_consumed", 0)),
+ 			]
+ 		)
+ 	return _store(path, lines)
+@@ -109,8 +116,11 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
+ 	for r_v in rows:
+ 		var r: Dictionary = r_v
+ 		var spend_esc: String = _csv_escape(String(r.get("city_spend_json", "{}")))
++		var unmet_p: String = _csv_escape(String(r.get("unmet_poor_top3", "")))
++		var unmet_c: String = _csv_escape(String(r.get("unmet_citizen_top3", "")))
++		var unmet_r: String = _csv_escape(String(r.get("unmet_rich_top3", "")))
+ 		lines.append(
+-			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
++			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+ 			% [
+ 				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]), r["port_id"],
+ 				_fmt(r["rich"]), _fmt(r["citizen"]), _fmt(r["poor"]), _fmt(r["beggar"]),
+@@ -120,6 +130,41 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
+ 				_fmt(r.get("land_rent_li", -1)),
+ 				_fmt(r.get("vacancy_tax_li", -1)),
+ 				spend_esc,
++				_csv_escape(String(r.get("queue_state", ""))),
++				_fmt(r.get("sat_poor", 0)),
++				_fmt(r.get("sat_citizen", 0)),
++				_fmt(r.get("sat_rich", 0)),
++				_fmt(r.get("job_cap", 0)),
++				_fmt(r.get("cap_sat_up1", 0)),
++				_fmt(r.get("cap_sat_up2", 0)),
++				_fmt(r.get("pf1", 0)),
++				_fmt(r.get("pf2", 0)),
++				_fmt(r.get("pf3", 0)),
++				_fmt(r.get("pf4", 0)),
++				_fmt(r.get("pf5", 0)),
++				_fmt(r.get("pf6", 0)),
++				unmet_p, unmet_c, unmet_r,
++			]
++		)
++	return _store(path, lines)
++
++
++static func _write_trader_summary(path: String, rows: Array) -> bool:
++	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_TRADER_SUMMARY])
++	for r_v in rows:
++		var r: Dictionary = r_v
++		lines.append(
++			"%s,%s,%s,%s,%s,%s,%s,%s,%s"
++			% [
++				_fmt(r.get("run_id", 0)),
++				_fmt(r.get("seed", 0)),
++				_fmt(r.get("season_index", 0)),
++				_csv_escape(String(r.get("port_id", ""))),
++				_fmt(r.get("sail_count", 0)),
++				_fmt(r.get("ships_in_port", 0)),
++				_fmt(r.get("frozen_traders", 0)),
++				_csv_escape(String(r.get("cargo_dan_json", "{}"))),
++				_fmt(r.get("avg_daily_margin_li", 0)),
+ 			]
+ 		)
+ 	return _store(path, lines)
+diff --git a/sim/sampler.gd b/sim/sampler.gd
+index 8fb2f91..9d2cbe0 100644
+--- a/sim/sampler.gd
++++ b/sim/sampler.gd
+@@ -4,22 +4,31 @@ extends RefCounted
+ ##
+ ## A33／N-04: stock_weeks comes only from MarketPricer.stock_weeks (single formula site).
+ ## Do not recompute weeks here. Cite: D-34d／D-52b／03_Systems FRM-SYS04-01／09.
++## D-110(d)(i): queue_state、各階 sat／cap、PF 流量、最缺 3 貨；excess_consumed；trader_summary.
+ 
+ 
+-## Header strings — 9.9 verbatim.
++## Header strings — 9.9 + D-110(d)(i).
+ const HDR_SEASON_CELLS := (
+ 	"run_id,seed,season_index,port_id,good_id,stock,mid_li,stock_weeks,band,"
+-	+ "produced,consumed,relocated_in,relocated_out"
++	+ "produced,consumed,relocated_in,relocated_out,excess_consumed"
+ )
+ const HDR_SEASON_PORTS := (
+ 	"run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,"
+ 	+ "workplaces,beds,city_balance_li,queue_position,"
+-	+ "land_rent_li,vacancy_tax_li,city_spend_json"
++	+ "land_rent_li,vacancy_tax_li,city_spend_json,"
++	+ "queue_state,sat_poor,sat_citizen,sat_rich,job_cap,cap_sat_up1,cap_sat_up2,"
++	+ "pf1,pf2,pf3,pf4,pf5,pf6,"
++	+ "unmet_poor_top3,unmet_citizen_top3,unmet_rich_top3"
+ )
+ const HDR_DAILY := (
+ 	"run_id,seed,day,good_id,stock,mid_li,stock_weeks,band,"
+ 	+ "produced,consumed,relocated_in,relocated_out"
+ )
++## D-110(d): trader_summary（Lane A fills TraderRegistry; zeros until then）.
++const HDR_TRADER_SUMMARY := (
++	"run_id,seed,season_index,port_id,sail_count,ships_in_port,frozen_traders,"
++	+ "cargo_dan_json,avg_daily_margin_li"
++)
+ 
+ 
+ var acc: SimTransferAcc = null
+@@ -29,6 +38,11 @@ var daily_rows: Dictionary = {} ## port_id -> Array of rows
+ var conservation_hits: int = 0
+ ## WP-27 OBS-04／05 long-table rows (not part of 9.9 five CSV).
+ var obs_ext_rows: Array = []
++## D-110(d): trader_summary rows（per season × port）.
++var trader_summary_rows: Array = []
++## D-110(i): season unmet accum port|good → int（from DemandModel.demand_unmet）.
++var _unmet_season: Dictionary = {}
++var _unmet_connected: bool = false
+ 
+ 
+ func reset_run() -> void:
+@@ -36,11 +50,30 @@ func reset_run() -> void:
+ 	season_ports.clear()
+ 	daily_rows.clear()
+ 	obs_ext_rows.clear()
++	trader_summary_rows.clear()
++	_unmet_season.clear()
+ 	conservation_hits = 0
+ 	if acc != null:
+ 		acc.reset_counters()
+ 
+ 
++func connect_unmet() -> void:
++	## D-110(i): accumulate DemandModel.demand_unmet across the season.
++	if _unmet_connected:
++		return
++	if DemandModel.demand_unmet.is_connected(_on_demand_unmet):
++		_unmet_connected = true
++		return
++	DemandModel.demand_unmet.connect(_on_demand_unmet)
++	_unmet_connected = true
++
++
++func disconnect_unmet() -> void:
++	if _unmet_connected and DemandModel.demand_unmet.is_connected(_on_demand_unmet):
++		DemandModel.demand_unmet.disconnect(_on_demand_unmet)
++	_unmet_connected = false
++
++
+ func on_conservation(_good_id: StringName, _expected: int, _actual: int) -> void:
+ 	conservation_hits = conservation_hits + 1
+ 
+@@ -51,10 +84,12 @@ func sample_season(run_id: int, seed: int, season_index: int) -> void:
+ 	for i in range(ports.size()):
+ 		var port_s: String = String(ports[i])
+ 		_sample_port_row(run_id, seed, season_index, port_s)
++		_sample_trader_row(run_id, seed, season_index, port_s)
+ 		for j in range(goods.size()):
+ 			var good_s: String = String(goods[j])
+ 			season_cells.append(_cell_row(run_id, seed, season_index, -1, port_s, good_s, true))
+-	## Reset transfer counters after season sample so next season is independent.
++	## Reset transfer counters + unmet after season sample so next season is independent.
++	_unmet_season.clear()
+ 	if acc != null:
+ 		acc.reset_counters()
+ 
+@@ -85,11 +120,36 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
+ 	var land_rent := -1
+ 	var vac_tax := -1
+ 	var spend_json := "{}"
++	var queue_state := ""
++	var sat_poor := 0
++	var sat_citizen := 0
++	var sat_rich := 0
++	var job_cap := 0
++	var cap_sat_up1 := 0
++	var cap_sat_up2 := 0
+ 	if BuildingEconomy.is_loaded():
+ 		land_rent = BuildingEconomy.season_land_rent_li(pid, season_index)
+ 		vac_tax = BuildingEconomy.season_vacancy_tax_li(pid, season_index)
+ 		var spend: Dictionary = BuildingEconomy.city_spend_by_category(pid, season_index)
+ 		spend_json = "{}" if spend.is_empty() else JSON.stringify(spend)
++		if BuildingEconomy.has_method("city_queue_state"):
++			queue_state = String(BuildingEconomy.city_queue_state(pid))
++	if PopulationModel.is_loaded():
++		sat_poor = PopulationModel.satisfaction(pid, PopulationModel.CLASS_POOR)
++		sat_citizen = PopulationModel.satisfaction(pid, PopulationModel.CLASS_CITIZEN)
++		sat_rich = PopulationModel.satisfaction(pid, PopulationModel.CLASS_RICH)
++		job_cap = PopulationModel.job_capacity(pid)
++	## D-110(d) 各階 cap：升階門檻（現值＝sat_*）.
++	if Params.is_loaded():
++		if Params.has_prm("PRM-SYS07-SAT_UP1_MIN"):
++			cap_sat_up1 = Params.get_int("PRM-SYS07-SAT_UP1_MIN")
++		if Params.has_prm("PRM-SYS07-SAT_UP2_MIN"):
++			cap_sat_up2 = Params.get_int("PRM-SYS07-SAT_UP2_MIN")
++	## D-110(i): Lane B owns season_flow_counts; read when present.
++	var flows: Dictionary = _read_season_flows(pid, season_index)
++	var unmet_p: String = _top3_unmet_for_class(port_s, PopulationModel.CLASS_POOR)
++	var unmet_c: String = _top3_unmet_for_class(port_s, PopulationModel.CLASS_CITIZEN)
++	var unmet_r: String = _top3_unmet_for_class(port_s, PopulationModel.CLASS_RICH)
+ 	season_ports.append({
+ 		"run_id": run_id,
+ 		"seed": seed,
+@@ -107,9 +167,116 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
+ 		"land_rent_li": land_rent,
+ 		"vacancy_tax_li": vac_tax,
+ 		"city_spend_json": spend_json,
++		"queue_state": queue_state,
++		"sat_poor": sat_poor,
++		"sat_citizen": sat_citizen,
++		"sat_rich": sat_rich,
++		"job_cap": job_cap,
++		"cap_sat_up1": cap_sat_up1,
++		"cap_sat_up2": cap_sat_up2,
++		"pf1": int(flows.get("PF-1", 0)),
++		"pf2": int(flows.get("PF-2", 0)),
++		"pf3": int(flows.get("PF-3", 0)),
++		"pf4": int(flows.get("PF-4", 0)),
++		"pf5": int(flows.get("PF-5", 0)),
++		"pf6": int(flows.get("PF-6", 0)),
++		"unmet_poor_top3": unmet_p,
++		"unmet_citizen_top3": unmet_c,
++		"unmet_rich_top3": unmet_r,
+ 	})
+ 
+ 
++func _sample_trader_row(run_id: int, seed: int, season_index: int, port_s: String) -> void:
++	## D-110(d) trader_summary — TraderRegistry public queries when Lane A present.
++	var sail := 0
++	var in_port := 0
++	var frozen := 0
++	var cargo_json := "{}"
++	var avg_margin := 0
++	var tre: Object = _trader_registry()
++	if tre != null:
++		if tre.has_method("season_sail_count"):
++			sail = int(tre.call("season_sail_count", StringName(port_s), season_index))
++		if tre.has_method("ships_in_port_count"):
++			in_port = int(tre.call("ships_in_port_count", StringName(port_s)))
++		if tre.has_method("frozen_trader_count"):
++			frozen = int(tre.call("frozen_trader_count", StringName(port_s)))
++		if tre.has_method("season_cargo_dan"):
++			var cargo: Variant = tre.call("season_cargo_dan", StringName(port_s), season_index)
++			if typeof(cargo) == TYPE_DICTIONARY:
++				var cd: Dictionary = cargo
++				cargo_json = "{}" if cd.is_empty() else JSON.stringify(cd)
++		if tre.has_method("season_avg_daily_margin_li"):
++			avg_margin = int(tre.call("season_avg_daily_margin_li", StringName(port_s), season_index))
++	trader_summary_rows.append({
++		"run_id": run_id,
++		"seed": seed,
++		"season_index": season_index,
++		"port_id": port_s,
++		"sail_count": sail,
++		"ships_in_port": in_port,
++		"frozen_traders": frozen,
++		"cargo_dan_json": cargo_json,
++		"avg_daily_margin_li": avg_margin,
++	})
++
++
++func _trader_registry() -> Object:
++	## Autoload may be absent until Lane A; Engine.has_singleton avoids hard fail.
++	if Engine.has_singleton("TraderRegistry"):
++		return Engine.get_singleton("TraderRegistry") as Object
++	var tree := Engine.get_main_loop()
++	if tree is SceneTree:
++		var n: Node = (tree as SceneTree).root.get_node_or_null("TraderRegistry")
++		return n
++	return null
++
++
++func _read_season_flows(port_id: StringName, season_index: int) -> Dictionary:
++	## Lane B implements PopulationModel.season_flow_counts; empty until merged.
++	if not PopulationModel.has_method("season_flow_counts"):
++		return {}
++	var v: Variant = PopulationModel.call("season_flow_counts", port_id, season_index)
++	if typeof(v) != TYPE_DICTIONARY:
++		return {}
++	return v as Dictionary
++
++
++func _on_demand_unmet(port_id: StringName, good_id: StringName, shortfall: int) -> void:
++	if shortfall <= 0:
++		return
++	var k: String = "%s|%s" % [String(port_id), String(good_id)]
++	_unmet_season[k] = int(_unmet_season.get(k, 0)) + shortfall
++
++
++func _top3_unmet_for_class(port_s: String, clazz: StringName) -> String:
++	## D-110(i): among goods with sat weight for class, top 3 by season unmet shortfall.
++	if not DemandModel.is_loaded():
++		return ""
++	var items: Array = []
++	var goods: PackedStringArray = GoodCatalog.all_ids() if GoodCatalog.is_loaded() else PackedStringArray()
++	for g_v in goods:
++		var g: String = String(g_v)
++		var w: int = DemandModel.sat_weight_pct(clazz, StringName(g))
++		if w <= 0:
++			continue
++		var amt: int = int(_unmet_season.get("%s|%s" % [port_s, g], 0))
++		if amt <= 0:
++			continue
++		items.append({"good": g, "amt": amt})
++	items.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
++		if int(a["amt"]) == int(b["amt"]):
++			return String(a["good"]) < String(b["good"])
++		return int(a["amt"]) > int(b["amt"])
++	)
++	var parts: PackedStringArray = PackedStringArray()
++	var n: int = mini(3, items.size())
++	for i in range(n):
++		var it: Dictionary = items[i]
++		parts.append("%s:%d" % [String(it["good"]), int(it["amt"])])
++	return "|".join(parts)
++
++
+ func _cell_row(
+ 	run_id: int,
+ 	seed: int,
+@@ -139,11 +306,14 @@ func _cell_row(
+ 	var consumed: int = 0
+ 	var reloc_in: int = 0
+ 	var reloc_out: int = 0
++	var excess: int = 0
+ 	if acc != null:
+ 		produced = acc.produced(port_s, good_s)
+ 		consumed = acc.consumed(port_s, good_s)
+ 		reloc_in = acc.relocated_in(port_s, good_s)
+ 		reloc_out = acc.relocated_out(port_s, good_s)
++		if acc.has_method("excess_consumed"):
++			excess = int(acc.call("excess_consumed", port_s, good_s))
+ 	## WP-27／WP-64 OBS-04: weekly potential at sample time (not written to 9.9 CSV).
+ 	var potential: int = 0
+ 	if DemandModel.is_loaded():
+@@ -161,6 +331,7 @@ func _cell_row(
+ 		"consumed": consumed,
+ 		"relocated_in": reloc_in,
+ 		"relocated_out": reloc_out,
++		"excess_consumed": excess,
+ 		"_weekly_potential": potential,
+ 	}
+ 	if is_season:
+diff --git a/sim/sim_engine.gd b/sim/sim_engine.gd
+index 17cfa18..9d7b5ba 100644
+--- a/sim/sim_engine.gd
++++ b/sim/sim_engine.gd
+@@ -75,6 +75,7 @@ func run_scenario_dict(scenario: Dictionary) -> Dictionary:
+ 			all_sampler.season_cells.append_array(sm.season_cells)
+ 			all_sampler.season_ports.append_array(sm.season_ports)
+ 			all_sampler.obs_ext_rows.append_array(sm.obs_ext_rows)
++			all_sampler.trader_summary_rows.append_array(sm.trader_summary_rows)
+ 			for pid_v in sm.daily_rows.keys():
+ 				var pid: String = String(pid_v)
+ 				if not all_sampler.daily_rows.has(pid):
+@@ -132,6 +133,7 @@ func _run_one_job(
+ 	var acc := SimTransferAcc.new()
+ 	sampler.acc = acc
+ 	acc.connect_ledger()
++	sampler.connect_unmet()
+ 	if not GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
+ 		GoodsLedger.conservation_violated.connect(sampler.on_conservation)
+ 
+@@ -163,6 +165,7 @@ func _run_one_job(
+ 	)
+ 	if not boot_errors.is_empty() or not SimLoop.is_booted():
+ 		acc.disconnect_ledger()
++		sampler.disconnect_unmet()
+ 		var reason: String = "%s: boot failed: %s" % [ERR_SYS23_07, str(boot_errors)]
+ 		return {
+ 			"summary": _abort_summary(run_id, combo_index, seed, combo, reason, t0),
+@@ -177,6 +180,7 @@ func _run_one_job(
+ 		)
+ 		if not bool(conv.get("ok", false)):
+ 			acc.disconnect_ledger()
++			sampler.disconnect_unmet()
+ 			return {
+ 				"summary": _abort_summary(
+ 					run_id, combo_index, seed, combo, String(conv.get("error", ERR_SYS23_03)), t0
+@@ -237,6 +241,7 @@ func _run_one_job(
+ 	if Clock.season_cutoff.is_connected(on_cutoff):
+ 		Clock.season_cutoff.disconnect(on_cutoff)
+ 	acc.disconnect_ledger()
++	sampler.disconnect_unmet()
+ 	if GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
+ 		GoodsLedger.conservation_violated.disconnect(sampler.on_conservation)
+ 
+diff --git a/sim/sim_runner.gd b/sim/sim_runner.gd
+index 7359b7b..2acd7d7 100644
+--- a/sim/sim_runner.gd
++++ b/sim/sim_runner.gd
+@@ -151,6 +151,8 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
+ 			(all_sampler.get("season_ports") as Array).append_array(res["season_ports"])
+ 		if res.has("obs_ext_rows"):
+ 			(all_sampler.get("obs_ext_rows") as Array).append_array(res["obs_ext_rows"])
++		if res.has("trader_summary_rows"):
++			(all_sampler.get("trader_summary_rows") as Array).append_array(res["trader_summary_rows"])
+ 		if res.has("daily_rows"):
+ 			var dr: Dictionary = res["daily_rows"]
+ 			var daily: Dictionary = all_sampler.get("daily_rows")
+@@ -204,6 +206,7 @@ func _run_job_file(job_path: String) -> int:
+ 		"season_ports": [],
+ 		"daily_rows": {},
+ 		"obs_ext_rows": [],
++		"trader_summary_rows": [],
+ 	}
+ 	if one.has("sampler"):
+ 		var sm: RefCounted = one["sampler"]
+@@ -211,6 +214,7 @@ func _run_job_file(job_path: String) -> int:
+ 		out["season_ports"] = sm.get("season_ports")
+ 		out["daily_rows"] = sm.get("daily_rows")
+ 		out["obs_ext_rows"] = sm.get("obs_ext_rows")
++		out["trader_summary_rows"] = sm.get("trader_summary_rows")
+ 	var result_path: String = String(payload["result_path"])
+ 	var rf := FileAccess.open(result_path, FileAccess.WRITE)
+ 	## A34／A32: result write failure → non-zero (parent must not treat as success).
+diff --git a/sim/transfer_acc.gd b/sim/transfer_acc.gd
+index fa60f99..1c4f1c5 100644
+--- a/sim/transfer_acc.gd
++++ b/sim/transfer_acc.gd
+@@ -4,10 +4,14 @@ extends RefCounted
+ ## WP-27: relocated_in／out via note_relocate (SIM_RELOCATE). Does not read private ledger state.
+ 
+ 
++## D-110(d)／Lane B: EXCESS_CONSUME reason string（GoodsLedger may add const later）.
++const REASON_EXCESS_CONSUME := &"EXCESS_CONSUME"
++
+ var _produced: Dictionary = {} ## "port|good" -> int
+ var _consumed: Dictionary = {}
+ var _relocated_in: Dictionary = {}
+ var _relocated_out: Dictionary = {}
++var _excess_consumed: Dictionary = {}
+ var _connected: bool = false
+ 
+ 
+@@ -30,6 +34,7 @@ func clear() -> void:
+ 	_consumed.clear()
+ 	_relocated_in.clear()
+ 	_relocated_out.clear()
++	_excess_consumed.clear()
+ 
+ 
+ func produced(port_id: String, good_id: String) -> int:
+@@ -54,6 +59,12 @@ func relocated_out(port_id: String, good_id: String) -> int:
+ 	return SimJsonInt.as_int(v, "relocated_out")
+ 
+ 
++func excess_consumed(port_id: String, good_id: String) -> int:
++	## D-110(d): season_cells.excess_consumed（Lane B EXCESS_CONSUME；0 until then）.
++	var v: Variant = _excess_consumed.get(_key(port_id, good_id), 0)
++	return SimJsonInt.as_int(v, "excess_consumed")
++
++
+ func note_relocate(from_port: String, to_port: String, good_id: String, qty: int) -> void:
+ 	## WP-27: called by SimRelocator after successful SIM_RELOCATE transfer.
+ 	if qty <= 0:
+@@ -84,6 +95,11 @@ func _on_transferred(event: TransferEvent) -> void:
+ 		var from_port: String = _port_of(event.from)
+ 		if not from_port.is_empty():
+ 			_add(_consumed, from_port, good_s, qty)
++	elif reason == REASON_EXCESS_CONSUME or String(reason) == "EXCESS_CONSUME":
++		## D-110(d): not folded into consumed（Lane B／FRM-SYS07-16）.
++		var from_x: String = _port_of(event.from)
++		if not from_x.is_empty():
++			_add(_excess_consumed, from_x, good_s, qty)
+ 	## SIM_RELOCATE counted via note_relocate (avoids double-count if signal also fires).
+ 
+ 
+diff --git a/tests/unit/test_d110_lane_c_queue_outputs.gd b/tests/unit/test_d110_lane_c_queue_outputs.gd
+new file mode 100644
+index 0000000..3dc2939
+--- /dev/null
++++ b/tests/unit/test_d110_lane_c_queue_outputs.gd
+@@ -0,0 +1,192 @@
++extends GutTest
++## Lane C／D-110(b)(d)(i): city_queue_material_shortfall、queue_state、sim headers.
++## New tests: fixtures／user:// only；no res://data writes；no git (D-114(d)).
++
++
++const PORT := "PT-10"
++
++
++func before_each() -> void:
++	BuildingEconomy._loaded = false
++	PortRegistry._loaded = false
++	GoodCatalog._loaded = false
++	CashLedger._loaded = false
++	Params._loaded = false
++	PopulationModel._loaded = false
++	DemandModel._loaded = false
++
++
++func test_D110b_unknown_port_empty_plus_last_error() -> void:
++	_boot_min()
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	BuildingEconomy._slots_by_port[PORT] = []
++	var out: Dictionary = BuildingEconomy.city_queue_material_shortfall(StringName("PT-NOPE"))
++	assert_eq(out.size(), 0)
++	assert_eq(
++		String(BuildingEconomy.last_error().get("code", "")),
++		String(BuildingEconomy.ERR_SYS08_08)
++	)
++	for e in get_errors():
++		e.handled = true
++
++
++func test_D110b_not_waiting_material_returns_empty() -> void:
++	## EX-08-25-03／04: BUILDING or not-ordered → empty shortfall.
++	_boot_min()
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	BuildingEconomy._slots_by_port[PORT] = []
++	BuildingEconomy._buildings_by_port[PORT] = []
++	BuildingEconomy.set_build_queue(PORT, [_step(PORT, 0, "CB-01", 2)])
++	## No WAITING_MATERIAL city public → empty.
++	var out: Dictionary = BuildingEconomy.city_queue_material_shortfall(StringName(PORT))
++	assert_eq(out.size(), 0)
++	assert_eq(BuildingEconomy.city_queue_state(StringName(PORT)), BuildingEconomy.QUEUE_STATE_CASH)
++
++
++func test_D110b_waiting_material_shortfall_sorted() -> void:
++	## EX-08-25-01 shape: WAITING_MATERIAL + missing_materials → shortfall dict asc keys.
++	_boot_min()
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	BuildingEconomy._slots_by_port[PORT] = []
++	var city: StringName = CashLedger.make_city_id(PORT)
++	CashLedger.create_account(city, Account.Kind.CITY)
++	var bld := Building.new()
++	bld.building_id = &"BLD-C-WAIT"
++	bld.type = &"CB-04"
++	bld.cb_id = &"CB-04"
++	bld.build_class = BuildingEconomy.CLASS_PUBLIC
++	bld.owner = city
++	bld.port_id = PORT
++	bld.level = 2
++	bld.state = Building.State.WAITING_MATERIAL
++	bld.missing_materials = {"GD-013": 400, "GD-012": 1000} ## brick／wood ids may vary; keys sorted
++	bld.locked_materials = {"GD-013": 200}
++	BuildingEconomy._buildings[String(bld.building_id)] = bld
++	BuildingEconomy._buildings_by_port[PORT] = [bld]
++	BuildingEconomy.set_build_queue(PORT, [_step(PORT, 0, "CB-04", 2)])
++	BuildingEconomy._queue_pos[PORT] = 1 ## started → pos advanced
++	var out: Dictionary = BuildingEconomy.city_queue_material_shortfall(StringName(PORT))
++	assert_eq(out.size(), 2)
++	var keys: Array = out.keys()
++	keys.sort()
++	assert_eq(String(keys[0]), "GD-012")
++	assert_eq(String(keys[1]), "GD-013")
++	assert_eq(int(out["GD-012"]), 1000)
++	assert_eq(int(out["GD-013"]), 400)
++	assert_eq(BuildingEconomy.city_queue_state(StringName(PORT)), BuildingEconomy.QUEUE_STATE_MAT)
++
++
++func test_D110d_queue_state_building_and_done() -> void:
++	_boot_min()
++	BuildingEconomy._clear_state()
++	BuildingEconomy._loaded = true
++	BuildingEconomy._slots_by_port[PORT] = []
++	var city: StringName = CashLedger.make_city_id(PORT)
++	CashLedger.create_account(city, Account.Kind.CITY)
++	var bld := Building.new()
++	bld.building_id = &"BLD-C-BUILD"
++	bld.type = &"CB-01"
++	bld.cb_id = &"CB-01"
++	bld.build_class = BuildingEconomy.CLASS_PUBLIC
++	bld.owner = city
++	bld.port_id = PORT
++	bld.level = 1
++	bld.state = Building.State.BUILDING
++	bld.days_left = 5
++	BuildingEconomy._buildings[String(bld.building_id)] = bld
++	BuildingEconomy._buildings_by_port[PORT] = [bld]
++	BuildingEconomy.set_build_queue(PORT, [_step(PORT, 0, "CB-01", 1), _step(PORT, 1, "CB-02", 1)])
++	BuildingEconomy._queue_pos[PORT] = 1
++	assert_eq(BuildingEconomy.city_queue_state(StringName(PORT)), BuildingEconomy.QUEUE_STATE_BUILD)
++	## Finished queue.
++	BuildingEconomy._queue_pos[PORT] = 2
++	BuildingEconomy._buildings_by_port[PORT] = []
++	assert_eq(BuildingEconomy.city_queue_state(StringName(PORT)), BuildingEconomy.QUEUE_STATE_DONE)
++
++
++func test_D110d_season_headers_include_queue_and_flows() -> void:
++	## Headers only — no full sim boot（Lane B／A fill pf／trader at int）.
++	assert_true(SimSampler.HDR_SEASON_PORTS.find("queue_state") >= 0)
++	assert_true(SimSampler.HDR_SEASON_PORTS.find("pf1") >= 0)
++	assert_true(SimSampler.HDR_SEASON_PORTS.find("unmet_poor_top3") >= 0)
++	assert_true(SimSampler.HDR_SEASON_PORTS.find("sat_poor") >= 0)
++	assert_true(SimSampler.HDR_SEASON_PORTS.find("job_cap") >= 0)
++	assert_true(SimSampler.HDR_SEASON_CELLS.find("excess_consumed") >= 0)
++	assert_true(SimSampler.HDR_TRADER_SUMMARY.find("sail_count") >= 0)
++
++
++func test_D110d_csv_out_writes_new_columns_and_trader_summary() -> void:
++	var sampler := SimSampler.new()
++	sampler.acc = SimTransferAcc.new()
++	sampler.season_ports.append({
++		"run_id": 0, "seed": 1, "season_index": 0, "port_id": PORT,
++		"rich": 1, "citizen": 2, "poor": 3, "beggar": 0, "sat_weighted": 500,
++		"workplaces": 1, "beds": 100, "city_balance_li": 10,
++		"queue_position": 0, "land_rent_li": -1, "vacancy_tax_li": -1,
++		"city_spend_json": "{}",
++		"queue_state": BuildingEconomy.QUEUE_STATE_CASH,
++		"sat_poor": 400, "sat_citizen": 500, "sat_rich": 600, "job_cap": 40,
++		"cap_sat_up1": 600, "cap_sat_up2": 700,
++		"pf1": 0, "pf2": 0, "pf3": 0, "pf4": 0, "pf5": 0, "pf6": 0,
++		"unmet_poor_top3": "", "unmet_citizen_top3": "", "unmet_rich_top3": "",
++	})
++	sampler.season_cells.append({
++		"run_id": 0, "seed": 1, "season_index": 0, "port_id": PORT, "good_id": "GD-001",
++		"stock": 1, "mid_li": 1, "stock_weeks": "1", "band": 0,
++		"produced": 0, "consumed": 0, "relocated_in": 0, "relocated_out": 0,
++		"excess_consumed": 7,
++	})
++	sampler.trader_summary_rows.append({
++		"run_id": 0, "seed": 1, "season_index": 0, "port_id": PORT,
++		"sail_count": 0, "ships_in_port": 0, "frozen_traders": 0,
++		"cargo_dan_json": "{}", "avg_daily_margin_li": 0,
++	})
++	var sid := "lane_c_d110_hdr"
++	var written: Dictionary = SimCsvOut.write_all(sid, sampler, [], [], [])
++	assert_true(bool(written.get("ok", false)), str(written.get("failed_paths", [])))
++	var d: String = SimCsvOut.out_dir(sid)
++	var ports_hdr: String = _first_line(d + "season_ports.csv")
++	assert_eq(ports_hdr, SimSampler.HDR_SEASON_PORTS)
++	var cells_hdr: String = _first_line(d + "season_cells.csv")
++	assert_eq(cells_hdr, SimSampler.HDR_SEASON_CELLS)
++	var trader_hdr: String = _first_line(d + "trader_summary.csv")
++	assert_eq(trader_hdr, SimSampler.HDR_TRADER_SUMMARY)
++	var cell_row: String = _second_line(d + "season_cells.csv")
++	assert_true(cell_row.ends_with(",7") or cell_row.find(",7\n") >= 0 or cell_row.split(",")[-1] == "7")
++
++
++func test_D110d_transfer_acc_excess_consumed() -> void:
++	var acc := SimTransferAcc.new()
++	## Simulate EXCESS_CONSUME without needing GoodsLedger reason const.
++	acc._add(acc._excess_consumed, PORT, "GD-001", 11)
++	assert_eq(acc.excess_consumed(PORT, "GD-001"), 11)
++	assert_eq(acc.consumed(PORT, "GD-001"), 0)
++
++
++func _boot_min() -> void:
++	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
++	assert_eq(CashLedger.load_and_validate().size(), 0)
++
++
++func _step(port_id: String, step_n: int, cb: String, target: int) -> BuildStep:
++	var s := BuildStep.new()
++	s.port_id = port_id
++	s.step = step_n
++	s.cb_id = cb
++	s.target_level = target
++	return s
++
++
++func _first_line(path: String) -> String:
++	var raw: String = FileAccess.get_file_as_string(path)
++	var lines: PackedStringArray = raw.split("\n")
++	return String(lines[0]) if lines.size() > 0 else ""
++
++
++func _second_line(path: String) -> String:
++	var raw: String = FileAccess.get_file_as_string(path)
++	var lines: PackedStringArray = raw.split("\n")
++	return String(lines[1]) if lines.size() > 1 else ""
+diff --git a/tests/unit/test_d110_lane_c_queue_outputs.gd.uid b/tests/unit/test_d110_lane_c_queue_outputs.gd.uid
+new file mode 100644
+index 0000000..d8d4b69
+--- /dev/null
++++ b/tests/unit/test_d110_lane_c_queue_outputs.gd.uid
+@@ -0,0 +1 @@
++uid://f71eddxaie7d
+diff --git a/tests/unit/test_sys23_wp26.gd b/tests/unit/test_sys23_wp26.gd
+index 6bc2940..24b6e22 100644
+--- a/tests/unit/test_sys23_wp26.gd
++++ b/tests/unit/test_sys23_wp26.gd
+@@ -435,8 +435,8 @@ func test_WP58_A34_write_failure_reports_ok_false() -> void:
+ 	print("WP58_A34 write_all=%s" % str(written))
+ 	assert_false(bool(written.get("ok", true)), "A34: ok must be false on write failure")
+ 	assert_gt((written.get("failed_paths", PackedStringArray()) as PackedStringArray).size(), 0)
+-	## Five CSV writers each push_error once (season_cells/ports/summary/combos/obs_ext WP-27).
+-	assert_push_error_count(5)
++	## Six CSV writers each push_error once (season_cells/ports/summary/combos/obs_ext＋trader_summary D-110d).
++	assert_push_error_count(6)
+ 	## Cleanup blocker file.
+ 	DirAccess.remove_absolute(abs_blocked)
+ 

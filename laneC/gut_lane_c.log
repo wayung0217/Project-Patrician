@@ -1,0 +1,62 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[4m
+
+res://tests/unit/test_d110_lane_c_queue_outputs.gd
+[0m* test_D110b_unknown_port_empty_plus_last_error
+ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "port_id", "value": &"PT-NOPE", "message": "unknown port for city_queue_material_shortfall (D-110b)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_fail (res://autoload/building_economy.gd:3194)
+       [1] city_queue_material_shortfall (res://autoload/building_economy.gd:2230)
+       [2] test_D110b_unknown_port_empty_plus_last_error (res://tests/unit/test_d110_lane_c_queue_outputs.gd:24)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1045)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+* test_D110b_not_waiting_material_returns_empty
+* test_D110b_waiting_material_shortfall_sorted
+* test_D110d_queue_state_building_and_done
+* test_D110d_season_headers_include_queue_and_flows
+* test_D110d_csv_out_writes_new_columns_and_trader_summary
+* test_D110d_transfer_acc_excess_consumed
+[1m7/7 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Scripts               1
+Tests                 7
+Passing Tests         7
+Asserts              34
+Time              0.408s
+
+
+Ran Scripts matching "test_d110_lane_c_queue_outputs.gd"
+[32m---- All tests passed! ----
+[0m
+WARNING: 177 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 65 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

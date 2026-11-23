@@ -1,0 +1,27 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WP62B_BOOT_ERRORS 0
+WP62B_OPENING_STOCK total_dan=136088 expect≈136088 delta=0
+WP62B_TOP20
+rank=1 port=PT-04 good=GD-001 q=3153
+rank=2 port=PT-04 good=GD-003 q=2998
+rank=3 port=PT-03 good=GD-013 q=2772
+rank=4 port=PT-03 good=GD-001 q=2703
+rank=5 port=PT-04 good=GD-002 q=2703
+rank=6 port=PT-14 good=GD-001 q=2627
+rank=7 port=PT-03 good=GD-003 q=2579
+rank=8 port=PT-14 good=GD-013 q=2480
+rank=9 port=PT-14 good=GD-003 q=2179
+rank=10 port=PT-05 good=GD-006 q=2166
+rank=11 port=PT-15 good=GD-001 q=2026
+rank=12 port=PT-12 good=GD-016 q=1873
+rank=13 port=PT-03 good=GD-015 q=1865
+rank=14 port=PT-15 good=GD-013 q=1784
+rank=15 port=PT-15 good=GD-003 q=1723
+rank=16 port=PT-14 good=GD-006 q=1621
+rank=17 port=PT-05 good=GD-001 q=1520
+rank=18 port=PT-07 good=GD-001 q=1500
+rank=19 port=PT-05 good=GD-018 q=1440
+rank=20 port=PT-07 good=GD-013 q=1384
+WP62B_CONSERVATION 0
+WP62B OK

@@ -1,0 +1,9 @@
+Lane E — WP-69 existing test hygiene (D-114(d) / D-115(c))
+Pack: evening-17-55
+Agent: bc-c106bd70-66a6-5345-982a-068f355ff3ea
+Branch: cursor/wp69-test-hygiene-f3ea
+Tip: fbdaa8126154f566d915fa462e7d507f67ce54ca
+Draft PR: https://github.com/wayung0217/Project-Patrician/pull/77
+PR base: cursor/step0-m1b-params-data-0638 (ef70d4214274d90cc6bb1150eb3d64c14e898523)
+Product base SHA: 8057f9f563411c51c60be1c275d91667e78468b7
+Status: 完成 — not merged into int-1755 (arrived after int; D-115)

@@ -1,0 +1,24 @@
+commit 5d5d31fe4e79abafdad145718b63c2cf3f65c5c3
+Merge: 8a02133 8603d8c
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Mon Nov 23 14:58:47 2026 +0000
+
+    Merge laneD city-housing into int-1755
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ autoload/building_economy.gd             | 176 +++++++++++++-
+ data/params/params_schema.json           |  13 +
+ docs/spec/scenario_L1_baseline.json      |   3 +
+ docs/spec/scenario_L2_f005.json          |   3 +
+ docs/spec/scenario_L2_f010.json          |   3 +
+ docs/spec/scenario_L2_f020.json          |   3 +
+ docs/spec/scenario_M1b_G0.json           |   6 +-
+ docs/spec/scenario_M1b_G0H.json          | 389 ++++++++++++++++++++++++++++++
+ docs/spec/scenario_M1b_G1.json           |   6 +-
+ docs/spec/scenario_M1b_G2.json           |   6 +-
+ sim/scenario_validator.gd                |   7 +-
+ sim/sim_engine.gd                        |   6 +
+ tests/fixtures/params_all_keys.json      |   5 +-
+ tests/unit/test_wp68_city_housing.gd     | 399 +++++++++++++++++++++++++++++++
+ tests/unit/test_wp68_city_housing.gd.uid |   1 +
+ 15 files changed, 1018 insertions(+), 8 deletions(-)

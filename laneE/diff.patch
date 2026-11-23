@@ -1,0 +1,532 @@
+diff --git a/tests/unit/test_sim_loop.gd b/tests/unit/test_sim_loop.gd
+index cc897ae..69b5184 100644
+--- a/tests/unit/test_sim_loop.gd
++++ b/tests/unit/test_sim_loop.gd
+@@ -24,8 +24,9 @@ const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
+ const CsvImport := preload("res://tools/csv_import.gd")
+ const SEA_FIXTURE_CSV := "res://tests/fixtures/wp29_sea_ok/"
+ const SEA_FIXTURE_ROOT := "user://sim_loop_sea/"
+-## D-21a / D-08j: minimal opening CSV for all ports; imported via csv_import into formal dirs.
++## D-21a / D-08j: opening CSV kept for fixture docs; WP-69 boot uses committed formal dirs (read-only).
+ const OPENING_FIXTURE_CSV := "res://tests/fixtures/sim_loop_opening/"
++## WP-69／D-114(d): do not write／clear these; SimLoop.boot loads BuildingEconomy from committed formal.
+ const FORMAL_ZONES_DIR := "res://data/zones/"
+ const FORMAL_BUILDINGS_DIR := "res://data/buildings/"
+ const FORMAL_OPENING_DIR := "res://data/opening/"
+@@ -96,8 +97,7 @@ func before_each() -> void:
+ 	_wipe_dir(PORTS_FIXTURE_ROOT)
+ 	_wipe_dir(SEA_FIXTURE_ROOT)
+ 	_wipe_dir(DEMAND_OUT)
+-	_wipe_formal_opening_layout()
+-	_wipe_formal_demand()
++	# WP-69／D-114(d): never wipe／write res://data (formal opening／demand stay committed).
+ 	# Reset SimLoop injection between tests (Autoload persists).
+ 	# D-08j: providers only before boot — clear _booted so setters take effect.
+ 	SimLoop._booted = false
+@@ -121,11 +121,6 @@ func before_each() -> void:
+ 	TradeDesk._last_error = {}
+ 
+ 
+-func after_each() -> void:
+-	## 2.1-04 ⑤: leave formal data dirs without test-generated .tres.
+-	_wipe_formal_opening_layout()
+-
+-
+ func test_WP59_consumption_provider_base_push_error_2_1_03() -> void:
+ 	# 2.1-03／3.7: 基底方法一律 push_error 並回失敗值（不得回 0）
+ 	# WP-32／15-05: weekly_consumption removed; only consume_qty remains on base.
+@@ -287,8 +282,23 @@ func test_WP59_D30a_complete_demand_boots() -> void:
+ 
+ func test_WP59_boot_requires_consumption_provider_2_3_03() -> void:
+ 	# 2.3-03: 未注入 provider → boot() 回錯誤且不啟動時鐘
++	## WP-69: formal demand stays committed; pass a missing demand dir so DemandModel
++	## cannot auto-wire ConsumptionProvider (same gate as pre-hygiene wipe).
+ 	var fixtures := _prepare_fixtures()
+-	var errors: Array = _boot_with_fixtures(fixtures)
++	_install_opening_fixtures()
++	_inject_broker_fixture()
++	_inject_trade_desk_fixtures()
++	var missing := GOODS_FIXTURE_ROOT + "missing_demand_provider/"
++	var errors: Array = SimLoop.boot(
++		ParamsFixtures.path_demo(),
++		fixtures["goods"],
++		fixtures["ports"],
++		CURVE_FIXTURE,
++		fixtures["sea_nodes"],
++		fixtures["sea_regions"],
++		fixtures["sea_lanes"],
++		missing
++	)
+ 	assert_gt(errors.size(), 0)
+ 	assert_true(_has_code(errors, SimLoop.ERR_PROVIDER_MISSING))
+ 	assert_false(SimLoop.is_booted())
+@@ -650,7 +660,7 @@ func _inject_trade_desk_fixtures() -> void:
+ 
+ 
+ func _boot_with_fixtures(fixtures: Dictionary) -> Array:
+-	## D-21a: every boot path runs opening validation; seed formal dirs from CSV fixtures.
++	## D-21a／WP-69: opening validation uses committed formal dirs (no res://data writes).
+ 	_install_opening_fixtures()
+ 	_inject_broker_fixture()
+ 	_inject_trade_desk_fixtures()
+@@ -671,29 +681,14 @@ func _inject_broker_fixture() -> void:
+ 
+ 
+ func _install_opening_fixtures() -> void:
+-	## Per-port rows via csv_import (D-21a／2.1-04 ⑤) — not hand-written formal tres.
+-	var wp17: Dictionary = CsvImport.run_batch_wp17(
+-		OPENING_FIXTURE_CSV,
+-		FORMAL_ZONES_DIR,
+-		FORMAL_BUILDINGS_DIR,
+-		FORMAL_OPENING_DIR,
+-		FORMAL_BUILD_QUEUE_DIR
+-	)
+-	assert_true(wp17["ok"], "opening wp17 import: %s" % str(wp17.get("errors", [])))
+-	var wp18: Dictionary = CsvImport.run_batch_wp18(
+-		OPENING_FIXTURE_CSV, FORMAL_CITY_CENTER_DIR, FORMAL_OPENING_PUBLIC_DIR
+-	)
+-	assert_true(wp18["ok"], "opening wp18 import: %s" % str(wp18.get("errors", [])))
+-	var pop: Dictionary = CsvImport.run_batch_opening_population(
+-		OPENING_FIXTURE_CSV,
+-		FORMAL_OPENING_POP_DIR,
+-		OPENING_FIXTURE_CSV.path_join("ports.csv")
+-	)
+-	assert_true(pop["ok"], "opening population import: %s" % str(pop.get("errors", [])))
++	## WP-69／D-114(d): no-op — SimLoop.boot loads BuildingEconomy／PopulationModel opening
++	## from committed res://data (read-only). Former csv_import-into-formal path removed.
++	## OPENING_FIXTURE_CSV retained for docs／other suites that write under user:// or tests/fixtures.
++	pass
+ 
+ 
+ func _install_demand_fixtures() -> void:
+-	## WP-34／D-36c: fixture CSV → tres via csv_import (no handwritten demand_tables.json).
++	## WP-34／D-36c: fixture CSV → tres under tests/fixtures (never res://data/demand).
+ 	var result: Dictionary = CsvImport.run_batch_demand(
+ 		DEMAND_CSV_OK,
+ 		DEMAND_OUT.path_join("rates/"),
+@@ -707,41 +702,13 @@ func _install_demand_fixtures() -> void:
+ 
+ 
+ func _wipe_formal_demand() -> void:
+-	for dir_path in [
+-		CsvImport.DEMAND_RATES_OUT_DIR,
+-		CsvImport.DEMAND_WEIGHTS_OUT_DIR,
+-		CsvImport.DEMAND_SUBST_OUT_DIR,
+-	]:
+-		_wipe_tres_only(dir_path)
++	## WP-69／D-114(d): deleted wipe of res://data/demand — keep committed trees.
++	pass
+ 
+ 
+ func _wipe_formal_opening_layout() -> void:
+-	## Remove only .tres; keep .gitkeep so 2.1-04 ⑤／repo placeholders stay intact.
+-	for dir_path in [
+-		FORMAL_ZONES_DIR,
+-		FORMAL_BUILDINGS_DIR,
+-		FORMAL_OPENING_DIR,
+-		FORMAL_BUILD_QUEUE_DIR,
+-		FORMAL_CITY_CENTER_DIR,
+-		FORMAL_OPENING_PUBLIC_DIR,
+-		FORMAL_OPENING_POP_DIR,
+-	]:
+-		_wipe_tres_only(dir_path)
+-
+-
+-func _wipe_tres_only(dir: String) -> void:
+-	var abs_path := ProjectSettings.globalize_path(dir)
+-	DirAccess.make_dir_recursive_absolute(abs_path)
+-	var d := DirAccess.open(dir)
+-	if d == null:
+-		return
+-	d.list_dir_begin()
+-	var fn := d.get_next()
+-	while fn != "":
+-		if not d.current_is_dir() and fn.ends_with(".tres"):
+-			d.remove(fn)
+-		fn = d.get_next()
+-	d.list_dir_end()
++	## WP-69／D-114(d): deleted wipe of res://data opening／zones／… — keep committed trees.
++	pass
+ 
+ 
+ class _TestCapProvider extends CapacityProvider:
+@@ -769,8 +736,7 @@ func _reset_simloop_for_reboot() -> void:
+ 	_wipe_dir(GOODS_FIXTURE_ROOT)
+ 	_wipe_dir(PORTS_FIXTURE_ROOT)
+ 	_wipe_dir(DEMAND_OUT)
+-	_wipe_formal_opening_layout()
+-	_wipe_formal_demand()
++	# WP-69: no formal wipe.
+ 	SimLoop._booted = false
+ 	SimLoop._capacity_by_kind.clear()
+ 	SimLoop._capacity_reg_errors.clear()
+@@ -882,7 +848,8 @@ func _has_err_code(errors: Array, code: StringName) -> bool:
+ func _build_valid_goods(dir: String, anchor_li: int) -> String:
+ 	_wipe_dir(dir)
+ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+-	var count: int = Params.get_int(PRM_GOOD_COUNT_MIN)
++	## WP-69: match committed formal good count so BE opening workshops resolve (read-only formal).
++	var count: int = maxi(Params.get_int(PRM_GOOD_COUNT_MIN), _count_formal_goods())
+ 	var staples: Array = [
+ 		{"id": GOOD_DEMO, "name": STAPLE_RICE, "build": false},
+ 		{"id": "GD-002", "name": STAPLE_SALT, "build": false},
+@@ -981,6 +948,22 @@ func _make_good(
+ 	return def
+ 
+ 
++func _count_formal_goods() -> int:
++	## Read-only count of committed res://data/goods/*.tres (WP-69; no writes).
++	var n := 0
++	var d := DirAccess.open(GoodCatalog.GOODS_DIR)
++	if d == null:
++		return 0
++	d.list_dir_begin()
++	var fn := d.get_next()
++	while fn != "":
++		if not d.current_is_dir() and fn.ends_with(".tres"):
++			n += 1
++		fn = d.get_next()
++	d.list_dir_end()
++	return n
++
++
+ func _wipe_dir(dir: String) -> void:
+ 	var abs_path := ProjectSettings.globalize_path(dir)
+ 	if DirAccess.dir_exists_absolute(abs_path):
+diff --git a/tests/unit/test_sys08_wp65_d97a.gd b/tests/unit/test_sys08_wp65_d97a.gd
+index 15b0e91..0bd680a 100644
+--- a/tests/unit/test_sys08_wp65_d97a.gd
++++ b/tests/unit/test_sys08_wp65_d97a.gd
+@@ -2,8 +2,8 @@ extends GutTest
+ ## WP-65／N1／D-97(a): ERR-SYS08-13 build_queue import validation.
+ ## EX-08-21-04 + skip-level fixture + formal data 0 errors.
+ 
+-## Formal .tres under data/ are wiped by earlier suites (sim_loop／SYS23／trade_desk).
+-## Restore from git HEAD — never edit docs/spec (blank rows stay; D-111 hard rule).
++## WP-69／D-114(d): suites must not wipe res://data or call git (removed d6bb0a6 restore).
++## Formal asserts read committed trees under res://data/ only.
+ 
+ 
+ func before_each() -> void:
+@@ -14,25 +14,6 @@ func before_each() -> void:
+ 	Params._loaded = false
+ 
+ 
+-func _restore_formal_data_tres() -> void:
+-	var root: String = ProjectSettings.globalize_path("res://").rstrip("/")
+-	var paths: Array = [
+-		"data/build_queue",
+-		"data/buildings",
+-		"data/city_center",
+-		"data/opening",
+-		"data/opening_public",
+-		"data/opening_population",
+-		"data/zones",
+-	]
+-	var args: PackedStringArray = PackedStringArray(["-C", root, "checkout", "HEAD", "--"])
+-	for p in paths:
+-		args.append(String(p))
+-	var output: Array = []
+-	var rc: int = OS.execute("git", args, output, true, false)
+-	assert_eq(rc, 0, "git restore formal data failed rc=%s out=%s" % [str(rc), str(output)])
+-
+-
+ func test_EX_08_21_04_opening_plus_new_exceeds_slots() -> void:
+ 	## EX-08-21-04: slots=4; opening 2; three target_level=1 → ERR on step 3 CB-04.
+ 	_boot_registry()
+@@ -121,7 +102,6 @@ func test_D102d_city_queue_position() -> void:
+ 
+ func test_N1_formal_data_zero_queue_import_errors() -> void:
+ 	## Formal city centers + opening_public + build_queue → 0 ERR-SYS08-13.
+-	_restore_formal_data_tres()
+ 	_boot_registry()
+ 	var city_by: Dictionary = {}
+ 	var dir := DirAccess.open("res://data/city_center/")
+@@ -226,7 +206,6 @@ func test_D113c_no_public_slot_err_sys08_01() -> void:
+ func test_D111b_formal_newbuild_defs_from_buildings() -> void:
+ 	## D-111(b) blind-2 (static half): every formal target_level=1 cb_id has loaded BuildingDef.
+ 	## 360d start-day listing is produced by tools/wp65_newbuild_360_probe.gd (F1 evidence).
+-	_restore_formal_data_tres()
+ 	_boot_registry()
+ 	BuildingEconomy._clear_state()
+ 	BuildingEconomy._loaded = true
+diff --git a/tests/unit/test_sys23_wp26.gd b/tests/unit/test_sys23_wp26.gd
+index 6bc2940..07f616c 100644
+--- a/tests/unit/test_sys23_wp26.gd
++++ b/tests/unit/test_sys23_wp26.gd
+@@ -15,6 +15,7 @@ const GOODS_ROOT := "user://sys23_goods/"
+ const PORTS_ROOT := "user://sys23_ports/"
+ const SEA_ROOT := "user://sys23_sea/"
+ 
++## WP-69／D-114(d): formal dirs read-only; do not wipe／copy fixtures into them.
+ const FORMAL_ZONES := "res://data/zones/"
+ const FORMAL_BUILDINGS := "res://data/buildings/"
+ const FORMAL_OPENING := "res://data/opening/"
+@@ -37,16 +38,10 @@ func before_each() -> void:
+ 	_wipe_dir(PORTS_ROOT)
+ 	_wipe_dir(SEA_ROOT)
+ 	_wipe_dir(DEMAND_OUT)
+-	_wipe_formal_opening()
+-	_wipe_formal_demand()
++	# WP-69／D-114(d): never wipe res://data.
+ 	_session_reset()
+ 
+ 
+-func after_each() -> void:
+-	_wipe_formal_opening()
+-	_wipe_formal_demand()
+-
+-
+ func test_TST_SYS23_03_unknown_scenario_key() -> void:
+ 	var r: Dictionary = SimScenarioValidator.validate_file(SCENARIO_UNKNOWN)
+ 	assert_false(r["ok"])
+@@ -784,9 +779,10 @@ func test_TST_SYS23_09_print_summary_csv() -> void:
+ 
+ 
+ func test_WP26_evidence_cli_twice_cmp() -> void:
+-	## Prep formal dirs, CLI sim_runner twice in-process via OS.execute, cmp five outputs.
+-	_prepare_world()
+-	_install_formal_from_fixtures()
++	## WP-69: CLI uses committed formal data (no fixture copy into res://data).
++	## Params fixture still loaded for scenario overrides; goods／ports／demand = formal.
++	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
++	assert_eq(perr.size(), 0, "params_all_keys")
+ 	var scenario: Dictionary = _fast_scenario("sys23_cli_cmp")
+ 	scenario["years"] = 1
+ 	scenario["warmup_years"] = 0
+@@ -997,18 +993,8 @@ func _install_sea() -> Dictionary:
+ 
+ 
+ func _install_opening() -> void:
+-	var wp17: Dictionary = CsvImport.run_batch_wp17(
+-		OPENING_CSV, FORMAL_ZONES, FORMAL_BUILDINGS, FORMAL_OPENING, FORMAL_BUILD_QUEUE
+-	)
+-	assert_true(wp17["ok"], str(wp17.get("errors", [])))
+-	var wp18: Dictionary = CsvImport.run_batch_wp18(
+-		OPENING_CSV, FORMAL_CITY_CENTER, FORMAL_OPENING_PUBLIC
+-	)
+-	assert_true(wp18["ok"], str(wp18.get("errors", [])))
+-	var pop: Dictionary = CsvImport.run_batch_opening_population(
+-		OPENING_CSV, FORMAL_OPENING_POP, OPENING_CSV.path_join("ports.csv")
+-	)
+-	assert_true(pop["ok"], str(pop.get("errors", [])))
++	## WP-69／D-114(d): no-op — SimEngine／SimLoop.boot use committed formal opening.
++	pass
+ 
+ 
+ func _install_demand() -> void:
+@@ -1031,7 +1017,8 @@ func _install_demand() -> void:
+ func _build_goods(dir: String) -> void:
+ 	_wipe_dir(dir)
+ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+-	var count: int = Params.get_int("PRM-SYS01-GOOD_COUNT_MIN")
++	## WP-69: match committed formal good count so BE opening workshops resolve.
++	var count: int = maxi(Params.get_int("PRM-SYS01-GOOD_COUNT_MIN"), _count_formal_goods())
+ 	var staples: Array = [
+ 		{"id": "GD-001", "name": "米", "build": false},
+ 		{"id": "GD-002", "name": "鹽", "build": false},
+@@ -1125,38 +1112,8 @@ func _snapshot_outputs_five(scenario_id: String) -> Dictionary:
+ 
+ 
+ func _install_formal_from_fixtures() -> void:
+-	## Copy fixture-built goods/ports/sea/demand into formal dirs for CLI sim_runner.
+-	_copy_tres_dir(GOODS_ROOT + "base/", GoodCatalog.GOODS_DIR)
+-	_copy_tres_dir(PORTS_ROOT + "base/", PortRegistry.PORTS_DIR)
+-	var sea: Dictionary = _install_sea()
+-	_copy_tres_dir(sea["nodes"], SeaLanes.NODES_DIR)
+-	_copy_tres_dir(sea["regions"], SeaLanes.REGIONS_DIR)
+-	_copy_tres_dir(sea["lanes"], SeaLanes.LANES_DIR)
+-	_copy_tres_dir(DEMAND_OUT.path_join("rates/"), CsvImport.DEMAND_RATES_OUT_DIR)
+-	_copy_tres_dir(DEMAND_OUT.path_join("weights/"), CsvImport.DEMAND_WEIGHTS_OUT_DIR)
+-	_copy_tres_dir(DEMAND_OUT.path_join("substitutions/"), CsvImport.DEMAND_SUBST_OUT_DIR)
+-	## price curve
+-	var curve_bytes: PackedByteArray = FileAccess.get_file_as_bytes(CURVE_FIXTURE)
+-	var cf := FileAccess.open(MarketPricer.CURVE_PATH, FileAccess.WRITE)
+-	cf.store_buffer(curve_bytes)
+-	cf.close()
+-
+-
+-func _copy_tres_dir(src: String, dst: String) -> void:
+-	_wipe_tres(dst)
+-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dst))
+-	var d := DirAccess.open(src)
+-	assert_true(d != null, "open src %s" % src)
+-	d.list_dir_begin()
+-	var fn := d.get_next()
+-	while fn != "":
+-		if not d.current_is_dir() and fn.ends_with(".tres"):
+-			var data: PackedByteArray = FileAccess.get_file_as_bytes(src.path_join(fn))
+-			var out := FileAccess.open(dst.path_join(fn), FileAccess.WRITE)
+-			out.store_buffer(data)
+-			out.close()
+-		fn = d.get_next()
+-	d.list_dir_end()
++	## WP-69／D-114(d): deleted — CLI／formal boot use committed res://data (no fixture copy-in).
++	pass
+ 
+ 
+ func _strip_elapsed(summary_csv: String) -> String:
+@@ -1197,34 +1154,29 @@ func _first_line(path: String) -> String:
+ 
+ 
+ func _wipe_formal_opening() -> void:
+-	for dir_path in [
+-		FORMAL_ZONES, FORMAL_BUILDINGS, FORMAL_OPENING, FORMAL_BUILD_QUEUE,
+-		FORMAL_CITY_CENTER, FORMAL_OPENING_PUBLIC, FORMAL_OPENING_POP,
+-	]:
+-		_wipe_tres(dir_path)
++	## WP-69／D-114(d): deleted wipe of res://data opening trees.
++	pass
+ 
+ 
+ func _wipe_formal_demand() -> void:
+-	for dir_path in [
+-		CsvImport.DEMAND_RATES_OUT_DIR,
+-		CsvImport.DEMAND_WEIGHTS_OUT_DIR,
+-		CsvImport.DEMAND_SUBST_OUT_DIR,
+-	]:
+-		_wipe_tres(dir_path)
++	## WP-69／D-114(d): deleted wipe of res://data/demand.
++	pass
+ 
+ 
+-func _wipe_tres(dir: String) -> void:
+-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+-	var d := DirAccess.open(dir)
++func _count_formal_goods() -> int:
++	## Read-only count of committed res://data/goods/*.tres (WP-69; no writes).
++	var n := 0
++	var d := DirAccess.open(GoodCatalog.GOODS_DIR)
+ 	if d == null:
+-		return
++		return 0
+ 	d.list_dir_begin()
+ 	var fn := d.get_next()
+ 	while fn != "":
+ 		if not d.current_is_dir() and fn.ends_with(".tres"):
+-			d.remove(fn)
++			n += 1
+ 		fn = d.get_next()
+ 	d.list_dir_end()
++	return n
+ 
+ 
+ func _wipe_dir(dir: String) -> void:
+diff --git a/tests/unit/test_trade_desk_wp33.gd b/tests/unit/test_trade_desk_wp33.gd
+index a64fdc1..c7103d1 100644
+--- a/tests/unit/test_trade_desk_wp33.gd
++++ b/tests/unit/test_trade_desk_wp33.gd
+@@ -36,6 +36,7 @@ const DEMAND_RATE_SCALE := 100
+ const DEMAND_PPM_SCALE := 1000000
+ const DEMAND_WEIGHT_SUM := 100
+ 
++## WP-69／D-114(d): formal dirs are read-only for boot; do not wipe／import into them.
+ const FORMAL_ZONES_DIR := "res://data/zones/"
+ const FORMAL_BUILDINGS_DIR := "res://data/buildings/"
+ const FORMAL_OPENING_DIR := "res://data/opening/"
+@@ -74,7 +75,7 @@ class _Consume0 extends ConsumptionProvider:
+ 
+ func before_each() -> void:
+ 	_wipe_dir(ROOT)
+-	_wipe_formal_opening_tres()
++	# WP-69／D-114(d): never wipe res://data.
+ 	_reset_trade_desk()
+ 	ShipRegistry._loaded = false
+ 	ShipRegistry._sailor_pool = null
+@@ -91,10 +92,6 @@ func before_each() -> void:
+ 	SeaLanes._loaded = false
+ 
+ 
+-func after_each() -> void:
+-	_wipe_formal_opening_tres()
+-
+-
+ func test_WP59_qualification_provider_base_push_error_2_1_03() -> void:
+ 	var base := QualificationProvider.new()
+ 	assert_false(base.can_enter(ACTOR, StringName(PORT)))
+@@ -705,48 +702,13 @@ func _prepare_sim_fixtures() -> Dictionary:
+ 
+ 
+ func _install_opening_fixtures() -> void:
+-	var wp17: Dictionary = CsvImport.run_batch_wp17(
+-		OPENING_FIXTURE_CSV,
+-		FORMAL_ZONES_DIR,
+-		FORMAL_BUILDINGS_DIR,
+-		FORMAL_OPENING_DIR,
+-		FORMAL_BUILD_QUEUE_DIR
+-	)
+-	assert_true(wp17["ok"], "opening wp17: %s" % str(wp17.get("errors", [])))
+-	var wp18: Dictionary = CsvImport.run_batch_wp18(
+-		OPENING_FIXTURE_CSV, FORMAL_CITY_CENTER_DIR, FORMAL_OPENING_PUBLIC_DIR
+-	)
+-	assert_true(wp18["ok"], "opening wp18: %s" % str(wp18.get("errors", [])))
+-	var pop: Dictionary = CsvImport.run_batch_opening_population(
+-		OPENING_FIXTURE_CSV,
+-		FORMAL_OPENING_POP_DIR,
+-		OPENING_FIXTURE_CSV.path_join("ports.csv")
+-	)
+-	assert_true(pop["ok"], "opening pop: %s" % str(pop.get("errors", [])))
++	## WP-69／D-114(d): no-op — boot uses committed formal opening (read-only).
++	pass
+ 
+ 
+ func _wipe_formal_opening_tres() -> void:
+-	for dir_path in [
+-		FORMAL_ZONES_DIR, FORMAL_BUILDINGS_DIR, FORMAL_OPENING_DIR,
+-		FORMAL_BUILD_QUEUE_DIR, FORMAL_CITY_CENTER_DIR, FORMAL_OPENING_PUBLIC_DIR,
+-		FORMAL_OPENING_POP_DIR,
+-	]:
+-		_wipe_tres_only(dir_path)
+-
+-
+-func _wipe_tres_only(dir: String) -> void:
+-	var abs_path := ProjectSettings.globalize_path(dir)
+-	DirAccess.make_dir_recursive_absolute(abs_path)
+-	var d := DirAccess.open(dir)
+-	if d == null:
+-		return
+-	d.list_dir_begin()
+-	var fn := d.get_next()
+-	while fn != "":
+-		if not d.current_is_dir() and fn.ends_with(".tres"):
+-			d.remove(fn)
+-		fn = d.get_next()
+-	d.list_dir_end()
++	## WP-69／D-114(d): deleted wipe of res://data opening trees.
++	pass
+ 
+ 
+ func _build_goods(dir: String) -> String:
+@@ -754,7 +716,8 @@ func _build_goods(dir: String) -> String:
+ 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+ 	if not Params.is_loaded():
+ 		Params.load_and_validate(PARAMS_FIXTURE)
+-	var count: int = Params.get_int(PRM_GOOD_COUNT_MIN)
++	## WP-69: match committed formal good count so BE opening workshops resolve.
++	var count: int = maxi(Params.get_int(PRM_GOOD_COUNT_MIN), _count_formal_goods())
+ 	var staples: Array = [
+ 		{"id": "GD-001", "name": "米", "build": false},
+ 		{"id": "GD-002", "name": "鹽", "build": false},
+@@ -845,6 +808,22 @@ func _make_good(
+ 	return def
+ 
+ 
++func _count_formal_goods() -> int:
++	## Read-only count of committed res://data/goods/*.tres (WP-69; no writes).
++	var n := 0
++	var d := DirAccess.open(GoodCatalog.GOODS_DIR)
++	if d == null:
++		return 0
++	d.list_dir_begin()
++	var fn := d.get_next()
++	while fn != "":
++		if not d.current_is_dir() and fn.ends_with(".tres"):
++			n += 1
++		fn = d.get_next()
++	d.list_dir_end()
++	return n
++
++
+ func _wipe_dir(path: String) -> void:
+ 	var abs_path := ProjectSettings.globalize_path(path)
+ 	if not DirAccess.dir_exists_absolute(abs_path):

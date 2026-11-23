@@ -1,0 +1,347 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestCapFixed because it does not extend GutTest
+[4m
+
+res://tests/unit/test_trade_desk_wp33.gd
+[0m* test_WP59_qualification_provider_base_push_error_2_1_03
+ERROR: QualificationProvider: { "code": &"ERR-QUALIFICATION-BASE", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "can_enter", "value": <null>, "message": "QualificationProvider.can_enter: base interface called; override required (2.1-03)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_enter (res://core/interfaces/qualification_provider.gd:23)
+       [2] test_WP59_qualification_provider_base_push_error_2_1_03 (res://tests/unit/test_trade_desk_wp33.gd:97)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: QualificationProvider: { "code": &"ERR-QUALIFICATION-BASE", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "can_trade", "value": <null>, "message": "QualificationProvider.can_trade: base interface called; override required (2.1-03)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_trade (res://core/interfaces/qualification_provider.gd:35)
+       [2] test_WP59_qualification_provider_base_push_error_2_1_03 (res://tests/unit/test_trade_desk_wp33.gd:98)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: QualificationProvider: { "code": &"ERR-QUALIFICATION-BASE", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "can_build", "value": <null>, "message": "QualificationProvider.can_build: base interface called; override required (2.1-03)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_build (res://core/interfaces/qualification_provider.gd:45)
+       [2] test_WP59_qualification_provider_base_push_error_2_1_03 (res://tests/unit/test_trade_desk_wp33.gd:99)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_WP59_trade_observer_base_push_error_2_1_03
+ERROR: TradeObserver.record_trade: base interface called; override required (2.1-03)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] record_trade (res://core/interfaces/trade_observer.gd:28)
+       [1] test_WP59_trade_observer_base_push_error_2_1_03 (res://tests/unit/test_trade_desk_wp33.gd:105)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [4] test_scripts (res://addons/gut/gut.gd:1047)
+       [5] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [6] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [7] main (res://addons/gut/cli/gut_cli.gd:297)
+       [8] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_WP33_D63b_sim_qualification_fixture_always_denies
+ERROR: QualificationProvider: { "code": &"ERR-SYS09-08", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "port_id", "value": &"PT-01", "message": "SimQualificationFixture.can_enter denied (D-63b)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_enter (res://sim/sim_qualification_fixture.gd:9)
+       [2] test_WP33_D63b_sim_qualification_fixture_always_denies (res://tests/unit/test_trade_desk_wp33.gd:115)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: QualificationProvider: { "code": &"ERR-SYS09-09", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "good_id", "value": &"GD-001", "message": "SimQualificationFixture.can_trade denied (D-63b)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_trade (res://sim/sim_qualification_fixture.gd:21)
+       [2] test_WP33_D63b_sim_qualification_fixture_always_denies (res://tests/unit/test_trade_desk_wp33.gd:120)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: QualificationProvider: { "code": &"ERR-SYS09-08", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "port_id", "value": &"PT-01", "message": "SimQualificationFixture.can_build denied (D-63b)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_build (res://sim/sim_qualification_fixture.gd:31)
+       [2] test_WP33_D63b_sim_qualification_fixture_always_denies (res://tests/unit/test_trade_desk_wp33.gd:127)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_WP33_D63b_sim_trade_observer_fixture_no_record
+* test_WP33_D63b_sim_fixtures_satisfy_boot_gate
+* test_TST_SYS05_13_boot_missing_qualification_provider
+ERROR: IntelLedger: { "code": &"ERR-SYS15-06", "sys": &"SYS-15", "detail": { "file": "res://autoload/intel_ledger.gd", "field": "broker_provider", "value": <null>, "message": "BrokerProvider not injected (D-60f)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/intel_ledger.gd:409)
+       [1] boot_gate_errors (res://autoload/intel_ledger.gd:183)
+       [2] boot (res://autoload/sim_loop.gd:151)
+       [3] test_TST_SYS05_13_boot_missing_qualification_provider (res://tests/unit/test_trade_desk_wp33.gd:170)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [6] test_scripts (res://addons/gut/gut.gd:1047)
+       [7] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [8] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [9] main (res://addons/gut/cli/gut_cli.gd:297)
+       [10] _init (res://addons/gut/gut_cmdln.gd:39)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-12", "file": "res://autoload/trade_desk.gd", "field": "qualification_provider", "value": <null>, "message": "QualificationProvider must be injected before boot (ERR-SYS05-12)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot_gate_errors (res://autoload/trade_desk.gd:378)
+       [1] boot (res://autoload/sim_loop.gd:169)
+       [2] test_TST_SYS05_13_boot_missing_qualification_provider (res://tests/unit/test_trade_desk_wp33.gd:170)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_TST_SYS05_13b_boot_missing_trade_observers
+ERROR: IntelLedger: { "code": &"ERR-SYS15-06", "sys": &"SYS-15", "detail": { "file": "res://autoload/intel_ledger.gd", "field": "broker_provider", "value": <null>, "message": "BrokerProvider not injected (D-60f)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit_errors (res://autoload/intel_ledger.gd:409)
+       [1] boot_gate_errors (res://autoload/intel_ledger.gd:183)
+       [2] boot (res://autoload/sim_loop.gd:151)
+       [3] test_TST_SYS05_13b_boot_missing_trade_observers (res://tests/unit/test_trade_desk_wp33.gd:194)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-14", "file": "res://autoload/trade_desk.gd", "field": "trade_observers", "value": <null>, "message": "TradeObserver list must be injected before boot (ERR-SYS05-14)" }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] boot_gate_errors (res://autoload/trade_desk.gd:388)
+       [1] boot (res://autoload/sim_loop.gd:169)
+       [2] test_TST_SYS05_13b_boot_missing_trade_observers (res://tests/unit/test_trade_desk_wp33.gd:194)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS05_14_buy_success
+* test_TST_SYS05_15_sell_success
+* test_TST_SYS05_16_can_trade_denied
+ERROR: QualificationProvider: { "code": &"ERR-SYS09-09", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "good_id", "value": &"GD-001", "message": "fixture can_trade denied" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_trade (res://tests/fixtures/fixture_qualification_provider.gd:34)
+       [2] execute_trade (res://autoload/trade_desk.gd:205)
+       [3] test_TST_SYS05_16_can_trade_denied (res://tests/unit/test_trade_desk_wp33.gd:270)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS09-09", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "good_id", "value": &"GD-001", "message": "fixture can_trade denied" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] execute_trade (res://autoload/trade_desk.gd:216)
+       [1] test_TST_SYS05_16_can_trade_denied (res://tests/unit/test_trade_desk_wp33.gd:270)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS05_17_can_enter_denied
+ERROR: QualificationProvider: { "code": &"ERR-SYS09-08", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "port_id", "value": &"PT-01", "message": "fixture can_enter denied" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://core/interfaces/qualification_provider.gd:58)
+       [1] can_enter (res://tests/fixtures/fixture_qualification_provider.gd:16)
+       [2] execute_trade (res://autoload/trade_desk.gd:192)
+       [3] test_TST_SYS05_17_can_enter_denied (res://tests/unit/test_trade_desk_wp33.gd:289)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS09-08", "sys": &"SYS-09", "detail": { "file": "res://core/interfaces/qualification_provider.gd", "field": "port_id", "value": &"PT-01", "message": "fixture can_enter denied" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] execute_trade (res://autoload/trade_desk.gd:203)
+       [1] test_TST_SYS05_17_can_enter_denied (res://tests/unit/test_trade_desk_wp33.gd:289)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS05_18_container_owner_port_hold
+ERROR: TradeDesk: { "code": &"ERR-SYS05-10", "sys": &"SYS-05", "detail": { "file": "res://autoload/trade_desk.gd", "field": "container_id", "value": &"WAREHOUSE:ACT-TRADER-B:PT-01", "message": "container owner_id != actor_id" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://autoload/trade_desk.gd:429)
+       [1] execute_trade (res://autoload/trade_desk.gd:171)
+       [2] test_TST_SYS05_18_container_owner_port_hold (res://tests/unit/test_trade_desk_wp33.gd:306)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-10", "sys": &"SYS-05", "detail": { "file": "res://autoload/trade_desk.gd", "field": "port_id", "value": &"PT-02", "message": "WAREHOUSE port_id != trade port_id" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://autoload/trade_desk.gd:429)
+       [1] execute_trade (res://autoload/trade_desk.gd:175)
+       [2] test_TST_SYS05_18_container_owner_port_hold (res://tests/unit/test_trade_desk_wp33.gd:315)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-11", "sys": &"SYS-05", "detail": { "file": "res://autoload/trade_desk.gd", "field": "port_id", "value": &"PT-01", "message": "HOLD not docked at trade port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://autoload/trade_desk.gd:429)
+       [1] execute_trade (res://autoload/trade_desk.gd:181)
+       [2] test_TST_SYS05_18_container_owner_port_hold (res://tests/unit/test_trade_desk_wp33.gd:328)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS05_19_insufficient_and_stale_preview
+ERROR: TradeDesk: { "code": &"ERR-SYS05-01", "sys": &"SYS-05", "detail": { "file": "res://autoload/trade_desk.gd", "field": "balance", "value": 1, "message": "insufficient funds (no preview)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://autoload/trade_desk.gd:429)
+       [1] execute_trade (res://autoload/trade_desk.gd:258)
+       [2] test_TST_SYS05_19_insufficient_and_stale_preview (res://tests/unit/test_trade_desk_wp33.gd:355)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-07", "sys": &"SYS-05", "detail": { "file": "res://autoload/trade_desk.gd", "field": "preview_total_li", "value": 1, "message": "new quote exceeds balance (stale preview)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://autoload/trade_desk.gd:429)
+       [1] execute_trade (res://autoload/trade_desk.gd:252)
+       [2] test_TST_SYS05_19_insufficient_and_stale_preview (res://tests/unit/test_trade_desk_wp33.gd:363)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS05_20_and_24_capacity_precheck_no_cash
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 10, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] _fail (res://autoload/goods_ledger.gd:1145)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:313)
+       [3] can_transfer (res://autoload/goods_ledger.gd:210)
+       [4] execute_trade (res://autoload/trade_desk.gd:284)
+       [5] test_TST_SYS05_20_and_24_capacity_precheck_no_cash (res://tests/unit/test_trade_desk_wp33.gd:388)
+       [6] _run_test (res://addons/gut/gut.gd:622)
+       [7] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: can_transfer failed: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 10, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] execute_trade (res://autoload/trade_desk.gd:288)
+       [1] test_TST_SYS05_20_and_24_capacity_precheck_no_cash (res://tests/unit/test_trade_desk_wp33.gd:388)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS05_21_qty_and_stock_errors
+ERROR: MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 10, "message": "buy qty>3 stock" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/market_pricer.gd:543)
+       [1] quote (res://autoload/market_pricer.gd:209)
+       [2] execute_trade (res://autoload/trade_desk.gd:224)
+       [3] test_TST_SYS05_21_qty_and_stock_errors (res://tests/unit/test_trade_desk_wp33.gd:408)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 10, "message": "buy qty>3 stock" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] execute_trade (res://autoload/trade_desk.gd:239)
+       [1] test_TST_SYS05_21_qty_and_stock_errors (res://tests/unit/test_trade_desk_wp33.gd:408)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-05", "sys": &"SYS-05", "detail": { "file": "res://autoload/trade_desk.gd", "field": "qty", "value": 0, "message": "qty must be integer > 0" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://autoload/trade_desk.gd:429)
+       [1] execute_trade (res://autoload/trade_desk.gd:155)
+       [2] test_TST_SYS05_21_qty_and_stock_errors (res://tests/unit/test_trade_desk_wp33.gd:416)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: TradeDesk: { "code": &"ERR-SYS05-05", "sys": &"SYS-05", "detail": { "file": "res://autoload/trade_desk.gd", "field": "qty", "value": 1.5, "message": "qty must be integer > 0" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _fail (res://autoload/trade_desk.gd:429)
+       [1] execute_trade (res://autoload/trade_desk.gd:155)
+       [2] test_TST_SYS05_21_qty_and_stock_errors (res://tests/unit/test_trade_desk_wp33.gd:424)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS05_22_same_rules_and_trade_transfer_scan
+* test_TST_SYS05_23_can_transfer_matches_transfer
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 1, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] _fail (res://autoload/goods_ledger.gd:1145)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:313)
+       [3] can_transfer (res://autoload/goods_ledger.gd:210)
+       [4] test_TST_SYS05_23_can_transfer_matches_transfer (res://tests/unit/test_trade_desk_wp33.gd:504)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-03", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "qty", "value": 1, "message": "insufficient capacity" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] _fail (res://autoload/goods_ledger.gd:1145)
+       [2] _validate_transfer_preconditions (res://autoload/goods_ledger.gd:313)
+       [3] transfer (res://autoload/goods_ledger.gd:220)
+       [4] test_TST_SYS05_23_can_transfer_matches_transfer (res://tests/unit/test_trade_desk_wp33.gd:514)
+       [5] _run_test (res://addons/gut/gut.gd:622)
+       [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP59_D28d_observer_failure_keeps_trade
+ERROR: FixtureTradeObserver: forced failure (trade must not roll back)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] record_trade (res://tests/fixtures/fixture_trade_observer.gd:34)
+       [1] execute_trade (res://autoload/trade_desk.gd:331)
+       [2] test_WP59_D28d_observer_failure_keeps_trade (res://tests/unit/test_trade_desk_wp33.gd:533)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+[1m18/18 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              1
+
+Scripts               1
+Tests                18
+Passing Tests        18
+Asserts             230
+Time              1.296s
+
+
+[32m---- All tests passed! ----
+[0m

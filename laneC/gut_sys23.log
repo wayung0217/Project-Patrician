@@ -1,0 +1,426 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[4m
+
+res://tests/unit/test_sys23_wp26.gd
+[0m* test_TST_SYS23_03_unknown_scenario_key
+TST-SYS23-03 errors:
+ERR-SYS23-02: unknown scenario key 'extra_forbidden'
+* test_WP26_bad_missing_required_key_errors
+bad_missing errors:
+ERR-SYS23-02: missing required key 'warmup_years'
+* test_WP26_bad_override_grid_clash_errors
+bad_clash errors:
+ERR-SYS23-04: key 'PRM-SYS05-START_CASH' appears in both overrides and grid
+* test_TST_SYS23_04_grid_cartesian_run_id_order
+TST-SYS23-04 jobs:
+run_id=0 combo_index=0 seed=1 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 1, "PRM-SYS05-START_CASH": 1 }
+run_id=1 combo_index=0 seed=0 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 1, "PRM-SYS05-START_CASH": 1 }
+run_id=2 combo_index=1 seed=1 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 1, "PRM-SYS05-START_CASH": 0 }
+run_id=3 combo_index=1 seed=0 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 1, "PRM-SYS05-START_CASH": 0 }
+run_id=4 combo_index=2 seed=1 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 1, "PRM-SYS05-START_CASH": 1 }
+run_id=5 combo_index=2 seed=0 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 1, "PRM-SYS05-START_CASH": 1 }
+run_id=6 combo_index=3 seed=1 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 0, "PRM-SYS05-START_CASH": 1 }
+run_id=7 combo_index=3 seed=0 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 0, "PRM-SYS05-START_CASH": 1 }
+run_id=8 combo_index=4 seed=1 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 0, "PRM-SYS05-START_CASH": 0 }
+run_id=9 combo_index=4 seed=0 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 0, "PRM-SYS05-START_CASH": 0 }
+run_id=10 combo_index=5 seed=1 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 0, "PRM-SYS05-START_CASH": 1 }
+run_id=11 combo_index=5 seed=0 combo={ "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 0, "PRM-SYS05-START_CASH": 1 }
+* test_TST_SYS23_08_fnv_vectors
+* test_TST_SYS23_11_missing_threshold_pass_na
+TST-SYS23-11 MET-03=0.0 pass=N/A
+* test_WP26_obs03_blank_not_zero
+WP26 OBS-03 blank ok; summary cell empty; combos has no OBS-03
+* test_TST_SYS23_10_met_hand_fixture
+TST-SYS23-10 MET-01=1.0
+* test_TST_SYS23_02_formal_params_unchanged_sha256
+sim_engine: combos=1 seeds=1 jobs=1
+TST-SYS23-02 sha256 before=96fc3afc37bd38cf3e64620f2daf0a5ec91fb7c30ad3af99a87b5f4592c40a0c after=96fc3afc37bd38cf3e64620f2daf0a5ec91fb7c30ad3af99a87b5f4592c40a0c
+* test_TST_SYS23_01_two_runs_csv_match_except_elapsed
+sim_engine: combos=1 seeds=1 jobs=1
+sim_engine: combos=1 seeds=1 jobs=1
+TST-SYS23-01 cmp empty (elapsed stripped on summary)
+season_cells.csv header=run_id,seed,season_index,port_id,good_id,stock,mid_li,stock_weeks,band,produced,consumed,relocated_in,relocated_out,excess_consumed rows=3073
+season_ports.csv header=run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,workplaces,beds,city_balance_li,queue_position,land_rent_li,vacancy_tax_li,city_spend_json,queue_state,sat_poor,sat_citizen,sat_rich,job_cap,pf1,pf2,pf3,pf4,pf5,pf6,unmet_poor_top3,unmet_citizen_top3,unmet_rich_top3 rows=129
+summary.csv header=run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms rows=2
+combos.csv header=combo_index,combo,MET-01_avg,MET-01_min,MET-01_max,MET-02_avg,MET-02_min,MET-02_max,MET-03_avg,MET-03_min,MET-03_max,MET-04_avg,MET-04_min,MET-04_max,MET-05a_avg,MET-05a_min,MET-05a_max,MET-05b_avg,MET-05b_min,MET-05b_max,MET-06_avg,MET-06_min,MET-06_max,combo_pass rows=2
+daily_PT-01.csv: (missing)
+* test_TST_SYS23_09_one_combo_aborts_on_conservation
+sim_engine: combos=2 seeds=1 jobs=2
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-05", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "good_id", "value": { "good": "GD-001", "actual": 353, "expected": 352 }, "message": "conservation violated" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] check_conservation (res://autoload/goods_ledger.gd:407)
+       [2] maybe_check_conservation_on_tick (res://autoload/goods_ledger.gd:421)
+       [3] tick_day (res://autoload/sim_loop.gd:263)
+       [4] _run_one_job (res://sim/sim_engine.gd:215)
+       [5] run_scenario_dict (res://sim/sim_engine.gd:69)
+       [6] test_TST_SYS23_09_one_combo_aborts_on_conservation (res://tests/unit/test_sys23_wp26.gd:295)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+TST-SYS23-09 summary combo=0 aborted=0 reason=
+TST-SYS23-09 summary combo=1 aborted=1 reason=ERR-SYS23-07: conservation violated
+[34m[ExpectedError][0m
+* test_WP58_Y1_A31_day_error_aborts_summary
+sim_engine: combos=1 seeds=1 jobs=1
+WP58_Y1 summary aborted=1 reason=ERR-SYS23-07: day_errors: ERR-SYS05-01 (WP-58 Y1 injected day error)
+* test_WP58_A32_missing_job_exits_nonzero
+WP58_A32 missing_job rc=1
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: sim_runner: job file missing /tmp/wp58_missing_job_DOES_NOT_EXIST.json
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _run_job_file (res://sim/sim_runner.gd:181)
+       [1] _main (res://sim/sim_runner.gd:45)
+       [2] _process (res://sim/sim_runner.gd:35)
+
+* test_WP58_A32_bad_job_json_exits_nonzero
+WP58_A32 bad_json rc=1
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Parse JSON failed. Error at line 0: Expected 'true', 'false', or 'null', got 'not'
+   at: parse_string (core/io/json.cpp:629)
+   GDScript backtrace (most recent call first):
+       [0] _run_job_file (res://sim/sim_runner.gd:184)
+       [1] _main (res://sim/sim_runner.gd:45)
+       [2] _process (res://sim/sim_runner.gd:35)
+ERROR: sim_runner: bad job JSON
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _run_job_file (res://sim/sim_runner.gd:186)
+       [1] _main (res://sim/sim_runner.gd:45)
+       [2] _process (res://sim/sim_runner.gd:35)
+
+* test_WP58_A33_sampler_uses_market_pricer_stock_weeks
+sim_engine: combos=1 seeds=1 jobs=1
+sim_engine: combos=1 seeds=1 jobs=1
+* test_WP58_A34_write_failure_reports_ok_false
+ERROR: SimCsvOut: cannot write user://sim_out/wp58_a34_block/season_cells.csv err=12
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _store (res://sim/csv_out.gd:280)
+       [1] _write_season_cells (res://sim/csv_out.gd:111)
+       [2] write_all (res://sim/csv_out.gd:51)
+       [3] test_WP58_A34_write_failure_reports_ok_false (res://tests/unit/test_sys23_wp26.gd:434)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimCsvOut: cannot write user://sim_out/wp58_a34_block/season_ports.csv err=12
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _store (res://sim/csv_out.gd:280)
+       [1] _write_season_ports (res://sim/csv_out.gd:147)
+       [2] write_all (res://sim/csv_out.gd:56)
+       [3] test_WP58_A34_write_failure_reports_ok_false (res://tests/unit/test_sys23_wp26.gd:434)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimCsvOut: cannot write user://sim_out/wp58_a34_block/summary.csv err=12
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _store (res://sim/csv_out.gd:280)
+       [1] _write_summary (res://sim/csv_out.gd:206)
+       [2] write_all (res://sim/csv_out.gd:69)
+       [3] test_WP58_A34_write_failure_reports_ok_false (res://tests/unit/test_sys23_wp26.gd:434)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimCsvOut: cannot write user://sim_out/wp58_a34_block/combos.csv err=12
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _store (res://sim/csv_out.gd:280)
+       [1] _write_combos (res://sim/csv_out.gd:227)
+       [2] write_all (res://sim/csv_out.gd:74)
+       [3] test_WP58_A34_write_failure_reports_ok_false (res://tests/unit/test_sys23_wp26.gd:434)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimCsvOut: cannot write user://sim_out/wp58_a34_block/obs_ext.csv err=12
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _store (res://sim/csv_out.gd:280)
+       [1] _write_obs_ext (res://sim/csv_out.gd:248)
+       [2] write_all (res://sim/csv_out.gd:79)
+       [3] test_WP58_A34_write_failure_reports_ok_false (res://tests/unit/test_sys23_wp26.gd:434)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: SimCsvOut: cannot write user://sim_out/wp58_a34_block/trader_summary.csv err=12
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _store (res://sim/csv_out.gd:280)
+       [1] _write_trader_summary (res://sim/csv_out.gd:168)
+       [2] write_all (res://sim/csv_out.gd:85)
+       [3] test_WP58_A34_write_failure_reports_ok_false (res://tests/unit/test_sys23_wp26.gd:434)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+WP58_A34 write_all={ "ok": false, "paths": [], "failed_paths": ["user://sim_out/wp58_a34_block/season_cells.csv", "user://sim_out/wp58_a34_block/season_ports.csv", "user://sim_out/wp58_a34_block/summary.csv", "user://sim_out/wp58_a34_block/combos.csv", "user://sim_out/wp58_a34_block/obs_ext.csv", "user://sim_out/wp58_a34_block/trader_summary.csv"] }
+[31m    [Failed]:  [0mExpected 5 push_error errors.  Got 6.
+      at line 439
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>SimCsvOut: cannot write user://sim_out/wp58_a34_block/trader_summary.csv err=12
+      at line -1
+* test_WP26_evidence_bad_triple_all_at_once
+bad_triple errors (3):
+ERR-SYS23-02: unknown scenario key 'extra_forbidden'
+ERR-SYS23-02: missing required key 'warmup_years'
+ERR-SYS23-03: years must be int ≥ 1
+* test_WP26_evidence_ERR_SYS23_01_missing_file
+ERR-01 errors:
+ERR-SYS23-01: scenario file missing: res://tests/fixtures/sys23/DOES_NOT_EXIST_scenario.json
+* test_WP26_evidence_ERR_SYS23_03_type
+ERR-03 errors:
+ERR-SYS23-03: years must be int ≥ 1
+* test_WP26_evidence_ERR_SYS23_05_unknown_port
+ERR-05 errors:
+ERR-SYS23-05: daily_detail_ports unknown port_id 'PT-NOPE'
+* test_WP26_evidence_ERR_SYS23_06_relocate_f
+ERR-06 errors:
+ERR-SYS23-06: relocate_f must not appear when layers.RELOCATE is false
+* test_WP26_evidence_accounts_after_boot_layer1
+sim_engine: combos=1 seeds=1 jobs=1
+post_boot_day1 player_balance=150000 arrears=0 start_cash=150000
+xfer season=-1 day=0 account=ACT-PLAYER delta_li=150000 reason=GENESIS_CASH balance_after=150000 counterparty=SOURCE emitting=CashLedger.genesis_grant/PRM-SYS05-START_CASH
+WP26_ACCOUNTS_BEGIN
+account id=ACT-PLAYER kind=0 balance=57596 arrears=0 arrears_seasons=0
+account id=CITY-PT-01 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-02 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-03 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-04 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-05 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-06 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-07 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-08 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-09 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-10 kind=1 balance=404 arrears=0 arrears_seasons=0
+account id=CITY-PT-11 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-12 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-13 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-14 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-15 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=CITY-PT-16 kind=1 balance=0 arrears=0 arrears_seasons=0
+account id=SINK kind=4 balance=92000 arrears=0 arrears_seasons=0
+account id=SOURCE kind=3 balance=-150000 arrears=0 arrears_seasons=0
+WP26_ACCOUNTS_END
+WP26_PLAYER_TRANSFERS_BEGIN
+xfer season=0 day=90 account=ACT-PLAYER delta_li=-101 reason=LAND_RENT balance_after=149899
+xfer season=0 day=90 account=CITY-PT-10 delta_li=101 reason=LAND_RENT balance_after=101
+xfer season=0 day=90 account=ACT-PLAYER delta_li=-18000 reason=CREW_WAGE balance_after=131899
+xfer season=0 day=90 account=SINK delta_li=18000 reason=CREW_WAGE balance_after=18000
+xfer season=0 day=90 account=ACT-PLAYER delta_li=-5000 reason=SHIP_REPAIR balance_after=126899
+xfer season=0 day=90 account=SINK delta_li=5000 reason=SHIP_REPAIR balance_after=23000
+xfer season=1 day=180 account=ACT-PLAYER delta_li=-101 reason=LAND_RENT balance_after=126798
+xfer season=1 day=180 account=CITY-PT-10 delta_li=101 reason=LAND_RENT balance_after=202
+xfer season=1 day=180 account=ACT-PLAYER delta_li=-18000 reason=CREW_WAGE balance_after=108798
+xfer season=1 day=180 account=SINK delta_li=18000 reason=CREW_WAGE balance_after=41000
+xfer season=1 day=180 account=ACT-PLAYER delta_li=-5000 reason=SHIP_REPAIR balance_after=103798
+xfer season=1 day=180 account=SINK delta_li=5000 reason=SHIP_REPAIR balance_after=46000
+xfer season=2 day=270 account=ACT-PLAYER delta_li=-101 reason=LAND_RENT balance_after=103697
+xfer season=2 day=270 account=CITY-PT-10 delta_li=101 reason=LAND_RENT balance_after=303
+xfer season=2 day=270 account=ACT-PLAYER delta_li=-18000 reason=CREW_WAGE balance_after=85697
+xfer season=2 day=270 account=SINK delta_li=18000 reason=CREW_WAGE balance_after=64000
+xfer season=2 day=270 account=ACT-PLAYER delta_li=-5000 reason=SHIP_REPAIR balance_after=80697
+xfer season=2 day=270 account=SINK delta_li=5000 reason=SHIP_REPAIR balance_after=69000
+xfer season=3 day=360 account=ACT-PLAYER delta_li=-101 reason=LAND_RENT balance_after=80596
+xfer season=3 day=360 account=CITY-PT-10 delta_li=101 reason=LAND_RENT balance_after=404
+xfer season=3 day=360 account=ACT-PLAYER delta_li=-18000 reason=CREW_WAGE balance_after=62596
+xfer season=3 day=360 account=SINK delta_li=18000 reason=CREW_WAGE balance_after=87000
+xfer season=3 day=360 account=ACT-PLAYER delta_li=-5000 reason=SHIP_REPAIR balance_after=57596
+xfer season=3 day=360 account=SINK delta_li=5000 reason=SHIP_REPAIR balance_after=92000
+WP26_PLAYER_TRANSFERS_END count=24
+genesis_grant target=ACT-PLAYER start_cash=150000 day1_balance=150000 end_balance=57596 end_arrears=0 end_season_note=after_years=1_last_day
+* test_WP26_abort_summary_mets_blank
+ABORT_AGGREGATE_ALL_ABORTED { "combo_index": 0, "combo": "{}", "MET-01_avg": "", "MET-01_min": "", "MET-01_max": "", "MET-02_avg": "", "MET-02_min": "", "MET-02_max": "", "MET-03_avg": "", "MET-03_min": "", "MET-03_max": "", "MET-04_avg": "", "MET-04_min": "", "MET-04_max": "", "MET-05a_avg": "", "MET-05a_min": "", "MET-05a_max": "", "MET-05b_avg": "", "MET-05b_min": "", "MET-05b_max": "", "MET-06_avg": "", "MET-06_min": "", "MET-06_max": "", "combo_pass": "N/A" }
+ABORT_AGGREGATE_MIXED { "combo_index": 0, "combo": "{}", "MET-01_avg": "", "MET-01_min": "", "MET-01_max": "", "MET-02_avg": "", "MET-02_min": "", "MET-02_max": "", "MET-03_avg": "", "MET-03_min": "", "MET-03_max": "", "MET-04_avg": "", "MET-04_min": "", "MET-04_max": "", "MET-05a_avg": "", "MET-05a_min": "", "MET-05a_max": "", "MET-05b_avg": "", "MET-05b_min": "", "MET-05b_max": "", "MET-06_avg": 0.0, "MET-06_min": 0.0, "MET-06_max": 0.0, "combo_pass": "N/A" }
+ABORT_SUMMARY_CSV
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},1,ERR-SYS23-07: boot failed: [],,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,,,,0
+
+* test_WP26_csv_integer_columns_no_dot
+sim_engine: combos=1 seeds=1 jobs=1
+INT_CSV_SUMMARY
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},0,,0,N/A,,N/A,,N/A,0,N/A,4,N/A,4,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,,,5688
+
+INT_CSV_COMBOS
+combo_index,combo,MET-01_avg,MET-01_min,MET-01_max,MET-02_avg,MET-02_min,MET-02_max,MET-03_avg,MET-03_min,MET-03_max,MET-04_avg,MET-04_min,MET-04_max,MET-05a_avg,MET-05a_min,MET-05a_max,MET-05b_avg,MET-05b_min,MET-05b_max,MET-06_avg,MET-06_min,MET-06_max,combo_pass
+0,{},0,0,0,,,,,,,0,0,0,4,4,4,4,4,4,0,0,0,N/A
+
+INT_CSV_SEASON_PORTS_HEADER
+run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,workplaces,beds,city_balance_li,queue_position,land_rent_li,vacancy_tax_li,city_spend_json,queue_state,sat_poor,sat_citizen,sat_rich,job_cap,pf1,pf2,pf3,pf4,pf5,pf6,unmet_poor_top3,unmet_citizen_top3,unmet_rich_top3
+INT_CSV_SEASON_PORTS_ROW1
+0,1,0,PT-01,0,0,0,0,0,1,0,0,1,0,0,"{""build_upgrade_li"":0,""garrison_li"":0,""levy_li"":0,""other_li"":0}",施工中,1000,1000,1000,16,0,0,0,0,0,0,,,
+* test_WP26_evidence_years10_player_arrears
+sim_engine: combos=1 seeds=1 jobs=1
+Y10_SEASON_END season=0 balance=126899 arrears=0 arrears_seasons=0 bankrupt_lim=2
+Y10_SEASON_END season=1 balance=103798 arrears=0 arrears_seasons=0 bankrupt_lim=2
+Y10_SEASON_END season=2 balance=80697 arrears=0 arrears_seasons=0 bankrupt_lim=2
+Y10_SEASON_END season=3 balance=57596 arrears=0 arrears_seasons=0 bankrupt_lim=2
+Y10_SEASON_END season=4 balance=34495 arrears=0 arrears_seasons=0 bankrupt_lim=2
+Y10_SEASON_END season=5 balance=11394 arrears=0 arrears_seasons=0 bankrupt_lim=2
+Y10_SEASON_END season=6 balance=0 arrears=11707 arrears_seasons=1 bankrupt_lim=2
+Y10_SEASON_END season=7 balance=0 arrears=34808 arrears_seasons=2 bankrupt_lim=2
+Y10_SEASON_END season=8 balance=0 arrears=57909 arrears_seasons=3 bankrupt_lim=2
+Y10_SEASON_END season=9 balance=0 arrears=81010 arrears_seasons=4 bankrupt_lim=2
+Y10_SEASON_END season=10 balance=0 arrears=104111 arrears_seasons=5 bankrupt_lim=2
+Y10_SEASON_END season=11 balance=0 arrears=127212 arrears_seasons=6 bankrupt_lim=2
+Y10_SEASON_END season=12 balance=0 arrears=150313 arrears_seasons=7 bankrupt_lim=2
+Y10_SEASON_END season=13 balance=0 arrears=173414 arrears_seasons=8 bankrupt_lim=2
+Y10_SEASON_END season=14 balance=0 arrears=196515 arrears_seasons=9 bankrupt_lim=2
+Y10_SEASON_END season=15 balance=0 arrears=219616 arrears_seasons=10 bankrupt_lim=2
+Y10_SEASON_END season=16 balance=0 arrears=242717 arrears_seasons=11 bankrupt_lim=2
+Y10_SEASON_END season=17 balance=0 arrears=265818 arrears_seasons=12 bankrupt_lim=2
+Y10_SEASON_END season=18 balance=0 arrears=288919 arrears_seasons=13 bankrupt_lim=2
+Y10_SEASON_END season=19 balance=0 arrears=312020 arrears_seasons=14 bankrupt_lim=2
+Y10_SEASON_END season=20 balance=0 arrears=335121 arrears_seasons=15 bankrupt_lim=2
+Y10_SEASON_END season=21 balance=0 arrears=358222 arrears_seasons=16 bankrupt_lim=2
+Y10_SEASON_END season=22 balance=0 arrears=381323 arrears_seasons=17 bankrupt_lim=2
+Y10_SEASON_END season=23 balance=0 arrears=404424 arrears_seasons=18 bankrupt_lim=2
+Y10_SEASON_END season=24 balance=0 arrears=427525 arrears_seasons=19 bankrupt_lim=2
+Y10_SEASON_END season=25 balance=0 arrears=450626 arrears_seasons=20 bankrupt_lim=2
+Y10_SEASON_END season=26 balance=0 arrears=473727 arrears_seasons=21 bankrupt_lim=2
+Y10_SEASON_END season=27 balance=0 arrears=496828 arrears_seasons=22 bankrupt_lim=2
+Y10_SEASON_END season=28 balance=0 arrears=519929 arrears_seasons=23 bankrupt_lim=2
+Y10_SEASON_END season=29 balance=0 arrears=543030 arrears_seasons=24 bankrupt_lim=2
+Y10_SEASON_END season=30 balance=0 arrears=566131 arrears_seasons=25 bankrupt_lim=2
+Y10_SEASON_END season=31 balance=0 arrears=589232 arrears_seasons=26 bankrupt_lim=2
+Y10_SEASON_END season=32 balance=0 arrears=612333 arrears_seasons=27 bankrupt_lim=2
+Y10_SEASON_END season=33 balance=0 arrears=635434 arrears_seasons=28 bankrupt_lim=2
+Y10_SEASON_END season=34 balance=0 arrears=658535 arrears_seasons=29 bankrupt_lim=2
+Y10_SEASON_END season=35 balance=0 arrears=681636 arrears_seasons=30 bankrupt_lim=2
+Y10_SEASON_END season=36 balance=0 arrears=704737 arrears_seasons=31 bankrupt_lim=2
+Y10_SEASON_END season=37 balance=0 arrears=727838 arrears_seasons=32 bankrupt_lim=2
+Y10_SEASON_END season=38 balance=0 arrears=750939 arrears_seasons=33 bankrupt_lim=2
+Y10_SEASON_END season=39 balance=0 arrears=774040 arrears_seasons=34 bankrupt_lim=2
+Y10_DONE seasons_logged=40 expect=40 hit_zero=true hit_bankrupt=true aborted=0 reason= MET-06=0.0
+Y10_BANKRUPTCY_CODE cash_ledger.gd close_season: arrears_seasons >= bankrupt_lim → bankruptcy_referred.emit — no sim abort/ERR-SYS23 (GAP: bankruptcy-unhandled)
+* test_TST_SYS23_09_print_summary_csv
+sim_engine: combos=2 seeds=1 jobs=2
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-05", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "good_id", "value": { "good": "GD-001", "actual": 353, "expected": 352 }, "message": "conservation violated" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1152)
+       [1] check_conservation (res://autoload/goods_ledger.gd:407)
+       [2] maybe_check_conservation_on_tick (res://autoload/goods_ledger.gd:421)
+       [3] tick_day (res://autoload/sim_loop.gd:263)
+       [4] _run_one_job (res://sim/sim_engine.gd:215)
+       [5] run_scenario_dict (res://sim/sim_engine.gd:69)
+       [6] test_TST_SYS23_09_print_summary_csv (res://tests/unit/test_sys23_wp26.gd:759)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+TST09_SUMMARY_CSV_BEGIN
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS05-MIN_CASH_UNIT"":1}",0,,0,N/A,,N/A,,N/A,0,N/A,4,N/A,1.4,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,,,8917
+1,1,1,"{""PRM-SYS05-MIN_CASH_UNIT"":1}",1,ERR-SYS23-07: conservation violated,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,1,0,,,,89
+TST09_SUMMARY_CSV_END
+TST09_ERR07_STATE_NOTE: ERR-SYS23-07 abort_reason lands in summary.abort_reason; season/daily rows sampled before abort remain in CSVs; MET-01..05b blank on aborted row; MET-06=conservation hits
+[34m[ExpectedError][0m
+* test_WP26_evidence_cli_twice_cmp
+CLI_ARGV: /home/ubuntu/bin/godot --headless --path /agent/repos/Project-Patrician -s res://sim/sim_runner.gd -- --scenario /home/ubuntu/.local/share/godot/app_userdata/Project Patrician/sys23_cli_scenario.json
+CLI_RUN_A rc=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=sys23_cli_cmp jobs=1
+sim_runner_child_argv: /home/ubuntu/bin/godot --headless --path /agent/repos/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/ubuntu/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.json
+sim_runner: wrote outputs under user://sim_out/sys23_cli_cmp/
+
+CLI_RUN_B rc=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=sys23_cli_cmp jobs=1
+sim_runner_child_argv: /home/ubuntu/bin/godot --headless --path /agent/repos/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/ubuntu/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.json
+sim_runner: wrote outputs under user://sim_out/sys23_cli_cmp/
+
+CLI_CMP season_cells.csv equal=true bytes_a=64644 bytes_b=64644
+CLI_CMP season_ports.csv equal=true bytes_a=9583 bytes_b=9583
+CLI_CMP summary: stripping elapsed_ms column before cmp
+CLI_CMP summary_stripped_a:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},0,,0,N/A,,N/A,,N/A,0,N/A,4,N/A,4,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,,
+CLI_CMP summary_stripped_b:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},0,,0,N/A,,N/A,,N/A,0,N/A,4,N/A,4,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,,
+CLI_CMP summary.csv equal=true bytes_a=383 bytes_b=383
+CLI_CMP combos.csv equal=true bytes_a=311 bytes_b=311
+CLI_CMP daily_PT-01.csv equal=true bytes_a=308232 bytes_b=308232
+CLI_CMP all five outputs match (elapsed stripped on summary)
+* test_WP26_layer1_two_years_headers_and_counts
+sim_engine: combos=1 seeds=1 jobs=1
+season_cells.csv header=run_id,seed,season_index,port_id,good_id,stock,mid_li,stock_weeks,band,produced,consumed,relocated_in,relocated_out,excess_consumed rows=3073
+season_ports.csv header=run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,workplaces,beds,city_balance_li,queue_position,land_rent_li,vacancy_tax_li,city_spend_json,queue_state,sat_poor,sat_citizen,sat_rich,job_cap,pf1,pf2,pf3,pf4,pf5,pf6,unmet_poor_top3,unmet_citizen_top3,unmet_rich_top3 rows=129
+summary.csv header=run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms rows=2
+combos.csv header=combo_index,combo,MET-01_avg,MET-01_min,MET-01_max,MET-02_avg,MET-02_min,MET-02_max,MET-03_avg,MET-03_min,MET-03_max,MET-04_avg,MET-04_min,MET-04_max,MET-05a_avg,MET-05a_min,MET-05a_max,MET-05b_avg,MET-05b_min,MET-05b_max,MET-06_avg,MET-06_min,MET-06_max,combo_pass rows=2
+daily_PT-01.csv header=run_id,seed,day,good_id,stock,mid_li,stock_weeks,band,produced,consumed,relocated_in,relocated_out rows=17281
+* test_WP26_json_int_rejects_non_integral
+ERROR: SimJsonInt: non-integral rejected for bad_float: 3.7
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] as_int (res://sim/json_int.gd:21)
+       [1] test_WP26_json_int_rejects_non_integral (res://tests/unit/test_sys23_wp26.gd:876)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0mExpected push_error error containing 'non-integral rejected for bad_float'.  
+ERROR: SimGridExpand: non-integral seed rejected: 1.5
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] expand (res://sim/grid_expand.gd:32)
+       [1] test_WP26_json_int_rejects_non_integral (res://tests/unit/test_sys23_wp26.gd:879)
+       [2] _run_test (res://addons/gut/gut.gd:622)
+       [3] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0mExpected push_error error containing 'non-integral seed rejected'.  
+ERROR: SimJsonInt: non-integral rejected for produced: 2.3
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] as_int (res://sim/json_int.gd:21)
+       [1] produced (res://sim/transfer_acc.gd:43)
+       [2] test_WP26_json_int_rejects_non_integral (res://tests/unit/test_sys23_wp26.gd:885)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0mExpected push_error error containing 'non-integral rejected for produced'.  
+WP26_json_int_rejects_non_integral ok
+* test_WP26_empty_sample_mets_blank_not_zero
+EMPTY_SAMPLE_SUMMARY { "run_id": 0, "combo_index": 0, "seed": 1, "combo": "{}", "aborted": 0, "abort_reason": "", "MET-01": "", "MET-01_pass": "N/A", "MET-02": "", "MET-02_pass": "N/A", "MET-03": "", "MET-03_pass": "N/A", "MET-04": "", "MET-04_pass": "N/A", "MET-05a": "", "MET-05a_pass": "N/A", "MET-05b": "", "MET-05b_pass": "N/A", "MET-06": 0.0, "MET-06_pass": "1", "OBS-01": "", "OBS-02": "", "OBS-03": "", "elapsed_ms": 1, "obs_ext": [] }
+WP26_empty_sample_mets_blank_not_zero ok
+[1m29/30 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m[4m
+res://tests/unit/test_sys23_wp26.gd
+[0m- test_WP58_A34_write_failure_reports_ok_false
+[31m    [Failed]:  [0mExpected 5 push_error errors.  Got 6.
+          at line 439
+[31m    [Failed]:  [0mUnexpected Errors:
+    [1] <push_error>SimCsvOut: cannot write user://sim_out/wp58_a34_block/trader_summary.csv err=12
+          at line -1
+
+Totals
+------
+Scripts               1
+Tests                30
+Passing Tests        29
+Failing Tests         1
+Asserts           384/386
+Time              136.412s
+
+
+Ran Scripts matching "test_sys23_wp26.gd"
+[31m---- 1 failing tests ----
+[0m
+WARNING: 197 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 65 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

@@ -1,0 +1,2 @@
+590b7729513977ae501a28c1d7677bc6  ProjectPatrician.exe
+62d2cc573dd77a893e8ebe5ba4c643e5  ProjectPatrician.pck

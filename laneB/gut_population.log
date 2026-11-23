@@ -1,0 +1,264 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+---  GUT  ---
+[1m[INFO]:  [0musing [/home/ubuntu/.local/share/godot/app_userdata/Project Patrician] for temporary output.
+Godot version:  4.7.2
+GUT version:  9.7.1
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestSat because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestCons because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestSat because it does not extend GutTest
+[33m[GUT WARNING]:  [0mIgnoring Inner Class TestSat because it does not extend GutTest
+[4m
+
+res://tests/unit/test_population_model_wp21.gd
+[0m* test_WP21_14_04_1_missing_sat_provider_boot_error
+ERROR: PopulationModel: { "code": &"SATISFACTION_INPUT_PROVIDER_MISSING", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "SatisfactionInputProvider", "value": <null>, "message": "SatisfactionInputProvider must be injected before load (D-17c)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] load_and_validate (res://autoload/population_model.gd:246)
+       [2] test_WP21_14_04_1_missing_sat_provider_boot_error (res://tests/unit/test_population_model_wp21.gd:64)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+       [5] test_scripts (res://addons/gut/gut.gd:1047)
+       [6] run_tests (res://addons/gut/gui/GutRunner.gd:198)
+       [7] _run_tests (res://addons/gut/cli/gut_cli.gd:239)
+       [8] main (res://addons/gut/cli/gut_cli.gd:297)
+       [9] _init (res://addons/gut/gut_cmdln.gd:39)
+[34m[ExpectedError][0m
+* test_WP21_14_04_2_providers_inject_into_building_economy
+* test_WP21_14_04_3_same_seed_same_result
+* test_TST_SYS07_01_weighted_avg_no_inflow
+* test_TST_SYS07_02_pf3_integer_flow_accum
+* test_TST_SYS07_03_sat_inertia_step
+* test_TST_SYS07_04_quantize_sat_input
+* test_TST_SYS07_05_streak_resets
+* test_TST_SYS07_06_tier2_needs_active_workers
+* test_TST_SYS07_07_hire_largest_remainder
+* test_TST_SYS07_08_demolish_releases_workers_next_tick
+* test_TST_SYS07_09_outflow_beggars_first
+* test_TST_SYS07_10_housing_overflow_gradual
+* test_TST_SYS07_11_port_iteration_order_independent
+* test_TST_SYS07_12_same_seed_placement_replay
+* test_TST_SYS07_13_boot_param_errors
+ERROR: PopulationModel: { "code": &"ERR-SYS07-06", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "PRM-SYS07-SAT_MAX_STEP", "value": <null>, "message": "required PRM missing" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] load_and_validate (res://autoload/population_model.gd:250)
+       [2] test_TST_SYS07_13_boot_param_errors (res://tests/unit/test_population_model_wp21.gd:386)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-02", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "thresholds", "value": [900, 400, 400, 600, 700], "message": "threshold order" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] load_and_validate (res://autoload/population_model.gd:250)
+       [2] test_TST_SYS07_13_boot_param_errors (res://tests/unit/test_population_model_wp21.gd:386)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-05", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "PRM-SYS07-LAMBDA_RING", "value": 0.0, "message": "lambda <= 0" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] load_and_validate (res://autoload/population_model.gd:250)
+       [2] test_TST_SYS07_13_boot_param_errors (res://tests/unit/test_population_model_wp21.gd:386)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS07_14_hire_sailors_all_or_nothing
+ERROR: PopulationModel: { "code": &"ERR-SYS07-07", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "beggar", "value": 3, "message": "insufficient beggars for hire_sailors" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record (res://autoload/population_model.gd:1483)
+       [1] hire_sailors (res://autoload/population_model.gd:482)
+       [2] test_TST_SYS07_14_hire_sailors_all_or_nothing (res://tests/unit/test_population_model_wp21.gd:401)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_TST_SYS07_15_hire_capped_by_free_beds
+* test_TST_SYS07_17_temple_bonus_caps_at_sat_scale
+* test_TST_SYS07_18_job_cap_overflow_gradual_citizen
+* test_TST_SYS07_19_poor_leave_only_after_beggars_gone
+* test_WP21_D17b_acquire_materials_public
+* test_WP21_D18a_buildings_float_qty_import
+* test_WP21_D18a_negative_qty_rejected
+ERROR: buildings.csv: D-18a float below zero row 1 field input1_qty value -0.5
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _abort_batch (res://tools/csv_import.gd:2163)
+       [1] run_batch_wp17 (res://tools/csv_import.gd:663)
+       [2] test_WP21_D18a_negative_qty_rejected (res://tests/unit/test_population_model_wp21.gd:596)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+[1m24/24 passed.
+[0m[4m
+
+res://tests/unit/test_population_model_wp51.gd
+[0m* test_WP51_occupants_stable_when_no_movers
+* test_WP51_movers_change_occupants
+* test_WP51_no_cross_port_placement
+* test_WP51_sum_occupants_equals_st_pop
+* test_WP51_port_iteration_order_independent
+* test_WP51_same_seed_same_result
+* test_WP51_T2_different_seeds_differ_placement
+* test_WP51_opening_full_placement
+[1m8/8 passed.
+[0m[4m
+
+res://tests/unit/test_population_model_wp55.gd
+[0m* test_WP55_A13_derive_seed_draw_seq_changes_hash
+* test_WP55_A13_same_day_repeat_draw_differs
+* test_WP55_A13_movers_disperse_across_residences
+* test_WP55_A16_pf3_academy_lv0_uses_unit_mult
+* test_WP55_D87_partial_opening_writes_nothing
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-02", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-03", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-04", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-05", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-06", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-07", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-08", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-09", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-10", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-11", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-12", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-13", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-14", "message": "missing opening population for port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_D87_partial_opening_writes_nothing (res://tests/unit/test_population_model_wp55.gd:130)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+* test_WP55_A17_unknown_port_no_silent_create
+ERROR: PopulationModel: { "code": &"ERR-SYS07-09", "sys": &"SYS-07", "detail": { "file": "res://autoload/population_model.gd", "field": "port_id", "value": "PT-99", "message": "unknown opening population port" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://autoload/population_model.gd:1492)
+       [1] apply_opening_init (res://autoload/population_model.gd:372)
+       [2] test_WP55_A17_unknown_port_no_silent_create (res://tests/unit/test_population_model_wp55.gd:150)
+       [3] _run_test (res://addons/gut/gut.gd:622)
+       [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+[34m[ExpectedError][0m
+[1m6/6 passed.
+[0m
+
+
+
+[33m==============================================
+[0m[33m= Run Summary
+[0m[33m==============================================
+[0m
+Totals
+------
+Warnings              4
+
+Scripts               3
+Tests                38
+Passing Tests        38
+Asserts             583
+Time              4.836s
+
+
+[32m---- All tests passed! ----
+[0m
+WARNING: 224 ObjectDB instances were leaked at exit (run with `--verbose` for details).
+   at: cleanup (core/object/object.cpp:2536)
+ERROR: 70 resources still in use at exit (run with --verbose for details).
+   at: clear (core/io/resource.cpp:822)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketLargeE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools12BucketMediumE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: Pages in use exist at exit in PagedAllocator: N12VariantPools11BucketSmallE
+   at: ~PagedAllocator (./core/templates/paged_allocator.h:170)
+ERROR: 2 RID allocations of type 'PN13RendererDummy14TextureStorage12DummyTextureE' were leaked at exit.
+ERROR: 3 RID allocations of type 'PN18TextServerAdvanced12FontAdvancedE' were leaked at exit.

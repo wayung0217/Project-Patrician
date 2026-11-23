@@ -1,0 +1,8 @@
+完成
+source_sha=1fd181acf5012a49494b3084e4045202987e4507
+source_branch=cursor/ui-1755-debug-panels-ff98
+preferred_over_int=yes (D-115(d)(e); U done)
+godot=4.7.2.stable
+preset=Windows Desktop (#58 export_presets.cfg)
+artifact=ProjectPatrician-win.zip (exe+pck; raw exe ~105MB exceeds 100MB store/GitHub file cap)
+exported_at_utc=2026-11-23T16:21:25Z

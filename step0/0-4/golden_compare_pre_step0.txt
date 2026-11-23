@@ -1,0 +1,20 @@
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step0/0A/pre60/golden/out.csv bytes=26713225
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-55/step0/0-4/golden/out.csv bytes=26062718
+IDENTICAL=0
+ROWS_A=6137 ROWS_B=6137
+DIFFS_BEGIN
+COL=poor first_diff_day=28 diff_cells=3696
+COL=citizen first_diff_day=1 diff_cells=3965
+COL=rich first_diff_day=58 diff_cells=832
+COL=beggar first_diff_day=1 diff_cells=2997
+COL=city_balance_li first_diff_day=90 diff_cells=3344
+COL=goods_mid_json first_diff_day=0 diff_cells=4251
+COL=goods_stock_weeks_json first_diff_day=0 diff_cells=5776
+COL=goods_window_qty_json first_diff_day=1 diff_cells=5563
+COL=buildings_json first_diff_day=0 diff_cells=6137
+COL=residences_json first_diff_day=1 diff_cells=4187
+COL=land_rent_li first_diff_day=90 diff_cells=4336
+COL=vacancy_tax_li first_diff_day=90 diff_cells=4336
+COL=city_spend_json first_diff_day=0 diff_cells=5776
+COL=note first_diff_day=0 diff_cells=5776
+DIFFS_END
