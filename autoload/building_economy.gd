@@ -2245,14 +2245,15 @@ func city_queue_state(port_id: StringName) -> String:
 	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
 		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_state (D-110d)")
 		return ""
-	var steps: Array = _queue_by_port.get(pid, [])
-	var pos: int = int(_queue_pos.get(pid, 0))
-	if pos >= steps.size():
-		return QUEUE_STATE_DONE
+	## In-progress city public (WAITING／BUILDING) wins even if queue_pos already advanced.
 	if _city_queue_waiting_building(pid) != null:
 		return QUEUE_STATE_MAT
 	if _city_public_in_state(pid, Building.State.BUILDING) != null:
 		return QUEUE_STATE_BUILD
+	var steps: Array = _queue_by_port.get(pid, [])
+	var pos: int = int(_queue_pos.get(pid, 0))
+	if pos >= steps.size():
+		return QUEUE_STATE_DONE
 	return QUEUE_STATE_CASH
 
 

@@ -435,8 +435,8 @@ func test_WP58_A34_write_failure_reports_ok_false() -> void:
 	print("WP58_A34 write_all=%s" % str(written))
 	assert_false(bool(written.get("ok", true)), "A34: ok must be false on write failure")
 	assert_gt((written.get("failed_paths", PackedStringArray()) as PackedStringArray).size(), 0)
-	## Five CSV writers each push_error once (season_cells/ports/summary/combos/obs_ext WP-27).
-	assert_push_error_count(5)
+	## Six CSV writers each push_error once (season_cells/ports/summary/combos/obs_ext＋trader_summary D-110d).
+	assert_push_error_count(6)
 	## Cleanup blocker file.
 	DirAccess.remove_absolute(abs_blocked)
 
