@@ -75,7 +75,7 @@ BANNED_RE = re.compile(
 DIR_LIST_RE = re.compile(r"\blist_dir_begin\s*\(")
 SORT_RE = re.compile(r"\b(sort|sort_custom)\s*\(")
 TEST_FUNC_RE = re.compile(r"^\s*func\s+(test_[A-Za-z0-9_]+)\s*\(")
-TST_OK_RE = re.compile(r"(TST_|SYS\d|_SYS|_PROP_|PROP_|WP\d|R2_|R\d)")
+TST_OK_RE = re.compile(r"(TST_|EX_|SYS\d|_SYS|_PROP_|PROP_|WP\d|R2_|R\d)")
 ID_TOKEN_RE = re.compile(r"\b((?:FRM|ERR|PRM|TST|WRN)-[A-Z0-9-]+)\b")
 COMMENT_ID_RE = re.compile(r"#.*\b((?:FRM|ERR|PRM|TST|WRN)-[A-Z0-9-]+)\b")
 

@@ -568,5 +568,13 @@
   "PRM-SYS15-PUBLIC_DELAY_TICKS": {
     "type": "int",
     "min": 0
+  },
+  "PRM-SYS08-OPENING_STOCK_DEMAND_WEEKS": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS08-OPENING_STOCK_OUTPUT_WEEKS": {
+    "type": "int",
+    "min": 0
   }
 }

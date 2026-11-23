@@ -349,18 +349,33 @@ func _resolve_context(port_id: StringName, good_id: StringName) -> Dictionary:
 		var days_pw: int = Params.get_int(PRM_DAYS_PER_WEEK)
 		weekly_offtake = float(window_qty) * float(days_pw) / float(window_days)
 
+	## D-96(a)／FRM-SYS04-01（改）：weekly_basis = MAX(週去化, 週潛在需求).
+	var potential_dan: int = 0
+	if DemandModel.has_potential_demand_provider() or DemandModel.is_loaded():
+		potential_dan = DemandModel.weekly_potential_demand(port_id, good_id)
+	var weekly_basis: float = weekly_offtake
+	if float(potential_dan) > weekly_basis:
+		weekly_basis = float(potential_dan)
+
 	var market: Dictionary = GoodsLedger.make_market(port_s)
 	var stock: int = GoodsLedger.get_qty(market, good_id)
 	return {
 		FIELD_ANCHOR: anchor,
 		"stock": stock,
-		"weekly_offtake": weekly_offtake,
+		"weekly_offtake": weekly_basis, ## key kept for callers; value is weekly_basis (D-96a)
+		"weekly_basis": weekly_basis,
+		"weekly_offtake_raw": weekly_offtake,
+		"weekly_potential": potential_dan,
 		FIELD_OFFTAKE: snap,
 	}
 
 
 func _stock_weeks_raw(stock: int, weekly_offtake: float) -> Variant:
-	# Single weeks formula site (TST-SYS15-19／N-04): stock ÷ weekly_offtake；≤0 → null.
+	## D-96(a)／FRM-SYS04-01（改）／09（改） single site (TST-SYS15-19／N-04):
+	## MARKET stock＝0 → w＝0（天花板）；stock>0 且 weekly_basis＝0 → null（地板）；
+	## else w＝stock÷weekly_basis.
+	if stock == 0:
+		return 0.0
 	if weekly_offtake <= 0.0:
 		return null
 	return float(stock) / weekly_offtake
@@ -395,11 +410,12 @@ func _batch_area(anchor: int, weekly_offtake: float, stock_before: int, stock_af
 	if q < 0:
 		q = 0 - q
 	var w_before: Variant = _stock_weeks_raw(stock_before, weekly_offtake)
-	if w_before == null:
-		# FRM-SYS04-09（改）
+	var w_after: Variant = _stock_weeks_raw(stock_after, weekly_offtake)
+	## R9-65 高-2／D-96(a)／FRM-SYS04-09（改）: null-w = floor.
+	## Do not float(null) and do not substitute 0 (C-06).
+	if w_before == null or w_after == null:
 		return float(anchor) * _floor_mult() * float(q)
 	var c_f: float = weekly_offtake
-	var w_after: Variant = _stock_weeks_raw(stock_after, weekly_offtake)
 	var delta_g: float = _G(float(w_after)) - _G(float(w_before))
 	if delta_g < 0.0:
 		delta_g = 0.0 - delta_g

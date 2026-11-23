@@ -128,6 +128,10 @@ func boot(
 		if DemandModel.is_loaded():
 			_consumption = DemandModel.get_consumption_provider()
 
+	## D-97(c)／WP-62b／FRM-SYS08-21: opening MARKET stock after DemandModel（last opening step）.
+	if BuildingEconomy.is_loaded() and DemandModel.is_loaded() and errors.is_empty():
+		errors.append_array(BuildingEconomy.apply_opening_market_stock())
+
 	# D-14b／D-19f: ShipRegistry after PopulationModel／BuildingEconomy opening; inject SailorPool.
 	if not ShipRegistry.has_sailor_pool_provider() and PopulationModel.is_loaded():
 		ShipRegistry.set_sailor_pool_provider(PopulationModel.get_sailor_pool_provider())
