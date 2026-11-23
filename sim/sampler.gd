@@ -13,7 +13,8 @@ const HDR_SEASON_CELLS := (
 )
 const HDR_SEASON_PORTS := (
 	"run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,"
-	+ "workplaces,beds,city_balance_li,queue_position"
+	+ "workplaces,beds,city_balance_li,queue_position,"
+	+ "land_rent_li,vacancy_tax_li,city_spend_json"
 )
 const HDR_DAILY := (
 	"run_id,seed,day,good_id,stock,mid_li,stock_weeks,band,"
@@ -79,6 +80,16 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 	var beds: int = PopulationModel.housing_capacity(StringName(port_s))
 	var city_id: StringName = CashLedger.make_city_id(port_s)
 	var bal: int = CashLedger.balance(city_id)
+	## WP-67／D-97(e) OBS-05: public queries only when BuildingEconomy loaded.
+	var pid: StringName = StringName(port_s)
+	var land_rent := -1
+	var vac_tax := -1
+	var spend_json := "{}"
+	if BuildingEconomy.is_loaded():
+		land_rent = BuildingEconomy.season_land_rent_li(pid, season_index)
+		vac_tax = BuildingEconomy.season_vacancy_tax_li(pid, season_index)
+		var spend: Dictionary = BuildingEconomy.city_spend_by_category(pid, season_index)
+		spend_json = "{}" if spend.is_empty() else JSON.stringify(spend)
 	season_ports.append({
 		"run_id": run_id,
 		"seed": seed,
@@ -93,6 +104,9 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 		"beds": beds,
 		"city_balance_li": bal,
 		"queue_position": BuildingEconomy.city_queue_position(StringName(port_s)),
+		"land_rent_li": land_rent,
+		"vacancy_tax_li": vac_tax,
+		"city_spend_json": spend_json,
 	})
 
 
@@ -130,7 +144,7 @@ func _cell_row(
 		consumed = acc.consumed(port_s, good_s)
 		reloc_in = acc.relocated_in(port_s, good_s)
 		reloc_out = acc.relocated_out(port_s, good_s)
-	## WP-27 OBS-04: capture weekly potential at sample time (not written to 9.9 CSV).
+	## WP-27／WP-64 OBS-04: weekly potential at sample time (not written to 9.9 CSV).
 	var potential: int = 0
 	if DemandModel.is_loaded():
 		potential = DemandModel.weekly_potential_demand(StringName(port_s), StringName(good_s))
