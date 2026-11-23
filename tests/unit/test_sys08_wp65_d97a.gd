@@ -151,7 +151,7 @@ func test_N1_formal_data_zero_queue_import_errors() -> void:
 
 
 func test_D111b_missing_cb_error_queue_pos_stuck() -> void:
-	## D-111(b) blind-1: missing BuildingDef → error; queue_pos unchanged (no skip).
+	## D-111(b)／D-113(c): missing BuildingDef → ERR-SYS08-11; queue_pos unchanged (no skip).
 	_boot_registry()
 	assert_eq(CashLedger.load_and_validate().size(), 0)
 	BuildingEconomy._clear_state()
@@ -175,12 +175,50 @@ func test_D111b_missing_cb_error_queue_pos_stuck() -> void:
 	assert_false(started, "missing CB must not start")
 	assert_eq(
 		String(BuildingEconomy.last_error().get("code", "")),
-		String(BuildingEconomy.ERR_SYS08_08)
+		String(BuildingEconomy.ERR_SYS08_11)
 	)
 	assert_eq(BuildingEconomy.city_queue_position(StringName("PT-10")), 0, "queue_pos must stay")
 	## Season queue path: still stuck at 0 (no skip).
 	BuildingEconomy._season_city_build_queue("PT-10")
 	assert_eq(int(BuildingEconomy._queue_pos.get("PT-10", -1)), 0)
+	for e in get_errors():
+		e.handled = true
+
+
+func test_D113c_no_public_slot_err_sys08_01() -> void:
+	## D-113(c): no empty public slot → ERR-SYS08-01; stop; queue_pos stuck (no skip).
+	_boot_registry()
+	assert_eq(CashLedger.load_and_validate().size(), 0)
+	BuildingEconomy._clear_state()
+	BuildingEconomy._loaded = true
+	var def := BuildingDef.new()
+	def.type = "CB-01"
+	def.build_class = "PUBLIC"
+	def.tier = 0
+	def.max_workers = 0
+	def.base_output_per_worker = 0.0
+	BuildingEconomy._building_defs = {"CB-01": def}
+	BuildingEconomy._slots_by_port["PT-10"] = [] ## no PUBLIC slots
+	BuildingEconomy.set_build_queue("PT-10", [_step("PT-10", 0, "CB-01", 1)])
+	assert_eq(BuildingEconomy.city_queue_position(StringName("PT-10")), 0)
+	var city: StringName = CashLedger.make_city_id("PT-10")
+	CashLedger.create_account(city, Account.Kind.CITY)
+	var fund: int = int(Params.get_value("PRM-SYS08-BUILD_CASH_LI").get("PUBLIC", 0)) + 1
+	CashLedger.post(
+		[CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - fund), CashLedger.make_entry(city, fund)],
+		&"TEST_TOP_UP",
+		BuildingEconomy.REQUESTER_SYS08
+	)
+	var started: bool = BuildingEconomy._try_start_city_public(
+		"PT-10", city, BuildingEconomy._queue_by_port["PT-10"][0] as BuildStep, fund
+	)
+	assert_false(started, "no public slot must not start")
+	assert_eq(
+		String(BuildingEconomy.last_error().get("code", "")),
+		String(BuildingEconomy.ERR_SYS08_01)
+	)
+	BuildingEconomy._season_city_build_queue("PT-10")
+	assert_eq(int(BuildingEconomy._queue_pos.get("PT-10", -1)), 0, "queue_pos must stay")
 	for e in get_errors():
 		e.handled = true
 

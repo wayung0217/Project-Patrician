@@ -28,6 +28,7 @@ const ERR_SYS08_07 := &"ERR-SYS08-07"
 const ERR_SYS08_08 := &"ERR-SYS08-08"
 const ERR_SYS08_09 := &"ERR-SYS08-09"
 const ERR_SYS08_10 := &"ERR-SYS08-10"
+const ERR_SYS08_11 := &"ERR-SYS08-11" ## D-113(c): 建設順序表引用未知建築或等級
 const ERR_SYS08_12 := &"ERR-SYS08-12"
 const ERR_SYS08_13 := &"ERR-SYS08-13"
 const ERR_SYS08_14 := &"ERR-SYS08-14" ## D-102(b)／FRM-SYS08-18: 工坊週毛利為負，無法報收購價
@@ -2626,9 +2627,9 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 	var type_id: String = step.cb_id
 	if step.target_level <= BUILDING_LEVEL_MIN:
 		if not _building_defs.has(type_id):
-			## C-05／C-06: missing def → error + stop（queue_pos stuck）.
+			## D-113(c): missing BuildingDef → ERR-SYS08-11; stop（queue_pos stuck, no skip）.
 			_record_fail(
-				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (FRM-SYS08-15)"
+				ERR_SYS08_11, "type", type_id, "BuildingDef missing for city queue (FRM-SYS08-15)"
 			)
 			return false
 		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
@@ -2639,9 +2640,9 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 			return false
 		var slot_id: StringName = _find_public_slot(port_id)
 		if slot_id == &"":
-			## Empty public slot → gap+stop；do not skip queue item.
+			## D-113(c): no empty public slot → ERR-SYS08-01; stop; do not skip.
 			_record_fail(
-				ERR_SYS08_10, "public", type_id, "no public slot for city queue new-build (D-111b)"
+				ERR_SYS08_01, "public", type_id, "no public slot for city queue new-build (D-113c)"
 			)
 			return false
 		var bid: StringName = order_build(city, slot_id, StringName(type_id))
