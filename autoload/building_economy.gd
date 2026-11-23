@@ -2512,18 +2512,16 @@ func _recompute_r(port_id: String) -> int:
 
 
 func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, cost: int) -> bool:
-	## WP-65／A8／FRM-SYS08-15: L1 → order_build path；upgrade → in-place order_upgrade.
+	## WP-65／A8／FRM-SYS08-15 D-81／D-111(b): L1 → same path as order_build；
+	## def from loaded buildings only（不得 invent BuildingDef）.
 	var type_id: String = step.cb_id
 	if step.target_level <= BUILDING_LEVEL_MIN:
-		## WP-67／D-102(e): invent minimal PUBLIC def when queue cb_id not in import set.
 		if not _building_defs.has(type_id):
-			var d := BuildingDef.new()
-			d.type = type_id
-			d.build_class = "PUBLIC"
-			d.tier = 0
-			d.max_workers = 0
-			d.base_output_per_worker = 0.0
-			_building_defs[type_id] = d
+			## C-05／C-06: missing def → error + stop（queue_pos stuck）.
+			_record_fail(
+				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (FRM-SYS08-15)"
+			)
+			return false
 		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
 		if not cash_map.has("PUBLIC"):
 			_record_fail(
@@ -2532,6 +2530,10 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 			return false
 		var slot_id: StringName = _find_public_slot(port_id)
 		if slot_id == &"":
+			## Empty public slot → gap+stop；do not skip queue item.
+			_record_fail(
+				ERR_SYS08_10, "public", type_id, "no public slot for city queue new-build (D-111b)"
+			)
 			return false
 		var bid: StringName = order_build(city, slot_id, StringName(type_id))
 		if bid == &"":
