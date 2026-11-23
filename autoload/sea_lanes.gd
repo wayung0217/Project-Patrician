@@ -146,6 +146,19 @@ func nodes() -> Array:
 	return out
 
 
+func lane_ids() -> Array[StringName]:
+	## D-95(d): ascending lane_id list for UI／chart enumeration.
+	_clear_last_error()
+	if not _loaded:
+		_record_fail(CODE_NOT_LOADED, SEA_DIR, null, "SeaLanes.lane_ids before load")
+		var empty: Array[StringName] = []
+		return empty
+	var out: Array[StringName] = []
+	for id_variant in _lane_ids_sorted:
+		out.append(StringName(id_variant))
+	return out
+
+
 func waypoints(lane_id: Variant) -> int:
 	_clear_last_error()
 	if not _loaded:
