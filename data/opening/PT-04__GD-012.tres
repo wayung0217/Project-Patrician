@@ -6,4 +6,4 @@
 script = ExtResource("1_elpkb")
 port_id = "PT-04"
 good_id = "GD-012"
-count = 10
+count = 3

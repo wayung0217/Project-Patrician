@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_1e4sl")
 good_id = "GD-007"
-poor_rate_cj = 71
-citizen_rate_cj = 333
-rich_rate_cj = 500
+poor_rate_cj = 114
+citizen_rate_cj = 533
+rich_rate_cj = 800

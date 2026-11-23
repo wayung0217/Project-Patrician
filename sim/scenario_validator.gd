@@ -21,6 +21,10 @@ const KEY_GRID := "grid"
 const KEY_DAILY_PORTS := "daily_detail_ports"
 const KEY_THRESHOLDS := "thresholds"
 const KEY_RELOCATE := "RELOCATE"
+const KEY_TRADERS := "TRADERS"
+const KEY_QUAL_OPEN := "QUAL_OPEN"
+## D-109(e)／D-110／17-55: optional sim switches; RELOCATE remains required.
+const ALLOWED_LAYER_KEYS: PackedStringArray = [KEY_RELOCATE, KEY_TRADERS, KEY_QUAL_OPEN]
 
 const SCHEMA_PATH := "res://data/params/params_schema.json"
 
@@ -198,11 +202,17 @@ static func _check_layers_and_f(scenario: Dictionary, errors: PackedStringArray)
 					errors.append("%s: layers.RELOCATE must be bool" % ERR_SYS23_03)
 				else:
 					relocate_on = bool(r)
-			## Reject unknown layer keys.
+			## Optional bool layers (TRADERS／QUAL_OPEN); reject unknown keys.
 			for lk_v in layers.keys():
 				var lk: String = String(lk_v)
-				if lk != KEY_RELOCATE:
+				if not ALLOWED_LAYER_KEYS.has(lk):
 					errors.append("%s: unknown layers key '%s'" % [ERR_SYS23_03, lk])
+					continue
+				if lk == KEY_RELOCATE:
+					continue
+				var lv: Variant = layers[lk]
+				if typeof(lv) != TYPE_BOOL:
+					errors.append("%s: layers.%s must be bool" % [ERR_SYS23_03, lk])
 	var has_f: bool = scenario.has(KEY_RELOCATE_F)
 	if relocate_on:
 		if not has_f:

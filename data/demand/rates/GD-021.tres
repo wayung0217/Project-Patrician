@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_tk4gf")
 good_id = "GD-021"
-poor_rate_cj = 38
-citizen_rate_cj = 73
-rich_rate_cj = 73
+poor_rate_cj = 160
+citizen_rate_cj = 384
+rich_rate_cj = 480

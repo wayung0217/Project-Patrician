@@ -30,29 +30,30 @@ func before_each() -> void:
 
 
 func test_EX_08_21_01_wanggang_rice_opening_stock() -> void:
-	## EX-08-21-01: PT-10 GD-001；pot=71；2×米坊 W=148.779 → q=879.
+	## EX-08-21-01: PT-10 GD-001；pot=114（D-107）；2×米坊 W=148.779 → q=1051.
+	## D-107／frm_examples voids prior expect 879.
 	var pot := PotProv.new()
-	pot.set_pot(PORT, "GD-001", 71)
+	pot.set_pot(PORT, "GD-001", 114)
 	_boot(pot)
 	_spawn_workshop(PORT, "IB-01", "GD-001", 3.252, 25)
 	_spawn_workshop(PORT, "IB-01b", "GD-001", 3.252, 25)
 	assert_eq(BuildingEconomy.apply_opening_market_stock().size(), 0)
 	var mkt: Dictionary = GoodsLedger.make_market(PORT)
-	assert_eq(GoodsLedger.get_qty(mkt, &"GD-001"), 879)
+	assert_eq(GoodsLedger.get_qty(mkt, &"GD-001"), 1051)
 	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 
 func test_EX_08_21_02_yuegang_brick_opening_stock() -> void:
-	## EX-08-21-02: PT-01 GD-004；pot=0；3×砖石 W=247.782 → q=1486.
+	## EX-08-21-02: PT-01 GD-004；pot=1（精確 1.152）；1×砖石 W=247.782 → q=499.
+	## D-107／frm_examples voids prior expect 1486（was 3 workshops, pot=0）.
 	var pot := PotProv.new()
-	pot.set_pot(PORT_B, "GD-004", 0)
+	pot.set_pot(PORT_B, "GD-004", 1)
 	_boot(pot)
 	var base: float = 247.782 / (25.0 * 1.83)
-	for j in range(3):
-		_spawn_workshop(PORT_B, "IB-BR-%d" % j, "GD-004", base, 25)
+	_spawn_workshop(PORT_B, "IB-BR-0", "GD-004", base, 25)
 	assert_eq(BuildingEconomy.apply_opening_market_stock().size(), 0)
 	var mkt: Dictionary = GoodsLedger.make_market(PORT_B)
-	assert_eq(GoodsLedger.get_qty(mkt, &"GD-004"), 1486)
+	assert_eq(GoodsLedger.get_qty(mkt, &"GD-004"), 499)
 	assert_eq(GoodsLedger.check_conservation(), GoodsLedger.CODE_OK)
 
 

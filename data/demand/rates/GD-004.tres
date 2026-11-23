@@ -5,3 +5,5 @@
 [resource]
 script = ExtResource("1_dv45e")
 good_id = "GD-004"
+citizen_rate_cj = 16
+rich_rate_cj = 16
