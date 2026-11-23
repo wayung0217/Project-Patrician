@@ -13,7 +13,7 @@ const HDR_SEASON_CELLS := (
 )
 const HDR_SEASON_PORTS := (
 	"run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,"
-	+ "workplaces,beds,city_balance_li,"
+	+ "workplaces,beds,city_balance_li,queue_position,"
 	+ "land_rent_li,vacancy_tax_li,city_spend_json"
 )
 const HDR_DAILY := (
@@ -103,6 +103,7 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 		"workplaces": workplaces,
 		"beds": beds,
 		"city_balance_li": bal,
+		"queue_position": BuildingEconomy.city_queue_position(StringName(port_s)),
 		"land_rent_li": land_rent,
 		"vacancy_tax_li": vac_tax,
 		"city_spend_json": spend_json,
