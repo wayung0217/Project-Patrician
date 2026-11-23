@@ -100,12 +100,13 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
 	for r_v in rows:
 		var r: Dictionary = r_v
 		lines.append(
-			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
 				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]), r["port_id"],
 				_fmt(r["rich"]), _fmt(r["citizen"]), _fmt(r["poor"]), _fmt(r["beggar"]),
 				_fmt(r["sat_weighted"]), _fmt(r["workplaces"]), _fmt(r["beds"]),
 				_fmt(r["city_balance_li"]),
+				_fmt(r.get("queue_position", -1)),
 			]
 		)
 	return _store(path, lines)
