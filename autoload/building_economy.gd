@@ -2563,8 +2563,9 @@ func _season_city_build_queue(port_id: String) -> void:
 		# Upgrade cost if target_level > 1
 		if step.target_level > 1:
 			cost = _public_upgrade_cash(port_id, step.target_level)
-			if cost < 0:
-				break
+		## D-102(f) fixture-safe: cost≤0 → stop（no ERR-SYS08-07 zero-amount post）.
+		if cost <= 0:
+			break
 		if CashLedger.balance(city) < cost:
 			break
 		# Mark as started: advance pos (actual order_build needs free public slot — best-effort).
