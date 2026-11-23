@@ -199,7 +199,9 @@ func slot_id(port_id: String, seq_n: int) -> StringName:
 func load_and_validate(
 	zones_dir: String = ZONES_DIR,
 	city_center_dir: String = CITY_CENTER_DIR,
-	buildings_dir: String = BUILDINGS_DIR
+	buildings_dir: String = BUILDINGS_DIR,
+	build_queue_dir: String = BUILD_QUEUE_DIR,
+	opening_public_dir: String = OPENING_PUBLIC_DIR
 ) -> Array:
 	var errors: Array = []
 	_clear_state()
@@ -306,11 +308,10 @@ func load_and_validate(
 	var zones_by_port: Dictionary = _load_zones(zones_dir, errors)
 	var city_by_port: Dictionary = _load_city_centers(city_center_dir, errors)
 	_building_defs = _load_building_defs(buildings_dir, errors)
-	_load_build_queues(BUILD_QUEUE_DIR, errors)
-	## D-97(a)／D-102(f)／FRM-SYS08-21: ERR-SYS08-13 always on coherent datasets.
-	## Formal city boot（含 sim_loop 重匯入的 fixture CSV）→ validate formal opening+queue.
-	## Unit-test synthetic city dirs are not a coherent import with formal opening/queue —
-	## clear queues and validate empty openings so N1 still runs（不得 skip 驗證）.
+	_load_build_queues(build_queue_dir, errors)
+	## D-97(a)／D-102(f)／D-111(c)／FRM-SYS08-21: ERR-SYS08-13 on coherent datasets.
+	## Same validation path for all boots — tests must ship legal build_queue + opening_public
+	## (optional dirs). Never clear queues to bypass validation.
 	var registry_ports: Array = []
 	for rp_v in PortRegistry.all_ids():
 		registry_ports.append(String(rp_v))
@@ -319,17 +320,11 @@ func load_and_validate(
 		if not city_by_port.has(String(rp2)):
 			city_covers_registry = false
 			break
-	var formal_city_boot: bool = city_center_dir == CITY_CENTER_DIR
-	if city_covers_registry and not formal_city_boot:
-		_queue_by_port = {}
-		_queue_pos = {}
 	if city_covers_registry:
 		var opening_load_errs: Array = []
-		var opening_publics: Array = []
-		if formal_city_boot:
-			opening_publics = _load_opening_public(OPENING_PUBLIC_DIR, opening_load_errs)
-			for oe in opening_load_errs:
-				errors.append(oe)
+		var opening_publics: Array = _load_opening_public(opening_public_dir, opening_load_errs)
+		for oe in opening_load_errs:
+			errors.append(oe)
 		_validate_build_queue_import_d97a(city_by_port, opening_publics, errors)
 	if not errors.is_empty():
 		_emit_errors(errors)
@@ -2466,9 +2461,8 @@ func _season_city_build_queue(port_id: String) -> void:
 		# Upgrade cost if target_level > 1
 		if step.target_level > 1:
 			cost = _public_upgrade_cash(port_id, step.target_level)
-		## D-102(f) fixture-safe: cost≤0 → stop（no ERR-SYS08-07 zero-amount post）.
-		if cost <= 0:
-			break
+		## D-111(c): no cost≤0 silent break（C-06）. Spec has no ERR for cost≤0 → gaps.md.
+		## PUBLIC_UPGRADE_CASH_FAIL (−1) still cannot start; treat as unaffordable stop.
 		if CashLedger.balance(city) < cost:
 			break
 		# Mark as started: advance pos (actual order_build needs free public slot — best-effort).
