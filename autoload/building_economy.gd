@@ -469,6 +469,9 @@ func order_build(actor: StringName, slot_key: StringName, type_id: StringName) -
 	)
 	if post_err != OK:
 		return StringName(_fail_sn(ERR_SYS08_07, "post", cash_li, "construction cash post failed"))
+	## D-102(e)／OBS-05: CITY PUBLIC new-build cash → tracked city spend (build_upgrade_li on WP-67).
+	if build_class == CLASS_PUBLIC and _is_city_owner(actor):
+		_note_city_spend(slot.port_id, cash_li)
 
 	var bld := Building.new()
 	bld.building_id = _next_bld_id(slot.port_id)
@@ -2620,11 +2623,15 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 	## WP-65／A8／FRM-SYS08-15: L1 → order_build path；upgrade → in-place order_upgrade.
 	var type_id: String = step.cb_id
 	if step.target_level <= BUILDING_LEVEL_MIN:
+		## WP-67／D-102(e): invent minimal PUBLIC def when queue cb_id not in import set.
 		if not _building_defs.has(type_id):
-			_record_fail(
-				ERR_SYS08_08, "type", type_id, "BuildingDef missing for city queue (WP-65／C-06)"
-			)
-			return false
+			var d := BuildingDef.new()
+			d.type = type_id
+			d.build_class = "PUBLIC"
+			d.tier = 0
+			d.max_workers = 0
+			d.base_output_per_worker = 0.0
+			_building_defs[type_id] = d
 		var cash_map: Dictionary = Params.get_value(PRM_BUILD_CASH_LI)
 		if not cash_map.has("PUBLIC"):
 			_record_fail(
@@ -2637,7 +2644,7 @@ func _try_start_city_public(port_id: String, city: StringName, step: BuildStep, 
 		var bid: StringName = order_build(city, slot_id, StringName(type_id))
 		if bid == &"":
 			return false
-		_note_city_spend(port_id, int(cash_map["PUBLIC"]))
+		## Spend noted inside order_build for CITY PUBLIC (D-102(e)); do not double-count.
 		return true
 	## Upgrade: find city-owned PUBLIC at level == target − 1；no new slot.
 	var target: Building = _find_city_public_upgrade_target(
