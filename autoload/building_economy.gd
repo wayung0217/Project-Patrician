@@ -2213,6 +2213,106 @@ func city_queue_position(port_id: StringName) -> int:
 	return int(_queue_pos.get(pid, 0))
 
 
+## D-110(d) queue_state tokens（卡錢／卡料／施工中／已走完）.
+const QUEUE_STATE_CASH := "卡錢"
+const QUEUE_STATE_MAT := "卡料"
+const QUEUE_STATE_BUILD := "施工中"
+const QUEUE_STATE_DONE := "已走完"
+
+
+func city_queue_material_shortfall(port_id: StringName) -> Dictionary:
+	## D-110(b)／FRM-SYS08-25: good_id → 缺料擔（升序鍵）；非 WAITING_MATERIAL → {}；
+	## 查無港 → {} + last_error（D-08c）.
+	assert(_loaded, "BuildingEconomy.city_queue_material_shortfall before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
+		_record_fail(
+			ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_material_shortfall (D-110b)"
+		)
+		return {}
+	var waiting: Building = _city_queue_waiting_building(pid)
+	if waiting == null:
+		return {}
+	return _material_shortfall_of(waiting)
+
+
+func city_queue_state(port_id: StringName) -> String:
+	## D-110(d): 卡錢／卡料／施工中／已走完. Required for season_ports（reads private queue）.
+	assert(_loaded, "BuildingEconomy.city_queue_state before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
+		_record_fail(ERR_SYS08_08, "port_id", port_id, "unknown port for city_queue_state (D-110d)")
+		return ""
+	## In-progress city public (WAITING／BUILDING) wins even if queue_pos already advanced.
+	if _city_queue_waiting_building(pid) != null:
+		return QUEUE_STATE_MAT
+	if _city_public_in_state(pid, Building.State.BUILDING) != null:
+		return QUEUE_STATE_BUILD
+	var steps: Array = _queue_by_port.get(pid, [])
+	var pos: int = int(_queue_pos.get(pid, 0))
+	if pos >= steps.size():
+		return QUEUE_STATE_DONE
+	return QUEUE_STATE_CASH
+
+
+func _city_queue_waiting_building(port_id: String) -> Building:
+	## City-owned PUBLIC at port in WAITING_MATERIAL（only city queue, not player／AI）.
+	return _city_public_in_state(port_id, Building.State.WAITING_MATERIAL)
+
+
+func _city_public_in_state(port_id: String, want_state: int) -> Building:
+	var best: Building = null
+	var best_id := ""
+	for bld_v in _buildings_by_port.get(port_id, []):
+		var bld: Building = bld_v
+		if not _is_city_owner(bld.owner):
+			continue
+		if bld.build_class != CLASS_PUBLIC:
+			continue
+		if bld.state != want_state:
+			continue
+		var sid: String = String(bld.building_id)
+		if best == null or sid < best_id:
+			best = bld
+			best_id = sid
+	return best
+
+
+func _material_shortfall_of(bld: Building) -> Dictionary:
+	## 缺料 ＝ 配方 − 已到料（locked）；prefer missing_materials when set.
+	var out: Dictionary = {}
+	if not bld.missing_materials.is_empty():
+		var keys: Array = bld.missing_materials.keys()
+		keys.sort()
+		for g_v in keys:
+			var g: String = String(g_v)
+			var q: int = int(bld.missing_materials[g_v])
+			if q > 0:
+				out[g] = q
+		return out
+	var recipe: Dictionary = {}
+	if bld.build_class == CLASS_PUBLIC and bld.level > BUILDING_LEVEL_MIN:
+		var fee: Dictionary = public_upgrade_fee(StringName(bld.port_id), bld.level)
+		recipe = (fee.get("MAT", {}) as Dictionary).duplicate(true)
+	else:
+		var mat_root: Dictionary = Params.get_value(PRM_BUILD_MAT)
+		var row: Variant = mat_root.get(String(bld.build_class), {})
+		if typeof(row) == TYPE_DICTIONARY:
+			recipe = (row as Dictionary).duplicate(true)
+	var rkeys: Array = recipe.keys()
+	rkeys.sort()
+	for g_v2 in rkeys:
+		var gs: String = String(g_v2)
+		var need: int = int(recipe[g_v2])
+		var got: int = int(bld.locked_materials.get(gs, 0))
+		var miss: int = need - got
+		if miss > 0:
+			out[gs] = miss
+	return out
+
+
 func _frm18_price(bld: Building) -> int:
 	var slot: Slot = _slot(bld.slot_id)
 	var land_li: int = 0
