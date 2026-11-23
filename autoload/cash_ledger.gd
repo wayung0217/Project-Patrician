@@ -60,6 +60,8 @@ const AUTHORIZED_REQUESTERS: Array[StringName] = [
 
 ## D-03: sole ERR-SYS05-06 exception for genesis_grant()（裁決 D-03）；不寫入 AUTHORIZED_REQUESTERS。
 const REQUESTER_GENESIS_GRANT := &"GENESIS_GRANT"
+## D-23c／WP-36: second sole exception for TraderRegistry.grant_genesis_cash()；清單本身不改。
+const REQUESTER_TRADER_GENESIS_GRANT := &"TRADER_GENESIS_GRANT"
 const REASON_GENESIS_CASH := &"GENESIS_CASH"
 
 ## quote side（TechSpec 3.5 H：BUY=0, SELL=1）
@@ -837,8 +839,10 @@ func _days_held_in_season(sched: ChargeSchedule, season_start: int, season_end_e
 
 
 func _is_authorized(requester: StringName) -> bool:
-	# AUTHORIZED_REQUESTERS unchanged（D-03）；sole exception = REQUESTER_GENESIS_GRANT.
+	# AUTHORIZED_REQUESTERS unchanged（D-03／D-23c）；exceptions are named constants only.
 	if requester == REQUESTER_GENESIS_GRANT:
+		return true
+	if requester == REQUESTER_TRADER_GENESIS_GRANT:
 		return true
 	for r in AUTHORIZED_REQUESTERS:
 		if r == requester:
