@@ -666,22 +666,16 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 	if _quote_provider == null:
 		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
 		return 0
-	## Exclusive upper (hi): stock+1 when PortRegistry+GoodsLedger know the market.
-	## DemoQuoteProvider tests skip this (PortRegistry not loaded) and keep quote-fail path.
-	## Use all_ids (not get_port) so we do not pollute PortRegistry.last_error.
+	## Exclusive upper (hi): stock+1 only for real MarketPricer (not DemoQuoteProvider).
+	## Autoload PortRegistry often stays loaded across GUT scripts; gating on it falsely
+	## treated empty markets as stock=0 and broke TST-SYS05-08 / WP56 demo q=124.
 	var abs_hi: int = -1
-	if GoodsLedger.is_loaded() and PortRegistry.is_loaded():
+	if _quote_provider == MarketPricer and GoodsLedger.is_loaded():
 		var port_s: String = String(port)
-		var port_known := false
-		for pid_v in PortRegistry.all_ids():
-			if String(pid_v) == port_s:
-				port_known = true
-				break
-		if port_known:
-			var stock_cap: int = GoodsLedger.get_qty(GoodsLedger.make_market(port_s), good)
-			if stock_cap < 1:
-				return 0
-			abs_hi = stock_cap + 1
+		var stock_cap: int = GoodsLedger.get_qty(GoodsLedger.make_market(port_s), good)
+		if stock_cap < 1:
+			return 0
+		abs_hi = stock_cap + 1
 	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到庫存上界）
 	var lo: int = 0
 	var hi: int = 1
