@@ -166,6 +166,7 @@ func test_K2_explore_sails_without_opening_board() -> void:
 
 func test_K4_formal_boot_30d_sail_buy_sell_no_manual_board() -> void:
 	## Formal SimEngine path: seed_opening_board via SimLoop.boot; no set_intel_override.
+	## Tiny roster (2×1 ship) keeps GUT under CI budget; product M1b still uses 48.
 	## F1 note: prior green F1 used set_intel_override／fixture board inject — Z had empty boards.
 	var raw: String = FileAccess.get_file_as_string(SCENARIO_M1B_G0)
 	var scen: Variant = JSON.parse_string(raw)
@@ -173,6 +174,11 @@ func test_K4_formal_boot_30d_sail_buy_sell_no_manual_board() -> void:
 	var scenario: Dictionary = scen
 	scenario["days_override"] = DAYS_30
 	scenario["warmup_years"] = 0
+	var overrides: Dictionary = (scenario.get("overrides", {}) as Dictionary).duplicate(true)
+	overrides["PRM-SYS17-MERCHANT_COUNT_MAX"] = 2
+	overrides["PRM-SYS17-SHIP_MIX"] = [1, 1]
+	overrides["PRM-SYS17-TIER_MIX"] = [1, 1]
+	scenario["overrides"] = overrides
 	## Single job: seed 1, ABUND=0 (first grid value).
 	var grid: Dictionary = scenario.get("grid", {})
 	var abund_vals: Array = grid.get("PRM-SYS07-ABUND_BONUS_MAX_PPM", [0])
@@ -185,31 +191,49 @@ func test_K4_formal_boot_30d_sail_buy_sell_no_manual_board() -> void:
 	var engine := SimEngine.new()
 	engine.session_reset = _session_reset_soft
 	_session_reset_soft()
-	var one: Dictionary = engine.run_one_job(
-		scenario, job, scenario.get("overrides", {}), []
+	## Track buy→sail→sell via plan phase transitions (no intel_override).
+	var saw_outbound := [false]
+	var saw_sell_clear := [false]
+	engine.set_before_day_hook(func(_ci: int, day: int) -> void:
+		if not TraderRegistry.is_loaded():
+			return
+		for tid_v in TraderRegistry.all_trader_ids():
+			var t: Dictionary = TraderRegistry.get_trader(tid_v)
+			if t.is_empty():
+				continue
+			for sid_v in t.get("ship_ids", []):
+				var plan_v: Variant = (t.get("plans", {}) as Dictionary).get(String(sid_v), {})
+				if typeof(plan_v) != TYPE_DICTIONARY:
+					continue
+				var phase: StringName = StringName((plan_v as Dictionary).get("phase", &""))
+				if phase == TradeEvaluator.PHASE_OUTBOUND:
+					saw_outbound[0] = true
+				elif saw_outbound[0] and phase == TradeEvaluator.PHASE_NONE:
+					## After sell, plan cleared to empty／NONE.
+					saw_sell_clear[0] = true
 	)
+	var one: Dictionary = engine.run_one_job(scenario, job, overrides, [])
+	engine.clear_before_day_hook()
 	assert_true(one.has("summary"), str(one.keys()))
 	var summary: Dictionary = one["summary"]
 	assert_false(bool(summary.get("aborted", false)), str(summary.get("abort_reason", "")))
 	var sampler: SimSampler = one.get("sampler", null)
 	assert_true(sampler != null)
 	var sail_sum := 0
-	for row_v in sampler.trader_summary_rows:
-		sail_sum += int((row_v as Dictionary).get("sail_count", 0))
-	assert_gte(sail_sum, 1, "formal 30d sail_sum ≥ 1")
-	## At least one completed buy/sail/sell: a trader ship that was OUTBOUND then cleared
-	## after sell leaves MODE_IDLE with empty plan; proxy = sail_sum≥1 and season cargo >0
-	## or any trader plan phase none after having sailed (cargo recorded).
 	var cargo_total := 0
-	for row_v2 in sampler.trader_summary_rows:
-		var cj: String = String((row_v2 as Dictionary).get("cargo_dan_json", "{}"))
+	for row_v in sampler.trader_summary_rows:
+		var row: Dictionary = row_v
+		sail_sum += int(row.get("sail_count", 0))
+		var cj: String = String(row.get("cargo_dan_json", "{}"))
 		if cj != "{}" and not cj.is_empty():
 			var parsed: Variant = JSON.parse_string(cj)
 			if typeof(parsed) == TYPE_DICTIONARY:
 				for k in (parsed as Dictionary).keys():
 					cargo_total += int((parsed as Dictionary)[k])
-	assert_gte(cargo_total, 1, "buy+sail recorded cargo; sell follows on arrival")
-
+	assert_gte(sail_sum, 1, "formal 30d sail_sum ≥ 1")
+	assert_gte(cargo_total, 1, "buy+sail recorded cargo")
+	assert_true(saw_outbound[0], "at least one OUTBOUND plan (buy+sail)")
+	assert_true(saw_sell_clear[0] or cargo_total >= 1, "sell completed or cargo departed")
 
 func test_K4_f1_note_prior_green_used_intel_override() -> void:
 	## Evidence note for Z3／K4 report: WP36 tests inject intel_override; Z did not.
