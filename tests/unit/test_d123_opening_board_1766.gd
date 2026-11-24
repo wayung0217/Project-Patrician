@@ -172,16 +172,17 @@ func test_K4_formal_boot_30d_sail_buy_sell_no_manual_board() -> void:
 	## F1 note: prior green F1 used set_intel_override／fixture board inject — Z had empty boards.
 	_boot_traders_mini()
 	## Scarce dest stock before K1 seed → opening mid(PORT_B) ≫ mid(PORT_A) so profit gate sails.
-	assert_eq(
+	## transfer returns seq≥1 on success (not Error.OK).
+	assert_gt(
 		GoodsLedger.transfer(
 			GoodsLedger.make_market(PORT_B),
 			GoodsLedger.make_external(),
 			StringName(GOOD),
-			180,
+			9_000_000,
 			GoodsLedger.REASON_GENESIS,
 			&"TEST"
 		),
-		OK
+		0
 	)
 	assert_eq(IntelLedger.seed_opening_board().size(), 0)
 	assert_eq(TraderRegistry._intel_override.size(), 0)
@@ -262,19 +263,27 @@ func _boot_intel_with_markets() -> void:
 	if not ShipRegistry.has_sailor_pool_provider():
 		ShipRegistry.set_sailor_pool_provider(_DummySailors.new())
 	assert_eq(ShipRegistry.load_and_validate().size(), 0)
+	## HOLD capacity required for TradeDesk buy→hold (else ERR-SYS03-03).
+	assert_eq(
+		GoodsLedger.register_capacity_provider(
+			StringName(GoodsLedger.KIND_HOLD), ShipRegistry.get_hold_capacity_provider()
+		),
+		GoodsLedger.CODE_OK
+	)
 	assert_eq(IntelLedger.load_and_validate().size(), 0)
 	if not IntelLedger.has_broker_provider():
 		IntelLedger.set_broker_provider(SimBrokerFixture.new())
 	CashLedger.create_account(ACTOR, Account.Kind.ACTOR)
 	CashLedger.create_account(&"ACT-OTHER", Account.Kind.ACTOR)
-	## Seed market stock at every port so opening mid_price succeeds.
+	## Deep stock so max_affordable binary search never probes qty>stock (ERR-SYS04-06 spam).
+	const STOCK := 10_000_000
 	for p in PortRegistry.all_ids():
 		for g in GoodCatalog.all_ids():
 			GoodsLedger.transfer(
 				GoodsLedger.make_external(),
 				GoodsLedger.make_market(String(p)),
 				g,
-				200,
+				STOCK,
 				GoodsLedger.REASON_GENESIS,
 				&"TEST"
 			)
