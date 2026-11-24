@@ -113,18 +113,36 @@ func _main() -> void:
 	lines.append("")
 	lines.append("## ⑤ Timing / traders / abort")
 	lines.append("")
-	lines.append("| Group | status | duration_s | aborted | abort_reason | sail_sum |")
-	lines.append("|-------|--------|------------|---------|--------------|----------|")
+	lines.append("| Group | status | duration_s | aborted | abort_reason | sail_sum | cargo_dan_sum |")
+	lines.append("|-------|--------|------------|---------|--------------|----------|---------------|")
 	for st_v4 in rows1:
 		var st5: Dictionary = st_v4
 		lines.append(
-			"| %s | %s | %s | %s | %s | %s |" % [
+			"| %s | %s | %s | %s | %s | %s | %s |" % [
 				st5["group"],
 				st5["status"],
 				st5["duration_s"],
 				st5["aborted"],
 				st5["abort_reason"],
 				st5["sail_sum"],
+				st5["cargo_dan_sum"],
+			]
+		)
+	lines.append("")
+	## D-123(c)／K3: per-group trader totals + per-season sail counts.
+	lines.append("## ⑥ Trader sail / cargo (D-123)")
+	lines.append("")
+	lines.append("| Group | status | sail_sum | cargo_dan_sum | season_sails |")
+	lines.append("|-------|--------|----------|---------------|--------------|")
+	for st_v5 in rows1:
+		var st6: Dictionary = st_v5
+		lines.append(
+			"| %s | %s | %s | %s | %s |" % [
+				st6["group"],
+				st6["status"],
+				st6["sail_sum"],
+				st6["cargo_dan_sum"],
+				st6["season_sails"],
 			]
 		)
 	lines.append("")
@@ -164,6 +182,8 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		"aborted": "N/A",
 		"abort_reason": "N/A",
 		"sail_sum": "N/A",
+		"cargo_dan_sum": "N/A",
+		"season_sails": "N/A",
 	}
 	if not DirAccess.dir_exists_absolute(gdir):
 		return out
@@ -320,12 +340,30 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 			out["abort_reason"] = String(s0.get("abort_reason", "")).replace("|", "/")
 	if FileAccess.file_exists(trader_path):
 		var sails := 0
+		var cargo_sum := 0
+		var by_season: Dictionary = {} ## season_index:String → sails
 		for t_v in _read_csv(trader_path):
-			sails += _as_int((t_v as Dictionary).get("sail_count", 0))
+			var tr: Dictionary = t_v
+			var sc: int = _as_int(tr.get("sail_count", 0))
+			sails += sc
+			var si: String = String(tr.get("season_index", ""))
+			by_season[si] = int(by_season.get(si, 0)) + sc
+			cargo_sum += _cargo_dan_total(String(tr.get("cargo_dan_json", "{}")))
 		out["sail_sum"] = str(sails)
+		out["cargo_dan_sum"] = str(cargo_sum)
+		var season_keys: Array = by_season.keys()
+		season_keys.sort_custom(func(a, b): return _as_int(a) < _as_int(b))
+		var parts: PackedStringArray = PackedStringArray()
+		for sk in season_keys:
+			parts.append("%s:%d" % [String(sk), int(by_season[sk])])
+		out["season_sails"] = ",".join(parts)
 	else:
-		if out["sail_sum"] == "":
+		if out["sail_sum"] == "" or out["sail_sum"] == "N/A":
 			out["sail_sum"] = "N/A"
+		if out["cargo_dan_sum"] == "" or out["cargo_dan_sum"] == "N/A":
+			out["cargo_dan_sum"] = "N/A"
+		if out["season_sails"] == "" or out["season_sails"] == "N/A":
+			out["season_sails"] = "N/A"
 	return out
 
 
@@ -356,6 +394,24 @@ func _live_pop_from_progress(gdir: String) -> int:
 			if not num.is_empty():
 				last_pop = int(num)
 	return last_pop
+
+
+func _cargo_dan_total(raw: String) -> int:
+	## cargo_dan_json is a compact JSON object good→dan; sum values. Empty/`{}` → 0.
+	var s: String = raw.strip_edges()
+	if s.is_empty() or s == "{}":
+		return 0
+	## CSV reader may leave quotes; strip one layer.
+	if s.begins_with("\"") and s.ends_with("\"") and s.length() >= 2:
+		s = s.substr(1, s.length() - 2).replace("\"\"", "\"")
+	var parsed: Variant = JSON.parse_string(s)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return 0
+	var total := 0
+	for k in (parsed as Dictionary).keys():
+		total += _as_int((parsed as Dictionary)[k])
+	return total
+
 
 
 func _read_csv(path: String) -> Array:

@@ -150,6 +150,10 @@ func boot(
 	# No /root path lookup（D-60f）. Absent → ERR-SYS15-06 field＝broker_provider.
 	errors.append_array(IntelLedger.boot_gate_errors())
 
+	# FRM-SYS15-11／D-123／25.1 F 開機: after opening MARKET stock + IntelLedger load, before day-1.
+	if IntelLedger.is_loaded() and errors.is_empty():
+		errors.append_array(IntelLedger.seed_opening_board())
+
 	# D-23g／WP-36: TraderRegistry after IntelLedger; load only when layers.TRADERS enabled.
 	if TraderRegistry.is_enabled():
 		errors.append_array(TraderRegistry.load_and_validate())

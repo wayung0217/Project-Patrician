@@ -67,10 +67,98 @@ var _rng_seed: int = 0
 var _intel_override: Dictionary = {}
 ## 17-63 Z2: optional M1bDiagZ (null = off).
 var _diag_z: RefCounted = null
+## D-123(c)／K3: per-season sail count and cargo by departure port.
+## Key "season_index|port_id" → int sails / Dictionary good→dan / margin accumulators.
+var _season_sails: Dictionary = {}
+var _season_cargo: Dictionary = {}
+var _season_margin_sum: Dictionary = {}
+var _season_margin_n: Dictionary = {}
 
 
 func _ready() -> void:
 	_clear_runtime()
+
+
+func season_sail_count(port_id: StringName, season_index: int) -> int:
+	## D-123(c): sails departed from port_id during season_index.
+	return int(_season_sails.get(_season_port_key(season_index, port_id), 0))
+
+
+func season_cargo_dan(port_id: StringName, season_index: int) -> Dictionary:
+	## D-123(c): good_id → dan departed from port_id during season_index.
+	var v: Variant = _season_cargo.get(_season_port_key(season_index, port_id), {})
+	if typeof(v) != TYPE_DICTIONARY:
+		return {}
+	return (v as Dictionary).duplicate(true)
+
+
+func season_avg_daily_margin_li(port_id: StringName, season_index: int) -> int:
+	var key := _season_port_key(season_index, port_id)
+	var n: int = int(_season_margin_n.get(key, 0))
+	if n < 1:
+		return 0
+	return int(_season_margin_sum.get(key, 0)) / n
+
+
+func ships_in_port_count(port_id: StringName) -> int:
+	## Docked trader ships currently at port_id.
+	if not _enabled or not _loaded or not ShipRegistry.is_loaded():
+		return 0
+	var n := 0
+	for tid in all_trader_ids():
+		var t: Dictionary = _traders[String(tid)]
+		if bool(t.get("retired", false)):
+			continue
+		for sid_v in t["ship_ids"]:
+			var info: Dictionary = ShipRegistry.ship_info(sid_v)
+			if info.is_empty():
+				continue
+			if StringName(info.get("state", &"")) != Ship.STATE_DOCKED:
+				continue
+			if String(info.get("port_id", "")) == String(port_id):
+				n += 1
+	return n
+
+
+func frozen_trader_count(port_id: StringName) -> int:
+	## Frozen traders that have at least one ship at port_id (docked or any).
+	if not _enabled or not _loaded:
+		return 0
+	var n := 0
+	for tid in all_trader_ids():
+		var t: Dictionary = _traders[String(tid)]
+		if not is_frozen(t["account_id"]):
+			continue
+		var at_port := false
+		for sid_v in t["ship_ids"]:
+			var info: Dictionary = ShipRegistry.ship_info(sid_v)
+			if info.is_empty():
+				continue
+			if String(info.get("port_id", "")) == String(port_id):
+				at_port = true
+				break
+		if at_port:
+			n += 1
+	return n
+
+
+func _season_port_key(season_index: int, port_id: StringName) -> String:
+	return "%d|%s" % [season_index, String(port_id)]
+
+
+func _record_season_sail(
+	from_port: StringName, good_id: StringName, qty: int, daily_margin_li: int
+) -> void:
+	var si: int = Clock.season_index if Clock != null else 0
+	var key := _season_port_key(si, from_port)
+	_season_sails[key] = int(_season_sails.get(key, 0)) + 1
+	if not _season_cargo.has(key):
+		_season_cargo[key] = {}
+	var cargo: Dictionary = _season_cargo[key]
+	var g_s := String(good_id)
+	cargo[g_s] = int(cargo.get(g_s, 0)) + qty
+	_season_margin_sum[key] = int(_season_margin_sum.get(key, 0)) + daily_margin_li
+	_season_margin_n[key] = int(_season_margin_n.get(key, 0)) + 1
 
 
 func set_layers(traders_on: bool, qual_open: bool) -> void:
@@ -694,9 +782,25 @@ func _evaluate_and_maybe_sail(
 				continue
 			dest_saw_good = true
 			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+			var mid: int = 0
+			var weeks_v: Variant = 0.0
 			if intel.is_empty() or intel.get("mid_li", null) == null:
-				continue ## D-109(c)／F2: n＝0 or empty board → not a candidate
-			dest_had_intel = true
+				## D-109(c)／F2: empty board → not a profit candidate.
+				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+				## catalog base_price_li as ranking stand-in only (profit gate skipped).
+				if not explore:
+					continue
+				if not GoodCatalog.is_loaded():
+					continue
+				var gd_ex: GoodDef = GoodCatalog.get_good(good)
+				if gd_ex == null or gd_ex.base_price_li < 1:
+					continue
+				mid = gd_ex.base_price_li
+				weeks_v = 0.0
+			else:
+				dest_had_intel = true
+				mid = int(intel["mid_li"])
+				weeks_v = intel.get("weeks", 0.0)
 			var weekly: int = 0
 			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
 				weekly = DemandModel.weekly_potential_demand(dest, good)
@@ -707,7 +811,6 @@ func _evaluate_and_maybe_sail(
 				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
 			if q < 1:
 				continue
-			var mid: int = int(intel["mid_li"])
 			var rough_buy: int = mid ## coarse; precise quote later
 			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
 			var origin_mid: float = MarketPricer.mid_price(from_port, good)
@@ -719,12 +822,12 @@ func _evaluate_and_maybe_sail(
 				"qty": q,
 				"voyage_days": days,
 				"mid_li": mid,
-				"weeks": intel.get("weeks", 0.0),
+				"weeks": weeks_v,
 				"weekly": weekly,
 				"score": score,
 				"rough_buy": rough_buy,
 			})
-		if dest_saw_good and not dest_had_intel:
+		if dest_saw_good and not dest_had_intel and not explore:
 			excl_dests[String(dest)] = true
 	stats["excl_dests"] = excl_dests
 	coarse.sort_custom(func(a, b):
@@ -827,6 +930,7 @@ func _evaluate_and_maybe_sail(
 	t["mode"] = MODE_SAILING
 	idle_map[String(sid)] = 0
 	_queue_signal("trader_plan_set", [tid, sid, new_plan])
+	_record_season_sail(from_port, good_f, qty_f, int(best["daily_profit_li"]))
 	stats["sailed"] = 1
 	return stats
 
@@ -965,6 +1069,10 @@ func _clear_runtime() -> void:
 	_pending_signals.clear()
 	_day_errors.clear()
 	_intel_override.clear()
+	_season_sails.clear()
+	_season_cargo.clear()
+	_season_margin_sum.clear()
+	_season_margin_n.clear()
 	## Keep _diag_z across clear (attached by sim_engine for the job).
 
 
