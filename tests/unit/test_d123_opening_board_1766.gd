@@ -159,7 +159,6 @@ func test_K2_explore_sails_without_opening_board() -> void:
 		true ## explore=true
 	)
 	sailed = int(st.get("sailed", 0))
-	_mark_afford_probe_errors_handled()
 	assert_gte(sailed, 1, "explore must sail without board (D-123(b))")
 
 
@@ -227,7 +226,6 @@ func test_K4_formal_boot_30d_sail_buy_sell_no_manual_board() -> void:
 		## Stop once buy+sail proven — remaining days are matrix／H4, not GUT budget.
 		if sail_sum >= 1 and cargo_total >= 1:
 			break
-	_mark_afford_probe_errors_handled()
 	assert_gte(sail_sum, 1, "formal 30d sail_sum ≥ 1")
 	assert_gte(cargo_total, 1, "buy+sail recorded cargo")
 	assert_true(saw_outbound, "at least one OUTBOUND plan (buy+sail)")
@@ -358,13 +356,6 @@ func _cap_trader_cash(max_li: int) -> void:
 			], CashLedger.REASON_GENESIS_CASH, CashLedger.REQUESTER_GENESIS_GRANT),
 			OK
 		)
-
-
-func _mark_afford_probe_errors_handled() -> void:
-	## max_affordable may briefly probe qty>stock (ERR-SYS04-06); expected, mark handled.
-	for e in get_errors():
-		if e.is_push_error() and e.contains_text("buy qty>"):
-			e.handled = true
 
 
 func _inject_board_sample(
