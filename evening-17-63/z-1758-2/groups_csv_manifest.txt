@@ -1,0 +1,5 @@
+# z-1758-2 groups CSV manifest (9 groups × summary.csv + trader_summary.csv)
+# refreshed HKT 2026-11-24 Asia/Hong_Kong from store evening-17-63
+path	bytes	sha256
+evening-17-63/z-1758-2/groups/1000/summary.csv		
+evening-17-63/z-1758-2/groups/1000/trader_summary.csv		
