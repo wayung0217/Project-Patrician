@@ -35,9 +35,9 @@ jobs:
   gut-unit:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
-    # 17-67: per-shard GUT wall. Tip bb1b50d shard0+property hit 30m → cancelled;
-    # measured ~29–30m on prior tip — raise to 35 (still ≪ whole-CI ≤50m parallel).
-    timeout-minutes: 35
+    # 17-67／R9-73: shard0+property wall. bb1b50d hit 30m; e99b495 hit 35m (cancelled).
+    # Raise to 45 — whole-CI wall still ≤50m under parallel jobs (other shards ≪10m).
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
