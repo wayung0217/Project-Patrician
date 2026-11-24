@@ -1,0 +1,16 @@
+  origin/HEAD -> origin/main
+  origin/cursor/int-1755-merge-0a6e
+  origin/cursor/int-1756-295f
+  origin/cursor/int-1757-5ae9
+  origin/cursor/lane-a-wp36-traders-26f5
+  origin/cursor/lane-b-pop-demand-003b
+  origin/cursor/laneC-queue-outputs-a116
+  origin/cursor/laneD-city-housing-a116
+  origin/cursor/m1b-fix-1766-3fe3
+  origin/cursor/step0-m1b-params-data-0638
+  origin/cursor/ui-1755-debug-panels-ff98
+  origin/cursor/wp69-test-hygiene-f3ea
+  origin/int-1758
+  origin/main
+  origin/review/evening-17-55
+  origin/review/evening-17-57

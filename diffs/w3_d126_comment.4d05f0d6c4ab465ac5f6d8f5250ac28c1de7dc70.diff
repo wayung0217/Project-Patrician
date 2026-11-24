@@ -1,0 +1,23 @@
+commit 4d05f0d6c4ab465ac5f6d8f5250ac28c1de7dc70
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Tue Nov 24 14:20:00 2026 +0000
+
+    docs(17-69): D-126 trial-value note on explore base_price_li (W3)
+    
+    Comment only; no logic change. Owner 補正三甲 / v6.99.222.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+diff --git a/autoload/trader_registry.gd b/autoload/trader_registry.gd
+index 7fed34d..ea670fe 100644
+--- a/autoload/trader_registry.gd
++++ b/autoload/trader_registry.gd
+@@ -788,6 +788,8 @@ func _evaluate_and_maybe_sail(
+ 				## D-109(c)／F2: empty board → not a profit candidate.
+ 				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+ 				## catalog base_price_li as ranking stand-in only (profit gate skipped).
++				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
++				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+ 				if not explore:
+ 					continue
+ 				if not GoodCatalog.is_loaded():

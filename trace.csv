@@ -1,0 +1,12 @@
+frm_id,requirement_abbrev,file,function,test_name,status
+FRM-SYS15-11,opening board OPENING report per P O mid/band day0 no own/ship/contact ERR-SYS15-05 collect-all,autoload/intel_ledger.gd,seed_opening_board,test_K1a_seed_opening_board_n1_mid_matches_origin,implemented
+FRM-SYS15-11,WINDOW trim,autoload/intel_ledger.gd,seed_opening_board+daily_step,test_K1b_opening_trimmed_at_window_days,implemented
+FRM-SYS15-11,real arrival coexist weights,autoload/intel_ledger.gd,seed_opening_board+board_for,test_K1c_real_arrival_coexists_with_opening,implemented
+FRM-SYS15-11,no own_snap contact ship_snap,autoload/intel_ledger.gd,seed_opening_board,test_K1d_seed_does_not_write_own_contact_ship_snap,implemented
+FRM-SYS15-11,pricing fail collect-all refuse,autoload/intel_ledger.gd,seed_opening_board,test_K1e_pricing_failure_collects_all_refuses,implemented
+FRM-SYS15-11,boot call after opening stock,autoload/sim_loop.gd,boot,test_K4_formal_boot_30d_sail_buy_sell_no_manual_board,implemented
+FRM-SYS17-04,explore empty board base_price_li stand-in (D-126 試驗值),autoload/trader_registry.gd,_evaluate_and_maybe_sail,test_K2_explore_sails_without_opening_board,D-126 核准（試驗值）
+FRM-SYS17-04,explore lottery EXPLORE_RATE,autoload/trader_registry.gd,_pick_explore_traders,test_K2_explore_sails_without_opening_board,implemented
+FRM-SYS17-02,cold-start via opening board non-explore,autoload/trader_registry.gd,_evaluate_and_maybe_sail,test_K4_formal_boot_30d_sail_buy_sell_no_manual_board,implemented
+D-123(c),season_sail_count/cargo vs trader_summary,autoload/trader_registry.gd+sim/sampler.gd,season_sail_count|season_cargo_dan|_sample_trader_row,(matrix deferred H1; unit K4 sail/cargo asserts),partial
+D-126,FRM-SYS17-04 mid-missing rank; base_price_li Owner-approved trial value (補正三甲),autoload/trader_registry.gd,_evaluate_and_maybe_sail,test_K2_explore_sails_without_opening_board,D-126 核准（試驗值）

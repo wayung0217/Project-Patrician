@@ -1,0 +1,12 @@
+lane: L4
+parent: PP-184 / dispatch-17-69-w1w10
+timeline: 17-66 → 17-69 L4 → R9-73 → 補正三 W3/W7/W8
+pr: https://github.com/wayung0217/Project-Patrician/pull/83
+branch: cursor/m1b-fix-1766-3fe3
+tip: 4d05f0d6c4ab465ac5f6d8f5250ac28c1de7dc70
+base: int-1758
+gate_spec: v6.99.222
+orphan: review/evening-17-69-lane4
+ownership: intel_ledger.gd, trader_registry.gd, trade_evaluator.gd, sim_loop.gd, sim/, tests/unit/test_d123_opening_board_1766.gd
+forbidden: .github/workflows/ci.yml, autoload/cash_ledger.gd, merge, tag, z-1758-3, SharePoint
+agent: bc-b2473f08-b896-5e25-b877-80968a9d3fe3

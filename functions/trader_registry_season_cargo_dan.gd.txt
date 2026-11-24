@@ -1,0 +1,8 @@
+func season_cargo_dan(port_id: StringName, season_index: int) -> Dictionary:
+	## D-123(c): good_id → dan departed from port_id during season_index.
+	var v: Variant = _season_cargo.get(_season_port_key(season_index, port_id), {})
+	if typeof(v) != TYPE_DICTIONARY:
+		return {}
+	return (v as Dictionary).duplicate(true)
+
+

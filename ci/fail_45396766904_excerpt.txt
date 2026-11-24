@@ -1,0 +1,100 @@
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4849549Z ^[[36;1m  exit 1^[[0m
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4849865Z ^[[36;1mfi^[[0m
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4850269Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4873162Z shell: /usr/bin/bash -e {0}
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4873595Z env:
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4873892Z   GODOT_VERSION: 4.7.2-stable
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4874339Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.4874781Z ##[endgroup]
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.5302335Z ##[error]godot --import dirtied the working tree
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.5309467Z ?? tests/unit/test_d123_opening_board_1766.gd.uid
+gut-ui	Assert import leaves clean tree	2026-11-24T12:46:47.5312321Z ##[error]Process completed with exit code 1.
+gut-unit (2)	Assert import leaves clean tree	﻿2026-11-24T12:46:44.7196860Z ##[group]Run set -euo pipefail
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7197237Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7197685Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7198176Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7198638Z ^[[36;1m  echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7199111Z ^[[36;1m  echo "$dirty"^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7199350Z ^[[36;1m  git diff --stat^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7199588Z ^[[36;1m  exit 1^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7199797Z ^[[36;1mfi^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7200015Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7240380Z shell: /usr/bin/bash -e {0}
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7240667Z env:
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7240892Z   GODOT_VERSION: 4.7.2-stable
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7241191Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7241496Z ##[endgroup]
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7767503Z ##[error]godot --import dirtied the working tree (commit missing .import / .uid)
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7778342Z ?? tests/unit/test_d123_opening_board_1766.gd.uid
+gut-unit (2)	Assert import leaves clean tree	2026-11-24T12:46:44.7791489Z ##[error]Process completed with exit code 1.
+gut-unit (3)	Assert import leaves clean tree	﻿2026-11-24T12:46:44.2324280Z ##[group]Run set -euo pipefail
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2324659Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2325098Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2325564Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2326006Z ^[[36;1m  echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2326460Z ^[[36;1m  echo "$dirty"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2326693Z ^[[36;1m  git diff --stat^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2326919Z ^[[36;1m  exit 1^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2327123Z ^[[36;1mfi^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2327335Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2360450Z shell: /usr/bin/bash -e {0}
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2360712Z env:
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2360933Z   GODOT_VERSION: 4.7.2-stable
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2361226Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2361516Z ##[endgroup]
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2886100Z ##[error]godot --import dirtied the working tree (commit missing .import / .uid)
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2896948Z ?? tests/unit/test_d123_opening_board_1766.gd.uid
+gut-unit (3)	Assert import leaves clean tree	2026-11-24T12:46:44.2909590Z ##[error]Process completed with exit code 1.
+gut-unit (1)	Assert import leaves clean tree	﻿2026-11-24T12:46:44.0003511Z ##[group]Run set -euo pipefail
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0003820Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0004173Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0004552Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0004915Z ^[[36;1m  echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0005280Z ^[[36;1m  echo "$dirty"^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0005487Z ^[[36;1m  git diff --stat^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0005682Z ^[[36;1m  exit 1^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0005869Z ^[[36;1mfi^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0006057Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0034698Z shell: /usr/bin/bash -e {0}
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0034920Z env:
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0035116Z   GODOT_VERSION: 4.7.2-stable
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0035364Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0035610Z ##[endgroup]
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0457225Z ##[error]godot --import dirtied the working tree (commit missing .import / .uid)
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0464605Z ?? tests/unit/test_d123_opening_board_1766.gd.uid
+gut-unit (1)	Assert import leaves clean tree	2026-11-24T12:46:44.0475070Z ##[error]Process completed with exit code 1.
+gut-unit (0)	Assert import leaves clean tree	﻿2026-11-24T12:46:44.5565283Z ##[group]Run set -euo pipefail
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5565902Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5566746Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5567702Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5568494Z ^[[36;1m  echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5569264Z ^[[36;1m  echo "$dirty"^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5579053Z ^[[36;1m  git diff --stat^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5579373Z ^[[36;1m  exit 1^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5579638Z ^[[36;1mfi^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5579938Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5610844Z shell: /usr/bin/bash -e {0}
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5611075Z env:
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5611269Z   GODOT_VERSION: 4.7.2-stable
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5611517Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.5611770Z ##[endgroup]
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.6042636Z ##[error]godot --import dirtied the working tree (commit missing .import / .uid)
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.6049541Z ?? tests/unit/test_d123_opening_board_1766.gd.uid
+gut-unit (0)	Assert import leaves clean tree	2026-11-24T12:46:44.6060557Z ##[error]Process completed with exit code 1.
+golden-30d	Assert import leaves clean tree	﻿2026-11-24T12:46:43.7954686Z ##[group]Run set -euo pipefail
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7955068Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7955506Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7955983Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7956335Z ^[[36;1m  echo "::error::godot --import dirtied the working tree"^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7956692Z ^[[36;1m  echo "$dirty"^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7956917Z ^[[36;1m  exit 1^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7957117Z ^[[36;1mfi^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7957329Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7990943Z shell: /usr/bin/bash -e {0}
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7991207Z env:
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7991432Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7991725Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.7992061Z ##[endgroup]
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.8210284Z ##[error]godot --import dirtied the working tree
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.8217842Z ?? tests/unit/test_d123_opening_board_1766.gd.uid
+golden-30d	Assert import leaves clean tree	2026-11-24T12:46:43.8220576Z ##[error]Process completed with exit code 1.

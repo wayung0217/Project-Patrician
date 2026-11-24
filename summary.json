@@ -1,0 +1,29 @@
+{
+  "lane": "L4",
+  "dispatch": "17-69",
+  "pr": 83,
+  "product_branch": "cursor/m1b-fix-1766-3fe3",
+  "product_tip": "4d05f0d6c4ab465ac5f6d8f5250ac28c1de7dc70",
+  "base": "int-1758",
+  "orphan_branch": "review/evening-17-69-lane4",
+  "items": {
+    "4.1": "done",
+    "4.2": "done",
+    "4.3": "done_pre_fix_zeros_matrix_deferred",
+    "4.4": "done",
+    "4.5": "done",
+    "L4-1_D-126": "gaps_updated_trace_gap_pending_code_kept",
+    "L4-2_N-04": "drop_commit_on_tip",
+    "W3": "D-126 \u6838\u51c6\uff08\u8a66\u9a57\u503c\uff09 comment-only",
+    "W7": "n09 docs/spec commit inventory",
+    "W8": "band terminology + \u5730\u677f\u70ba\u4e3b 87.3%"
+  },
+  "mark_handled_removal_sha": "ddc2447484468670aca114e62bd6e84555510b65",
+  "merge_tag": false,
+  "sharepoint": false,
+  "ownership_ok": true,
+  "touched_forbidden": false,
+  "orphan_sha": "9be3f287896a01fabacad800418375068fc10d44",
+  "r973_l4_2_drop_sha": "3816c239f27cf430fa7fac5f6fc1927c379b49dd",
+  "gate_spec": "v6.99.222"
+}

@@ -1,0 +1,100 @@
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6457194Z     [68378] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 224, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6457672Z     [68379] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 208, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6458141Z     [68380] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 204, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6458652Z     [68381] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 202, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6459123Z     [68382] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 201, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6459626Z     [68383] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6460106Z     [68384] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6460570Z     [68385] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6461049Z     [68386] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 224, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6461528Z     [68387] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 208, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6461997Z     [68388] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 204, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6462472Z     [68389] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 202, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6462948Z     [68390] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 201, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6463418Z     [68391] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6463891Z     [68392] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 224, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6464397Z     [68393] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 208, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6464861Z     [68394] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 204, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6465370Z     [68395] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 202, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6465834Z     [68396] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 201, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6466311Z     [68397] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6466780Z     [68398] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 224, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6467340Z     [68399] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 208, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6467848Z     [68400] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 204, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6468331Z     [68401] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 202, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6468798Z     [68402] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 201, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6469273Z     [68403] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6469749Z     [68404] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 224, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6470217Z     [68405] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 208, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6470689Z     [68406] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 204, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6471159Z     [68407] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 202, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6471631Z     [68408] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 201, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6472108Z     [68409] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6472604Z     [68410] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 224, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6473076Z     [68411] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 208, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6473553Z     [68412] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 204, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6474049Z     [68413] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 202, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6474526Z     [68414] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 201, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475000Z     [68415] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475469Z     [68416] <push_error>MarketPricer: { "code": &"ERR-SYS04-06", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "qty", "value": 256, "message": "buy qty>200 stock" } }
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475607Z           at line -1
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475615Z 
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475701Z Totals
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475774Z ------
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475865Z Warnings             40
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475869Z 
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6475951Z Scripts              50
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476038Z Tests               608
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476143Z Passing Tests       606
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476235Z Failing Tests         2
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476328Z Asserts           12199/12207
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476417Z Time              4197.045s
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476422Z 
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476427Z 
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476713Z ^[[31m---- 2 failing tests ----
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:01.6476798Z ^[[0m
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.6928443Z ##[error]Process completed with exit code 1.
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7022506Z ##[group]Run actions/upload-artifact@v4
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7022804Z with:
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7023045Z   name: gut-unit-property-logs
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7023305Z   path: gut_unit.log
+gut-unit-property	UNKNOWN STEP	gut_ui.log
+gut-unit-property	UNKNOWN STEP	
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7023546Z   retention-days: 3
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7023764Z   if-no-files-found: warn
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7023996Z   compression-level: 6
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7024213Z   overwrite: false
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7024428Z   include-hidden-files: false
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.7024691Z ##[endgroup]
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.8669828Z (node:3557) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.8671098Z (Use `node --trace-deprecation ...` to show where the warning was created)
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.8717913Z Multiple search paths detected. Calculating the least common ancestor of all paths
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.8726867Z The least common ancestor is /home/runner/work/Project-Patrician/Project-Patrician. This will be the root directory of the artifact
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.8728262Z With the provided path, there will be 1 file uploaded
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.8729330Z Artifact name is valid!
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:06.8729814Z Root directory input is valid!
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:07.1920765Z Beginning upload of artifact content to blob storage
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:07.8163573Z (node:3557) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.3438767Z Uploaded bytes 1600466
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.4080428Z Finished uploading artifact content to blob storage!
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.4081482Z SHA256 digest of uploaded artifact zip is f1c48ed6314092ffada18d4773f5d5e161c1539e631ca617e125989ee040563e
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.4084077Z Finalizing artifact upload
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.8235863Z Artifact gut-unit-property-logs.zip successfully finalized. Artifact ID 14916985721
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.8236783Z Artifact gut-unit-property-logs has been successfully uploaded! Final size is 1600466 bytes. Artifact ID is 14916985721
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.8243504Z Artifact download URL: https://github.com/wayung0217/Project-Patrician/actions/runs/45375453944/artifacts/14916985721
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.8473569Z Post job cleanup.
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9308922Z [command]/usr/bin/git version
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9356176Z git version 2.56.1
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9400909Z Temporarily overriding HOME='/home/runner/work/_temp/d5cbf581-3e1a-4307-b349-2df93cd42996' before making global git config changes
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9401792Z Adding repository directory to the temporary git global config as a safe directory
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9407779Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9446704Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9479449Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9731393Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9754260Z http.https://github.com/.extraheader
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9765328Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:08.9798403Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:09.0073387Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:09.0108319Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:09.0491041Z Cleaning up orphan processes
+gut-unit-property	UNKNOWN STEP	2026-11-24T11:41:09.0838785Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

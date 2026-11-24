@@ -1,0 +1,155 @@
+func boot(
+	params_path: String = Params.PARAMS_PATH,
+	goods_dir: String = GoodCatalog.GOODS_DIR,
+	ports_dir: String = PortRegistry.PORTS_DIR,
+	curve_path: String = MarketPricer.CURVE_PATH,
+	sea_nodes_dir: String = SeaLanes.NODES_DIR,
+	sea_regions_dir: String = SeaLanes.REGIONS_DIR,
+	sea_lanes_dir: String = SeaLanes.LANES_DIR,
+	demand_tables_path: String = DemandModel.TABLES_PATH
+) -> Array:
+	# 2.2-02: call load_and_validate in D-14c order; collect every error; do not stop early.
+	# 任一錯誤 → 回傳完整清單且不啟動時鐘（_booted 維持 false）。
+	_booted = false
+	var errors: Array = []
+
+	# D-08e: surface duplicate-register errors collected before boot (C-06).
+	errors.append_array(_capacity_reg_errors)
+
+	errors.append_array(Params.load_and_validate(params_path))
+	errors.append_array(Clock.load_and_validate())
+	errors.append_array(GoodCatalog.load_and_validate(goods_dir))
+	errors.append_array(PortRegistry.load_and_validate(ports_dir))
+	errors.append_array(SeaLanes.load_and_validate(sea_nodes_dir, sea_regions_dir, sea_lanes_dir))
+	errors.append_array(GoodsLedger.load_and_validate())
+	errors.append_array(MarketPricer.load_and_validate(curve_path))
+	errors.append_array(CashLedger.load_and_validate())
+	# 2.2-01／D-26b: TradeDesk after CashLedger (before TierRegistry／BuildingEconomy).
+	errors.append_array(TradeDesk.load_and_validate())
+	# D-17d／D-17c: PopulationModel after CashLedger／before BuildingEconomy.
+	# WP-34／D-30a: always wire DemandModel sat when unset (no file_exists gate).
+	if not PopulationModel.has_satisfaction_input_provider():
+		PopulationModel.set_satisfaction_input_provider(DemandModel.get_satisfaction_input_provider())
+	errors.append_array(PopulationModel.load_and_validate())
+	if PopulationModel.is_loaded():
+		if not BuildingEconomy.has_population_provider():
+			BuildingEconomy.set_population_provider(PopulationModel.get_population_provider())
+		if not BuildingEconomy.has_workforce_provider():
+			BuildingEconomy.set_workforce_provider(PopulationModel.get_workforce_provider())
+	errors.append_array(BuildingEconomy.load_and_validate())
+	# WP-24／FRM-SYS07-14／FRM-SYS08-21: opening from CSV tres (no-op if dirs empty).
+	if PopulationModel.is_loaded() and errors.is_empty():
+		errors.append_array(PopulationModel.apply_opening_init())
+	if BuildingEconomy.is_loaded() and errors.is_empty():
+		errors.append_array(BuildingEconomy.apply_opening_init())
+
+	# D-09a／WP-22／D-30a: DemandModel after opening init when no ConsumptionProvider pre-injected.
+	# Missing demand dir → ERR-SYS06-01 collected; refuse boot (C-06／D-25b). Injected
+	# fixture ConsumptionProvider still skips DemandModel load.
+	if _consumption == null:
+		errors.append_array(DemandModel.load_and_validate(demand_tables_path))
+		if DemandModel.is_loaded():
+			_consumption = DemandModel.get_consumption_provider()
+
+	## D-97(c)／WP-62b／FRM-SYS08-21: opening MARKET stock after DemandModel（last opening step）.
+	if BuildingEconomy.is_loaded() and DemandModel.is_loaded() and errors.is_empty():
+		errors.append_array(BuildingEconomy.apply_opening_market_stock())
+
+	# D-14b／D-19f: ShipRegistry after PopulationModel／BuildingEconomy opening; inject SailorPool.
+	if not ShipRegistry.has_sailor_pool_provider() and PopulationModel.is_loaded():
+		ShipRegistry.set_sailor_pool_provider(PopulationModel.get_sailor_pool_provider())
+	errors.append_array(ShipRegistry.load_and_validate())
+	# FRM-SYS13-06／D-19f (d): opening SH-01 after WP-24 opening init.
+	if ShipRegistry.is_loaded() and errors.is_empty():
+		errors.append_array(ShipRegistry.apply_opening_init())
+
+	# D-34d／25.1／D-60f: IntelLedger after ShipRegistry; inject ShipEventObserver＋BrokerProvider.
+	errors.append_array(IntelLedger.load_and_validate())
+	if IntelLedger.is_loaded() and ShipRegistry.is_loaded():
+		ShipRegistry.set_ship_observer(IntelLedger.get_ship_event_observer())
+	# D-60f BrokerProvider injection site:
+	# - Tests: IntelLedger.set_broker_provider(FixtureBrokerProvider) before boot.
+	# - Formal: WP-41 BrokerDesk Autoload calls set_broker_provider(get_broker_provider()).
+	# No /root path lookup（D-60f）. Absent → ERR-SYS15-06 field＝broker_provider.
+	errors.append_array(IntelLedger.boot_gate_errors())
+
+	# FRM-SYS15-11／D-123／25.1 F 開機: after opening MARKET stock + IntelLedger load, before day-1.
+	if IntelLedger.is_loaded() and errors.is_empty():
+		errors.append_array(IntelLedger.seed_opening_board())
+
+	# D-23g／WP-36: TraderRegistry after IntelLedger; load only when layers.TRADERS enabled.
+	if TraderRegistry.is_enabled():
+		errors.append_array(TraderRegistry.load_and_validate())
+
+	# 2.3-03: 未注入 provider（且 DemandModel 未載入）→ boot() 回錯誤。
+	if _consumption == null:
+		var missing := {
+			"code": ERR_PROVIDER_MISSING,
+			"file": "res://autoload/sim_loop.gd",
+			"field": FIELD_PROVIDER,
+			"value": null,
+			"message": "ConsumptionProvider must be injected before boot (2.3-03)",
+		}
+		errors.append(missing)
+		# Modules already push_error inside load_and_validate；此處只發 SimLoop 自有錯誤，避免重複。
+		push_error("SimLoop: %s" % str(missing))
+
+	# ERR-SYS05-12／14: formal boot requires QualificationProvider + TradeObserver list (C-06).
+	# Tests inject fixtures before boot; formal Autoloads (TierRegistry／ReputationLedger／TaxLedger)
+	# are later WPs — WP-33 must not create always-allow product providers (N-05).
+	errors.append_array(TradeDesk.boot_gate_errors())
+
+	if not errors.is_empty():
+		_booted = false
+		return errors
+
+	# D-08e / WP-18: default WAREHOUSE provider from BuildingEconomy unless tests pre-register.
+	if not _capacity_by_kind.has(GoodsLedger.KIND_WAREHOUSE):
+		_capacity_by_kind[GoodsLedger.KIND_WAREHOUSE] = (
+			BuildingEconomy.get_warehouse_capacity_provider()
+		)
+	# D-14c／D-10c: HOLD CapacityProvider from ShipRegistry unless tests pre-register.
+	if not _capacity_by_kind.has(GoodsLedger.KIND_HOLD) and ShipRegistry.is_loaded():
+		_capacity_by_kind[GoodsLedger.KIND_HOLD] = ShipRegistry.get_hold_capacity_provider()
+
+	# D-08e: GoodsLedger.load_and_validate clears providers; apply SimLoop registrations after.
+	_apply_capacity_providers()
+
+	# Sync quote provider for CashLedger when available (WP-07 set_quote_provider bridge).
+	if CashLedger.has_method("set_quote_provider"):
+		CashLedger.set_quote_provider(MarketPricer)
+
+	# D-03: after CashLedger validation passes, grant START_CASH once via genesis_grant().
+	# R2-05: genesis_grant()/post() -> Error OK／FAILED（not CODE_OK int）.
+	var grant_rc: Error = CashLedger.genesis_grant()
+	if grant_rc != OK:
+		var grant_err: Dictionary = CashLedger.last_error()
+		if grant_err.is_empty():
+			grant_err = {
+				"code": "GENESIS_GRANT_FAILED",
+				"file": "res://autoload/sim_loop.gd",
+				"field": "genesis_grant",
+				"value": grant_rc,
+				"message": "CashLedger.genesis_grant failed after validation (D-03)",
+			}
+		errors.append(grant_err)
+		push_error("SimLoop: genesis_grant failed: %s" % str(grant_err))
+		_booted = false
+		return errors
+
+	# WP-36／17.1 F boot: ① roster → ② grant_genesis_cash → ③ ships（before warmup）.
+	if TraderRegistry.is_enabled():
+		var tr_errors: Array = TraderRegistry.apply_boot_steps()
+		if not tr_errors.is_empty():
+			errors.append_array(tr_errors)
+			_booted = false
+			return errors
+
+	# D-05(b)／D-07: boot day=0 (Clock._tick=0); ledgers track the same calendar day.
+	GoodsLedger.set_day(Clock.day)
+	CashLedger.set_day(Clock.day)
+
+	_booted = true
+	return errors
+
+

@@ -1,0 +1,15 @@
+func _record_season_sail(
+	from_port: StringName, good_id: StringName, qty: int, daily_margin_li: int
+) -> void:
+	var si: int = Clock.season_index if Clock != null else 0
+	var key := _season_port_key(si, from_port)
+	_season_sails[key] = int(_season_sails.get(key, 0)) + 1
+	if not _season_cargo.has(key):
+		_season_cargo[key] = {}
+	var cargo: Dictionary = _season_cargo[key]
+	var g_s := String(good_id)
+	cargo[g_s] = int(cargo.get(g_s, 0)) + qty
+	_season_margin_sum[key] = int(_season_margin_sum.get(key, 0)) + daily_margin_li
+	_season_margin_n[key] = int(_season_margin_n.get(key, 0)) + 1
+
+

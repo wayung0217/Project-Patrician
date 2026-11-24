@@ -1,0 +1,45 @@
+commit ddc2447484468670aca114e62bd6e84555510b65
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Tue Nov 24 14:10:54 2026 +0000
+
+    test(17-69): drop mark-errors-handled after stock-cap product fix
+    
+    CashLedger.max_affordable_qty caps hi at stock+1 for MarketPricer
+    (7276658); K2/K4 no longer need GUT Unexpected Errors suppression.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+diff --git a/tests/unit/test_d123_opening_board_1766.gd b/tests/unit/test_d123_opening_board_1766.gd
+index bf730af..da25bc5 100644
+--- a/tests/unit/test_d123_opening_board_1766.gd
++++ b/tests/unit/test_d123_opening_board_1766.gd
+@@ -159,7 +159,6 @@ func test_K2_explore_sails_without_opening_board() -> void:
+ 		true ## explore=true
+ 	)
+ 	sailed = int(st.get("sailed", 0))
+-	_mark_afford_probe_errors_handled()
+ 	assert_gte(sailed, 1, "explore must sail without board (D-123(b))")
+ 
+ 
+@@ -227,7 +226,6 @@ func test_K4_formal_boot_30d_sail_buy_sell_no_manual_board() -> void:
+ 		## Stop once buy+sail proven — remaining days are matrix／H4, not GUT budget.
+ 		if sail_sum >= 1 and cargo_total >= 1:
+ 			break
+-	_mark_afford_probe_errors_handled()
+ 	assert_gte(sail_sum, 1, "formal 30d sail_sum ≥ 1")
+ 	assert_gte(cargo_total, 1, "buy+sail recorded cargo")
+ 	assert_true(saw_outbound, "at least one OUTBOUND plan (buy+sail)")
+@@ -360,13 +358,6 @@ func _cap_trader_cash(max_li: int) -> void:
+ 		)
+ 
+ 
+-func _mark_afford_probe_errors_handled() -> void:
+-	## max_affordable may briefly probe qty>stock (ERR-SYS04-06); expected, mark handled.
+-	for e in get_errors():
+-		if e.is_push_error() and e.contains_text("buy qty>"):
+-			e.handled = true
+-
+-
+ func _inject_board_sample(
+ 	port: String,
+ 	origin: String,
