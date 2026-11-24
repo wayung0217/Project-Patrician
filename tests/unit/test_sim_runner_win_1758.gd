@@ -150,9 +150,13 @@ func test_W5_season_progress_print_only_source() -> void:
 	## Progress must not write sampler / ledger — only print after sample_season.
 	var emit_idx: int = eng_src.find("func _emit_season_progress")
 	assert_gt(emit_idx, 0)
-	var emit_body: String = eng_src.substr(emit_idx, 1200)
-	assert_true(emit_body.find("sample_season") < 0 or emit_body.find("sampler.sample") < 0)
-	assert_true(emit_body.find("print(") >= 0)
+	var emit_end: int = eng_src.find("\nfunc ", emit_idx + 1)
+	if emit_end < 0:
+		emit_end = eng_src.length()
+	var emit_body: String = eng_src.substr(emit_idx, emit_end - emit_idx)
+	assert_true(emit_body.find("sample_season") < 0, "emit must not call sample_season")
+	assert_true(emit_body.find("GoodsLedger.") < 0, "emit must not touch GoodsLedger")
+	assert_true(emit_body.find("print(line)") >= 0, "emit must print PROGRESS line")
 
 
 func _fast_scenario(sid: String) -> Dictionary:
