@@ -30,7 +30,10 @@
 100644 blob 484566e09173c57f2a535d7d87e9f80e2628fac2    1447	item_4_5.md
 100644 blob 6defd97824f28c441e2d02e44f2f6bfe0cf72815     916	k2_cause_prior.md
 100644 blob 2c14abbe06b39bc75196054fb1905eba46256f51     591	lane.txt
+100644 blob f8fbe785e1ac22b8c135d1c5885692c0b498891e    3991	ls_tree.txt
 100644 blob 7e6e43542f529ad9df5706c0e8721730ca7d4e87      41	mark_handled_removal_sha.txt
+100644 blob 8a435501a3a3365292e8dbd389ce27b7ae2c9ea2       8	orphan_push.log
+100644 blob 3ee703da204614a0ceab9322f9971741ad63564a      41	orphan_sha.txt
 100644 blob b5bfe291313396eb886a3d75768f9cccc48ba2ca      41	r973_l4_2_drop_sha.txt
 100644 blob 7c6898f52b39aeba7a29aa7c4c4d4ecd63a0bd9d     988	summary.json
 100644 blob 526b16142c52e573b478a1342784b98fd95021b5      41	tip_sha.txt
