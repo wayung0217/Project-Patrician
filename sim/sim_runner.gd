@@ -151,6 +151,8 @@ func _run_scenario_orchestrator(scenario_path: String, ports_dir: String) -> int
 			(all_sampler.get("season_ports") as Array).append_array(res["season_ports"])
 		if res.has("obs_ext_rows"):
 			(all_sampler.get("obs_ext_rows") as Array).append_array(res["obs_ext_rows"])
+		if res.has("trader_summary_rows"):
+			(all_sampler.get("trader_summary_rows") as Array).append_array(res["trader_summary_rows"])
 		if res.has("daily_rows"):
 			var dr: Dictionary = res["daily_rows"]
 			var daily: Dictionary = all_sampler.get("daily_rows")
@@ -204,6 +206,7 @@ func _run_job_file(job_path: String) -> int:
 		"season_ports": [],
 		"daily_rows": {},
 		"obs_ext_rows": [],
+		"trader_summary_rows": [],
 	}
 	if one.has("sampler"):
 		var sm: RefCounted = one["sampler"]
@@ -211,6 +214,7 @@ func _run_job_file(job_path: String) -> int:
 		out["season_ports"] = sm.get("season_ports")
 		out["daily_rows"] = sm.get("daily_rows")
 		out["obs_ext_rows"] = sm.get("obs_ext_rows")
+		out["trader_summary_rows"] = sm.get("trader_summary_rows")
 	var result_path: String = String(payload["result_path"])
 	var rf := FileAccess.open(result_path, FileAccess.WRITE)
 	## A34／A32: result write failure → non-zero (parent must not treat as success).

@@ -75,6 +75,7 @@ func run_scenario_dict(scenario: Dictionary) -> Dictionary:
 			all_sampler.season_cells.append_array(sm.season_cells)
 			all_sampler.season_ports.append_array(sm.season_ports)
 			all_sampler.obs_ext_rows.append_array(sm.obs_ext_rows)
+			all_sampler.trader_summary_rows.append_array(sm.trader_summary_rows)
 			for pid_v in sm.daily_rows.keys():
 				var pid: String = String(pid_v)
 				if not all_sampler.daily_rows.has(pid):
@@ -132,6 +133,7 @@ func _run_one_job(
 	var acc := SimTransferAcc.new()
 	sampler.acc = acc
 	acc.connect_ledger()
+	sampler.connect_unmet()
 	if not GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.connect(sampler.on_conservation)
 
@@ -163,6 +165,7 @@ func _run_one_job(
 	)
 	if not boot_errors.is_empty() or not SimLoop.is_booted():
 		acc.disconnect_ledger()
+		sampler.disconnect_unmet()
 		var reason: String = "%s: boot failed: %s" % [ERR_SYS23_07, str(boot_errors)]
 		return {
 			"summary": _abort_summary(run_id, combo_index, seed, combo, reason, t0),
@@ -177,6 +180,7 @@ func _run_one_job(
 		)
 		if not bool(conv.get("ok", false)):
 			acc.disconnect_ledger()
+			sampler.disconnect_unmet()
 			return {
 				"summary": _abort_summary(
 					run_id, combo_index, seed, combo, String(conv.get("error", ERR_SYS23_03)), t0
@@ -237,6 +241,7 @@ func _run_one_job(
 	if Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.disconnect(on_cutoff)
 	acc.disconnect_ledger()
+	sampler.disconnect_unmet()
 	if GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.disconnect(sampler.on_conservation)
 

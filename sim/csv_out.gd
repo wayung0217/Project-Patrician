@@ -80,6 +80,12 @@ static func write_all(
 		paths.append(obs_path)
 	else:
 		failed.append(obs_path)
+	## D-110(d): trader_summary.csv
+	var trader_path: String = d + "trader_summary.csv"
+	if _write_trader_summary(trader_path, sampler.trader_summary_rows):
+		paths.append(trader_path)
+	else:
+		failed.append(trader_path)
 	return {
 		"ok": failed.is_empty(),
 		"paths": paths,
@@ -92,13 +98,14 @@ static func _write_season_cells(path: String, rows: Array) -> bool:
 	for r_v in rows:
 		var r: Dictionary = r_v
 		lines.append(
-			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
 				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]),
 				r["port_id"], r["good_id"],
 				_fmt(r["stock"]), _fmt(r["mid_li"]), _fmt(r["stock_weeks"]), _fmt(r["band"]),
 				_fmt(r["produced"]), _fmt(r["consumed"]),
 				_fmt(r["relocated_in"]), _fmt(r["relocated_out"]),
+				_fmt(r.get("excess_consumed", 0)),
 			]
 		)
 	return _store(path, lines)
@@ -109,8 +116,11 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
 	for r_v in rows:
 		var r: Dictionary = r_v
 		var spend_esc: String = _csv_escape(String(r.get("city_spend_json", "{}")))
+		var unmet_p: String = _csv_escape(String(r.get("unmet_poor_top3", "")))
+		var unmet_c: String = _csv_escape(String(r.get("unmet_citizen_top3", "")))
+		var unmet_r: String = _csv_escape(String(r.get("unmet_rich_top3", "")))
 		lines.append(
-			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
 				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]), r["port_id"],
 				_fmt(r["rich"]), _fmt(r["citizen"]), _fmt(r["poor"]), _fmt(r["beggar"]),
@@ -120,6 +130,41 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
 				_fmt(r.get("land_rent_li", -1)),
 				_fmt(r.get("vacancy_tax_li", -1)),
 				spend_esc,
+				_csv_escape(String(r.get("queue_state", ""))),
+				_fmt(r.get("sat_poor", 0)),
+				_fmt(r.get("sat_citizen", 0)),
+				_fmt(r.get("sat_rich", 0)),
+				_fmt(r.get("job_cap", 0)),
+				_fmt(r.get("cap_sat_up1", 0)),
+				_fmt(r.get("cap_sat_up2", 0)),
+				_fmt(r.get("pf1", 0)),
+				_fmt(r.get("pf2", 0)),
+				_fmt(r.get("pf3", 0)),
+				_fmt(r.get("pf4", 0)),
+				_fmt(r.get("pf5", 0)),
+				_fmt(r.get("pf6", 0)),
+				unmet_p, unmet_c, unmet_r,
+			]
+		)
+	return _store(path, lines)
+
+
+static func _write_trader_summary(path: String, rows: Array) -> bool:
+	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_TRADER_SUMMARY])
+	for r_v in rows:
+		var r: Dictionary = r_v
+		lines.append(
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			% [
+				_fmt(r.get("run_id", 0)),
+				_fmt(r.get("seed", 0)),
+				_fmt(r.get("season_index", 0)),
+				_csv_escape(String(r.get("port_id", ""))),
+				_fmt(r.get("sail_count", 0)),
+				_fmt(r.get("ships_in_port", 0)),
+				_fmt(r.get("frozen_traders", 0)),
+				_csv_escape(String(r.get("cargo_dan_json", "{}"))),
+				_fmt(r.get("avg_daily_margin_li", 0)),
 			]
 		)
 	return _store(path, lines)
