@@ -1,6 +1,6 @@
 # 17-71 HANDOFF
 
-Branch tip: `TIP_PLACEHOLDER`（`review/1771-handoff`）  
+Branch tip: `23c6b665117ddbdaeb3b533a92719caac85797bd`（`review/1771-handoff`）  
 Main tip at closeout: `fd5eb16c8d598b7a82f31097c9fb2207c0e4ebcd`  
 Main CI: `45735400939` success (9 checks).  
 Golden artifact id: **`15078752004`**（name `golden-30d`，run `45735400939`）.
