@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,,,
-狀態：main 17de205 已含 #44、#45、#51、#53、#55、#65、#56、#57、#63、#66、#58、#59；#60 可合、#64 須先修（R9-70、D-114，併入 17-55 步 0-A）｜2026-11-23｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，已合併）｜16 派工單 Round 10（WP-22 SYS-06 居民消費）｜17 派工單 Round 11（WP-33 至 37，草稿）,,,,,,,,
+狀態：main ade2dc8；17-55 已交付、R9-71 審畢；D-120 已核准；17-58（合併步 0 與線 B／C／D／E、修散商、重跑 M1b）待發送，docs/spec v6.99.183｜2026-11-24｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，已合併）｜16 派工單 Round 10（WP-22 SYS-06 居民消費）｜17 派工單 Round 11（WP-33 至 37，草稿）,,,,,,,,
 ,,,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,,,
@@ -38,11 +38,11 @@ C-15,工作報告證據（退件標準）,Owner 2026-11-19：AI 不直接審代�
 1-A7,SYS-04 MarketPricer,全部（第 3.5 節）。,★ 2026-11-18 R2-13 更正：price_curve.tres 屬正式資料，與 goods／ports 相同由 Owner 匯出 CSV、經 csv_import 產生（2.1-04 ⑤、D-08i），Cursor 不得手寫；測試只用 res://tests/fixtures/。數值以第 4 節 C 欄為準、不得調參。｜原文：price_curve.tres 照第 4 節 C 欄抄錄，不得調參。,03_Systems §4,可做,,,
 1-A8,SYS-05 CashLedger,全部邏輯（第 3.6 節）。,TradeSlider 與帳本報表 UI 不做。params.json 缺 PRM-SYS05-START_CASH 或 PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT 任一鍵即 push_error 並拒絕啟動。兩者數值待 SYS-23 模擬器，Cursor 不得填值、不得給預設值；測試只用 res://tests/fixtures/ 的值。（Owner 2026-11-17 確認）,03_Systems §5,可做,,,
 1-A9,SYS-06 消耗介面,只建 ConsumptionProvider 介面（第 3.7 節）。,正式實作不寫；假資料只放 res://tests/fixtures/。,SYS-04 有效去化（weekly_consumption 已於 WP-32 刪除，D-22c）,可做（介面）,,,
-1-A10,SimLoop,每日 tick 與商季 cutoff 的唯一排程者（第 2.3 節）。,—,03_Systems r298,可做,,,
-1-X1,CT-OQ-37／38／39,工坊毛利、買入倍率、產能解耦（k／w／n）。,任何工坊、工資、配方代碼都不寫。,04B_CityRules r556–558,禁止碰,,,
+1-A10,SimLoop,每日 tick 與商季 cutoff 的唯一排程者（第 2.3 節）。,—,03_Systems SYS-03 F 寫入順序（每日 tick）,可做,,,
+1-X1,CT-OQ-37／38／39,工坊毛利、買入倍率、產能解耦（k／w／n）。,任何工坊、工資、配方代碼都不寫。,04B_CityRules CT-OQ-37／38／39,禁止碰,,,
 1-X2,地價、地租、圈層開放,04B 第 4 節全部。,不寫槽位、地價、地租相關類別或欄位。,04B 第 4 節,禁止碰,,,
 1-X3,SYS-06 起所有系統,消耗、人口、建造、商籍、航運、政權、情報、AI 等。,只允許第 1-A9 的介面。｜★ 2026-11-18 例外：第 10 節派工單開放的 WP-16、WP-17（只做參數載入與 CSV 匯入，不寫任何 SYS-06／07／08 邏輯）。｜★ Round 5 例外：第 11 節開放 WP-18（SYS-08 資料層，只做版圖、地價、購地與查詢）、WP-25。｜★ Round 6 例外：第 12 節開放 WP-19（建造）、WP-20（工坊生產與工資累計），依序派工。｜★ Round 7 例外：第 13 節開放 WP-28（時鐘 tick）、WP-29（航道圖）；WP-30、31 待派。｜★ Round 8 例外：第 14 節開放 WP-21（人口）、WP-23（城市與季末）、WP-24（開局整合）。｜★ Round 9 例外：第 15 節開放 WP-32（有效去化與中轉清理，待派）。｜★ Round 10 例外：第 16 節開放 WP-22（SYS-06 DemandModel 居民消費）。｜★ Round 11 例外（草稿，未派）：第 17 節開放 WP-33（成交入口）、WP-34（需求資料匯入）、WP-35（SYS-09 商籍）、WP-37（SYS-11 聲望）、WP-36（SYS-17 散商），依 D-26e 順序。,03_Systems 系統清單,禁止碰,,,
-1-X4,曲線正式數值,W1..W5、M1..M5、HALF_SPREAD 的調整。,只抄錄現值，不得改。,03_Systems r421,禁止碰,,,
+1-X4,曲線正式數值,W1..W5、M1..M5、HALF_SPREAD 的調整。,只抄錄現值，不得改。,03_Systems SYS-04 K 未決（曲線正式數值）,禁止碰,,,
 1-X5,OQ-12 系列未決項,—,遇到即停（C-05）。,03_Systems,禁止碰,,,
 1-X6,04A_Buildings!G111 疑點,—,不得以任何形式引用該值。,04A_Buildings,禁止碰,,,
 1-X7,SYS-00 Rng,"派生演算法已定：對 (seed, day, port, item, purpose) 做固定雜湊後以 SplitMix64 播種。（Owner 2026-11-17 確認）",Phase 0 的 SYS-01..05 不需要隨機數；不建 Rng 檔案。字串鍵如何編碼成雜湊輸入，於 Rng 開工前另補細則，Cursor 不得自定。｜★ 2026-11-18 OQ-15m：字串編碼已定為 03_Systems FRM-SYS23-10（UTF-8＋FNV-1a 64，欄位間 0x1F）；實作見 WP-25。,ST-RNG、GP-03,禁止碰（演算法已定，但不在 Phase 0）,,,
@@ -53,18 +53,18 @@ C-15,工作報告證據（退件標準）,Owner 2026-11-19：AI 不直接審代�
 2.1-01,res://autoload/,params.gd、clock.gd、good_catalog.gd、port_registry.gd、sea_lanes.gd、goods_ledger.gd、market_pricer.gd、cash_ledger.gd、trade_desk.gd、tier_registry.gd、building_economy.gd、population_model.gd、reputation_ledger.gd、demand_model.gd、confiscation_ledger.gd、tax_ledger.gd、ship_registry.gd、intel_ledger.gd、broker_desk.gd、trader_registry.gd、ai_registry.gd、sim_loop.gd｜★ D-44f：另有 res://core/trade_evaluator.gd（SYS-17／18 共用，已追認 D-46a）,一檔一個 Autoload；檔名 snake_case，Autoload 名 PascalCase（與 03_Systems 介面列一致）。,T-R7,可做,,,
 2.1-02,res://core/types/,good_def.gd、port_def.gd、role_cell.gd、price_curve.gd、transfer_event.gd、account.gd、posting_entry.gd、posting.gd、charge_schedule.gd、season_ledger_report.gd,資料類別（Resource 或 RefCounted）；欄位逐字照第 3 節 C 欄。,03_Systems D 欄位列,可做,,,
 2.1-03,res://core/interfaces/,consumption_provider.gd、capacity_provider.gd、qualification_provider.gd、reputation_provider.gd、trade_observer.gd、ship_event_observer.gd（WP-33 至 37、40 建立；其中 reputation_provider.gd 由 WP-35 建立）,只含方法簽名；基底方法本體一律 push_error 並回傳失敗值，不得回傳看似合理的假值。,1-A6、1-A9,可做,,,
-2.1-04,res://data/,params/params.json、goods/*.tres、ports/*.tres、market/price_curve.tres；★ 另含 res://tools/csv_import.gd,ports/ 與 res://tools/ 路徑為本書定義（03_Systems 未寫路徑），屬本書允許目錄。正式 .tres 由 Owner 管線產生：03_Systems／03A／04_Content 匯出 CSV → Godot EditorScript 轉檔。Cursor 只建空目錄，並寫轉檔器框架 res://tools/csv_import.gd：① 一種資源一個 CSV；② 表頭必須逐字等於 03_Systems 資料結構的欄位名；③ 缺欄、多欄或型別不符即 push_error 並中止，不得猜測或補預設值；④ 只用 res://tests/fixtures/ 的 CSV 測試；⑤ 不得手寫正式資料 CSV 或 .tres。（Owner 2026-11-17 確認）,03_Systems r246、r417,可做,,,
+2.1-04,res://data/,params/params.json、goods/*.tres、ports/*.tres、market/price_curve.tres；★ 另含 res://tools/csv_import.gd,ports/ 與 res://tools/ 路徑為本書定義（03_Systems 未寫路徑），屬本書允許目錄。正式 .tres 由 Owner 管線產生：03_Systems／03A／04_Content 匯出 CSV → Godot EditorScript 轉檔。Cursor 只建空目錄，並寫轉檔器框架 res://tools/csv_import.gd：① 一種資源一個 CSV；② 表頭必須逐字等於 03_Systems 資料結構的欄位名；③ 缺欄、多欄或型別不符即 push_error 並中止，不得猜測或補預設值；④ 只用 res://tests/fixtures/ 的 CSV 測試；⑤ 不得手寫正式資料 CSV 或 .tres。（Owner 2026-11-17 確認）,03_Systems SYS-01 GoodCatalog、SYS-04 MarketPricer（資料路徑）,可做,,,
 2.1-05,res://tests/,unit/、fixtures/,"測試框架用 GUT（Godot 4 版），測試放 res://tests/unit/；第 5 節 TST 逐條各寫一個測試，測試名含 TST ID；CI 以 headless 執行全部測試，任一失敗不得合併。fixture 只供測試，不得被 res://autoload/ 或 res://core/ 引用。（Owner 2026-11-17 確認）
 ★ CI 做法（Owner 2026-11-17 確認）：GitHub Actions，檔案 .github/workflows/ci.yml，runner = ubuntu-latest；下載官方 Godot 4.7.2-stable Linux 版，以 --headless 執行；GUT 固定一個支援 Godot 4 的版本（版本號寫在 PR 描述），放 res://addons/gut/，以 gut_cmdln.gd 命令列執行 res://tests/unit/ 全部測試。repo 不在 GitHub 時停止並回報。
 ★ 允許的工具目錄（不算本書外目錄）：.github/、addons/gut/、.cursor/、docs/。",C-13,可做,,,
 2.2-01,Autoload 登錄順序,Params → Clock → GoodCatalog → PortRegistry → SeaLanes → GoodsLedger → MarketPricer → CashLedger → TradeDesk → TierRegistry → BuildingEconomy → PopulationModel → ReputationLedger → DemandModel → ConfiscationLedger → TaxLedger → ShipRegistry → IntelLedger → BrokerDesk → TraderRegistry → AiRegistry → SimLoop（TradeDesk、TierRegistry、ReputationLedger、ConfiscationLedger、TaxLedger（已追認（D-33））、IntelLedger、BrokerDesk（已追認，D-38a）、TraderRegistry 為已定名、尚未實作，AiRegistry 已追認（D-46a）；ReputationLedger 的定名與順序已追認（D-33）；實際登錄時維持此相對順序）,順序＝規格依賴方向。各 Autoload 的 _ready() 只做自身欄位初始化，不讀資料、不呼叫他模組；載入與驗證一律由 SimLoop.boot() 依本順序明確呼叫。,03_Systems 依賴欄,可做,,,
 2.2-02,SimLoop.boot() -> Array,依 2.2-01 順序呼叫各模組 load_and_validate()，彙總全部錯誤後回傳。,任一錯誤 → 回傳完整清單且不啟動時鐘；不得在第一個錯誤就停止收集。,C-06,可做,,,
-2.3-01,每日 tick 步驟 1,Clock 推進一日（day 由 1 起算；day_in_season = ((day−1) mod D) + 1，D = DAYS_PER_SEASON）。,"★ D-05／D-07（2026-11-18）：開機 Clock.day = 0（尚未開局）。每日 tick：時鐘推進一日（= TICKS_PER_DAY 個 tick）→ PRODUCE（依 port_id, good_id 排序；k = day_in_season − 1，首季 k = 0 不得跳過）→ CONSUME（SYS-06；視同一般 transfer：庫存不足即 ERR-SYS03-02、全有或全無、收進當日錯誤清單，不得部分扣）→ 守恆檢查 → 全部寫入完成後，由 SimLoop 經 Clock 發出 day_ticked／season_cutoff（Clock 自身不發信號）",03_Systems r298,可做,,,
+2.3-01,每日 tick 步驟 1,Clock 推進一日（day 由 1 起算；day_in_season = ((day−1) mod D) + 1，D = DAYS_PER_SEASON）。,"★ D-05／D-07（2026-11-18）：開機 Clock.day = 0（尚未開局）。每日 tick：時鐘推進一日（= TICKS_PER_DAY 個 tick）→ PRODUCE（依 port_id, good_id 排序；k = day_in_season − 1，首季 k = 0 不得跳過）→ CONSUME（SYS-06；視同一般 transfer：庫存不足即 ERR-SYS03-02、全有或全無、收進當日錯誤清單，不得部分扣）→ 守恆檢查 → 全部寫入完成後，由 SimLoop 經 Clock 發出 day_ticked／season_cutoff（Clock 自身不發信號）",03_Systems SYS-03 F 寫入順序（每日 tick）,可做,,,
 2.3-02,步驟 2,"GoodsLedger 執行當日 PRODUCE：依 (port_id, good_id) 升序，數量用 FRM-SYS03-03。",排序寫在 SimLoop／GoodsLedger 代碼內，不靠遍歷順序。,FRM-SYS03-03,可做,,,
 2.3-03,步驟 3,"以注入的 ConsumptionProvider 執行 CONSUME，同樣依 (port_id, good_id) 升序。",未注入 provider → boot() 回錯誤（Phase 0 正式環境因此不會啟動時鐘，屬預期）。,SYS-06 介面,可做,,,
-2.3-04,步驟 4,守恆檢查 FRM-SYS03-01（是否每日執行依 PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK）。,以 OS.is_debug_build() 選取參數的 debug／release 值；不得另寫旗標。,r318,可做,,,
-2.3-05,步驟 5（僅 day_in_season = D 當日）,商季 cutoff：(a) PortRegistry 套用排隊中的角色變更 → (b) CashLedger.close_season() → (c) 守恆檢查（release 亦必檢）。｜★ D-31b：(a) 之後、(b) 之前新增 (a2) TaxLedger.apply_season_cutoff()（03_Systems 24.1）；(b2) 後有 (b3) ConfiscationLedger（23.1）。,(a)(b) 無共用狀態，順序不影響結果；仍固定照寫。cutoff 不暫停、不跳視窗（LCR-03）。,r267、r579、r318,可做,,,
-2.3-06,步驟 6,全部寫入完成後才發出信號（day_ticked、season_cutoff 等）。,信號接收者不得反過來改寫本 tick 狀態。,r590「提交後才發信號」,可做,,,
+2.3-04,步驟 4,守恆檢查 FRM-SYS03-01（是否每日執行依 PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK）。,以 OS.is_debug_build() 選取參數的 debug／release 值；不得另寫旗標。,03_Systems PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK,可做,,,
+2.3-05,步驟 5（僅 day_in_season = D 當日）,商季 cutoff：(a) PortRegistry 套用排隊中的角色變更 → (b) CashLedger.close_season() → (c) 守恆檢查（release 亦必檢）。｜★ D-31b：(a) 之後、(b) 之前新增 (a2) TaxLedger.apply_season_cutoff()（03_Systems 24.1）；(b2) 後有 (b3) ConfiscationLedger（23.1）。,(a)(b) 無共用狀態，順序不影響結果；仍固定照寫。cutoff 不暫停、不跳視窗（LCR-03）。,03_Systems EV-SYS02-ROLE_CHANGE、SYS-05 close_season（季末六步）、PRM-SYS03-CONSERVATION_CHECK_EVERY_TICK,可做,,,
+2.3-06,步驟 6,全部寫入完成後才發出信號（day_ticked、season_cutoff 等）。,信號接收者不得反過來改寫本 tick 狀態。,03_Systems SYS-05 F 寫入順序「提交後才發信號」,可做,,,
 ,,,,,,,,
 3 各模組規格（C 欄為 03_Systems 原文即時引用）,,,,,,,,
 段,項目,規格原文,Cursor 實作補充,來源,狀態,,,
@@ -72,124 +72,124 @@ C-15,工作報告證據（退件標準）,Owner 2026-11-19：AI 不直接審代�
 ★ Owner 2026-11-18 裁決 D-07：內部計數改為私有 _tick（1 日 = PRM-SYS00-TICKS_PER_DAY），day = floori(_tick ÷ TPD)；對外公開面不變，不得新增子日推進的公開方法。
 ★ D-14d（2026-11-18）：新增 advance_one_tick() 與唯讀 tick，撤銷上句「不得新增子日推進的公開方法」；實作見 WP-28。",GP-01、LCR-01、LCR-03；名稱 Owner 2026-11-17 確認,可做,,,
 3.1,暫停,GP-01：暫停時一切不變,is_paused = true 時 advance_one_day() 不得被呼叫；呼叫即 push_error 並不推進。day_ticked／season_cutoff／advance_one_day 名稱已定，不得改名。速度檔位見 1-A3：PRM 未登記前不寫 _process 推進。,GP-01,可做,,,
-3.2,SYS-01 GoodCatalog,res://autoload/good_catalog.gd,啟動一次載入 res://data/goods/*.tres，之後唯讀。all_ids() 回傳升序。,03_Systems r246,可做,,,
-C 邊界,只定義欄位與驗證；不含價格公式、需求量、產量（產量在 SYS-02 角色格）,—,,03_Systems r233,可做,,,
-D 欄位,good_id,GD-nnn，唯一｜★ D-08b：須符合 ^GD-[0-9]{3}$,,03_Systems r234,可做,,,
-D 欄位,name_zh,中文名,,03_Systems r235,可做,,,
-D 欄位,tier,貨物層級,,03_Systems r236,可做,,,
-D 欄位,is_staple,剛需（米、鹽、魚乾、木材）,,03_Systems r237,可做,,,
-D 欄位,is_build_material,建材,,03_Systems r238,可做,,,
-D 欄位,is_strategic,戰略／管制貨（硝磺、銅等）,[假設] 欄位照建；名單未定，代碼不得以 is_strategic 做任何分支。,03_Systems r239,可做,,,
-D 欄位,base_price_li,基準價（厘／擔）,,03_Systems r240,可做,,,
-D 欄位,season_mask,季節性產出遮罩（預留）｜★ D-08a：4 位元遮罩，第 n 季 = 2^(n−1)，全年 = 2^SEASONS_PER_YEAR − 1；MVP 必須全年，否則 ERR-SYS01-06,MVP 固定全年：欄位照建，驗證不得放寬或收緊。,03_Systems r241,可做,,,
-E 公式,FRM-SYS01-01,"載入驗證：good_id 唯一；tier∈[1,TIER_MAX]；base_price_li>0；貨物數∈[GOOD_COUNT_MIN,GOOD_COUNT_MAX]；剛需四項恰各一筆",,03_Systems r242,可做,,,
-E 公式,FRM-SYS01-02,controlled_scale_only = (tier > PRM-SYS01-FREE_PORT_TIER_MAX) OR is_strategic,,03_Systems r243,可做,,,
-F 寫入順序,—,遊戲啟動時一次載入；執行期唯讀,,03_Systems r244,可做,,,
-G 邊界失敗,ERR-SYS01-01 至 05,01 重複 ID／02 tier 越界／03 價格≤0／04 數量越界／05 剛需缺漏｜★ D-08：06 season_mask 非全年／07 good_id 格式（^GD-[0-9]{3}$）／08 name_zh 空白／09 未知 id,錯誤碼五個全部實作，每個對應一個 fixture 測試。,03_Systems r245,可做,,,
-H 可觀察性,Godot 介面,Autoload GoodCatalog：get_good(id)->GoodDef、all_ids()->PackedStringArray（已排序）、validate()->Array[Error]；signal catalog_loaded｜★ D-08c：查無 id 回 null＋last_error()；D-08f：signal catalog_loaded(count),,03_Systems r246,可做,,,
-K 未決,is_strategic 名單,由 04_Content 提案送審,未決：不實作。,03_Systems r249,可做,,,
-3.3,SYS-02 PortRegistry,res://autoload/port_registry.gd,"角色變更以 queue_role_change(port,good,new_role) 排隊；只在 2.3-05(a) 套用，套用前重驗 FRM-SYS02-01。",03_Systems r267,可做,,,
-C 邊界,不定義消費量（SYS-06）、價格（SYS-04）、政權稅制（SYS-12）,—,,03_Systems r255,可做,,,
-D 欄位 PortDef,port_id,PT-nn，唯一｜★ D-08b：須符合 ^PT-[0-9]{2}$,,03_Systems r256,可做,,,
-D 欄位 PortDef,name_zh,中文名,,03_Systems r257,可做,,,
-D 欄位 PortDef,is_free_port,自由港／管制港,,03_Systems r258,可做,,,
-D 欄位 PortDef,draft_limit_class,港口可容吃水等級,[待審]：欄位照存，不驗證、不參與任何邏輯，直到 SYS-13 船隊開工。（Owner 2026-11-17 確認）,03_Systems r259,可做,,,
-D 欄位 PortDef,regime_id,所屬政權（預留）,,03_Systems r260,可做,,,
-D 欄位 RoleCell,role,PRODUCER／TRANSIT／TERMINAL（僅三值，無 NONE）,,03_Systems r261,可做,,,
-D 欄位 RoleCell,downstream_terminals,中轉格的下游終端港清單,,03_Systems r262,可做,,,
-D 欄位 RoleCell,base_output_per_season,產地每商季基準產量（擔）,,03_Systems r263,可做,,,
+3.2,SYS-01 GoodCatalog,res://autoload/good_catalog.gd,啟動一次載入 res://data/goods/*.tres，之後唯讀。all_ids() 回傳升序。,03_Systems SYS-01 GoodCatalog,可做,,,
+C 邊界,只定義欄位與驗證；不含價格公式、需求量、產量（產量在 SYS-02 角色格）,—,,03_Systems C 邊界,可做,,,
+D 欄位,good_id,GD-nnn，唯一｜★ D-08b：須符合 ^GD-[0-9]{3}$,,03_Systems D 欄位,可做,,,
+D 欄位,name_zh,中文名,,03_Systems D 欄位,可做,,,
+D 欄位,tier,貨物層級,,03_Systems D 欄位,可做,,,
+D 欄位,is_staple,剛需（米、鹽、魚乾、木材）,,03_Systems D 欄位,可做,,,
+D 欄位,is_build_material,建材,,03_Systems D 欄位,可做,,,
+D 欄位,is_strategic,戰略／管制貨（硝磺、銅等）,[假設] 欄位照建；名單未定，代碼不得以 is_strategic 做任何分支。,03_Systems D 欄位,可做,,,
+D 欄位,base_price_li,基準價（厘／擔）,,03_Systems D 欄位,可做,,,
+D 欄位,season_mask,季節性產出遮罩（預留）｜★ D-08a：4 位元遮罩，第 n 季 = 2^(n−1)，全年 = 2^SEASONS_PER_YEAR − 1；MVP 必須全年，否則 ERR-SYS01-06,MVP 固定全年：欄位照建，驗證不得放寬或收緊。,03_Systems D 欄位,可做,,,
+E 公式,FRM-SYS01-01,"載入驗證：good_id 唯一；tier∈[1,TIER_MAX]；base_price_li>0；貨物數∈[GOOD_COUNT_MIN,GOOD_COUNT_MAX]；剛需四項恰各一筆",,03_Systems E 公式,可做,,,
+E 公式,FRM-SYS01-02,controlled_scale_only = (tier > PRM-SYS01-FREE_PORT_TIER_MAX) OR is_strategic,,03_Systems E 公式,可做,,,
+F 寫入順序,—,遊戲啟動時一次載入；執行期唯讀,,03_Systems F 寫入順序,可做,,,
+G 邊界失敗,ERR-SYS01-01 至 05,01 重複 ID／02 tier 越界／03 價格≤0／04 數量越界／05 剛需缺漏｜★ D-08：06 season_mask 非全年／07 good_id 格式（^GD-[0-9]{3}$）／08 name_zh 空白／09 未知 id,錯誤碼五個全部實作，每個對應一個 fixture 測試。,03_Systems G 邊界失敗,可做,,,
+H 可觀察性,Godot 介面,Autoload GoodCatalog：get_good(id)->GoodDef、all_ids()->PackedStringArray（已排序）、validate()->Array[Error]；signal catalog_loaded｜★ D-08c：查無 id 回 null＋last_error()；D-08f：signal catalog_loaded(count),,03_Systems H 可觀察性,可做,,,
+K 未決,is_strategic 名單,由 04_Content 提案送審,未決：不實作。,03_Systems K 未決,可做,,,
+3.3,SYS-02 PortRegistry,res://autoload/port_registry.gd,"角色變更以 queue_role_change(port,good,new_role) 排隊；只在 2.3-05(a) 套用，套用前重驗 FRM-SYS02-01。",03_Systems SYS-02 PortRegistry,可做,,,
+C 邊界,不定義消費量（SYS-06）、價格（SYS-04）、政權稅制（SYS-12）,—,,03_Systems C 邊界,可做,,,
+D 欄位 PortDef,port_id,PT-nn，唯一｜★ D-08b：須符合 ^PT-[0-9]{2}$,,03_Systems D 欄位 PortDef,可做,,,
+D 欄位 PortDef,name_zh,中文名,,03_Systems D 欄位 PortDef,可做,,,
+D 欄位 PortDef,is_free_port,自由港／管制港,,03_Systems D 欄位 PortDef,可做,,,
+D 欄位 PortDef,draft_limit_class,港口可容吃水等級,[待審]：欄位照存，不驗證、不參與任何邏輯，直到 SYS-13 船隊開工。（Owner 2026-11-17 確認）,03_Systems D 欄位 PortDef,可做,,,
+D 欄位 PortDef,regime_id,所屬政權（預留）,,03_Systems D 欄位 PortDef,可做,,,
+D 欄位 RoleCell,role,PRODUCER／TRANSIT／TERMINAL（僅三值，無 NONE）,,03_Systems D 欄位 RoleCell,可做,,,
+D 欄位 RoleCell,downstream_terminals,中轉格的下游終端港清單,,03_Systems D 欄位 RoleCell,可做,,,
+D 欄位 RoleCell,base_output_per_season,產地每商季基準產量（擔）,,03_Systems D 欄位 RoleCell,可做,,,
 E 公式,FRM-SYS02-01,"載入驗證：(1) 每港 × 每貨恰一個角色；(2) TRANSIT 至少 1 個下游，且每個下游對該貨為 TERMINAL、不得為自身；(3) PRODUCER 產量 > 0，其餘 = 0；(4) 每貨至少 1 個 PRODUCER 與 1 個 TERMINAL；(5) 港口數∈[PORT_COUNT_MIN,MAX]；(6) 自由港比例∈[FREE_PORT_RATIO_MIN,MAX]
-★ 2026-11-21（R9-46 L13）：(2) 中轉須有下游的驗證已於 15.1 附錄刪除（WP-32，ERR-SYS02-02 退役），現碼不做此項；本列保留原文供對照。",,03_Systems r264,可做,,,
-E 公式,FRM-SYS02-02,Q-7 檢查：自由港上 controlled_scale_only 的貨若為 PRODUCER → 產出警告 WRN-SYS02-01,WRN-01 只警告不阻擋：寫入警告清單，不加入錯誤清單。,03_Systems r265,可做,,,
-E 公式,FRM-SYS02-03,地圖外出口：門戶港對該貨設 TERMINAL（如馬尼拉大帆船、澳門→果阿）；不設虛擬去化,,03_Systems r266,可做,,,
-F 寫入順序,EV-SYS02-ROLE_CHANGE,"角色變更（如建造完工）以 queue_role_change(port_id, good_id, new_role, payload) 排入佇列，payload 入隊即驗：PRODUCER 必含 base_output_per_season（int > 0）且不得含 downstream_terminals；TRANSIT 必含非空 downstream_terminals 且不得含產量；TERMINAL 的 payload 必為空。缺鍵、多鍵、型別不符即以 ERR-SYS02-01 至 06 對應碼拒絕，不延到 cutoff。於商季 cutoff 由 apply_queued_role_changes() 套用，套用時重跑 FRM-SYS02-01 全部六項（★ D-02，2026-11-18）",,03_Systems r267,可做,,,
-G 邊界失敗,ERR-SYS02-01 至 06,對應 FRM-SYS02-01 (1)–(6)｜★ D-08：07 port_id 格式／08 name_zh 空白／09 未知 id,,03_Systems r268,可做,,,
-H 可觀察性,Godot 介面,"Autoload PortRegistry：get_port(id)、get_role(port,good)->int、get_downstream(port,good)、producers_of(good)、terminals_of(good)、queue_role_change(port_id, good_id, new_role, payload: Dictionary)、apply_queued_role_changes()（僅 SimLoop 於 cutoff 呼叫）；signal role_changed(port,good,old,new)（★ D-02）｜★ D-08c：查無 id 回 null＋last_error()｜★ R3-02（2026-11-18）：D-08c 適用 get_port、get_role（失敗回 ROLE_INVALID ＝ 0）、get_downstream、producers_of、terminals_of、queue_role_change；成功查詢清空 last_error；公開方法不得對呼叫者參數 assert",,03_Systems r269,可做,,,
-K 未決,不應吸收某貨的港,以 TERMINAL＋極小消費處理，消費量於 SYS-06 定,未決：不實作。,03_Systems r273,可做,,,
-3.4,SYS-03 GoodsLedger,res://autoload/goods_ledger.gd,transfer() 全有或全無；seq 全域單調遞增 int。容器鍵用 Dictionary 時，任何彙總先排序鍵再加總。,03_Systems r300,可做,,,
-C 邊界,不計價、不計現金；價格由 SYS-04 推導,—,,03_Systems r279,可做,,,
-D 容器,MARKET(port),港口市場庫存；不設上限（OQ-09 9b，大航海家3式）｜★ D-08d：容器 id 格式 MARKET:<port_id>｜WAREHOUSE:<account_id>:<port_id>｜HOLD:<ship_id>｜CONFISCATED，只由 container_id() 產生，種類查 kind 欄,,03_Systems r280,可做,,,
-D 容器,"WAREHOUSE(owner, port)",行為者倉庫,容量只問 CapacityProvider.capacity(container)；無提供者 → ERR-SYS03-03，不得視為無限。,03_Systems r281,可做,,,
-D 容器,HOLD(ship),船艙；航行中船艙＝在途（檢視，不另記帳）,同 r281。,03_Systems r282,可做,,,
-D 容器,CONFISCATED,沒收池（預留）,,03_Systems r283,可做,,,
-D 事件,EV-SYS03-TRANSFER,"{seq, day, timestamp, from, to, good_id, qty, reason, requester}","seq 一律取自 GoodsLedger.next_seq()（全域唯一發號，從 1 起，每次 +1）；timestamp 欄位填與 seq 相同的值，禁止使用系統時鐘（Time.get_ticks_* 等）。日內排序以 (day, seq)。（Owner 2026-11-17 確認）",03_Systems r284,可做,,,
-D 原因碼,GENESIS,開局初始庫存（from = 外部）,,03_Systems r285,可做,,,
-D 原因碼,PRODUCE,產地每日產出（from = 外部 → MARKET）,,03_Systems r286,可做,,,
-D 原因碼,CONSUME,終端／工人消費（MARKET → 外部）,,03_Systems r287,可做,,,
-D 原因碼,TRADE,市場 ↔ 船艙／倉庫買賣,,03_Systems r288,可做,,,
-D 原因碼,LOAD／UNLOAD,倉庫 ↔ 船艙,,03_Systems r289,可做,,,
-D 原因碼,CONSTRUCT_USE,建造消耗建材（→ 外部）,,03_Systems r290,可做,,,
-D 原因碼,CONFISCATE,沒收（預留）,,03_Systems r291,可做,,,
-D 原因碼,SEA_LOSS,海損（停用；使用即錯誤）,使用即回 ERR-SYS03-04。,03_Systems r292,可做,,,
-E 公式,FRM-SYS03-01,守恆：Σ 全部容器(good) = Σ GENESIS + Σ PRODUCE − Σ CONSUME − Σ CONSTRUCT_USE − Σ SEA_LOSS（各 good 分別）,,03_Systems r294,可做,,,
-E 公式,FRM-SYS03-02,轉移：qty 為整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無,,03_Systems r295,可做,,,
-E 公式,FRM-SYS03-03,每日產出 out(k) = FLOOR(Q·(k+1)/D) − FLOOR(Q·k/D)，k = 0..D−1；Q = base_output_per_season，D = PRM-SYS00-DAYS_PER_SEASON,整數除法用 floori 於 int 運算，不經 float。,03_Systems r296,可做,,,
-F 寫入順序,每日 tick,"★ D-05／D-07（2026-11-18）：開機 Clock.day = 0（尚未開局）。每日 tick：時鐘推進一日（= TICKS_PER_DAY 個 tick）→ PRODUCE（依 port_id, good_id 排序；k = day_in_season − 1，首季 k = 0 不得跳過）→ CONSUME（SYS-06；視同一般 transfer：庫存不足即 ERR-SYS03-02、全有或全無、收進當日錯誤清單，不得部分扣）→ 守恆檢查 → 全部寫入完成後，由 SimLoop 經 Clock 發出 day_ticked／season_cutoff（Clock 自身不發信號）",,03_Systems r298,可做,,,
-G 邊界失敗,ERR-SYS03-01 至 05,"01 qty≤0 或非整數／02 餘額不足／03 容量不足／04 原因碼停用／05 守恆違反｜★ D-04：一律以 ErrorInfo {code: StringName（例 &""ERR-SYS03-02""）, sys, detail} 回報，不得用負整數｜★ D-08e：06 容量提供者重複登錄",,03_Systems r299,可做,,,
-H 可觀察性,Godot 介面,"Autoload GoodsLedger：transfer(from,to,good,qty,reason,requester)->int（成功回 seq ≥ 1、失敗回 0，原因經 last_error() 取得 ErrorInfo，★ D-04）、next_seq()->int（全域唯一發號，從 1 起每次 +1，與 CashLedger 共用）、last_error()->Dictionary、get_qty(container,good)、total(good)、in_transit(good)（推導）；signals goods_transferred、conservation_violated｜★ D-08e：容量提供者按容器類型由 SimLoop 登錄（WAREHOUSE→SYS-08、HOLD→SYS-13），重複登錄 ERR-SYS03-06；D-08f：goods_transferred(event: TransferEvent)、conservation_violated(good_id, expected, actual)｜★ D-10c（2026-11-18 Owner 追認）：登錄方法定名 register_capacity_provider(kind, provider)，由 SimLoop 呼叫（#16 已實作）",,03_Systems r300,可做,,,
-K 未決,散商總運力、反應遲滯,PRM 已登記為 [待審]，Phase 3.2 定值,未決：不實作。,03_Systems r303,可做,,,
-3.5,SYS-04 MarketPricer,res://autoload/market_pricer.gd,純函數：不得持有可變狀態、不得發信號、不得寫入其他模組。,03_Systems r417,可做,,,
-='03_Systems'!A401,='03_Systems'!B401,='03_Systems'!C401,,03_Systems r401,可做,,,
-='03_Systems'!A402,='03_Systems'!B402,='03_Systems'!C402,,03_Systems r402,可做,,,
-='03_Systems'!A403,='03_Systems'!B403,='03_Systems'!C403,,03_Systems r403,可做,,,
-='03_Systems'!A404,='03_Systems'!B404,='03_Systems'!C404,"由 ConsumptionProvider.consume_qty(port, good, day) 取得（weekly_consumption 已於 WP-32 刪除，D-22c；SYS-04 價格分母改讀有效去化，03_Systems 15.1）；Phase 0 正式環境無提供者。",03_Systems r404,可做,,,
-='03_Systems'!A405,='03_Systems'!B405,='03_Systems'!C405,,03_Systems r405,可做,,,
-='03_Systems'!A406,='03_Systems'!B406,='03_Systems'!C406,,03_Systems r406,可做,,,
-='03_Systems'!A407,='03_Systems'!B407,='03_Systems'!C407,,03_Systems r407,可做,,,
-='03_Systems'!A408,='03_Systems'!B408,='03_Systems'!C408,面積以 float64 梯形公式一次算出，禁止逐擔迴圈。,03_Systems r408,可做,,,
-='03_Systems'!A409,='03_Systems'!B409,='03_Systems'!C409,ceili／floori；不得 round。,03_Systems r409,可做,,,
-='03_Systems'!A410,='03_Systems'!B410,='03_Systems'!C410,,03_Systems r410,可做,,,
-='03_Systems'!A411,='03_Systems'!B411,='03_Systems'!C411,,03_Systems r411,可做,,,
-='03_Systems'!A412,='03_Systems'!B412,='03_Systems'!C412,,03_Systems r412,可做,,,
-='03_Systems'!A413,='03_Systems'!B413,='03_Systems'!C413,,03_Systems r413,可做,,,
-='03_Systems'!A414,='03_Systems'!B414,='03_Systems'!C414,,03_Systems r414,可做,,,
-='03_Systems'!A415,='03_Systems'!B415,='03_Systems'!C415,,03_Systems r415,可做,,,
-='03_Systems'!A416,='03_Systems'!B416,='03_Systems'!C416,,03_Systems r416,可做,,,
-='03_Systems'!A417,='03_Systems'!B417,='03_Systems'!C417,,03_Systems r417,可做,,,
-='03_Systems'!A418,='03_Systems'!B418,='03_Systems'!C418,UI 不做（1-A8）；只保證 quote() 可被即時呼叫。,03_Systems r418,可做,,,
-='03_Systems'!A421,='03_Systems'!B421,='03_Systems'!C421,未決：不調參。,03_Systems r421,可做,,,
-='03_Systems'!A422,='03_Systems'!B422,='03_Systems'!C422,未決（P1）：不實作。,03_Systems r422,可做,,,
-='03_Systems'!A423,='03_Systems'!B423,='03_Systems'!C423,未決（P1）：不實作。,03_Systems r423,可做,,,
-3.6,SYS-05 CashLedger,res://autoload/cash_ledger.gd,帳戶 id 為 StringName。格式：ACT-／CITY-／REG- 前綴，系統帳戶固定 SOURCE／SINK；前綴與固定名寫成具名常數，組 id 一律經常數，不得在呼叫處手打字串；邏輯不得解析 id 字串來判斷帳戶種類。授權請求者清單寫為具名常數陣列並註明來源 ERR-SYS05-06。（Owner 2026-11-17 確認）,03_Systems r589,可做,,,
-='03_Systems'!A559,='03_Systems'!B559,='03_Systems'!C559,,03_Systems r559,可做,,,
-='03_Systems'!A560,='03_Systems'!B560,='03_Systems'!C560,,03_Systems r560,可做,,,
-='03_Systems'!A561,='03_Systems'!B561,='03_Systems'!C561,,03_Systems r561,可做,,,
-='03_Systems'!A562,='03_Systems'!B562,='03_Systems'!C562,,03_Systems r562,可做,,,
-='03_Systems'!A563,='03_Systems'!B563,='03_Systems'!C563,Posting.seq 呼叫 GoodsLedger.next_seq() 取得，與貨物事件共用同一序列；posting_id 仍由 CashLedger 自行遞增（從 1 起，每次 +1），兩者不得混用。（Owner 2026-11-17 確認）,03_Systems r563,可做,,,
-='03_Systems'!A564,='03_Systems'!B564,='03_Systems'!C564,,03_Systems r564,可做,,,
-='03_Systems'!A565,='03_Systems'!B565,='03_Systems'!C565,,03_Systems r565,可做,,,
-='03_Systems'!A566,='03_Systems'!B566,='03_Systems'!C566,,03_Systems r566,可做,,,
-='03_Systems'!A567,='03_Systems'!B567,='03_Systems'!C567,,03_Systems r567,可做,,,
-='03_Systems'!A568,='03_Systems'!B568,='03_Systems'!C568,,03_Systems r568,可做,,,
-='03_Systems'!A569,='03_Systems'!B569,='03_Systems'!C569,,03_Systems r569,可做,,,
-='03_Systems'!A570,='03_Systems'!B570,='03_Systems'!C570,,03_Systems r570,可做,,,
-='03_Systems'!A571,='03_Systems'!B571,='03_Systems'!C571,,03_Systems r571,可做,,,
-='03_Systems'!A572,='03_Systems'!B572,='03_Systems'!C572,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems r572,可做,,,
-='03_Systems'!A573,='03_Systems'!B573,='03_Systems'!C573,,03_Systems r573,可做,,,
-='03_Systems'!A574,='03_Systems'!B574,='03_Systems'!C574,,03_Systems r574,可做,,,
-='03_Systems'!A575,='03_Systems'!B575,='03_Systems'!C575,,03_Systems r575,可做,,,
-='03_Systems'!A576,='03_Systems'!B576,='03_Systems'!C576,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems r576,可做,,,
-='03_Systems'!A577,='03_Systems'!B577,='03_Systems'!C577,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems r577,可做,,,
-='03_Systems'!A578,='03_Systems'!B578,='03_Systems'!C578,七步順序逐字照寫；任一步失敗回滾已寫入的 ST-CASH 與 ST-GOOD。,03_Systems r578,可做,,,
-='03_Systems'!A579,='03_Systems'!B579,='03_Systems'!C579,六步順序逐字照寫。,03_Systems r579,可做,,,
-='03_Systems'!A580,='03_Systems'!B580,='03_Systems'!C580,,03_Systems r580,可做,,,
-='03_Systems'!A581,='03_Systems'!B581,='03_Systems'!C581,,03_Systems r581,可做,,,
-='03_Systems'!A582,='03_Systems'!B582,='03_Systems'!C582,,03_Systems r582,可做,,,
-='03_Systems'!A583,='03_Systems'!B583,='03_Systems'!C583,,03_Systems r583,可做,,,
-='03_Systems'!A584,='03_Systems'!B584,='03_Systems'!C584,,03_Systems r584,可做,,,
-='03_Systems'!A585,='03_Systems'!B585,='03_Systems'!C585,,03_Systems r585,可做,,,
-='03_Systems'!A586,='03_Systems'!B586,='03_Systems'!C586,,03_Systems r586,可做,,,
-='03_Systems'!A587,='03_Systems'!B587,='03_Systems'!C587,,03_Systems r587,可做,,,
-='03_Systems'!A588,='03_Systems'!B588,='03_Systems'!C588,,03_Systems r588,可做,,,
-='03_Systems'!A589,='03_Systems'!B589,='03_Systems'!C589,,03_Systems r589,可做,,,
-='03_Systems'!A590,='03_Systems'!B590,='03_Systems'!C590,,03_Systems r590,可做,,,
-='03_Systems'!A591,='03_Systems'!B591,='03_Systems'!C591,UI 不做（1-A8）；max_affordable_qty() 必須實作。,03_Systems r591,可做,,,
-='03_Systems'!A592,='03_Systems'!B592,='03_Systems'!C592,UI 不做（1-A8）；只發 season_ledger_closed 信號。,03_Systems r592,可做,,,
-='03_Systems'!A595,='03_Systems'!B595,='03_Systems'!C595,未決：不實作。,03_Systems r595,可做,,,
-='03_Systems'!A596,='03_Systems'!B596,='03_Systems'!C596,帳戶 id 格式見 D139；FRM-SYS05-07／11／12 見 D153／D157／D158。,03_Systems r596,可做,,,
-='03_Systems'!A597,='03_Systems'!B597,='03_Systems'!C597,未決：不實作。,03_Systems r597,可做,,,
+★ 2026-11-21（R9-46 L13）：(2) 中轉須有下游的驗證已於 15.1 附錄刪除（WP-32，ERR-SYS02-02 退役），現碼不做此項；本列保留原文供對照。",,03_Systems E 公式,可做,,,
+E 公式,FRM-SYS02-02,Q-7 檢查：自由港上 controlled_scale_only 的貨若為 PRODUCER → 產出警告 WRN-SYS02-01,WRN-01 只警告不阻擋：寫入警告清單，不加入錯誤清單。,03_Systems E 公式,可做,,,
+E 公式,FRM-SYS02-03,地圖外出口：門戶港對該貨設 TERMINAL（如馬尼拉大帆船、澳門→果阿）；不設虛擬去化,,03_Systems E 公式,可做,,,
+F 寫入順序,EV-SYS02-ROLE_CHANGE,"角色變更（如建造完工）以 queue_role_change(port_id, good_id, new_role, payload) 排入佇列，payload 入隊即驗：PRODUCER 必含 base_output_per_season（int > 0）且不得含 downstream_terminals；TRANSIT 必含非空 downstream_terminals 且不得含產量；TERMINAL 的 payload 必為空。缺鍵、多鍵、型別不符即以 ERR-SYS02-01 至 06 對應碼拒絕，不延到 cutoff。於商季 cutoff 由 apply_queued_role_changes() 套用，套用時重跑 FRM-SYS02-01 全部六項（★ D-02，2026-11-18）",,03_Systems F 寫入順序,可做,,,
+G 邊界失敗,ERR-SYS02-01 至 06,對應 FRM-SYS02-01 (1)–(6)｜★ D-08：07 port_id 格式／08 name_zh 空白／09 未知 id,,03_Systems G 邊界失敗,可做,,,
+H 可觀察性,Godot 介面,"Autoload PortRegistry：get_port(id)、get_role(port,good)->int、get_downstream(port,good)、producers_of(good)、terminals_of(good)、queue_role_change(port_id, good_id, new_role, payload: Dictionary)、apply_queued_role_changes()（僅 SimLoop 於 cutoff 呼叫）；signal role_changed(port,good,old,new)（★ D-02）｜★ D-08c：查無 id 回 null＋last_error()｜★ R3-02（2026-11-18）：D-08c 適用 get_port、get_role（失敗回 ROLE_INVALID ＝ 0）、get_downstream、producers_of、terminals_of、queue_role_change；成功查詢清空 last_error；公開方法不得對呼叫者參數 assert",,03_Systems H 可觀察性,可做,,,
+K 未決,不應吸收某貨的港,以 TERMINAL＋極小消費處理，消費量於 SYS-06 定,未決：不實作。,03_Systems K 未決,可做,,,
+3.4,SYS-03 GoodsLedger,res://autoload/goods_ledger.gd,transfer() 全有或全無；seq 全域單調遞增 int。容器鍵用 Dictionary 時，任何彙總先排序鍵再加總。,03_Systems SYS-03 GoodsLedger,可做,,,
+C 邊界,不計價、不計現金；價格由 SYS-04 推導,—,,03_Systems C 邊界,可做,,,
+D 容器,MARKET(port),港口市場庫存；不設上限（OQ-09 9b，大航海家3式）｜★ D-08d：容器 id 格式 MARKET:<port_id>｜WAREHOUSE:<account_id>:<port_id>｜HOLD:<ship_id>｜CONFISCATED，只由 container_id() 產生，種類查 kind 欄,,03_Systems D 容器,可做,,,
+D 容器,"WAREHOUSE(owner, port)",行為者倉庫,容量只問 CapacityProvider.capacity(container)；無提供者 → ERR-SYS03-03，不得視為無限。,03_Systems D 容器,可做,,,
+D 容器,HOLD(ship),船艙；航行中船艙＝在途（檢視，不另記帳）,同 r281。,03_Systems D 容器,可做,,,
+D 容器,CONFISCATED,沒收池（預留）,,03_Systems D 容器,可做,,,
+D 事件,EV-SYS03-TRANSFER,"{seq, day, timestamp, from, to, good_id, qty, reason, requester}","seq 一律取自 GoodsLedger.next_seq()（全域唯一發號，從 1 起，每次 +1）；timestamp 欄位填與 seq 相同的值，禁止使用系統時鐘（Time.get_ticks_* 等）。日內排序以 (day, seq)。（Owner 2026-11-17 確認）",03_Systems D 事件,可做,,,
+D 原因碼,GENESIS,開局初始庫存（from = 外部）,,03_Systems D 原因碼,可做,,,
+D 原因碼,PRODUCE,產地每日產出（from = 外部 → MARKET）,,03_Systems D 原因碼,可做,,,
+D 原因碼,CONSUME,終端／工人消費（MARKET → 外部）,,03_Systems D 原因碼,可做,,,
+D 原因碼,TRADE,市場 ↔ 船艙／倉庫買賣,,03_Systems D 原因碼,可做,,,
+D 原因碼,LOAD／UNLOAD,倉庫 ↔ 船艙,,03_Systems D 原因碼,可做,,,
+D 原因碼,CONSTRUCT_USE,建造消耗建材（→ 外部）,,03_Systems D 原因碼,可做,,,
+D 原因碼,CONFISCATE,沒收（預留）,,03_Systems D 原因碼,可做,,,
+D 原因碼,SEA_LOSS,海損（停用；使用即錯誤）,使用即回 ERR-SYS03-04。,03_Systems D 原因碼,可做,,,
+E 公式,FRM-SYS03-01,守恆：Σ 全部容器(good) = Σ GENESIS + Σ PRODUCE − Σ CONSUME − Σ CONSTRUCT_USE − Σ SEA_LOSS（各 good 分別）,,03_Systems E 公式,可做,,,
+E 公式,FRM-SYS03-02,轉移：qty 為整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無,,03_Systems E 公式,可做,,,
+E 公式,FRM-SYS03-03,每日產出 out(k) = FLOOR(Q·(k+1)/D) − FLOOR(Q·k/D)，k = 0..D−1；Q = base_output_per_season，D = PRM-SYS00-DAYS_PER_SEASON,整數除法用 floori 於 int 運算，不經 float。,03_Systems E 公式,可做,,,
+F 寫入順序,每日 tick,"★ D-05／D-07（2026-11-18）：開機 Clock.day = 0（尚未開局）。每日 tick：時鐘推進一日（= TICKS_PER_DAY 個 tick）→ PRODUCE（依 port_id, good_id 排序；k = day_in_season − 1，首季 k = 0 不得跳過）→ CONSUME（SYS-06；視同一般 transfer：庫存不足即 ERR-SYS03-02、全有或全無、收進當日錯誤清單，不得部分扣）→ 守恆檢查 → 全部寫入完成後，由 SimLoop 經 Clock 發出 day_ticked／season_cutoff（Clock 自身不發信號）",,03_Systems F 寫入順序,可做,,,
+G 邊界失敗,ERR-SYS03-01 至 05,"01 qty≤0 或非整數／02 餘額不足／03 容量不足／04 原因碼停用／05 守恆違反｜★ D-04：一律以 ErrorInfo {code: StringName（例 &""ERR-SYS03-02""）, sys, detail} 回報，不得用負整數｜★ D-08e：06 容量提供者重複登錄",,03_Systems G 邊界失敗,可做,,,
+H 可觀察性,Godot 介面,"Autoload GoodsLedger：transfer(from,to,good,qty,reason,requester)->int（成功回 seq ≥ 1、失敗回 0，原因經 last_error() 取得 ErrorInfo，★ D-04）、next_seq()->int（全域唯一發號，從 1 起每次 +1，與 CashLedger 共用）、last_error()->Dictionary、get_qty(container,good)、total(good)、in_transit(good)（推導）；signals goods_transferred、conservation_violated｜★ D-08e：容量提供者按容器類型由 SimLoop 登錄（WAREHOUSE→SYS-08、HOLD→SYS-13），重複登錄 ERR-SYS03-06；D-08f：goods_transferred(event: TransferEvent)、conservation_violated(good_id, expected, actual)｜★ D-10c（2026-11-18 Owner 追認）：登錄方法定名 register_capacity_provider(kind, provider)，由 SimLoop 呼叫（#16 已實作）",,03_Systems H 可觀察性,可做,,,
+K 未決,散商總運力、反應遲滯,PRM 已登記為 [待審]，Phase 3.2 定值,未決：不實作。,03_Systems K 未決,可做,,,
+3.5,SYS-04 MarketPricer,res://autoload/market_pricer.gd,純函數：不得持有可變狀態、不得發信號、不得寫入其他模組。,03_Systems SYS-04 MarketPricer,可做,,,
+='03_Systems'!A401,='03_Systems'!B401,='03_Systems'!C401,,03_Systems C 邊界,可做,,,
+='03_Systems'!A402,='03_Systems'!B402,='03_Systems'!C402,,03_Systems D 資料結構,可做,,,
+='03_Systems'!A403,='03_Systems'!B403,='03_Systems'!C403,,03_Systems D 欄位,可做,,,
+='03_Systems'!A404,='03_Systems'!B404,='03_Systems'!C404,"由 ConsumptionProvider.consume_qty(port, good, day) 取得（weekly_consumption 已於 WP-32 刪除，D-22c；SYS-04 價格分母改讀有效去化，03_Systems 15.1）；Phase 0 正式環境無提供者。",03_Systems D 欄位,可做,,,
+='03_Systems'!A405,='03_Systems'!B405,='03_Systems'!C405,,03_Systems E 公式,可做,,,
+='03_Systems'!A406,='03_Systems'!B406,='03_Systems'!C406,,03_Systems E 公式,可做,,,
+='03_Systems'!A407,='03_Systems'!B407,='03_Systems'!C407,,03_Systems E 公式,可做,,,
+='03_Systems'!A408,='03_Systems'!B408,='03_Systems'!C408,面積以 float64 梯形公式一次算出，禁止逐擔迴圈。,03_Systems E 公式,可做,,,
+='03_Systems'!A409,='03_Systems'!B409,='03_Systems'!C409,ceili／floori；不得 round。,03_Systems E 公式,可做,,,
+='03_Systems'!A410,='03_Systems'!B410,='03_Systems'!C410,,03_Systems E 公式,可做,,,
+='03_Systems'!A411,='03_Systems'!B411,='03_Systems'!C411,,03_Systems E 公式,可做,,,
+='03_Systems'!A412,='03_Systems'!B412,='03_Systems'!C412,,03_Systems E 公式,可做,,,
+='03_Systems'!A413,='03_Systems'!B413,='03_Systems'!C413,,03_Systems E 公式,可做,,,
+='03_Systems'!A414,='03_Systems'!B414,='03_Systems'!C414,,03_Systems E 公式,可做,,,
+='03_Systems'!A415,='03_Systems'!B415,='03_Systems'!C415,,03_Systems F 寫入順序,可做,,,
+='03_Systems'!A416,='03_Systems'!B416,='03_Systems'!C416,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A417,='03_Systems'!B417,='03_Systems'!C417,,03_Systems H 可觀察性,可做,,,
+='03_Systems'!A418,='03_Systems'!B418,='03_Systems'!C418,UI 不做（1-A8）；只保證 quote() 可被即時呼叫。,03_Systems H 可觀察性,可做,,,
+='03_Systems'!A421,='03_Systems'!B421,='03_Systems'!C421,未決：不調參。,03_Systems K 未決,可做,,,
+='03_Systems'!A422,='03_Systems'!B422,='03_Systems'!C422,未決（P1）：不實作。,03_Systems K 未決,可做,,,
+='03_Systems'!A423,='03_Systems'!B423,='03_Systems'!C423,未決（P1）：不實作。,03_Systems K 未決,可做,,,
+3.6,SYS-05 CashLedger,res://autoload/cash_ledger.gd,帳戶 id 為 StringName。格式：ACT-／CITY-／REG- 前綴，系統帳戶固定 SOURCE／SINK；前綴與固定名寫成具名常數，組 id 一律經常數，不得在呼叫處手打字串；邏輯不得解析 id 字串來判斷帳戶種類。授權請求者清單寫為具名常數陣列並註明來源 ERR-SYS05-06。（Owner 2026-11-17 確認）,03_Systems SYS-05 CashLedger,可做,,,
+='03_Systems'!A559,='03_Systems'!B559,='03_Systems'!C559,,03_Systems C 邊界,可做,,,
+='03_Systems'!A560,='03_Systems'!B560,='03_Systems'!C560,,03_Systems D 資料結構,可做,,,
+='03_Systems'!A561,='03_Systems'!B561,='03_Systems'!C561,,03_Systems D 資料結構,可做,,,
+='03_Systems'!A562,='03_Systems'!B562,='03_Systems'!C562,,03_Systems D 資料結構,可做,,,
+='03_Systems'!A563,='03_Systems'!B563,='03_Systems'!C563,Posting.seq 呼叫 GoodsLedger.next_seq() 取得，與貨物事件共用同一序列；posting_id 仍由 CashLedger 自行遞增（從 1 起，每次 +1），兩者不得混用。（Owner 2026-11-17 確認）,03_Systems D 資料結構,可做,,,
+='03_Systems'!A564,='03_Systems'!B564,='03_Systems'!C564,,03_Systems D 資料結構,可做,,,
+='03_Systems'!A565,='03_Systems'!B565,='03_Systems'!C565,,03_Systems D 資料結構,可做,,,
+='03_Systems'!A566,='03_Systems'!B566,='03_Systems'!C566,,03_Systems E 公式,可做,,,
+='03_Systems'!A567,='03_Systems'!B567,='03_Systems'!C567,,03_Systems E 公式,可做,,,
+='03_Systems'!A568,='03_Systems'!B568,='03_Systems'!C568,,03_Systems E 公式,可做,,,
+='03_Systems'!A569,='03_Systems'!B569,='03_Systems'!C569,,03_Systems E 公式,可做,,,
+='03_Systems'!A570,='03_Systems'!B570,='03_Systems'!C570,,03_Systems E 公式,可做,,,
+='03_Systems'!A571,='03_Systems'!B571,='03_Systems'!C571,,03_Systems E 公式,可做,,,
+='03_Systems'!A572,='03_Systems'!B572,='03_Systems'!C572,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems E 公式,可做,,,
+='03_Systems'!A573,='03_Systems'!B573,='03_Systems'!C573,,03_Systems E 公式,可做,,,
+='03_Systems'!A574,='03_Systems'!B574,='03_Systems'!C574,,03_Systems E 公式,可做,,,
+='03_Systems'!A575,='03_Systems'!B575,='03_Systems'!C575,,03_Systems E 公式,可做,,,
+='03_Systems'!A576,='03_Systems'!B576,='03_Systems'!C576,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems E 公式,可做,,,
+='03_Systems'!A577,='03_Systems'!B577,='03_Systems'!C577,Owner 2026-11-17 確認，已不是假設：照 03_Systems 現文（C 欄）實作，不得改寫；獨立成單一函數，並有對應測試。,03_Systems E 公式,可做,,,
+='03_Systems'!A578,='03_Systems'!B578,='03_Systems'!C578,七步順序逐字照寫；任一步失敗回滾已寫入的 ST-CASH 與 ST-GOOD。,03_Systems F 寫入順序,可做,,,
+='03_Systems'!A579,='03_Systems'!B579,='03_Systems'!C579,六步順序逐字照寫。,03_Systems F 寫入順序,可做,,,
+='03_Systems'!A580,='03_Systems'!B580,='03_Systems'!C580,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A581,='03_Systems'!B581,='03_Systems'!C581,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A582,='03_Systems'!B582,='03_Systems'!C582,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A583,='03_Systems'!B583,='03_Systems'!C583,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A584,='03_Systems'!B584,='03_Systems'!C584,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A585,='03_Systems'!B585,='03_Systems'!C585,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A586,='03_Systems'!B586,='03_Systems'!C586,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A587,='03_Systems'!B587,='03_Systems'!C587,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A588,='03_Systems'!B588,='03_Systems'!C588,,03_Systems G 邊界失敗,可做,,,
+='03_Systems'!A589,='03_Systems'!B589,='03_Systems'!C589,,03_Systems H 可觀察性,可做,,,
+='03_Systems'!A590,='03_Systems'!B590,='03_Systems'!C590,,03_Systems H 可觀察性,可做,,,
+='03_Systems'!A591,='03_Systems'!B591,='03_Systems'!C591,UI 不做（1-A8）；max_affordable_qty() 必須實作。,03_Systems H 可觀察性,可做,,,
+='03_Systems'!A592,='03_Systems'!B592,='03_Systems'!C592,UI 不做（1-A8）；只發 season_ledger_closed 信號。,03_Systems H 可觀察性,可做,,,
+='03_Systems'!A595,='03_Systems'!B595,='03_Systems'!C595,未決：不實作。,03_Systems K 未決,可做,,,
+='03_Systems'!A596,='03_Systems'!B596,='03_Systems'!C596,帳戶 id 格式見 D139；FRM-SYS05-07／11／12 見 D153／D157／D158。,03_Systems K 未決,可做,,,
+='03_Systems'!A597,='03_Systems'!B597,='03_Systems'!C597,未決：不實作。,03_Systems K 未決,可做,,,
 3.7,SYS-06 ConsumptionProvider,res://core/interfaces/consumption_provider.gd,"方法：consume_qty(port_id, good_id, day) -> int（唯一方法；weekly_consumption 已於 WP-32 刪除，D-22c）。基底類不得回傳 0 或任何預設值（push_error 並回失敗值；0 是合法的「無需求」回傳，失敗值為 CONSUMPTION_FAILURE）。",1-A9,可做（介面）,,,
-3.8,CapacityProvider,res://core/interfaces/capacity_provider.gd,方法：capacity(container) -> int。規則同 3.7。,r281、r282,可做（介面）,,,
+3.8,CapacityProvider,res://core/interfaces/capacity_provider.gd,方法：capacity(container) -> int。規則同 3.7。,03_Systems CapacityProvider,可做（介面）,,,
 ,,,,,,,,
 4 常數登錄表（數值一律引用 03_Systems；Cursor 照抄到資料檔，不得改）,,,,,,,,
 PRM ID,名稱,預設值,範圍（下限 ~ 上限）,型別,寫入位置,,,
@@ -282,7 +282,7 @@ N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked,,,
 ,,,,,,,,
 7 工作包總表（WP）— 唯一的工作包清單：新工作包一律接在表尾、編號連續；同一 WP 的後續修改記在 G 欄，不另開表（Owner 追蹤用；Cursor 不得修改）,,,,,,,,
 用法,Cursor 依 WP 編號與依賴開工；一個 PR 只做一個 WP；從最新 main 開分支、不堆疊（Owner 另行核准者除外）；依序搬到 main 後以 merge commit 合併；測試數以「合併前 main ＋ 該 PR 自己新增數」累計，舊測名不得消失。,PR 描述必須回報：WP 編號、新增檔案、測試結果（通過數／總數與新增測名）、遇到的規格缺口（未裁決不得自行補）。,狀態下拉：未開始／進行中／PR 待審／退件／完成；Owner 審後更新。,,,,,
-進度,共 70 個 WP｜完成 54｜進行中 4｜PR 待審 0｜退件 0｜未開始 12　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
+進度,共 70 個 WP｜完成 56｜進行中 1｜PR 待審 2｜退件 0｜未開始 11　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
 WP 編號,內容（對應規格）,依賴,交付物,驗收,狀態,PR／合併紀錄,階段,最後更新
 WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,完成,R1：PR #1｜1/1 ／ R2：無改動｜2026-11-18T03:19:32Z 合併 33018d6（main 1/1）,Phase 0（Round 1–2）,2026-11-18
 WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,完成,R1：PR #2｜9/9 ／ R2：+TICKS_PER_DAY、ROUND_EPS｜13/13｜搬到 main 後合併 57435c7（main 13）,Phase 0（Round 1–2）,2026-11-18
@@ -339,8 +339,8 @@ WP-35,SYS-09 商籍（MVP 0 至 2 階）：TierRegistry、ReputationProvider 介
 ★ 2026-11-21（D-66、D-70）：WP-35 派工時一併同步資料檔：ports（PT-07 regime_id＝無主、is_free_port＝true；PT-08／09＝西班牙；新增 ladder_id）、tax_rates（PT-07＝0）、opening_public（PT-07 刪 CB-03、04、07、09、16 共 5 列）；測試若斷言這些數量須依規格同步，不得為過測而改規格。
 【原 PR／合併紀錄欄（部分可能已過時，以上方進度紀錄與 R 系列為準）】
 派工單草稿見第 17 節（未派）；D-24a 至 h、D-26a、c、d｜D-97(g)：試行測試先行（先派測試包、後派實作包）",Phase 2（成交與制度）,2026-11-22
-WP-36,SYS-17 散商（TraderRegistry）：ST-TRADER、每日決策、探索、起始資金專用入口、開局配船與水手、破產退場五步（03_Systems 17.1）｜★ D-44g：FRM-SYS17-02 的評估核心須實作為 res://core/trade_evaluator.gd（純函數，SYS-18 共用）；若本包先於 WP-42 派工，請在派工時一併要求。,WP-30、WP-33、WP-35 合併後；順序排在 WP-37 之後（正式開機需 TradeObserver）,trader_registry.gd、cash_ledger.gd（genesis 例外入口）、sim_loop.gd、params.gd、測試,TST-SYS17-01 至 12；見 17-08、17-09,未開始,派工單草稿見第 17 節（未派）；D-23b 至 g、D-26e｜★ D-50：破產與清算由 SYS-22（WP-44）統一執行；本包只做「對凍結者每日步驟跳過」與 retire 入口（待 WP-44 配合），不得自寫清算（N-04）。｜★ D-104(c)（待 Owner 核對）：提前至 M1b，取代 L2 遷移作為運貨層,Phase 2（成交與制度）,2026-11-19
-WP-37,SYS-11 聲望（MVP 買賣驅動）：ReputationLedger、TradeObserver 與 ReputationProvider 實作、政權聲望（人口加權）、飽和、apply_rep_event 預留入口（03_Systems 22.1）,WP-33（TradeObserver 介面與通知點）、WP-34（satisfaction_weights 正式資料）、WP-35（ReputationProvider 介面、PortDef.ladder_id）合併後；有效去化（WP-32）、人口（WP-21）已完成,reputation_ledger.gd、trade_observer.gd 的正式實作、demand_model.gd（新增唯讀 satisfaction_weight_points，D-28f）、params.gd、sim_loop.gd（注入與信號）、測試,TST-SYS11-01 至 13；見 17-10、17-11,未開始,派工單草稿見第 17 節（未派）；D-28a 至 e,Phase 2（成交與制度）,2026-11-19
+WP-36,SYS-17 散商（TraderRegistry）：ST-TRADER、每日決策、探索、起始資金專用入口、開局配船與水手、破產退場五步（03_Systems 17.1）｜★ D-44g：FRM-SYS17-02 的評估核心須實作為 res://core/trade_evaluator.gd（純函數，SYS-18 共用）；若本包先於 WP-42 派工，請在派工時一併要求。,WP-30、WP-33、WP-35 合併後；順序排在 WP-37 之後（正式開機需 TradeObserver）,trader_registry.gd、cash_ledger.gd（genesis 例外入口）、sim_loop.gd、params.gd、測試,TST-SYS17-01 至 12；見 17-08、17-09,進行中,派工單草稿見第 17 節（未派）；D-23b 至 g、D-26e｜★ D-50：破產與清算由 SYS-22（WP-44）統一執行；本包只做「對凍結者每日步驟跳過」與 retire 入口（待 WP-44 配合），不得自寫清算（N-04）。｜★ D-104(c)（待 Owner 核對）：提前至 M1b，取代 L2 遷移作為運貨層｜R9-71：#72 不合併——模擬未接線（G-INT-01）、遠港行情 board_for 用法錯、規範四項（17-58）｜D-120：修正與重跑派 17-58 線 F（#72 續用）,Phase 2（成交與制度）,2026-11-24
+WP-37,SYS-11 聲望（MVP 買賣驅動）：ReputationLedger、TradeObserver 與 ReputationProvider 實作、政權聲望（人口加權）、飽和、apply_rep_event 預留入口（03_Systems 22.1）,WP-33（TradeObserver 介面與通知點）、WP-34（satisfaction_weights 正式資料）、WP-35（ReputationProvider 介面、PortDef.ladder_id）合併後；有效去化（WP-32）、人口（WP-21）已完成,reputation_ledger.gd、trade_observer.gd 的正式實作、demand_model.gd（新增唯讀 satisfaction_weight_points，D-28f）、params.gd、sim_loop.gd（注入與信號）、測試,TST-SYS11-01 至 13；見 17-10、17-11,未開始,派工單草稿見第 17 節（未派）；D-28a 至 e,M3 制度軸（D-118(a)，原 M4）,2026-11-23
 WP-38,SYS-10 沒收執行器：ConfiscationLedger、寬限計數、案件原子沒收與次日賣回、confiscate_port 入口（03_Systems 23.1）,WP-33（TradeDesk）、WP-35（SYS-09 階級與管制港）合併後；可與 WP-37 平行（檔案不重疊者），建議排在 WP-37 之後,confiscation_ledger.gd、building_economy.gd（confiscate_building）、goods_ledger.gd（CONFISCATE pending）、trade_desk.gd（CONFISCATED 賣回）、reputation_ledger.gd（略過城市）、params.gd、sim_loop.gd、測試,TST-SYS10-01 至 12；見 17-14、17-15,未開始,派工單草稿見第 17 節（未派）；D-29a 至 e,Phase 2（成交與制度）,2026-11-19
 WP-39,SYS-12 稅制：TaxLedger、一種稅（全港通用交易稅 FLOW；倉儲、地段、營業特許、人頭稅暫緩，D-42）、稅率資料表與調整入口、季末結算進城市錢包（03_Systems 24.1）,WP-33（TradeDesk）、WP-37（SYS-11，TradeObserver 先落地）合併後（D-42 後不再依賴 WP-35）；Owner 先匯出 tax_rates、tax_bounds 兩個 CSV（值由 Owner 審定）,tax_ledger.gd、trade_desk.gd（觀察者清單）、cash_ledger.gd（TAX_* 原因碼）、sim_loop.gd、params.gd、測試、data/tax/,TST-SYS12-01 至 17；見 17-17、17-18,未開始,派工單草稿見第 17 節（未派）；D-31a 至 f,Phase 4（制度與稅）,2026-11-19
 WP-40,SYS-15 船報與牙行行市：IntelLedger、船離港快照、抵港批次公開、行市與分歧度、在場讀取規則（03_Systems 25.1）｜★ D-37c：含船報公開延遲與資格提前看（PRM-SYS15-PUBLIC_DELAY_TICKS、BROKER_MIN_TIER_BY_LADDER）、board_samples(requester)、刪除 grant_base（D-37e 已追認）。,WP-30（ShipRegistry）、WP-32（有效去化快照）已合併；與 WP-33 至 39 無檔案重疊，可獨立派；介面追認見 D-34d（待 Owner）,intel_ledger.gd、ship_event_observer.gd、ship_registry.gd（觀察者呼叫）、market_pricer.gd（stock_weeks）、sim_loop.gd、params.gd、測試,TST-SYS15-01 至 20；見 17-20、17-21,完成,"【進度紀錄（原狀態欄內容，v6.99.86 起移入本欄；狀態欄只留短狀態）】
@@ -411,12 +411,12 @@ WP-61,可玩骨架 Debug UI（M0）：ui/ 主場景——海圖（16 港、13 �
 WP-62,M0 補強（試玩可用）：開局市場庫存（D-94b，新匯入表 opening_stock.csv，boot 時以 GENESIS 入各港 MARKET，全有或全無）；Windows 匯出設定 export_presets.cfg 與可執行檔；CI 另開 job 跑 tests/ui（與 unit 的資料清除隔離）；補介面缺口：SeaLanes 航道列舉、GoodsLedger 艙位已用、TradeDesk 成交回傳金額（新公開名依 C-14 先提案）,D-94 經 Owner 審定；WP-61 合併,csv_import、building_economy 或 goods_ledger（開局入庫）、data/import、export_presets.cfg、.github/workflows、ui/、測試,開局後第 1 日魍港即有米可買；可執行檔可在 Owner 電腦雙擊開啟；CI 同時跑 unit 與 ui 兩組皆綠；守恆檢查含 GENESIS 仍為 0 違反,完成,"優先級 P3（可玩）；待 D-94｜★ 17-50 線 D 只做匯出、CI、三個介面（D-95c、d）；開局庫存待 FRM 規格｜17-50 線 D #58（未審，17-51 補證據）｜D-97(c)：加開局市場庫存（17-52 N3，wp62b-opening-stock）｜R9-66：#63 開局庫存 111,639 擔已對上；探測腳本錯（17-53 F6）｜R9-67／D-108(a)：#63 開局市場庫存授權合併（apply_opening_market_stock 已追認）；#58 待補 diff（17-54 E1）｜R9-68／R9-69：#63 開局庫存（17-54）、#58 匯出／CI／介面含 F5（17-56，ce835f0）皆已合併",可玩原型,2026-11-23
 WP-63,WP-53 修正（R9-63 ★2）：(a) FRM-SYS08-18 工坊週收入與週投入一律用基準價 base_price_li，不得用 MarketPricer.mid_price；(b) D-92b：週收入 floori，週投入成本與週人工 ceili；(c) D-92a：城防累加器全整數——每日 acc ＋＝ GARRISON[級] × ARMS（POWDER）_PER_SOLDIER_WK × ACC_SCALE，滿 DAYS_PER_WEEK × ACC_SCALE 即 1 擔，不得先除 7 再量化；(d) 可負擔量回到 FRM-SYS05-09 CashLedger.max_affordable_qty，先寫重現測試再修它對低庫存的誤判，刪除逐擔遞減迴圈；(e) 週毛利 < 0：依 C-05 回報缺口（用既有 ERR-SYS08 碼；無合適碼則列缺口），不得把負值帶進收購價｜★ R9-64 追加：(d) 改為直接改回呼叫 CashLedger.max_affordable_qty（WP-56 A18 已修好報價失敗），刪逐擔遞減迴圈；(f) CashLedger.reverse_last_post 改為先完整驗證再寫入（全有或全無），保留原分錄、只追加沖銷分錄（D-96d）；(g) _public_upgrade_cash 缺 CASH_LI 或等級越界改為報錯（ERR-SYS08-09），不得回 0；(h) apply_opening_init 的 staffed_ports 先排序再遍歷（C-08）；(i) 999999、1 << 30、−1.0e30 與人口 tier 2／3 改為具名常數並註明 EX 編號,17-50 步 0 合併完成,building_economy.gd、cash_ledger.gd（max_affordable_qty、reverse_last_post）、population_model.gd（只改 (i) 的具名常數）、ship_registry.gd（只改 (i)）、測試,期望值只取 frm_examples EX-08-14-01 至 05、EX-08-18-01 至 05（S9f），測試名含 EX 編號；30 日黃金對 pre-1750 基線的差異逐欄解釋,完成,優先級 P2（經濟正確性）｜17-50 線 C｜17-50 已交（R9-65 不合併）；17-51 修正中｜R9-66：C1 改用 ERR-SYS08-14（D-102b，17-53 F2）｜R9-69／D-113(a)：F3 駐軍超買已修並審過；17-57 步 M 合併 #59｜R9-70：#59 合併 17de205（17-57 步 M，510／510）,修正批,2026-11-23
 WP-64,"十年模擬異常處理（R9-64 修訂）：(1) 實作 D-96(a) 價格分母——FRM-SYS04-01（改）分母＝MAX(週去化, DemandModel 週潛在需求)；MARKET 庫存＝0 → w＝0；只有庫存 > 0 且分母＝0 才走 FRM-SYS04-09 地板；新增或沿用 DemandModel.weekly_potential_demand（D-96f）；(2) 富人凍結診斷：全圖富人自第 3 季起 1,409 人、每港 37 季不變，查升降階與遷移是否對富人被跳過——代碼偏離明確規格才修，規格不明寫「規格衝突／缺口：列號＋兩邊原文」；(3) 已結案（R9-64 結構-1，無需處理）",17-50 步 0 合併完成,market_pricer.gd、demand_model.gd（只加 weekly_potential_demand）、population_model.gd 與測試；sim/ 要改的交線 B；診斷腳本只放交付夾,(1) 測試期望值只取 frm_examples EX-04-09-01 至 06，測試名含 EX 編號；(2) 交重現步驟、根因（檔＋行號＋FRM ID＋規格原文）、處置；黃金 v2 差異逐欄解釋,完成,優先級 P1（阻擋模擬器校準）｜17-50 線 A｜★ R9-64：(3) 結案、(1) 改為實作 D-96(a)｜17-50 已交（R9-65 不合併）；17-51 修正中｜D-98(b)：富人凍結重新診斷 rich_flow.csv（17-52 N2）｜R9-66：(2) 富人凍結結案（D-102c，L1 結構）；#56 待補 diff｜R9-67／D-108(a)：#56 授權合併（17-54 第一個）｜R9-68：#56 合併入 main（ee2586a，17-54 步 M1）,工具批 T-1（模擬器）,2026-11-23
-WP-65,城市建設隊列改正（A8，D-96b 核准 a8_design.md）：新建步驟（target_level＝1）與玩家 order_build 同一路徑——城市付 BUILD_CASH_LI[PUBLIC]、acquire_materials 取料、BUILD_DAYS 工期、WAITING_MATERIAL／BUILDING 狀態；升級步驟（target_level ≥ 2）找本港 cb_id 相同、等級＝target_level − 1 的城市公共建築原地 order_upgrade，不得另佔公共槽；找不到即停在該步（不跳步）；升級期間效果維持舊等級（TD-16，WP-59 _effect_level 已有）；缺建築定義或缺費率鍵一律報錯（C-06）,WP-63（同檔 building_economy.gd，同一線依序）,building_economy.gd、測試,新建與升級各一個盲點測試：資金與建材充足時進入 BUILDING 且 days_left > 0、有 CONSTRUCT_USE；升級後公共槽佔用數不變；正式資料跑 2 年，16 港隊列推進步數逐港列出（不得有港卡在第一個升級步）；黃金 v2 差異逐欄解釋,進行中,優先級 P1（城市金錢去化，阻擋校準）｜17-50 線 C 第二包｜17-50 已交（R9-65 不合併）；17-51 修正中｜D-97(a)：build_queue 已修；加匯入驗證 ERR-SYS08-13（17-52 N1）｜R9-66：撤回 N1 只驗正式資料（D-102f）、加 city_queue_position（D-102d）｜R9-68／D-111：刪自造定義與測試繞道（17-56 F1、F2）｜R9-69／D-113(b)(c)：成本＝0 照常開工、錯誤碼改正、補兩個 commit 的 diff（17-57）｜R9-70：F1、F2 審過，授權合併（D-114(a)，17-55 步 0-A）,修正批,2026-11-23
+WP-65,城市建設隊列改正（A8，D-96b 核准 a8_design.md）：新建步驟（target_level＝1）與玩家 order_build 同一路徑——城市付 BUILD_CASH_LI[PUBLIC]、acquire_materials 取料、BUILD_DAYS 工期、WAITING_MATERIAL／BUILDING 狀態；升級步驟（target_level ≥ 2）找本港 cb_id 相同、等級＝target_level − 1 的城市公共建築原地 order_upgrade，不得另佔公共槽；找不到即停在該步（不跳步）；升級期間效果維持舊等級（TD-16，WP-59 _effect_level 已有）；缺建築定義或缺費率鍵一律報錯（C-06）,WP-63（同檔 building_economy.gd，同一線依序）,building_economy.gd、測試,新建與升級各一個盲點測試：資金與建材充足時進入 BUILDING 且 days_left > 0、有 CONSTRUCT_USE；升級後公共槽佔用數不變；正式資料跑 2 年，16 港隊列推進步數逐港列出（不得有港卡在第一個升級步）；黃金 v2 差異逐欄解釋,完成,優先級 P1（城市金錢去化，阻擋校準）｜17-50 線 C 第二包｜17-50 已交（R9-65 不合併）；17-51 修正中｜D-97(a)：build_queue 已修；加匯入驗證 ERR-SYS08-13（17-52 N1）｜R9-66：撤回 N1 只驗正式資料（D-102f）、加 city_queue_position（D-102d）｜R9-68／D-111：刪自造定義與測試繞道（17-56 F1、F2）｜R9-69／D-113(b)(c)：成本＝0 照常開工、錯誤碼改正、補兩個 commit 的 diff（17-57）｜R9-70：F1、F2 審過，授權合併（D-114(a)，17-55 步 0-A）｜R9-71：#60 已合併（cd0cadd，main ade2dc8）,修正批,2026-11-24
 WP-66,黃金輸出 v2（R9-64 高-3、D-96c）：把 night-17-47 步 0 harness 收進 repo（tools/golden_harness.gd，只讀公開方法），模擬 360 日；欄位加：各港各貨 mid_li、stock_weeks、window_qty；每棟建築 building_id／type／level／state／slot_id／ring；每棟住宅住戶三階人數；地租、空置稅、城市支出分項（OBS-05 同口徑）；玩家與城市現金；另輸出各欄位逐日雜湊，方便定位第一個差異日,17-50 步 0 合併完成,tools/golden_harness.gd、tools/golden_compare.py（比對兩份輸出，列每欄第一個差異日與筆數）,同一 commit 跑兩次逐位元相同；對 pre-1750 產生基線；故意改一個參數（只在臨時分支）能被比對工具抓到並指出欄位,完成,優先級 P1（審計強化，AI_README S9h）｜17-50 步 0｜17-50 已交（R9-65 不合併）；17-51 修正中｜R9-66：#65 雜湊已獨立驗證，可合併（17-53 步 0）；harness 只在季結算後查 OBS-05（F5）｜#65 黃金 v2 合併（17-53 步 0）；#66 CI 腳本錯誤閘門合併 a835ec9（17-56 步 M1）,工具批 T-1（模擬器）,2026-11-23
-WP-67,"SYS-08 小修（D-97d、e）：(1) 駐軍採購原子化（FRM-SYS08-14 D-97 補充：先驗證後寫入，失敗以沖銷還原）；(2) OBS-05 三個唯讀查詢：BuildingEconomy.city_spend_by_category(port_id: StringName, season_index: int) -> Dictionary（鍵 build_upgrade_li、garrison_li、levy_li、other_li，int 厘）；BuildingEconomy.season_land_rent_li(port_id: StringName, season_index: int) -> int；BuildingEconomy.season_vacancy_tax_li(port_id: StringName, season_index: int) -> int。查無港或季未結算依 D-08c 回失敗值（Dictionary 回空、int 回 −1）並設 last_error。",—（從最新 main 開，17-52 N4）,building_economy.gd、sim_runner OBS-05 輸出、測試,原子化：模擬貨物轉移失敗時 CITY 現金與庫存皆還原、原分錄保留；三查詢名稱逐字；步 Z 的 OBS-05 地租、空置稅、支出分項三欄有值,進行中,17-52 N4｜R9-66：新建費用歸類錯（D-102e，17-53 F3）；#64 待補 diff｜R9-69：#64 與 #60 的六檔衝突解法待補（17-57 E2），隨 #60 之後合併｜R9-70 高-1：城市升級支出重複記帳，先修再合（D-114(b)，17-55 步 0-A）,M1 模擬器校準,2026-11-23
+WP-67,"SYS-08 小修（D-97d、e）：(1) 駐軍採購原子化（FRM-SYS08-14 D-97 補充：先驗證後寫入，失敗以沖銷還原）；(2) OBS-05 三個唯讀查詢：BuildingEconomy.city_spend_by_category(port_id: StringName, season_index: int) -> Dictionary（鍵 build_upgrade_li、garrison_li、levy_li、other_li，int 厘）；BuildingEconomy.season_land_rent_li(port_id: StringName, season_index: int) -> int；BuildingEconomy.season_vacancy_tax_li(port_id: StringName, season_index: int) -> int。查無港或季未結算依 D-08c 回失敗值（Dictionary 回空、int 回 −1）並設 last_error。",—（從最新 main 開，17-52 N4）,building_economy.gd、sim_runner OBS-05 輸出、測試,原子化：模擬貨物轉移失敗時 CITY 現金與庫存皆還原、原分錄保留；三查詢名稱逐字；步 Z 的 OBS-05 地租、空置稅、支出分項三欄有值,完成,17-52 N4｜R9-66：新建費用歸類錯（D-102e，17-53 F3）；#64 待補 diff｜R9-69：#64 與 #60 的六檔衝突解法待補（17-57 E2），隨 #60 之後合併｜R9-70 高-1：城市升級支出重複記帳，先修再合（D-114(b)，17-55 步 0-A）｜R9-71：#64 已合併（ade2dc8），D-114(b) 已修；220b8fc 的 --cc 待補（17-58）,M1 模擬器校準,2026-11-24
 WP-68,SYS-08 城市自建住宅（D-101，FRM-SYS08-24）＋開關：新局設定 city_auto_housing（bool）與情境檔 layers.CITY_HOUSING；已建比例第二道擴區門檻（D-100，FRM-SYS08-16 加註、PRM-SYS08-ZONE_USED_MIN_PPM）一併實作,WP-65（城市隊列 order_build，actor＝CITY）,building_economy.gd、sim_runner 情境欄位、params 登錄、測試,"開關關閉時與現行為逐格相同（黃金輸出 v2 零差異）；開啟時 ② 至 ⑦ 各一測試；擴區門檻含已建比例（累計）測試；十年 L1 開／關對照輸出人口、已建比例、開區季序
-★ D-115(a)：已建比例門檻是規則、不受開關控制，開關關閉時只允許開區相關欄位與黃金輸出不同（須逐港逐季說明）；十年 L1 開／關對照由 17-55 步 Z4 執行。",進行中,17-55 線 D（D-115(a)；原 D-110(f) 定為 M1c 另派，D-115 提前）,M1 模擬器校準,2026-11-23
-WP-69,既有測試衛生（D-114(d)、D-115(c)）：既有測試不得寫入或清除 res://data、不得在測試內呼叫 git；改在 user:// 或 tests/fixtures 建資料,17-55 步 0 head（從步 0 head 開，與線 A 至 D 檔案不重疊）,步 0 head 已存在的 tests/ 測試檔與測試輔助檔（不改產品碼、不改各線新增測試）,改前改後測試名清單相同；GUT 連跑兩次全綠；每次跑完 git status --porcelain res://data 為空；tests/ 內無 git 呼叫（貼 grep 輸出）,進行中,17-55 線 E（D-115(c)；原 D-114 定為 M1b 後開，D-115 提前）,品質修復,2026-11-23
+★ D-115(a)：已建比例門檻是規則、不受開關控制，開關關閉時只允許開區相關欄位與黃金輸出不同（須逐港逐季說明）；十年 L1 開／關對照由 17-55 步 Z4 執行。",PR 待審,17-55 線 D（D-115(a)；原 D-110(f) 定為 M1c 另派，D-115 提前）｜R9-71：#75 可合（D-120(a)）；城市自建住宅棟數查詢待補（D-120(c)）｜D-120(c)：city_auto_housing_count 查詢派 17-58 線 G,M1 模擬器校準,2026-11-24
+WP-69,既有測試衛生（D-114(d)、D-115(c)）：既有測試不得寫入或清除 res://data、不得在測試內呼叫 git；改在 user:// 或 tests/fixtures 建資料,17-55 步 0 head（從步 0 head 開，與線 A 至 D 檔案不重疊）,步 0 head 已存在的 tests/ 測試檔與測試輔助檔（不改產品碼、不改各線新增測試）,改前改後測試名清單相同；GUT 連跑兩次全綠；每次跑完 git status --porcelain res://data 為空；tests/ 內無 git 呼叫（貼 grep 輸出）,PR 待審,17-55 線 E（D-115(c)；原 D-114 定為 M1b 後開，D-115 提前）｜R9-71：#77 可合（D-120(a)），合併後重跑 GUT,品質修復,2026-11-24
 ,,,,,,,,
 8 Owner 裁決總表（D 系列）— 所有實作裁決集中於此，新裁決接在表尾；優先於第 3 節同主題的 D 欄註記,,,,,,,,
 編號,主題,裁決,實作要求,影響 WP,回寫來源 Sheet,,,
@@ -670,7 +670,8 @@ D-62c,清算中的銷售歸類：計處分損益（淨額）（Owner 2026-11-21 
 D-62d,現金流量表與折線圖累計模式：MVP 先不做（Owner 2026-11-21 裁決）,MVP 不做現金流量表（acct_reason_map 的 activity 欄已預留，日後只需新增查詢）；折線圖不提供累計模式（REVENUE、NET_PROFIT 維持區間流量，累計曲線可由前端逐點累加）。WP-47 先把資產負債表、損益表、折線圖做穩，Owner 看過實際報表再決定。,03_Systems 31.1 K ⑤⑥ 結清。現金流量表的價值（看「賺錢卻沒現金」）列為日後追加的首選。,WP-47,Owner 2026-11-21；03_Systems 31.1 K ⑤⑥,,,
 D-63a,授權 WP-51 階段 1：安置居民只掃本港住宅（Owner 2026-11-21 裁決）（★ 已由 D-63e 取代：改走增量安置）,WP-50 量出每遊戲日 35 至 56 秒中 99.7% 在 PopulationModel._place_residents→_fill_class：每位居民掃描全圖住宅表（342 棟，且表跨港跨日不清空）。授權優化工作包 WP-51 階段 1：_fill_class 只迭代本港住宅，預估每日約 4 至 5 秒。硬條件：(1) 證明前 30 個遊戲日的人口與住宅占用輸出與優化前逐字相同；(2) 新增「跨港不得安置」測試；(3) 若優化前證實現狀已發生跨港安置（輸出會變），停手回報，不自行決定、不推 PR。階段 2（改批次加權、目標數分鐘）待階段 1 審過再決定。,"潛在規格偏離：規格以港為單位安置（FRM-SYS07-12），現碼以全圖住宅為候選；目前每港住宅容量剛好等於人口、他港滿床，故未必發作。一旦某港有空床可能跨港安置，須由 WP-51 證實。輸出必須可與現況逐字比對（派工 17-43 A）。
 ★ 2026-11-21 研究補記（參考大航海家系列，公開資料）：(1) Patrician 4 wiki：每棟住宅容 100 人、一棟只住一個階級，富人靠近市中心、貧民在外圍，階級由系統自動指定；乞丐是流動人口不佔住宅；市民＝工人加每人 3 名家屬（與本作 4 人一戶相符）。(2) Patrician 3 逆向工程筆記（P3 Insights，Levels 頁）：人口以「每城各階級人數」彙總計算，每日 tick 由「貧民數 × (滿意度＋40) ÷ 除數」算出各階級目標，以該階級住宅總容量為上限，只結算升降人數；筆記未見「逐人抽籤分配到每棟住宅」的演算法，公開資料也沒有逐棟占用的分配細節（屬我的推論，非證實）。(3) 對照本規格：FRM-SYS07-12 與 OQ-13j 明定「每移動 1 人抽 1 籤」、理由是「每日升降僅個位數，效能成本可忽略」，即只有「移動者」才抽籤；現碼卻每日把全港所有居民重新安置（_fill_class 對 p.poor 等全部人數迴圈），與規格不符且是 WP-50 的根因。建議 WP-51 階段 2 改為「依規格增量安置」（輸出會與現況不同，須 Owner 審），而不是另設批次加權。",WP-51,Owner 2026-11-21；R9-34；17-43 A,,,
-D-63b,模擬器可自行注入「否決替身」；追認 SimBrokerFixture 與 BrokerProvider.last_error（Owner 2026-11-21）,#42 為使模擬器開機，新增 sim/sim_broker_fixture.gd（SimBrokerFixture，has_kontor、is_broker_qualified 恆為 false），由 sim_engine 於 SimLoop.boot 前注入；BrokerProvider 另有 last_error()。核准原則：模擬器可注入「一律否決、不記任何東西」的替身，限 sim/ 目錄、類名以 Sim 開頭，正式提供者落地後移除或改接；一律放行的替身一律不准。#40 合併時照同模式補：SimQualificationFixture（資格提供者一律否決）與 SimTradeObserverFixture（觀察者不記任何東西、不放行任何事）。,理由：模擬器第一層沒有散商與 AI，沒有人買賣，否決替身不影響結果。BrokerProvider.last_error 補記依據為本裁決（D-60f 原未寫）。正式路徑的開機閘門（ERR-SYS05-12／14、ERR-SYS15-06）不改。,WP-33；WP-40；WP-26,Owner 2026-11-21；R9-36；R9-35,,,
+D-63b,模擬器可自行注入「否決替身」；追認 SimBrokerFixture 與 BrokerProvider.last_error（Owner 2026-11-21）,"#42 為使模擬器開機，新增 sim/sim_broker_fixture.gd（SimBrokerFixture，has_kontor、is_broker_qualified 恆為 false），由 sim_engine 於 SimLoop.boot 前注入；BrokerProvider 另有 last_error()。核准原則：模擬器可注入「一律否決、不記任何東西」的替身，限 sim/ 目錄、類名以 Sim 開頭，正式提供者落地後移除或改接；一律放行的替身一律不准。#40 合併時照同模式補：SimQualificationFixture（資格提供者一律否決）與 SimTradeObserverFixture（觀察者不記任何東西、不放行任何事）。
+★ 2026-11-24 D-120(f)：限定例外——SimQualificationOpenFixture（一律放行）只在模擬情境 layers.QUAL_OPEN＝1 時注入，正式開機不得載入；WP-35 上線後刪除。其他「一律放行」替身仍一律不准。",理由：模擬器第一層沒有散商與 AI，沒有人買賣，否決替身不影響結果。BrokerProvider.last_error 補記依據為本裁決（D-60f 原未寫）。正式路徑的開機閘門（ERR-SYS05-12／14、ERR-SYS15-06）不改。,WP-33；WP-40；WP-26,Owner 2026-11-21；R9-36；R9-35,,,
 D-63c,授權合併 #40 再 #42（附條件，Owner 2026-11-21）,順序 #40（WP-33 階段 2，head 870876b）→ #42（WP-40 階段 2，head 995c0de）。條件：(1) 每個合併前 CI 全綠、GUT 全過、無衝突；(2) #40 允許推送兩類改動：合進 main 的 merge commit、D-63b 的兩個 Sim 替身與其注入和測試，除此之外 head 不得變；(3) #42 於 #40 合併後再合一次 main（merge commit），只准解決 project.godot、sim_loop、sim_engine 的文字衝突（保留兩邊新增），其餘不得改；(4) 只用 merge commit，合併後刪分支，依 S9b 回報；(5) 有衝突無法單純合併，或需要其他改動，停手回報。,PRM-SYS15 七項試驗值不放進 formal params.json；#42 合併後由 Owner 才加到 docs/spec/scenario_L1_baseline.json（含未知鍵會被拒絕，故不可提前加；比照 PRM-SYS22 的處理）。,WP-33；WP-40,Owner 2026-11-21；R9-35；R9-36；17-43 B、C,,,
 D-63d,技術債 TD-07：冗餘 int( 與產品碼跨模組私有存取（AI 分類，2026-11-21）,(1) trade_desk.gd 123 至 126、149、235、398、403 與 goods_ledger.gd 196 至 198 的 int( 皆可證引數已是整數（R9-35），不阻擋；日後可改為型別化讀取。(2) 產品碼 ship_registry.gd 486 至 487 讀 GoodsLedger._container_meta（HOLD 停泊港判定），屬跨模組私有存取（C-07）；#40 已新增公開查詢 get_container_port_id（D-59a），合併後可改用。,待 #40 合併後開小工作包 WP-52 一併處理；與稽核報告 wp-audit-compliance 的 class-B 項合併判定（該報告尚未收到）。只記工作簿。,WP-33；WP-52（未建）,R9-35；R9-36；C-07；C-09,,,
 D-63e,WP-51 改走依規格增量安置（取代 D-63a 的階段 1／2 劃分，Owner 2026-11-21 裁決）,Owner 問「大航海家系列如何處理安置居民」與「兩條路哪條更貼近」，AI 查公開資料（Patrician 4 wiki、Patrician 3 逆向工程筆記）：人口以每城各階級人數彙總計算，每日只結算升降人數，住宅階級與占用穩定；規格 FRM-SYS07-12／OQ-13j 本就只讓「移動者」抽籤。裁決：WP-51 直接依規格改為增量安置（開局一次完整安置，之後只處理移動者；住宅占用為持久狀態；只用本港住宅）。,輸出中的「住宅占用層」會與現況不同（居民不再每日洗牌），人數層（ST-POP）必須逐字相同；Cursor 須貼人口、占用、店賃、外觀的前後對照，Owner 審過才合併。原階段 1（只掃本港、逐字相同）不再單獨進行；批次加權（原階段 2）作廢。,WP-51,Owner 2026-11-21；D-63a；03_Systems FRM-SYS07-12、OQ-13j；17-43 A,,,
@@ -705,7 +706,7 @@ D-84,逐行審計第 3 批的裁決與修復包拆分設計（Owner 2026-11-21�
 D-85,WP-59 增加 CI 規範掃描步驟（A35）（Owner 2026-11-21：同意）,在 CI 加一個規範掃描步驟：掃描禁用 API（randi、randf、Time.*、call_deferred、await process_frame 等）、數字字面量（含十六進位與 1 + 1、1.0 + 1.0 寫法）、跨模組私有成員存取（他模組的底線開頭成員）、測試函數名稱缺 TST ID（C-13）。掃描規則的例外只能引用 AI_README 6.2 已登記的 EX 編號。,屬 WP-59 範圍；Cursor 先在 PR 說明提案掃描規則清單與誤報處理，再實作；不得放寬現有 CI 的 GUT 步驟。,WP-59,R9-47 M24,,,
 D-86,R9-56 AB1：GoodsLedger.run_daily_produce（舊港×貨角色格產出）只剩測試在用,Owner 2026-11-21：按建議做。,① 刪除 GoodsLedger.run_daily_produce、daily_produce_qty 及其只為測試保留的狀態；② TST-SYS03-04、TST-SYS03-06 改為驗工坊產出（BuildingEconomy.daily_step 的 PRODUCE：一季合計 = 工坊應產量、單日差 ≤ 1；產地無人買時市場庫存持續增加且無截斷）；③ 更正 sim_loop.gd 第 226 行過期註解；④ 03_Systems FRM-SYS03-03 加註「角色格產出已退役，現行產出來源為 SYS-08 工坊」。,併入 WP-52（規範與資料基線）；不改遊戲行為。,2026-11-21,,,
 D-87,R9-57 AC1：開局資料出錯時 apply_opening_init 是否允許部分寫入,Owner 2026-11-21：按建議做。,開局採全有或全無：BuildingEconomy.apply_opening_init 與 PopulationModel.apply_opening_init 先驗證全部開局輸入（工坊、公共建築、人口、住宅、玩家商館），任何錯誤一律收集列出（C-06）並不做任何寫入；三個 ERR-SYS08-10 測試改為斷言「回報錯誤且住宅、商館、工坊皆未建立」。,併入 WP-54（建設隊列與開局）。,2026-11-21,,,
-D-88,全倉審計後的流程改善（Owner 2026-11-21 要求成因分析與不靠大審計的改善；待裁決）,建議六項（R9-61）：(a) A35 規範掃描從 WP-59 提前，今夜以「只報不擋」上 CI；WP-52 合併後改為新違規即紅燈，既有命中由 WP-52 至 WP-59 逐包清零。(b) 黃金輸出：正式 L1 固定種子 30 日摘要作基準，每個 PR 附前後差異；今夜先在報告產出、不入庫，入庫位置待 Owner 定。(c) 數值例：AI 在工作簿為每條 FRM 寫 1 至 3 例並匯出為 docs/spec CSV，測試期望值只能讀此檔。(d) 每個 PR 小審：Owner 不提供 diff；改由 Cursor 把完整 diff、修改後函數全文、測試完整輸出、黃金輸出 CSV、掃描輸出與規格對照表寫入交付資料夾，Owner 整包上傳，AI 據此審（Owner 2026-11-21 修訂）；產品碼上限約 600 行。(e) 派工前規格完備檢查：派工單先列要動到的 FRM、ERR、PRM、介面與未決項，未決先裁決。(f) 測試先行：自 WP-59 起試行，先派測試包、後派實作包。,"(a)(b) 的今夜部分已寫入派工 17-47（夜-3、夜-1）；Owner 發送 17-47 即視為核准這兩項的今夜部分。(c) 至 (f) 待 Owner 裁決，裁決後寫入 AI_README 工作流程（S9 系列）。
+D-88,全倉審計後的流程改善（Owner 2026-11-21 要求成因分析與不靠大審計的改善；已核准，以 AI_README S9d 至 S9f 實施，D-116）,建議六項（R9-61）：(a) A35 規範掃描從 WP-59 提前，今夜以「只報不擋」上 CI；WP-52 合併後改為新違規即紅燈，既有命中由 WP-52 至 WP-59 逐包清零。(b) 黃金輸出：正式 L1 固定種子 30 日摘要作基準，每個 PR 附前後差異；今夜先在報告產出、不入庫，入庫位置待 Owner 定。(c) 數值例：AI 在工作簿為每條 FRM 寫 1 至 3 例並匯出為 docs/spec CSV，測試期望值只能讀此檔。(d) 每個 PR 小審：Owner 不提供 diff；改由 Cursor 把完整 diff、修改後函數全文、測試完整輸出、黃金輸出 CSV、掃描輸出與規格對照表寫入交付資料夾，Owner 整包上傳，AI 據此審（Owner 2026-11-21 修訂）；產品碼上限約 600 行。(e) 派工前規格完備檢查：派工單先列要動到的 FRM、ERR、PRM、介面與未決項，未決先裁決。(f) 測試先行：自 WP-59 起試行，先派測試包、後派實作包。,"(a)(b) 的今夜部分已寫入派工 17-47（夜-3、夜-1）；Owner 發送 17-47 即視為核准這兩項的今夜部分。(c) 至 (f) 待 Owner 裁決，裁決後寫入 AI_README 工作流程（S9 系列）。
 ★ Owner 2026-11-22 裁決（D-91）：(c)(d)(e) 批准並寫入 AI_README S9d 至 S9f；(f) 先試行一次（WP-59 之後第一個系統包），試後再定。",WP-52；WP-59；WP-60；17-47,R9-61；D-85,2026-11-21,,
 D-89,今夜通宵接力鏈的特例與預先授權（Owner 2026-11-21：要求審計問題今夜一併修；發送 17-47 即生效）,(a) 今夜特例（同 D-17a）：WP-52 至 WP-60 接力堆疊分支、一律不合併；每個 PR 的 base 設為前一個分支。(b) 預先授權：WP-52 A4 的公開唯讀方法名稱、WP-55 A13 的 Rng.derive_seed 第五維簽章，由 Cursor 依 C-11 命名並實作，列為「待追認」；Owner 早上不追認者，該 commit 回退。(c) 仍不實作：WP-54 A8 只交設計；WP-55 A14（從哪間工坊扣工人）與 A15 的貧民轉乞丐速率、R9-60 G3 的「建材必須是 is_build_material」列缺口，等 Owner 裁決。(d) 中斷規則：某步 GUT 不能全綠或黃金輸出差異對應不到子項 → 鏈條停在該步。 (e) 2026-11-22 追加（17-48）：WP-52 之後改為分流並行，五條線（A wp53→54、B wp55、C wp56、D wp57、E wp58）各自從 wp52 開分支，再由整合步 wp-int 合併，之後 wp59、wp60；中斷只停該線；D-87 的 PopulationModel 部分由 WP-54 移到 WP-55。,"寫入派工 17-47（修訂版）。早上審查依 D-88d 逐 PR 進行；A8 設計、A14、A15、G3 缺口與待追認名稱另行裁決。
 ★ Owner 2026-11-22（D-91）：今晚報告的審查結果，Owner 預先同意依 AI 建議處理（追認名稱、A8 設計、A14／A15／G3 缺口、G2 探針腳本）；AI 仍會在回覆中逐項列出，Owner 有異議再推翻。合併授權仍由 Owner 發送訊息執行。",WP-52 至 WP-60；17-47,R9-61；D-17a；D-84；D-88,2026-11-21,,
@@ -857,6 +858,77 @@ D-115,17-55 通宵追加：線 D 城市自建住宅（WP-68）、線 E 既有測
 (e) 步 U（最低優先）：ui/ 加散商面板與港口區域資訊（D-90），只用公開方法，不併入 int-1755；M0_試玩清單加第 14、15 項。
 (f) 規格整理（AI 已做）：03_Systems PRM 表補 ZONE_USED_MIN_PPM、CITY_HOUSING_RESERVE_MULT、CITY_HOUSING_MAX_PER_SEASON 三列；sim_overrides_draft 刪除重複的舊 PRM-SYS08-ZONE_POP_MIN（[2500,4500,6500,8500]，已被 D-100 取代）；17-55 匯出清單加 sim_overrides_draft。
 總則：核心（步 0、線 A／B／C、整合、原 6＋1 組）優先；追加項失敗只停該項，不阻擋核心；報告第一頁附各項狀態表。",05_TechSpec 17-55、第 7 節 WP-68／WP-69；03_Systems PRM 表（FRM-SYS08-24 三項）；sim_overrides_draft；M0_試玩清單,17-55；WP-68；WP-69；WP-36；D-114；D-110,D-100；D-101；D-110(e)(f)；D-114(d)；D-112(b)；D-90；FRM-SYS08-16；FRM-SYS08-24；S9c；S9d,,,
+D-116,整理三項＋M3 牙行兩參數試驗值（Owner 2026-11-23：(a) 至 (c) 照做；(d) 兩項試驗值核准）,"★ Owner 2026-11-23 裁決：
+(a) K-30 照做：05_TechSpec 第 3 節 E 欄不再寫「03_Systems rNNN」列號，改為規格 ID；C 欄引用 03_Systems 的列，E 欄改為公式自動帶出該列 ID（插列後仍正確），其餘列寫系統＋項目名。共改 116 格。
+(b) 00_Overview 經濟核心進度的分母排除 WP-69（測試衛生，比照修復包 WP-52 至 60 與 UI 的 WP-61）。
+(c) D-88 標題由「待裁決」改為已核准（內容已以 AI_README S9d 至 S9f 實施，規則不變）。
+(d) WP-41 兩個無值參數，AI 起草試驗值（D-45b：只進 sim_overrides_draft，正式值仍由 Owner 裁決）：PRM-SYS16-DETAIL_FEE_LI＝1000 厘（每次查詢 1 兩）；PRM-SYS15-BROKER_MIN_TIER_BY_LADDER＝[2, 2, 2]（明、日、西皆第 2 階）。★ Owner 2026-11-23 核准兩項試驗值；WP-41 規格檢查此兩項完備。",05_TechSpec 第 3 節 E 欄；00_Overview C10、D10、K-30；03_Systems PRM-SYS16-DETAIL_FEE_LI、PRM-SYS15-BROKER_MIN_TIER_BY_LADDER；sim_overrides_draft,D-88；WP-41；WP-69；K-30,D-45b；S9e；26.1 K,,,
+D-117,船團與船長（Owner 2026-11-23 核准：船團為出航單位，正常上限 5 艘、俘虜船硬上限 10 艘；船長管戰鬥委派與效率；酒館聘、季薪；(f) 數值與 (g) 規格清單核准為試驗值；M4／M5）,"★ Owner 2026-11-23 定方向（四點）；(e) 已由 Owner 2026-11-23 核准（照建議）；(f)(g) Owner 2026-11-23 核准（試驗值，另加 (h) 俘虜船口子）；M4 派工前寫入 03_Systems SYS-13／14 規格。屬 M4／M5，與自動路線、經濟 AI 條件式命令同批；不影響 17-55 與 M1 至 M3。
+(a) 船團為唯一的出航單位（仿大航海家）：能出航的一律是船團，一個船團可只有一艘船（看起來就是一艘船，但單位是船團）。上限暫定每船團 5 艘（新 PRM-SYS13-FLEET_MAX_SHIPS＝5，試驗值）；船團數不設上限（維持 OQ-16d）。
+(b) 船長用途只有兩項：戰鬥委派（隨戰鬥上線，LCR-26 押後中）、能力影響效率。自動路線不需要船長也可執行。
+(c) 代價：在酒館聘用、每商季付薪水；酒館等級決定可聘等級（CB-02：基礎一般、二級中階、三級名船長）。
+(d) 時程：M4／M5，與自動路線（OQ-16i）、SYS-18 條件式命令同批。
+(e) 細節（Owner 2026-11-23 核准「照建議」）：① 船團航速＝最慢船、吃水＝最深船（任一船進不了港，整團不能進）；② 只在港內組團、拆團、併團、換船長；③ 船員仍按每艘船計（OQ-16f 不變），船長另計；④ 一個船團最多一位船長，可不聘；⑤ 船報快照改為每船團一份（同行船看到同一行情）——拆成多個船團才能多帶回情報，這是有意的取捨；⑥ 交易時用船團總艙容，貨物仍存在各船 HOLD 容器，裝卸依 ship_id 升序分配（不改 GoodsLedger 容器格式）；⑦ 船長能力 MVP 只兩項：航海（航速或港內裝卸日數）、指揮（戰鬥，隨戰鬥上線）；等級三級，MVP 不做經驗成長；⑧ 對等：玩家、AI、散商同一套規則；散商沿用 1 船＝1 船團、無船長，與 17-55 現行「每艘船一份 plan」行為相同（現碼是 1 船船團的特例，日後改為每船團一份 plan）。
+(f) 待 Owner 定（M4 前）：船長薪水與聘用費量級；航海能力加成幅度（例如一般 0、中階 ＋x%、名船長 ＋y%）；酒館每季可聘船長數是否有限；船長離職、死亡是否要做（建議 MVP 不做）。
+(g) 規格缺口（M4 派工前由 AI 補寫，S9e）：SYS-13 新增 ST-FLEET（fleet_id、ships、captain_id、所在港／航程）與組團、拆團、聘船長的 FRM／ERR；SYS-14 航程改以船團推進；SYS-15 快照鍵由 ship_id 改 fleet_id；SYS-17 散商 plan 改每船團；SYS-18 AI 動作加組團；UI 船團面板。
+
+【(f) 船長數值（Owner 2026-11-23 核准為試驗值；錨點：工人週薪 2.5 兩 → 每商季約 32 兩）】
+f-1 船長季薪 PRM-SYS13-CAPTAIN_WAGE_LI[一般, 中階, 名]＝[60, 120, 240] 兩／商季（約 2、4、8 名工人的季薪）；不論出航或留港都付（同船員，沉沒成本）。
+f-2 聘用費 PRM-SYS13-CAPTAIN_HIRE_FEE_LI＝一商季薪水（60／120／240 兩），一次付清、解聘不退。
+f-3 航海加成 PRM-SYS13-CAPTAIN_SPEED_PPM[一般, 中階, 名]＝[0, 100000, 200000]（航程 tick 乘 (1 − 加成)，ceili 取整）；不做裝卸日數加成（現規格無裝卸時間）。指揮能力隨戰鬥上線另定。
+f-4 酒館供給：每港每商季 cutoff 刷新候選，酒館基礎級 1 位一般、二級另加 1 位中階、三級另加 1 位名船長（PRM-SYS13-CAPTAIN_OFFER_BY_TAVERN_LV）；同季先到先聘，候選以 ST-RNG 決定性產生；未聘者季末消失。用意：名船長稀缺，且只在三級酒館港出現。
+f-5 離職與死亡：MVP 不做；可隨時解聘（只在港內），不退費。
+f-6 決策尺規：AI 與散商用同一日報酬率尺規評估是否聘船長（加成換算省下的航程日 × 每日邊際利潤 ≥ 日均薪水才聘）；散商 MVP 不聘。
+
+【(g) 規格補寫清單（Owner 2026-11-23 核准，M4 派工前寫入 03_Systems；S9e 逐項有值才派）】
+g-1 SYS-13 狀態：新增 ST-FLEET {fleet_id（FL-前綴）, owner_id, ship_ids（升序，1 至 FLEET_MAX_SHIPS）, captain_id 或空, port_id 或航程中, route_ref}；ST-SHIP 加 fleet_id；新增 ST-CAPTAIN {captain_id, level, owner_id 或空, fleet_id 或空, hired_day}。
+g-2 SYS-13 公式：FRM 組團 form_fleet、併團 merge_fleets、拆團 split_fleet、轉船 move_ship（皆限同港停泊、不在航程中）；聘 hire_captain、解聘 dismiss_captain、指派 assign_captain；季末薪水過帳 {owner: −wage, SINK: +wage}（新 reason CAPTAIN_WAGE、CAPTAIN_HIRE）；船團航速＝最慢船；吃水＝最深船；總艙容＝各船合計，裝卸依 ship_id 升序填滿。
+g-3 SYS-13 錯誤碼：超過 5 艘、不同港、航程中、船長已有團、團已有船長、酒館無候選、餘額不足、空船團（0 艘）。
+g-4 SYS-14 航程：出航對象改為 fleet_id；航程 tick 用最慢船 × (1 − 船長加成)；抵港事件改以船團發出。
+g-5 SYS-15 船報：快照鍵由 ship_id 改為 fleet_id（每團一份）；FRM-SYS15-02 依 fleet_id 升序逐團。
+g-6 SYS-17 散商：plan 由每船改為每船團；開局每艘船各成一團（行為與 17-55 相同）。
+g-7 SYS-18 經濟 AI：新增動作「組團／拆團」「聘船長」，以 f-6 尺規評估。
+g-8 SYS-05／SYS-24：CashLedger 授權清單加 CAPTAIN_WAGE、CAPTAIN_HIRE；acct_reason_map 歸入船隊費用。
+g-9 UI：船團面板（成員船、總艙容、航速、船長與薪水）、酒館聘船長畫面；M0_試玩清單加對應項。
+g-10 測試：每個 FRM、ERR 各一例；1 船船團與現行 1 船行為逐格相同（黃金輸出零差異）；5 船團航速取最慢；吃水取最深被擋；薪水季末扣款；候選決定性（同種子同結果）。
+g-11 存檔（M4 存檔包）：ST-FLEET、ST-CAPTAIN、酒館候選列入 schema。
+g-12 遷移：現碼 ship_id 為單位處（航程、快照、散商 plan）改為 fleet_id；先以「每船一團」自動包裝，確保零行為差異，再開放多船團。
+
+【(h) 俘虜船口子（Owner 2026-11-23）】
+h-1 船團正常上限 PRM-SYS13-FLEET_MAX_SHIPS＝5（組團、併團、轉船只能到 5 艘）；另設硬上限 PRM-SYS13-FLEET_HARD_MAX_SHIPS＝10，只供戰鬥俘虜的船暫時編入，任何其他操作不得超過 5。
+h-2 俘虜船標記為 prize（ST-SHIP 加 is_prize 或 prize_of_fleet），船團抵達任何港時，全部俘虜船自動移出船團，停在該港「待分配」（屬船團擁有者、未編團、可再組團、出售或解散，處理方式隨戰鬥規格定）；船團回到原本的 ≤ 5 艘。
+h-3 AI 建議（細節，隨戰鬥規格再確認）：航行中俘虜船計入航速（拖帶變慢，取最慢船）；吃水檢查不計俘虜船（俘虜船在港外交割，不擋整團進港）；俘虜船無船員時只能隨團、不能單獨出航。
+h-4 本條只預留欄位與上限，戰鬥押後（LCR-26）期間不實作俘虜流程；g-1 的 ST-FLEET ship_ids 上限與 g-3 錯誤碼依 h-1 兩層上限寫。",05_TechSpec（本列）；03_Systems OQ-16d 加註；日後寫入 SYS-13／14／15／17／18,WP-36；WP-42；WP-31,OQ-16d；OQ-16f；OQ-16i；LCR-26；C-74；01_Concept C-336；04A CB-02；07_Market 評論（船長代跑致無聊）,,,
+D-118,M3 重排與試驗值：WP-37 聲望移入 M3、稅率與牙行延遲試驗值、兩項待審追認、2027 春季搶先體驗、暫不打包執行檔（Owner 2026-11-23）,"★ Owner 2026-11-23 裁決「照建議」（依 draft_M3_check 規格檢查）：
+(a) WP-37 聲望由 M4 移到 M3。M3 分兩線：線一 WP-35 → WP-37 → WP-39 依序（三包都改 TradeDesk 觀察者與資格入口）；線二 WP-41 從 WP-35 分支開、WP-35 合併後再合。M4 剩 WP-42 經濟 AI、船團與船長（D-117）、自動路線、存檔。PRM-SYS11-GAIN_K 於 WP-37 派工時以模擬器校準，LOSS_K＝2 × GAIN_K（D-100(8)）。
+(b) tax_rates 現值採為試驗值：管制港 3.3333%、自由港 1%、大員與魍港 0%（tax_bounds 0 至 10%）。
+(c) PRM-SYS15-PUBLIC_DELAY_TICKS 試驗值由 0 改為 24 tick（1 日），牙行資格者比別人早 1 日看到船報（sim_overrides_draft 已改；D-62e 0 值作廢）。
+(d) 追認兩項 [待審] 預設：① 有船停泊在港即可看即時價（不限商館，C-37）；② 在場（有船停泊或有建築）才能讀該港牙行牌（WP-40 已依此實作）。
+(e) 上架目標：2027 年春季為「搶先體驗（Early Access）」；1.0 日期依搶先體驗回饋再定。美術方向（06_ArtAudio）提前至 2026-12 與程式並行，Steam 商店頁目標 2027-01 至 02 上線。
+(f) Owner 2026-11-23：暫不打包執行檔（省 Cursor 時間與流量）；Owner 以 Godot 4.7.2 編輯器開 main 的 project.godot 試玩。D-112(b) 的「每次附 Windows 執行檔」自下一份派工起取消；17-55 已發送，若 Cursor 已產出可照收，不追討。",00_Overview M3／M4、A5；05_TechSpec WP-37 H 欄；sim_overrides_draft PUBLIC_DELAY_TICKS；03_Systems 25.1／26.1 K；draft_M3_check,WP-35；WP-37；WP-39；WP-41；WP-42,draft_M3_check；S9e；D-62e；D-100(8)；D-112(b)；S9i,,,
+D-119,EA 範圍與產品方向（Owner 2026-11-23：EA 含 AI、終局、海戰、風暴與海盜；時程選 B；新增 M4b；繁簡中文；遊戲名稱《銀與絲：東海商人》）,"★ Owner 2026-11-23 回答 draft_open_design 問題清單：
+(a) 搶先體驗範圍：必須有對手 AI、終局判定與海戰（推翻 LCR-26「戰鬥押後」的 EA 部分；風暴、私掠、海盜是否同進 EA 待確認）。
+(b) 目標玩家：大航海家老玩家；主要參考大航海家 3、4（UI 慣例、節奏、一局長度對標）。
+(c) 語言：先中文，後翻英文。
+(d) 美術：AI 生成，已在做（Project_Patrician_Asset_Inventory：主清單 320 筆、462 製作單元；建築 104、貨物 28、船 6 已有圖並驗收中；UI、海圖、港口、制度圖示、角色、事件、VFX、音訊、品牌尚未開始；清單依據為工作簿 v6.99.45，之後的船團、船長、海戰、城市自建住宅等未入清單）。
+(e) Owner 每週約 20 小時；家人可協助封測。
+(f) 一局長度對標大航海家 3／4。
+(g) 效能：一般筆電須跑得動十年模擬加 4 家 AI。
+(h) 尚未試玩（M0 只有除錯介面，沒有畫面）。
+
+【Owner 2026-11-23 裁決：(i) 選 B、(j) 新增 M4b、(k) 繁簡中文同做；風暴與海盜也進 EA；(l) 照做；商業代表進 EA 與否、遊戲名稱另議】
+(i) 時程：EA 加入海戰後，2027 春季明顯偏緊。選項 A：EA 2027 年 5 月，海戰做簡化版（委派自動結算＋3 至 5 回合指令，C-74 戰術層），不參加 Next Fest；選項 B（建議）：2027 年 2 至 3 月商店頁 Coming Soon，2027 年 6 月 Steam Next Fest 放試玩版累積願望單，EA 緊接在 6 至 7 月。
+(j) 里程碑：新增 M4b「海上風險與海戰」（SYS-14 風險、治安度、海盜／私掠、戰鬥兩層、船長指揮、俘虜船 D-117(h)）排在 M4 與 M5 之間；M5 加終局判定（新 WP）與商業代表（新 WP，或明定 EA 後）。
+(k) 語言：中文先做繁體＋簡體（Steam 中文玩家多用簡體，文字轉換成本低），英文 EA 後。
+(l) 美術清單同步：資產盤點需補船團面板、三級船長肖像、海戰 UI 與 VFX、船隻受損狀態、Steam 商店圖（胶囊圖須含遊戲名稱文字）；Steam 上架須申報 AI 生成內容。
+(m) Owner 2026-11-23 定暫定遊戲名稱：《銀與絲：東海商人》（Silver & Silk: Merchants of the Eastern Seas）；中英副標題各用該語言慣用說法，不直譯。待辦：定案前在 Steam、網路搜尋同名，英文查商標；撞名時備案為 Silk & Silver。",draft_open_design；00_Overview A5；03_Systems LCR-26 加註,WP-42；WP-44；WP-31；D-117；D-118(e),draft_open_design Q1 至 Q10；Project_Patrician_Asset_Inventory；Steamworks 文件,,,
+D-120,R9-71 後續：合併線 B／C／D／E 與步 0；17-58 修散商接線與遠港行情並重跑 Z；補自建住宅棟數查詢；M1b 判讀延後（Owner 2026-11-24 核准）,"【Owner 2026-11-24 核准】依 R9-71：
+(a) 授權依序合併到 main（merge commit）：#71 步 0 → #74 線 C → #75 線 D → #73 線 B → #77 線 E；每合一個跑 GUT 與黃金 gated，E 之後再跑一次；合併後刪分支。#72、#76、#78 暫不合併。
+(b) 17-58（散商修正＋重跑）：① sim_engine 依 layers.TRADERS／QUAL_OPEN 呼叫 set_layers，QUAL_OPEN 開時改注入「全部允許」的資格 fixture；② 遠港行情改用 board_for(actor, 本港, 目的港, g)（25.1 語意），刪除 intel_override 的產品路徑依賴；③ 散商亂數種子接情境 seed；④ 修中-2 四項（可改 market_pricer.gd 公開 batch_area 並刪複製）；⑤ 修情境檔 ABUND 重複；⑥ 補交 220b8fc 的 git show --cc 與逐檔說明；⑦ 重跑 Z（G0／G1／G2 × ABUND 0／250000，5 年）＋G0 散商關＋G0H 5 年，報告加散商出航次數、運量、獲利分布。
+(c) 規格補：BuildingEconomy.city_auto_housing_count(port_id) -> int（唯讀，FRM-SYS08-24 加註），17-58 一併實作並接 UI。
+(d) M1b 判讀延到 17-58 結果出來；本輪無散商基線（人口 5 年 −41%、391／448 格在天花板）記為「無貿易基線」，作為散商效果的對照組。
+(e) AI_README S9a 加一條：報告須列出每次失敗的執行與原因（D-113(e) 重申），只在 log 不算。
+★ 落實說明（AI 2026-11-24，寫 17-58 時補）：(f) (b)① 的「全部允許」資格替身是 D-63b「一律放行的替身一律不准」的限定例外：類名 SimQualificationOpenFixture、只放 sim/、只在模擬情境 layers.QUAL_OPEN＝1 時注入；正式開機一律不載入（掃描證明）；WP-35 正式資格提供者上線後刪除。(g) 線 A 的 TOP_N_PRECISE＝3 改為參數 PRM-SYS17-TOP_N_PRECISE（試驗值 3，sim_overrides_draft），不走 EX 例外。(h) (c) 的查詢簽章定為 BuildingEconomy.city_auto_housing_count(port_id: StringName) -> int（03_Systems 8.6 H 可觀察性）。",05_TechSpec 17-58；03_Systems 8.6 H 可觀察性、FRM-SYS15-06、FRM-SYS17-04 加註、PRM-SYS17-TOP_N_PRECISE；sim_overrides_draft；AI_README S9a,R9-71；WP-36；WP-68；WP-69；17-55,D-109；D-113(e)；D-115；25.1 FRM-SYS15-06；S9h,,,
 D-62e,PRM-SYS15 七項試驗值審定為試跑起點（Owner 2026-11-21）,WINDOW_DAYS＝28、DECAY_DAYS＝28、DIVERGENCE_LO_PPM＝100000（10%）、DIVERGENCE_HI_PPM＝300000（30%）、DIRECTION_DEADBAND_PPM＝20000（2%）、WEEKS_SCALE＝100、PUBLIC_DELAY_TICKS＝0（牙行資格特權先關，跑無特權基線）。依據與遊戲用途見 sheet sim_overrides_draft 第 85 至 91 列。,仍為試驗值、非正式值：升正式值須日後逐項裁決（D-45b、OQ-15l）；SYS-23 統計牙行牌價空白率與高分歧出現頻率，必要時調整（例：視窗延長至 45 日）。要開「資格提早看」，延遲 tick 數須另請 Owner 審定。BROKER_MIN_TIER_BY_LADDER 仍無值，留待 WP-41。,WP-40；WP-41,Owner 2026-11-21；R9-29；sim_overrides_draft,,,
 D-59b,今晚通宵包：核准唯讀稽核與屬性測試新增（Owner 2026-11-20）,Owner 指示「能開始做的都開始做」，核准：(1) 全倉唯讀稽核四項（規範合規、介面對照、測試覆蓋、GUT 警告）；(2) 屬性測試新增（只新增 tests/property/，不改任何產品碼）；(3) WP-33 補證、WP-40 階段 2 同夜並行。堆疊接力不核准。,屬性測試只驗規格已明文的性質，反證（臨時注入錯誤）不得 commit；稽核結果由 AI 分類後記為技術債（TD）或判定不成立，技術債只記工作簿。,WP-48；WP-49,Owner 2026-11-20；17-41,,,
 9 收件審查與合併紀錄（R 系列）— 每份 Cursor 報告的審查結論集中於此，新紀錄接在表尾,,,,,,,,
@@ -1214,6 +1286,25 @@ R9-70,evening-17-57 全量審查：#59 已合併（main 17de205，510／510）�
 可合併：#60（WP-65）——F1、F2 已逐行審過，I1 單獨合併點全過。
 有條件合併：#64（WP-67）——先在 #64 分支修高-1（升級支出只記一次＋測試），再於新整合點交 --cc（中-1）、全套測試與黃金 gated 通過後合併。
 建議（D-114，待裁決）：把「合併 #60 → 修 #64 → 合併 #64」併入 17-55 步 0 最前面，不另派一輪；任何一關不過即整包停。",2026-11-23,,,
+R9-71,evening-17-55 全量審查：步 0 與 #60、#64 合併完成（main ade2dc8）；線 B／C／D／E 可合；線 A 散商在所有模擬都沒有啟動，M1b 結果不能判讀（2026-11-24）,"Owner 2026-11-24 回報 Cursor 交付 evening-17-55（284 檔、43 個資料夾）。判準：工作簿 v6.99.170（17-55＋D-115）。
+進度（分母＝284 檔）：完整讀 269 檔（94.7%）；部分讀 2 檔（0.7%：線 A cmd_log 443 KB、步 0 cmd_log 2.4 MB 顯示截斷，關鍵段落另由 runs.log、各 report 對照）；未讀 13 檔（4.6%：11 份黃金輸出 out.csv 每份約 25 MB，改讀其 11 份 compare 檔；Windows 執行檔 zip 與 pck 為二進位）。大型 GUT 與模擬 CSV 以程式全檔掃描統計。","★ 符合 1 步 0：B9＝v6.99.170、六表列數 28／82／16／353／116／37 PASS；#60 合併 cd0cadd、#64 合併 ade2dc8；D-114(b) 修正 diff 已逐行審過（刪 _try_start_city_public 的重複記帳，test_D114b 通過）；匯入 6 批 0 錯、開局庫存 136,088、守恆 0；CI 在 ef70d42 全綠。
+★ 符合 2 線 B（#73）：FRM-SYS07-16／17、FRM-SYS08-25、season_flow_counts；全套 536／536；黃金差異 10 欄全屬線 B（首日 1 至 96），可解釋。
+★ 符合 3 線 C（#74）：D-110(b)(d)(i) 查詢與輸出；黃金與步 0 逐格相同（只加輸出）。
+★ 符合 4 線 D（#75）：WP-68 開關＋D-100 已建比例；12 個專屬測試、全套 550；開關關閉時黃金與線 C 逐格相同。
+★ 符合 5 線 E（#77）：只改 4 個測試檔；測試名 531≡531；GUT 連跑兩次 525／525、UI 6／6；兩次跑完 res://data 無改動；tests/ 無 git 呼叫。
+★ 符合 6 整合 int-1755：C→D→B→A 四次 merge 皆無衝突，各點 GUT 532／544／555／576 全綠、SCRIPT ERROR 0，逐點黃金比對齊全。
+◆ 高-1 散商從未啟動（G-INT-01）：sim_engine 沒有呼叫 TraderRegistry.set_layers，且模擬仍注入「全部拒絕」的資格 fixture；所有 Z、Z2 至 Z4 都等於「沒有散商」。Z 的 G0 與 traders_off 人口逐格相同即為證據。
+◆ 高-2 散商讀遠港行情的用法錯（線 A 新發現）：trader_registry 呼叫 board_for(actor, dest, dest, g)，要求人在目的港；25.1 的 board_for(actor, P, O, g) 是「在本港 P 讀從 O 來的船報」，應寫 board_for(actor, 本港, 目的港, g)。不改的話，接線後散商也只會靠探索出航。另外散商亂數種子固定為 1，沒有接情境種子（Z3 三個種子結果相同的原因之一）。
+◆ 高-3 無散商基線人口 5 年少 41%（34,405 → 20,365），主要是貧民外流（PF-6 共 14,552 人）；月港、安海、長崎、平戶貧民滿意度 20／1000；缺的是木炭、鹽、米、陶器、魚乾、米酒；448 格中 391 格價格在天花板；城市現金 3.4 萬 → 23.5 萬兩，16 港中 14 港卡料。結論：沒有貿易時本地供給撐不住，這正是散商要解的問題，M1b 判準要等散商真正上線後才能判。
+◆ 中-1 #64 的 restack 合併 220b8fc 有 5 個衝突檔（building_economy、csv_out、metrics、sampler、test_sys23），未交 git show --cc 與逐檔採用說明（17-55 步 0-A ③）；已在 main，合併後 GUT 525 與黃金皆過；post64 對 post60 的 buildings_json 第 0 日 361 格差異需說明。
+◆ 中-2 線 A 規範：int(floor(float × rate ＋ 1e-9))（C-09、N-01）；SHIP_DRAFT 查無時預設 2（N-05 靜默預設）；梯形面積複製一份（N-04，已列缺口）；TOP_N_PRECISE＝3 須列為參數或核准例外。
+◆ 中-3 失敗執行未寫進報告（D-113(e)）：線 C 的 sys23 測試曾 29／30（新增 trader_summary 檔後錯誤數 5→6）、黃金第一次 ERROR＝23（測試清空資料）；步 0 的 EX-08-21 第一次 3 項失敗。紀錄只在 log，report 只寫通過。
+◆ 中-4 已提交的 M1b_G0／G1／G2 情境檔仍有 ABUND 在 overrides 與 grid 重複（ERR-SYS23-04），Z 用 user:// 副本繞過。
+◆ 中-5 城市自建住宅「棟數」沒有公開查詢（規格缺口，AI 漏寫），UI 只能顯示缺口文字。
+◆ 低 WP-68 在 Z2、Z4 沒有作用：人口下降、床位有空，觸發條件「無空床」不成立，屬預期；機制只有單元測試證明。種子 2、3 的總量與種子 1 相同：目前亂數只影響安置位置，不影響人數。","已合併（追認）：#60（WP-65）、#64（WP-67），main ade2dc8。
+可合併（建議）：#71 步 0 → #74 C → #75 D → #73 B → #77 E（E 合併後重跑 GUT 與黃金）；依序 merge commit。
+不合併：#72 A（待修高-1、高-2、中-2）；#76 int（由正式合併取代）；#78 U（待 A）。
+下一步：17-58 修散商並重跑 Z（D-120 待 Owner 裁決）。",2026-11-24,,,
 R9-31,WP-48 稽核 tests（wp-audit-tests，main d465db9）：證實並重新分類；其餘三份尚未收到,Cursor 回報（唯讀）：規格 TST 共 356 個：(a) 已實作 120、(b) 缺測 235、(c) 規格停用 1（TST-SYS02-04）；現碼 test_ 函式 354；無 TST ID 的測試 226（逐檔列用途）。前一版 113／242 作廢，以本版為準。Cursor 暫把全部缺測標「乙（違規）」。,AI 重新分類：235 個缺測不是違規。其中 TST-P0-01 至 05 是規格自查（比對工作簿各表），不是程式測試；TST-SYS05-13 至 24 在 #40（WP-33，未合併）；TST-SYS23-01 至 07、09 至 11 在 #38（WP-26，未合併）；TST-SYS13-02 至 05、10 至 12 屬 WP-31（造船與賣船，未派）；SYS-09 至 12、15 至 18、20 至 22、24 的測試屬尚未實作的工作包。已合併到 main 的程式沒有缺測。226 個無 TST ID 名稱記 TD-05（D-60e）。wp-audit-compliance（四份）、wp-audit-interfaces、wp-audit-gut 尚未附上，待 Owner 附檔後審（compliance 摘要提及 BuildingEconomy→CashLedger、PopulationModel→BuildingEconomy、ShipRegistry→GoodsLedger 的跨模組 _ 存取，須先分辨是產品碼違規或 D-32b 重置輔助）。,tests 稽核證實；TD-05 已記；其餘三份待收件,2026-11-21,,,
 R9-26,WP-33 階段 2（PR #40，head 870876b，TradeDesk；wp33-report）：部分證實；須補證，不合併,Cursor 回報：新 PR #40（非 draft），GUT 369／369（354＋15）、CI 2 checks 綠；新增 trade_desk.gd、qualification_provider.gd、trade_observer.gd，GoodsLedger 新增 can_transfer 並與 transfer 共用 _validate_transfer_preconditions、容器唯讀查詢、HOLD meta 存 ship_id，CashLedger 新增 has_account，SimLoop 於 boot 呼叫 TradeDesk.load_and_validate／boot_gate_errors、tick_day 步驟 6 追加 take_day_errors／flush_signals（boot 簽名與每日順序未改），project.godot 於 CashLedger 後登錄 TradeDesk；BuildingEconomy 兩條採購路徑未動；正式開機探測 38 個錯誤。,有證據：閘門原始輸出；354＋15＝369 且改內容不改名只列 test_autoload_order_2_2_01（R2-11 依計數成立）；規格對照表與介面清單；產品碼 reason＝TRADE 的 transfer 只在 trade_desk.gd（掃描結果列出）；TST-SYS05-23 的原始輸出與 can_transfer／transfer 同碼失敗。未證實（17-04 要求完整貼出而只給行號或檔案路徑）：(b) execute_trade 完整函式與七步逐行對照（只給行號範圍，稱「見倉庫」）；(e) sim_loop.gd 與 project.godot 完整 diff（只貼要點與 Cursor 本機路徑）；(c) TST-SYS05-20、24 的測試原始輸出（只有結論）；(f) 觀察者失敗不回滾的測試原始輸出；(h) can_transfer 共用檢查的 diff（只有路徑）；(d) 掃描腳本未貼；E(1)–(6) 為斷言、無指令輸出。問題：(i) 正式開機探測的 28 個 ERR-SYS01-07 疑為探測腳本在 Autoload _ready 之前執行（與 wp26-evidence-2 的 RegEx 發現相同；WP-43 的探測曾為 0 錯），Cursor 只稱「預存／環境」，ERR-SYS06-01／02 稱「資料空／缺」亦無證據；故「只多出缺提供者與缺觀察者兩項」未證實。C-14：新增公開名稱未經裁決（TradeDesk.set_qualification_provider、set_trade_observers、boot_gate_errors、take_day_errors、flush_signals、load_and_validate；GoodsLedger.is_container_registered／get_container_kind／owner_id／port_id／ship_id／container_dict；CashLedger.has_account），規格 20.1 H 只定 execute_trade、last_error 與信號 trade_executed，介面清單把 set_qualification_provider 的依據寫成「20.1 H」不實。,部分證實；須補證（17-41）；待 Owner 追認新增名稱；不合併,2026-11-20,,,
 ,,,,,,,,
@@ -2069,7 +2160,7 @@ Z4：M1b_G0（ABUND_BONUS 0），CITY_HOUSING 0 與 1（後者需線 D）各 10 
 ━━ 交付（S9d）：evening-17-55：step0、laneA／B／C／D／E（各含完整 diff.patch、report.md、GUT 全輸出、lane.txt）、step_int、step_Z、step_Z2、step_Z3、step_Z4、step_U（有做才交）；報告第一頁另附項目狀態表（步 0、線 A 至 E、整合、Z、Z2、Z3、Z4、U、執行檔，各標完成／失敗／未跑／略過與原因，D-115）；報告第一段附 git branch -r 與分支名＋完整 SHA 表。壓縮 < 150 MB（超過時 Z3、Z4 只交 summary、season_ports、trader_summary、timing，其餘檔交 md5），推孤兒分支 review/evening-17-55（不開 PR）。不合併任何 PR。
 工作報告請依 AI_README S9a 範本逐點回覆。
 
-★ 追加交付（D-112(b)）：全部合併後，以 int-1755 最終 commit 產出 Windows 執行檔（步 U 完成則改用 ui-1755 head；D-115(d)(e)）（依 #58 的 export_presets.cfg），連同「這次能玩到什麼」三行說明放入交付資料夾（M2 試玩回饋規則）；執行檔不放進 repo。",發送前（依序）：① 匯出 docs/spec：AI_README、03_Systems、05_TechSpec、frm_examples、demand_rates、opening_workshops、opening_population、build_queue、opening_public、sim_overrides_draft（工作簿 v6.99.170；共 10 檔）；② commit 到 main，訊息：spec v6.99.170（17-55）；③ 在 GitHub 確認 main 的 docs/spec/AI_README.csv 版本是 v6.99.170；④ 把本列 C 欄整段貼給 Cursor（D-110、D-114、D-115 已由 Owner 核准）。,D-104；D-107；D-108；D-109；D-110；WP-36；D-112；D-114；D-115；WP-68；WP-69,定稿（D-110、D-112、D-113、D-114、D-115 核准；版本 v6.99.170）；待 Owner commit 後發送,,,
+★ 追加交付（D-112(b)）：全部合併後，以 int-1755 最終 commit 產出 Windows 執行檔（步 U 完成則改用 ui-1755 head；D-115(d)(e)）（依 #58 的 export_presets.cfg），連同「這次能玩到什麼」三行說明放入交付資料夾（M2 試玩回饋規則）；執行檔不放進 repo。",發送前（依序）：① 匯出 docs/spec：AI_README、03_Systems、05_TechSpec、frm_examples、demand_rates、opening_workshops、opening_population、build_queue、opening_public、sim_overrides_draft（工作簿 v6.99.170；共 10 檔）；② commit 到 main，訊息：spec v6.99.170（17-55）；③ 在 GitHub 確認 main 的 docs/spec/AI_README.csv 版本是 v6.99.170；④ 把本列 C 欄整段貼給 Cursor（D-110、D-114、D-115 已由 Owner 核准）。,D-104；D-107；D-108；D-109；D-110；WP-36；D-112；D-114；D-115；WP-68；WP-69,已交付（evening-17-55，284 檔）；R9-71 審畢：#60、#64 已合併（main ade2dc8）；線 B／C／D／E 與步 0 可合；線 A 散商未啟動，M1b 待 17-58 重跑,,,
 17-56,17-54 收尾：合併 #66、#58；修 #60 兩項（自造定義、測試略過驗證）、#59 駐軍超買；黃金閘門加 ERROR 行；重建整合 int-1756（2026-11-23）,"【派工 17-56：17-54 收尾——合併 #66、#58；修 #60 兩項、#59 駐軍超買；黃金閘門加 ERROR 行檢查；重建整合 int-1756】
 前提：docs/spec 已更新到工作簿 v6.99.159（AI_README B9）；build_queue.csv 353 列資料、opening_public.csv 116 列資料，皆無空白列。審查依據 05_TechSpec R9-68、D-111。本則自含全部規定；遇規格缺口照 C-05 停該子項、寫 gaps.md，其他照做。
 總規則：① 只准合併步 M 列的兩個 PR；#59、#60、#64 不准合併到 main（等 R9-69）；② 不准 force push 到 main、不准改 main 歷史；③ 每個修正一個 commit，加在原分支上，交 diff；④ 交付資料夾 evening-17-56，推到 orphan 分支 review/evening-17-56（不開 PR）；⑤ 不准在執行時自行修改 docs/spec 資料（例如刪空白列）。
@@ -2131,3 +2222,45 @@ F2 錯誤碼（D-113(c)）：_try_start_city_public 缺 buildings 定義改回 E
 ③ 在 GitHub 確認 main 的 docs/spec/AI_README.csv 版本是 v6.99.165。
 ④ 在 GitHub 網頁手動關閉 #68（D-113(f)）。
 ⑤ 把本列 C 欄整段貼給 Cursor（D-113 已由 Owner 2026-11-23 核准）。",R9-69；D-113；D-112(a)；FRM-SYS08-15；S9；S9h,已交付（evening-17-57，104 檔）；R9-70 審畢：#59 已合併（main 17de205）；#60 可合；#64 須修升級支出重複記帳後合（D-114，併入 17-55 步 0-A）,,,
+17-58,17-55 收尾：合併 #71 → #74 → #75 → #73 → #77（D-120(a)）＋補 #64 合併證據；線 F 修散商接線、遠港行情、種子與規範（#72 續用）；線 G 城市自建住宅棟數查詢；整合 int-1758；重跑 M1b 模擬（2026-11-24）,"【派工 17-58：17-55 收尾——合併步 0 與線 C／D／B／E；修散商接線、遠港行情、種子與規範；補城市自建住宅棟數查詢；重跑 M1b 模擬】
+前提（缺一即整包停）：① main＝ade2dc8（#60、#64 已合）；② docs/spec 為工作簿 v6.99.183（AI_README B9）；③ csv_import 全批 0 錯、正式開機 0 錯（貼輸出）。審查依據：05_TechSpec R9-71、D-120（Owner 2026-11-24 核准）。本則自含全部規定；遇規格缺口照 C-05 停該子項、寫 gaps.md，其他照做。
+★ 總規則：所有修改在功能分支、經 PR，不得直接 commit 到 main（步 M 的授權合併除外）；黃金輸出一律用 tools/run_golden_gated.sh 並交逐欄比對；★ 報告列出每一次執行，含失敗與重跑、失敗原因與之後怎麼處理，只在 log 不在報告視同未交（D-120(e)、AI_README S9a）。測試只能在 user:// 或 tests/fixtures 建資料，不得寫入或清除 res://data，不得在測試內呼叫 git（D-114(d)）。
+必讀：05_TechSpec R9-71、D-120、D-63b（含 D-120(f) 例外）；03_Systems 17.1（FRM-SYS17-01 至 09、附錄 A 含新 PRM-SYS17-TOP_N_PRECISE）、25.1 FRM-SYS15-06（含 2026-11-24 呼叫方式釐清）、FRM-SYS17-04（含種子加註）、8.6 H 可觀察性（新查詢）、FRM-SYS23-03、ERR-SYS23-04；frm_examples（測試期望值只准取自此檔，S9f）。
+
+━━ 步 0-0 版本檢查（只跑指令，最先做）：印出 main 上 docs/spec/AI_README.csv 的 B9（應為 v6.99.183）與 demand_rates、opening_workshops、opening_population、build_queue、opening_public、frm_examples 資料列數（應為 28、82、16、353、116、37）。不符 → 整包停。
+
+━━ 步 M 授權合併（D-120(a)；一個 agent；依序；每個 PR 先在 GitHub 把 base 改成 main，不得 rebase、squash，一律 merge commit）
+順序：#71（步 0）→ #74（線 C）→ #75（線 D）→ #73（線 B）→ #77（線 E）。
+每合一個：跑 GUT unit＋property、tests/ui、黃金 gated，對前一個 main head 逐欄比對。預期：#71 的差異只來自資料重匯（應與 evening-17-55 步 0-4 報告一致）；#74、#75（CITY_HOUSING＝0）與前一個逐格相同；#73 的差異只在線 B 的 10 欄（與 evening-17-55 線 B 報告一致）；#77 逐格相同。有衝突時交 git show --cc 與逐檔「採用哪一邊、為什麼」。
+#77 合併後：GUT 連跑兩次全綠，每次跑完 git status --porcelain res://data 為空（貼輸出）。
+任一關不過 → 停在該 PR，不合後面的，交記錄。全部合完刪除五條分支。#72、#78 不合併；#76 在 GitHub 關閉（不刪分支）。
+M-2 補證（只跑指令，不改碼；R9-71 中-1）：① 交 git show --cc 220b8fc 全文，五個衝突檔（building_economy.gd、csv_out、metrics、sampler、test_sys23）逐檔說明採用哪一邊、為什麼；② 說明 post64 對 post60 的 buildings_json 第 0 日 361 格差異：逐類列出（哪些港、哪些建築、哪個欄位），每類對應到 #64 的哪一段代碼。
+
+━━ 並行兩線（S9c；步 M 完成後開；各一個 agent、獨立 worktree）
+線 F（WP-36 散商修正；沿用 #72）：在 #72 的分支先 merge 新 main（merge commit，衝突交 --cc 與逐檔說明），再加修正 commit；#72 base 改 main。檔案：autoload/trader_registry.gd、core/trade_evaluator.gd、sim/（sim_engine.gd 與新增的 sim_qualification_open_fixture.gd）、autoload/market_pricer.gd（只限 F4 ③）、docs/spec/scenario_M1b_*.json（只限 F5）、對應測試。
+ F1 接線（R9-71 高-1）：sim_engine 開機時依情境 layers.TRADERS、layers.QUAL_OPEN 呼叫 TraderRegistry.set_layers（現有公開方法，名稱與參數不改）。QUAL_OPEN＝1 時注入新類 SimQualificationOpenFixture（只放 sim/，一律放行，D-120(f) 限定例外），取代 deny-all 的 SimQualificationFixture；QUAL_OPEN＝0 時維持 deny-all。TRADERS＝0 時散商不建立、不排程。正式開機（非模擬）不得載入 SimQualificationOpenFixture：交 grep 掃描輸出，證明只有 sim_engine 在 QUAL_OPEN 分支引用。測試：(a) TRADERS＝1、QUAL_OPEN＝1 跑 30 日，至少 1 艘散商船完成一趟買、航、賣（貼 trader_summary）；(b) TRADERS＝0 時 trader_summary 全 0，其他輸出與現行 main 逐格相同；(c) QUAL_OPEN＝0 時散商不得在管制港成交。
+ F2 遠港行情（R9-71 高-2）：_dest_intel 改為 IntelLedger.board_for(actor, 本港 P, 目的港 O, g)（25.1 FRM-SYS15-06 的 2026-11-24 釐清）；n＝0 或回空 → 該目的港不列候選（17.1 無行市不列候選）。產品與模擬路徑不得依賴 intel_override；若保留作測試注入點，預設為空，報告以 grep 列出所有設定位置（應只在 tests/）。測試：(a) 散商在 P、P 的牙行有來自 O 的船報 → 候選用 O 的 consensus_mid_li；(b) P 沒有來自 O 的船報 → O 不列候選；(c) 散商不在 O 也不影響 (a)。
+ F3 種子（D-120(b)③）：刪除 _rng_seed＝1；探索抽籤照 FRM-SYS17-04，seed 取情境種子（FRM-SYS23-03）。測試：同種子兩次 90 日完全相同；種子 1 與 2 在 90 日內至少一日探索名單不同（EXPLORE_RATE 用試驗值）。
+ F4 規範（R9-71 中-2）：① int(floor(float(n)*rate+1e-9)) 改成規格的整數算法（ppm 整數相乘後以 floori 整數除法；規格沒寫精度就列缺口停該項，不得自定）；② ShipRegistry.SHIP_DRAFT.get(…, 2) 的預設值刪除：查無船型 → 依 C-06 回報錯誤，不補預設；③ 散商自帶的梯形面積（TRAPEZOID_DENOM 2.0）刪除，改呼叫 MarketPricer 的批量面積函數：把現有 _batch_area 改名為公開 batch_area，參數與回傳不變，原呼叫者一併改名（C-14：PR 描述逐字列出簽章；這是 D-120(b)④ 已核准的介面變更；結果必須與改名前逐格相同，以黃金證明）；④ TOP_N_PRECISE＝3 改讀 PRM-SYS17-TOP_N_PRECISE（03_Systems 17.1 附錄 A；試驗值 3 只寫入情境檔，缺鍵拒絕啟動）。四項各交 diff 與 S9a E 掃描。
+ F5 情境檔（R9-71 中-4）：已提交的 docs/spec/scenario_M1b_G0、G1、G2、G0H.json 把 ABUND_BONUS_MAX_PPM 從 overrides 移除，只留在 grid（0 與 250000）；四檔逐一跑情境驗證 0 錯（貼輸出）。步 Z 一律直接用 repo 內的檔案，不得再用 user:// 副本。
+線 G（WP-68 查詢，D-120(c)）：從新 main 開分支 housing-1758，PR base main。檔案：building_economy.gd（只加查詢與必要的私有記錄）、sim/ 輸出、對應測試。新增公開唯讀查詢 BuildingEconomy.city_auto_housing_count(port_id: StringName) -> int，名稱與簽章逐字照抄 03_Systems 8.6 H 可觀察性（2026-11-24）：該港由 FRM-SYS08-24 建立、目前仍存在的住宅棟數，含建造中與暫停，拆除後不計，開局城營住宅不算；查無港回 −1 並設 last_error。步 Z 的 season_ports 每港加一欄 city_auto_housing（表頭照此字）。測試：開關關閉為 0；自建一棟後為 1；拆除後減 1；查無港回 −1；開局城營住宅不計。黃金：除新增欄外與新 main 逐格相同。
+
+━━ 整合步：從新 main 開 int-1758，依序合併 G → F（merge commit，逐個列衝突與解法，不得加其他 commit）；GUT 全綠、SCRIPT ERROR 0；每合一條跑黃金 gated 與逐欄比對（黃金設定散商關，應逐格相同，只多線 G 的新欄）。
+
+━━ 步 Z（在 int-1758 同一 commit；種子未註明者為 1；每組 5 年；D-120(b)⑦）
+Z-a：M1b_G0、G1、G2 × ABUND_BONUS 0／250000，共 6 組（散商開、QUAL_OPEN 開、CITY_HOUSING 0）。
+Z-b：M1b_G0、散商關（對照組，等同 17-55 的無貿易基線）。
+Z-c：M1b_G0H（CITY_HOUSING＝1）× ABUND_BONUS 0。
+Z-d：M1b_G0 種子 2（看種子是否有影響）。
+順序 Z-a → Z-b → Z-c → Z-d；每組記錄實際耗時；任一組失敗照總規則記錄，其餘照跑；不得縮短年數或改種子湊數。輸出同 17-55 步 Z（summary 含 commit SHA、season_ports（含新欄 city_auto_housing）、season_cells、obs_ext、trader_summary、timing）。
+報告加：① 散商逐季：出航次數、運量（擔）、按貨別前 5 名的運量、散商季末現金分布（最小、中位、最大）、凍結數、閒置日數分布；② 每組 M1b 達標三條（第 5 年地板或天花板格 ≤ 30%、三階比與開局同量級、城市現金不單調上升）逐條對照，並與 Z-b（無散商）並列；③ 人口與各階人數逐年，對照 Z-b；④ Z-c 對 Z-a 同組逐季的城市自建住宅數、已建比例、開區數；⑤ Z-d 對 Z-a 的 G0（ABUND 0）達標三條與散商指標對照。
+
+━━ 步 U2（最低優先；整合完成、步 Z 開跑後才做；時間不夠整項不做）：在 #78 的分支 merge int-1758 最終 commit（衝突交 --cc），只改 ui/：港口面板的「城市自建住宅棟數」改用 city_auto_housing_count；散商面板照舊。開 PR 不合併。只呼叫公開方法，缺查詢即列缺口停該項。
+
+━━ 交付（S9d）：evening-17-58：step0（0-0）、stepM（每個 PR 的合併記錄、GUT 全輸出、黃金比對、M-2 補證）、laneF、laneG（各含完整 diff.patch、report.md、GUT 全輸出、lane.txt）、step_int、step_Z（Z-a 至 Z-d 分資料夾）、step_U2（有做才交）。報告第一頁附項目狀態表（步 0、步 M、M-2、線 F、線 G、整合、Z-a 至 Z-d、U2，各標完成／失敗／未跑／略過與原因），第一段附 git branch -r 與分支名＋完整 SHA 表。壓縮 < 150 MB（超過時 Z-c、Z-d 只交 summary、season_ports、trader_summary、timing，其餘交 md5），推孤兒分支 review/evening-17-58（不開 PR）。步 M 以外不合併任何 PR。不必產出執行檔（D-118(f)）。
+工作報告請依 AI_README S9a 範本逐點回覆。
+★ 特別證據：F1 的 sim_engine 完整 diff 與 30 日 trader_summary；F2 的 _dest_intel 函數改前改後全文；F4 ③ 改名前後黃金逐格比對；步 M 每個合併的逐欄比對摘要。","發送前（依序）：
+① 匯出 docs/spec：AI_README.csv、03_Systems.csv、05_TechSpec.csv、sim_overrides_draft.csv（工作簿 v6.99.183；共 4 檔）。
+② commit 到 main，訊息：spec v6.99.183（17-58）。
+③ 在 GitHub 確認 main 的 docs/spec/AI_README.csv 版本是 v6.99.183。
+④ 把本列 C 欄整段貼給 Cursor（D-120 已由 Owner 2026-11-24 核准）。",R9-71；D-120；D-63b；WP-36；WP-68；FRM-SYS15-06；FRM-SYS17-04；PRM-SYS17-TOP_N_PRECISE；S9a；S9c；S9d,待發送（Owner commit spec v6.99.183 後貼給 Cursor）,,,

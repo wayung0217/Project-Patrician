@@ -15,6 +15,7 @@ const GOODS_ROOT := "user://sys23_goods/"
 const PORTS_ROOT := "user://sys23_ports/"
 const SEA_ROOT := "user://sys23_sea/"
 
+## WP-69／D-114(d): formal dirs read-only; do not wipe／copy fixtures into them.
 const FORMAL_ZONES := "res://data/zones/"
 const FORMAL_BUILDINGS := "res://data/buildings/"
 const FORMAL_OPENING := "res://data/opening/"
@@ -37,14 +38,8 @@ func before_each() -> void:
 	_wipe_dir(PORTS_ROOT)
 	_wipe_dir(SEA_ROOT)
 	_wipe_dir(DEMAND_OUT)
-	_wipe_formal_opening()
-	_wipe_formal_demand()
+	# WP-69／D-114(d): never wipe res://data.
 	_session_reset()
-
-
-func after_each() -> void:
-	_wipe_formal_opening()
-	_wipe_formal_demand()
 
 
 func test_TST_SYS23_03_unknown_scenario_key() -> void:
@@ -435,8 +430,8 @@ func test_WP58_A34_write_failure_reports_ok_false() -> void:
 	print("WP58_A34 write_all=%s" % str(written))
 	assert_false(bool(written.get("ok", true)), "A34: ok must be false on write failure")
 	assert_gt((written.get("failed_paths", PackedStringArray()) as PackedStringArray).size(), 0)
-	## Five CSV writers each push_error once (season_cells/ports/summary/combos/obs_ext WP-27).
-	assert_push_error_count(5)
+	## Six CSV writers each push_error once (season_cells/ports/summary/combos/obs_ext＋trader_summary D-110d).
+	assert_push_error_count(6)
 	## Cleanup blocker file.
 	DirAccess.remove_absolute(abs_blocked)
 
@@ -784,9 +779,10 @@ func test_TST_SYS23_09_print_summary_csv() -> void:
 
 
 func test_WP26_evidence_cli_twice_cmp() -> void:
-	## Prep formal dirs, CLI sim_runner twice in-process via OS.execute, cmp five outputs.
-	_prepare_world()
-	_install_formal_from_fixtures()
+	## WP-69: CLI uses committed formal data (no fixture copy into res://data).
+	## Params fixture still loaded for scenario overrides; goods／ports／demand = formal.
+	var perr: Array = Params.load_and_validate(ParamsFixtures.path_demo())
+	assert_eq(perr.size(), 0, "params_all_keys")
 	var scenario: Dictionary = _fast_scenario("sys23_cli_cmp")
 	scenario["years"] = 1
 	scenario["warmup_years"] = 0
@@ -997,18 +993,8 @@ func _install_sea() -> Dictionary:
 
 
 func _install_opening() -> void:
-	var wp17: Dictionary = CsvImport.run_batch_wp17(
-		OPENING_CSV, FORMAL_ZONES, FORMAL_BUILDINGS, FORMAL_OPENING, FORMAL_BUILD_QUEUE
-	)
-	assert_true(wp17["ok"], str(wp17.get("errors", [])))
-	var wp18: Dictionary = CsvImport.run_batch_wp18(
-		OPENING_CSV, FORMAL_CITY_CENTER, FORMAL_OPENING_PUBLIC
-	)
-	assert_true(wp18["ok"], str(wp18.get("errors", [])))
-	var pop: Dictionary = CsvImport.run_batch_opening_population(
-		OPENING_CSV, FORMAL_OPENING_POP, OPENING_CSV.path_join("ports.csv")
-	)
-	assert_true(pop["ok"], str(pop.get("errors", [])))
+	## WP-69／D-114(d): no-op — SimEngine／SimLoop.boot use committed formal opening.
+	pass
 
 
 func _install_demand() -> void:
@@ -1031,7 +1017,8 @@ func _install_demand() -> void:
 func _build_goods(dir: String) -> void:
 	_wipe_dir(dir)
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	var count: int = Params.get_int("PRM-SYS01-GOOD_COUNT_MIN")
+	## WP-69: match committed formal good count so BE opening workshops resolve.
+	var count: int = maxi(Params.get_int("PRM-SYS01-GOOD_COUNT_MIN"), _count_formal_goods())
 	var staples: Array = [
 		{"id": "GD-001", "name": "米", "build": false},
 		{"id": "GD-002", "name": "鹽", "build": false},
@@ -1125,38 +1112,8 @@ func _snapshot_outputs_five(scenario_id: String) -> Dictionary:
 
 
 func _install_formal_from_fixtures() -> void:
-	## Copy fixture-built goods/ports/sea/demand into formal dirs for CLI sim_runner.
-	_copy_tres_dir(GOODS_ROOT + "base/", GoodCatalog.GOODS_DIR)
-	_copy_tres_dir(PORTS_ROOT + "base/", PortRegistry.PORTS_DIR)
-	var sea: Dictionary = _install_sea()
-	_copy_tres_dir(sea["nodes"], SeaLanes.NODES_DIR)
-	_copy_tres_dir(sea["regions"], SeaLanes.REGIONS_DIR)
-	_copy_tres_dir(sea["lanes"], SeaLanes.LANES_DIR)
-	_copy_tres_dir(DEMAND_OUT.path_join("rates/"), CsvImport.DEMAND_RATES_OUT_DIR)
-	_copy_tres_dir(DEMAND_OUT.path_join("weights/"), CsvImport.DEMAND_WEIGHTS_OUT_DIR)
-	_copy_tres_dir(DEMAND_OUT.path_join("substitutions/"), CsvImport.DEMAND_SUBST_OUT_DIR)
-	## price curve
-	var curve_bytes: PackedByteArray = FileAccess.get_file_as_bytes(CURVE_FIXTURE)
-	var cf := FileAccess.open(MarketPricer.CURVE_PATH, FileAccess.WRITE)
-	cf.store_buffer(curve_bytes)
-	cf.close()
-
-
-func _copy_tres_dir(src: String, dst: String) -> void:
-	_wipe_tres(dst)
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dst))
-	var d := DirAccess.open(src)
-	assert_true(d != null, "open src %s" % src)
-	d.list_dir_begin()
-	var fn := d.get_next()
-	while fn != "":
-		if not d.current_is_dir() and fn.ends_with(".tres"):
-			var data: PackedByteArray = FileAccess.get_file_as_bytes(src.path_join(fn))
-			var out := FileAccess.open(dst.path_join(fn), FileAccess.WRITE)
-			out.store_buffer(data)
-			out.close()
-		fn = d.get_next()
-	d.list_dir_end()
+	## WP-69／D-114(d): deleted — CLI／formal boot use committed res://data (no fixture copy-in).
+	pass
 
 
 func _strip_elapsed(summary_csv: String) -> String:
@@ -1197,34 +1154,29 @@ func _first_line(path: String) -> String:
 
 
 func _wipe_formal_opening() -> void:
-	for dir_path in [
-		FORMAL_ZONES, FORMAL_BUILDINGS, FORMAL_OPENING, FORMAL_BUILD_QUEUE,
-		FORMAL_CITY_CENTER, FORMAL_OPENING_PUBLIC, FORMAL_OPENING_POP,
-	]:
-		_wipe_tres(dir_path)
+	## WP-69／D-114(d): deleted wipe of res://data opening trees.
+	pass
 
 
 func _wipe_formal_demand() -> void:
-	for dir_path in [
-		CsvImport.DEMAND_RATES_OUT_DIR,
-		CsvImport.DEMAND_WEIGHTS_OUT_DIR,
-		CsvImport.DEMAND_SUBST_OUT_DIR,
-	]:
-		_wipe_tres(dir_path)
+	## WP-69／D-114(d): deleted wipe of res://data/demand.
+	pass
 
 
-func _wipe_tres(dir: String) -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
-	var d := DirAccess.open(dir)
+func _count_formal_goods() -> int:
+	## Read-only count of committed res://data/goods/*.tres (WP-69; no writes).
+	var n := 0
+	var d := DirAccess.open(GoodCatalog.GOODS_DIR)
 	if d == null:
-		return
+		return 0
 	d.list_dir_begin()
 	var fn := d.get_next()
 	while fn != "":
 		if not d.current_is_dir() and fn.ends_with(".tres"):
-			d.remove(fn)
+			n += 1
 		fn = d.get_next()
 	d.list_dir_end()
+	return n
 
 
 func _wipe_dir(dir: String) -> void:

@@ -30,6 +30,8 @@ const PRM_JIN_PER_DAN := "PRM-SYS06-JIN_PER_DAN"
 const PRM_RATE_SCALE := "PRM-SYS06-RATE_SCALE"
 const PRM_PPM_SCALE := "PRM-SYS06-PPM_SCALE"
 const PRM_WEIGHT_SUM := "PRM-SYS06-WEIGHT_SUM"
+## FRM-SYS08-25／D-108(b): weeks to spread city-queue material shortfall into weekly potential.
+const PRM_QUEUE_MAT_DEMAND_WEEKS := "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS"
 
 signal demand_unmet(port_id: StringName, good_id: StringName, shortfall: int)
 
@@ -41,6 +43,9 @@ var _subst: Array = [] ## [{from,to,cap_ppm,util_ppm}, ...] sorted by from,to
 ## Fixture／test injection (R9-65 A2／C-14 待追認)：duck-typed provider with
 ## weekly_potential_demand(port_id, good_id) -> int. Product must not use meta.
 var _potential_demand_provider: Object = null
+## FRM-SYS08-25／D-110(b): duck-typed shortfall provider with
+## city_queue_material_shortfall(port_id) -> Dictionary. Tests／lane-C query.
+var _queue_shortfall_provider: Object = null
 
 ## PRM-backed scales (C-03／N-01); set only from Params in load_and_validate.
 var _days_per_week: int = 0
@@ -132,9 +137,18 @@ func has_potential_demand_provider() -> bool:
 	return _potential_demand_provider != null
 
 
+func set_queue_material_shortfall_provider(provider: Object) -> void:
+	## FRM-SYS08-25 tests／fixtures: inject D-110(b) shortfall query without BuildingEconomy.
+	_queue_shortfall_provider = provider
+
+
+func clear_queue_material_shortfall_provider() -> void:
+	_queue_shortfall_provider = null
+
+
 func weekly_potential_demand(port_id: StringName, good_id: StringName) -> int:
 	## D-96f／FRM-SYS23-04／FRM-SYS04-01（改）：週潛在需求（擔／週，FLOOR）。
-	## Exact public name (D-96f)；口径同 weekly_demand。
+	## FRM-SYS08-25／D-109(h)：floori(口徑) ＋ ceili(缺料 ÷ QUEUE_MAT_DEMAND_WEEKS).
 	## Provider path allows EX-04-09 fixtures before DemandModel load (R9-65 A2).
 	if _potential_demand_provider != null:
 		assert(
@@ -143,7 +157,44 @@ func weekly_potential_demand(port_id: StringName, good_id: StringName) -> int:
 		)
 		return _potential_demand_provider.weekly_potential_demand(port_id, good_id)
 	assert(_loaded, "DemandModel.weekly_potential_demand before load")
-	return weekly_demand(port_id, good_id)
+	var base: int = weekly_demand(port_id, good_id)
+	return base + _queue_mat_demand_addon(port_id, good_id)
+
+
+func _queue_mat_demand_addon(port_id: StringName, good_id: StringName) -> int:
+	## FRM-SYS08-25: ceili(shortfall ÷ weeks); 0 when no WAITING_MATERIAL shortfall／no query.
+	var shortfall_map: Dictionary = _read_queue_material_shortfall(port_id)
+	if shortfall_map.is_empty():
+		return 0
+	var good_s: String = String(good_id)
+	var short_v: Variant = shortfall_map.get(good_s, shortfall_map.get(good_id, 0))
+	var short_qty: int = _to_int(short_v)
+	if short_qty <= 0:
+		return 0
+	if not Params.has_prm(StringName(PRM_QUEUE_MAT_DEMAND_WEEKS)):
+		return 0
+	var weeks: int = Params.get_int(PRM_QUEUE_MAT_DEMAND_WEEKS)
+	if weeks < 1:
+		return 0
+	return ceili(float(short_qty) / float(weeks))
+
+
+func _read_queue_material_shortfall(port_id: StringName) -> Dictionary:
+	## D-110(b): BuildingEconomy.city_queue_material_shortfall; lane C owns the query.
+	if _queue_shortfall_provider != null:
+		assert(
+			_queue_shortfall_provider.has_method("city_queue_material_shortfall"),
+			"queue shortfall provider missing city_queue_material_shortfall"
+		)
+		var from_provider: Variant = _queue_shortfall_provider.city_queue_material_shortfall(port_id)
+		if typeof(from_provider) == TYPE_DICTIONARY:
+			return from_provider
+		return {}
+	if BuildingEconomy.is_loaded() and BuildingEconomy.has_method("city_queue_material_shortfall"):
+		var from_be: Variant = BuildingEconomy.call("city_queue_material_shortfall", port_id)
+		if typeof(from_be) == TYPE_DICTIONARY:
+			return from_be
+	return {}
 
 
 func daily_demand(port_id: StringName, good_id: StringName, day: int) -> int:
@@ -278,6 +329,7 @@ func _clear_state() -> void:
 	_fulfil_ppm = {}
 	_pending_unmet = []
 	_last_error = {}
+	_queue_shortfall_provider = null
 
 
 func _load_required_prms() -> Array:

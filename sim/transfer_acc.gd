@@ -4,10 +4,14 @@ extends RefCounted
 ## WP-27: relocated_in／out via note_relocate (SIM_RELOCATE). Does not read private ledger state.
 
 
+## D-110(d)／Lane B: EXCESS_CONSUME reason string（GoodsLedger may add const later）.
+const REASON_EXCESS_CONSUME := &"EXCESS_CONSUME"
+
 var _produced: Dictionary = {} ## "port|good" -> int
 var _consumed: Dictionary = {}
 var _relocated_in: Dictionary = {}
 var _relocated_out: Dictionary = {}
+var _excess_consumed: Dictionary = {}
 var _connected: bool = false
 
 
@@ -30,6 +34,7 @@ func clear() -> void:
 	_consumed.clear()
 	_relocated_in.clear()
 	_relocated_out.clear()
+	_excess_consumed.clear()
 
 
 func produced(port_id: String, good_id: String) -> int:
@@ -52,6 +57,12 @@ func relocated_in(port_id: String, good_id: String) -> int:
 func relocated_out(port_id: String, good_id: String) -> int:
 	var v: Variant = _relocated_out.get(_key(port_id, good_id), 0)
 	return SimJsonInt.as_int(v, "relocated_out")
+
+
+func excess_consumed(port_id: String, good_id: String) -> int:
+	## D-110(d): season_cells.excess_consumed（Lane B EXCESS_CONSUME；0 until then）.
+	var v: Variant = _excess_consumed.get(_key(port_id, good_id), 0)
+	return SimJsonInt.as_int(v, "excess_consumed")
 
 
 func note_relocate(from_port: String, to_port: String, good_id: String, qty: int) -> void:
@@ -84,6 +95,11 @@ func _on_transferred(event: TransferEvent) -> void:
 		var from_port: String = _port_of(event.from)
 		if not from_port.is_empty():
 			_add(_consumed, from_port, good_s, qty)
+	elif reason == REASON_EXCESS_CONSUME or String(reason) == "EXCESS_CONSUME":
+		## D-110(d): not folded into consumed（Lane B／FRM-SYS07-16）.
+		var from_x: String = _port_of(event.from)
+		if not from_x.is_empty():
+			_add(_excess_consumed, from_x, good_s, qty)
 	## SIM_RELOCATE counted via note_relocate (avoids double-count if signal also fires).
 
 
