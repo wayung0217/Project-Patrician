@@ -43,11 +43,11 @@ jobs:
         shard: [0, 1, 2, 3]
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -94,7 +94,7 @@ jobs:
 
       # 17-64 S3: cache .godot/imported (never test/golden outputs).
       - name: Cache Godot imported assets
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -179,6 +179,10 @@ jobs:
           n = int(m[-1]) if m else -1
           Path("gut_unit_passing.txt").write_text(f"{n}\n")
           print(f"SHARD_PASSING={n}")
+          # Bare test names for 17-69 2.4 set-diff gate (unique across suite).
+          names = sorted(set(re.findall(r"^\* (test_\w+)", text, flags=re.M)))
+          Path("gut_unit_names.txt").write_text("\n".join(names) + ("\n" if names else ""))
+          print(f"SHARD_NAMES={len(names)}")
           PY
       - name: A35 norm scan (report-only, shard 0)
         if: matrix.shard == 0
@@ -189,28 +193,34 @@ jobs:
 
       - name: Upload GUT unit shard logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v5
         with:
           name: gut-unit-logs-${{ matrix.shard }}
           path: |
             gut_unit.log
             gut_unit_passing.txt
+            gut_unit_names.txt
           retention-days: 3
 
-  # Sum shard passing counts; must equal pre-change 555 (unit+property).
+  # 17-69 2.4: total ≥ recorded baseline AND all baseline names still present (set diff).
   gut-unit-gate:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     needs: gut-unit
     runs-on: ubuntu-latest
+    # 17-69 2.3: only job previously missing a wall-clock cap.
+    timeout-minutes: 5
     steps:
+      - name: Checkout (baseline name list)
+        uses: actions/checkout@v5
+
       - name: Download shard passing counts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v5
         with:
           pattern: gut-unit-logs-*
           merge-multiple: false
           path: shard_logs
 
-      - name: Verify total Passing == 555
+      - name: Verify Passing ≥ baseline and old names present
         run: |
           set -euo pipefail
           echo "Shard artifacts:"
@@ -222,23 +232,50 @@ jobs:
             total=$((total + n))
           done < <(find shard_logs -name gut_unit_passing.txt | sort)
           echo "TOTAL_PASSING=${total}"
-          if [[ "$total" != "555" ]]; then
-            echo "::error::unit+property Passing=${total} expected 555 (pre-change main)"
+          BASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"
+          BASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)
+          echo "BASELINE_COUNT=${BASELINE_COUNT}"
+          if [[ "$total" -lt "$BASELINE_COUNT" ]]; then
+            echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"
             exit 1
           fi
-          echo "GUT_UNIT_PROPERTY_COUNT_OK=555"
+          python3 - <<'PY'
+          from pathlib import Path
+          baseline = {
+              ln.strip()
+              for ln in Path(".github/ci/gut_unit_property_baseline_names.txt").read_text().splitlines()
+              if ln.strip()
+          }
+          seen = set()
+          for f in Path("shard_logs").rglob("gut_unit_names.txt"):
+              for ln in f.read_text(errors="replace").splitlines():
+                  n = ln.strip()
+                  if n:
+                      seen.add(n)
+          missing = sorted(baseline - seen)
+          print(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)} MISSING={len(missing)}")
+          if missing:
+              print("MISSING_BASELINE_NAMES:")
+              for n in missing:
+                  print(n)
+              print("::error::baseline test names missing from this run (set diff)")
+              raise SystemExit(1)
+          print("GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1")
+          PY
+          echo "GUT_UNIT_PROPERTY_COUNT_OK>=${BASELINE_COUNT} actual=${total}"
 
   gut-ui:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 17-69 2.2: restore 15 (measured ~2m09s); whole-CI ≤50m is not a per-job raise.
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -262,7 +299,7 @@ jobs:
           ./godot --version
 
       - name: Cache Godot imported assets
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -299,7 +336,7 @@ jobs:
 
       - name: Upload GUT UI logs
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v5
         with:
           name: gut-ui-logs
           path: gut_ui.log
@@ -311,17 +348,18 @@ jobs:
       (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
       && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 17-69 2.2: restore 15 (measured ~1m14s).
+    timeout-minutes: 15
     permissions:
       actions: read
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -345,7 +383,7 @@ jobs:
           ./godot --version
 
       - name: Cache Godot imported assets
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -394,7 +432,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p out/golden-main
-          # Prefer artifact from latest successful main CI run; else mark missing.
+          # Prefer artifact from latest successful main CI run.
+          # 17-69 2.5: missing baseline must fail the job (no silent GREEN skip).
           set +e
           RUN_ID=$(gh run list --repo "${{ github.repository }}" --branch main --workflow ci.yml \
             --json databaseId,conclusion,status --limit 30 \
@@ -403,7 +442,8 @@ jobs:
           if [[ -z "${RUN_ID:-}" ]]; then
             echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"
             echo "missing" > out/golden-main/STATUS.txt
-            exit 0
+            echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"
+            exit 1
           fi
           echo "GOLDEN_BASE_RUN_ID=$RUN_ID"
           set +e
@@ -413,26 +453,26 @@ jobs:
           if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
             echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"
             echo "missing" > out/golden-main/STATUS.txt
-            exit 0
+            echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"
+            exit 1
           fi
           echo "present" > out/golden-main/STATUS.txt
           ls -la out/golden-main/
 
-      - name: Compare PR golden to main baseline (or recompute note)
+      - name: Compare PR golden to main baseline
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
           if [[ ! -f out/golden-main/30d.csv ]]; then
-            echo "GOLDEN_BASE_RECOMPUTE=1 — no main baseline; PR golden stands alone this run"
-            echo "GOLDEN_COMPARE_SKIPPED"
-            exit 0
+            echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"
+            exit 1
           fi
           python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv
           echo "GOLDEN_CELLS_IDENTICAL=1"
 
       - name: Upload golden artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v5
         with:
           name: golden-30d
           path: out/golden/
@@ -447,11 +487,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -496,7 +536,7 @@ jobs:
 
       - name: Upload H4 smoke artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v5
         with:
           name: m1b-h4-smoke
           path: out/m1b_smoke/
@@ -511,11 +551,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -576,7 +616,7 @@ jobs:
 
       - name: Upload W4 cmp artifact
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v5
         with:
           name: m1b-w4-inline-cmp
           path: out/w4_cmp/
