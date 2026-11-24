@@ -48,9 +48,19 @@ func test_F1_open_fixture_allows_when_qual_open() -> void:
 
 
 func test_F1_deny_fixture_blocks_when_qual_closed() -> void:
+	## Mirror test_WP33_D63b_sim_qualification_fixture_always_denies: assert expected push_error.
 	var fx := SimQualificationFixture.new()
 	assert_false(fx.can_enter(ACTOR, StringName(PORT_A)))
+	assert_eq(
+		StringName(fx.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		QualificationProvider.ERR_SYS09_08
+	)
 	assert_false(fx.can_trade(ACTOR, StringName(PORT_A), StringName(GOOD), MarketPricer.SIDE_BUY))
+	assert_eq(
+		StringName(fx.last_error().get(ErrorInfoUtil.KEY_CODE, &"")),
+		QualificationProvider.ERR_SYS09_09
+	)
+	assert_push_error_count(2)
 
 
 func test_F1_open_fixture_only_referenced_from_sim_engine_qual_branch() -> void:
@@ -160,12 +170,18 @@ func test_F4_top_n_missing_refuses_trader_load() -> void:
 
 
 func test_F4_draft_unknown_type_errors_no_default() -> void:
+	## F4②／C-06: type missing from SHIP_DRAFT → error, no silent default 2.
 	_boot_intel_mini()
-	## Spawn real ship then poke type out of SHIP_DRAFT via ship_info path — use _draft_ok on fake.
-	## Direct: empty type string is not in SHIP_DRAFT.
-	var fake_sid := &"SHIP:NOPE"
-	## ship_info empty → false without error noise beyond empty.
-	assert_false(TraderRegistry._draft_ok(fake_sid, StringName(PORT_A)))
+	var sid: StringName = ShipRegistry.spawn_docked_ship(
+		&"SH-03", ACTOR, StringName(PORT_A), 8
+	)
+	assert_ne(String(sid), "")
+	var ship: Ship = ShipRegistry._ships[String(sid)] as Ship
+	ship.type = &"SH-NOPE"
+	assert_false(ShipRegistry.SHIP_DRAFT.has("SH-NOPE"))
+	assert_false(TraderRegistry._draft_ok(sid, StringName(PORT_B)))
+	assert_push_error_count(1)
+	assert_push_error("SHIP_DRAFT missing type")
 
 
 # --- F5 ---
