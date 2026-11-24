@@ -150,6 +150,14 @@ func boot(
 	# No /root path lookup（D-60f）. Absent → ERR-SYS15-06 field＝broker_provider.
 	errors.append_array(IntelLedger.boot_gate_errors())
 
+	# FRM-SYS15-11／D-123／25.1 F 開機: after opening MARKET stock + IntelLedger load, before day-1.
+	if IntelLedger.is_loaded() and errors.is_empty():
+		errors.append_array(IntelLedger.seed_opening_board())
+
+	# D-23g／WP-36: TraderRegistry after IntelLedger; load only when layers.TRADERS enabled.
+	if TraderRegistry.is_enabled():
+		errors.append_array(TraderRegistry.load_and_validate())
+
 	# 2.3-03: 未注入 provider（且 DemandModel 未載入）→ boot() 回錯誤。
 	if _consumption == null:
 		var missing := {
@@ -206,6 +214,14 @@ func boot(
 		_booted = false
 		return errors
 
+	# WP-36／17.1 F boot: ① roster → ② grant_genesis_cash → ③ ships（before warmup）.
+	if TraderRegistry.is_enabled():
+		var tr_errors: Array = TraderRegistry.apply_boot_steps()
+		if not tr_errors.is_empty():
+			errors.append_array(tr_errors)
+			_booted = false
+			return errors
+
 	# D-05(b)／D-07: boot day=0 (Clock._tick=0); ledgers track the same calendar day.
 	GoodsLedger.set_day(Clock.day)
 	CashLedger.set_day(Clock.day)
@@ -252,9 +268,13 @@ func tick_day() -> Array:
 	if ShipRegistry.is_loaded():
 		day_errors.append_array(ShipRegistry.daily_step(Clock.day))
 
-	# 25.1 F／D-34d: IntelLedger.daily_step after ShipRegistry, before TraderRegistry (not yet).
+	# 25.1 F／D-34d: IntelLedger.daily_step after ShipRegistry, before TraderRegistry.
 	if IntelLedger.is_loaded():
 		day_errors.append_array(IntelLedger.daily_step(Clock.day))
+
+	# 17.1 F／WP-36: TraderRegistry.daily_step after IntelLedger.
+	if TraderRegistry.is_enabled() and TraderRegistry.is_loaded():
+		day_errors.append_array(TraderRegistry.daily_step(Clock.day))
 
 	# 2.3-03 步驟 3: 注入的 ConsumptionProvider 執行 CONSUME，依 (port_id, good_id) 升序
 	day_errors.append_array(_run_daily_consume(Clock.day))
@@ -296,6 +316,8 @@ func tick_day() -> Array:
 	TradeDesk.flush_signals()
 	if IntelLedger.is_loaded():
 		IntelLedger.flush_signals()
+	if TraderRegistry.is_enabled() and TraderRegistry.is_loaded():
+		TraderRegistry.flush_signals()
 	Clock.day_ticked.emit(Clock.day)
 	if at_cutoff:
 		# D-05(c): season_index = floori((day−1)/D)；首季 0

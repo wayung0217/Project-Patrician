@@ -1,5 +1,6 @@
 extends SceneTree
 ## 17-59 H3: read out/m1b (or --in) → report.md tables ①–⑤ + 17-69 SEED_NO_EFFECT / K3 cols.
+## 17-71 ⑥: L5 base + L4 duration_s / per-season sails / cargo_dan_sum transplant.
 ## Usage: godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b
 
 
@@ -131,18 +132,36 @@ func _main() -> void:
 	lines.append("")
 	lines.append("## ⑤ Timing / traders / abort")
 	lines.append("")
-	lines.append("| Group | status | duration_s | aborted | abort_reason | sail_sum |")
-	lines.append("|-------|--------|------------|---------|--------------|----------|")
+	lines.append("| Group | status | duration_s | aborted | abort_reason | sail_sum | cargo_dan_sum |")
+	lines.append("|-------|--------|------------|---------|--------------|----------|---------------|")
 	for st_v4 in rows1:
 		var st5: Dictionary = st_v4
 		lines.append(
-			"| %s | %s | %s | %s | %s | %s |" % [
+			"| %s | %s | %s | %s | %s | %s | %s |" % [
 				st5["group"],
 				st5["status"],
 				st5["duration_s"],
 				st5["aborted"],
 				st5["abort_reason"],
 				st5["sail_sum"],
+				st5["cargo_dan_sum"],
+			]
+		)
+	lines.append("")
+	## L4 transplant (D-123／K3): per-season sails from season_index + cargo_dan_sum.
+	lines.append("## ⑤b Trader sail / cargo by season (L4 duration/sails/cargo)")
+	lines.append("")
+	lines.append("| Group | status | sail_sum | cargo_dan_sum | season_sails |")
+	lines.append("|-------|--------|----------|---------------|--------------|")
+	for st_v5b in rows1:
+		var st5b: Dictionary = st_v5b
+		lines.append(
+			"| %s | %s | %s | %s | %s |" % [
+				st5b["group"],
+				st5b["status"],
+				st5b["sail_sum"],
+				st5b["cargo_dan_sum"],
+				st5b["season_sails"],
 			]
 		)
 	lines.append("")
@@ -216,6 +235,9 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		"aborted": "N/A",
 		"abort_reason": "N/A",
 		"sail_sum": "N/A",
+		## L4 transplant
+		"cargo_dan_sum": "N/A",
+		"season_sails": "N/A",
 		## 17-69 5.2 / 5.3
 		"season_sail_count": "N/A",
 		"season_cargo_dan": "N/A",
@@ -378,19 +400,32 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 	if FileAccess.file_exists(trader_path):
 		var sails := 0
 		var cargo_total := 0
+		var by_season: Dictionary = {} ## season_index:String → sails (L4)
 		var traders: Array = _read_csv(trader_path)
 		for t_v in traders:
 			var td: Dictionary = t_v
-			sails += _as_int(td.get("sail_count", 0))
+			var sc: int = _as_int(td.get("sail_count", 0))
+			sails += sc
+			var si: String = String(td.get("season_index", ""))
+			by_season[si] = int(by_season.get(si, 0)) + sc
 			cargo_total += _cargo_dan_sum(td.get("cargo_dan_json", "{}"))
 		out["sail_sum"] = str(sails)
+		out["cargo_dan_sum"] = str(cargo_total)
 		out["trader_sails_total"] = str(sails)
 		out["trader_cargo_dan_total"] = str(cargo_total)
+		var season_keys: Array = by_season.keys()
+		season_keys.sort_custom(func(a, b): return _as_int(a) < _as_int(b))
+		var parts: PackedStringArray = PackedStringArray()
+		for sk in season_keys:
+			parts.append("%s:%d" % [String(sk), int(by_season[sk])])
+		out["season_sails"] = ",".join(parts) if not parts.is_empty() else "N/A"
 		## 5.2: only exact column names season_sail_count / season_cargo_dan (not sail_count).
 		out["season_sail_count"] = _column_sum_or_na(traders, "season_sail_count")
 		out["season_cargo_dan"] = _column_cargo_or_na(traders, "season_cargo_dan")
 	else:
 		out["sail_sum"] = "N/A"
+		out["cargo_dan_sum"] = "N/A"
+		out["season_sails"] = "N/A"
 		out["trader_sails_total"] = "N/A"
 		out["trader_cargo_dan_total"] = "N/A"
 	## Also accept season_* columns on season_ports (Lane4 may place them there).

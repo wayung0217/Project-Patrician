@@ -29,6 +29,13 @@ class TestWorkforce extends WorkforceProvider:
 		return 0
 
 
+## R9-65 A2／D-128：offtake-only quotes — avoid DemandModel→PopulationModel shard residue
+## (size-balanced shards may leave DemandModel loaded without PopulationModel).
+class _ZeroPotentialDemand extends RefCounted:
+	func weekly_potential_demand(_port_id: StringName, _good_id: StringName) -> int:
+		return 0
+
+
 func before_each() -> void:
 	_wipe(ROOT)
 	BuildingEconomy._loaded = false
@@ -40,6 +47,14 @@ func before_each() -> void:
 	CashLedger._loaded = false
 	MarketPricer._loaded = false
 	Params._loaded = false
+	DemandModel.clear_potential_demand_provider()
+	DemandModel.clear_queue_material_shortfall_provider()
+
+
+func after_each() -> void:
+	DemandModel.clear_potential_demand_provider()
+	DemandModel.clear_queue_material_shortfall_provider()
+
 
 
 func test_WP67_garrison_goods_fail_restores_cash_and_stock() -> void:
@@ -219,6 +234,9 @@ func _boot_world() -> void:
 	pop.set_pop(PORT, 1000)
 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
 	assert_eq(Clock.load_and_validate().size(), 0)
+	## Isolate MarketPricer.quote from DemandModel shard residue (same pattern as WP56/R972).
+	DemandModel.clear_queue_material_shortfall_provider()
+	DemandModel.set_potential_demand_provider(_ZeroPotentialDemand.new())
 	var goods_dir := _build_valid_goods(ROOT + "goods/")
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_valid_ports(Params.get_int(PRM_PORT_COUNT_MIN), ROOT + "ports/")
@@ -236,6 +254,7 @@ func _boot_world() -> void:
 		BuildingEconomy.load_and_validate(ROOT + "zones/", ROOT + "city_center/", ROOT + "buildings/").size(),
 		0
 	)
+
 
 
 func _force_public(owner: StringName, cb: StringName, level: int) -> void:

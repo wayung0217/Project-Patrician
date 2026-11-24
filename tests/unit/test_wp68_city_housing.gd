@@ -253,6 +253,77 @@ func test_D100_under_construction_and_paused_count() -> void:
 	assert_eq(int(counts["built"]), 2)
 
 
+func test_D120c_count_switch_off_is_zero() -> void:
+	## D-120(c): switch off → city_auto_housing_count＝0（開局城營亦不計）.
+	_boot_min()
+	BuildingEconomy.set_city_housing_layer(false)
+	_prep_port_with_empty_slot()
+	_add_active_residence("BLD-OPENING")
+	_force_housing_trigger_conditions()
+	BuildingEconomy._season_city_auto_housing(PORT)
+	assert_eq(BuildingEconomy.city_auto_housing_count(StringName(PORT)), 0)
+
+
+func test_D120c_count_after_auto_build_is_one() -> void:
+	## D-120(c): 自建一棟後 count＝1（含建造中）.
+	_boot_min()
+	BuildingEconomy.set_city_housing_layer(true)
+	_prep_port_with_empty_slot(3) ## filler residence takes 1; leave empty for auto-build
+	_force_housing_trigger_conditions()
+	var city: StringName = CashLedger.make_city_id(PORT)
+	_set_city_balance(city, int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["RESIDENCE"]) * 4)
+	var before: int = BuildingEconomy.city_auto_housing_count(StringName(PORT))
+	assert_eq(before, 0)
+	BuildingEconomy._season_city_auto_housing(PORT)
+	assert_eq(BuildingEconomy.city_auto_housing_count(StringName(PORT)), 1)
+
+
+func test_D120c_count_decrements_after_demolish() -> void:
+	## D-120(c): 拆除後減 1.
+	_boot_min()
+	BuildingEconomy.set_city_housing_layer(true)
+	_prep_port_with_empty_slot(3)
+	_force_housing_trigger_conditions()
+	var city: StringName = CashLedger.make_city_id(PORT)
+	_set_city_balance(city, int(Params.get_value("PRM-SYS08-BUILD_CASH_LI")["RESIDENCE"]) * 4)
+	BuildingEconomy._season_city_auto_housing(PORT)
+	assert_eq(BuildingEconomy.city_auto_housing_count(StringName(PORT)), 1)
+	var bid: StringName = &""
+	for k in BuildingEconomy._city_auto_housing.keys():
+		bid = StringName(k)
+		break
+	assert_ne(bid, &"")
+	## demolish requires owner; city-auto residences are CITY-owned.
+	var rc: int = BuildingEconomy.demolish(city, bid)
+	assert_eq(rc, 1, "demolish city-auto residence")
+	assert_eq(BuildingEconomy.city_auto_housing_count(StringName(PORT)), 0)
+
+
+func test_D120c_count_unknown_port_returns_minus_one() -> void:
+	## D-120(c): 查無港 → −1 + last_error（同 city_queue_position）.
+	_boot_min()
+	BuildingEconomy._clear_state()
+	BuildingEconomy._loaded = true
+	var n: int = BuildingEconomy.city_auto_housing_count(StringName("PT-NOPE"))
+	assert_eq(n, -1)
+	assert_eq(
+		String(BuildingEconomy.last_error().get("code", "")),
+		String(BuildingEconomy.ERR_SYS08_08)
+	)
+	for e in get_errors():
+		e.handled = true
+
+
+func test_D120c_opening_city_residence_not_counted() -> void:
+	## D-120(c): 開局城營住宅不算（僅 FRM-SYS08-24 路徑記入）.
+	_boot_min()
+	BuildingEconomy.set_city_housing_layer(true)
+	_prep_port_with_empty_slot()
+	_add_active_residence("BLD-OPENING-CITY")
+	assert_eq(BuildingEconomy.city_auto_housing_count(StringName(PORT)), 0)
+	assert_eq(_residence_count(), 1)
+
+
 func test_WP68_scenario_layer_city_housing_allowed() -> void:
 	## Minimal fixture（avoid pre-existing M1b override／grid ABUND overlap）.
 	var sc := {

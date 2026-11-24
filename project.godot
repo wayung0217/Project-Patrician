@@ -1,7 +1,7 @@
 ; Engine configuration file.
-; Godot 4.7.2-stable — Autoload order 2.2-01／D-14c／D-26b／D-17d／D-09a／D-34d:
-; … → CashLedger → TradeDesk → BuildingEconomy → … → ShipRegistry → IntelLedger → SimLoop
-; （BrokerDesk／TraderRegistry／TierRegistry／ReputationLedger／TaxLedger 尚未實作）.
+; Godot 4.7.2-stable — Autoload order 2.2-01／D-14c／D-26b／D-17d／D-09a／D-34d／D-23g:
+; … → ShipRegistry → IntelLedger → TraderRegistry → SimLoop
+; （BrokerDesk／TierRegistry／ReputationLedger／TaxLedger／AiRegistry 尚未實作）.
 
 config_version=5
 
@@ -27,6 +27,7 @@ PopulationModel="*res://autoload/population_model.gd"
 DemandModel="*res://core/demand_model.gd"
 ShipRegistry="*res://autoload/ship_registry.gd"
 IntelLedger="*res://autoload/intel_ledger.gd"
+TraderRegistry="*res://autoload/trader_registry.gd"
 SimLoop="*res://autoload/sim_loop.gd"
 
 [editor_plugins]

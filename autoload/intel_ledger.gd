@@ -74,6 +74,8 @@ const KEY_DIV_PPM := "divergence_ppm"
 const KEY_DIV_BAND := "divergence_band"
 const KEY_DIRECTION := "direction"
 const KEY_AGE_DAYS := "age_days"
+## FRM-SYS15-11／D-123(a): virtual ship_id for opening board reports.
+const OPENING_SHIP_ID := &"OPENING"
 
 var _loaded: bool = false
 var _last_error: Dictionary = {}
@@ -181,6 +183,89 @@ func boot_gate_errors() -> Array:
 			_err(ERR_SYS15_06, "stock_weeks", null, "MarketPricer.stock_weeks missing")
 		)
 	_emit_errors(errors)
+	return errors
+
+
+func seed_opening_board() -> Array:
+	## FRM-SYS15-11／D-123(a): one OPENING report per (P, O≠P) from O's opening mid/band.
+	## Call once after opening MARKET stock, before day-1 tick. No own_snap／ship_snap／contact.
+	assert(_loaded, "IntelLedger.seed_opening_board before load")
+	var errors: Array = []
+	if not PortRegistry.is_loaded() or not GoodCatalog.is_loaded() or not MarketPricer.is_loaded():
+		errors.append(
+			_err(ERR_SYS15_05, "seed_opening_board", null, "PortRegistry/GoodCatalog/MarketPricer required")
+		)
+		_emit_errors(errors)
+		return errors
+	var ports: Array = []
+	for p in PortRegistry.all_ids():
+		ports.append(p)
+	ports.sort_custom(func(a, b): return String(a) < String(b))
+	var goods: Array = []
+	for g in GoodCatalog.all_ids():
+		goods.append(g)
+	goods.sort_custom(func(a, b): return String(a) < String(b))
+	var weeks_scale: int = Params.get_int(StringName(PRM_WEEKS_SCALE))
+	## Two-pass: price every (O,g); write only if no ERR-SYS15-05 (C-06 collect-all).
+	var snaps_by_origin: Dictionary = {} ## origin:String → goods Dictionary
+	for o_v in ports:
+		var o: StringName = o_v
+		var goods_snap: Dictionary = {}
+		for g_v in goods:
+			var good_id: StringName = g_v
+			var mid: float = MarketPricer.mid_price(o, good_id)
+			var mp_err: Dictionary = MarketPricer.last_error()
+			if not mp_err.is_empty() or mid <= 0.0:
+				errors.append(
+					_err(ERR_SYS15_05, String(good_id), o, "opening mid_price failed")
+				)
+				continue
+			var mid_li: int = floori(mid)
+			if mid_li < 1:
+				errors.append(
+					_err(ERR_SYS15_05, String(good_id), o, "opening mid_li < 1")
+				)
+				continue
+			var good: GoodDef = GoodCatalog.get_good(String(good_id))
+			var base_li: int = good.base_price_li if good != null else 0
+			var ratio: float = mid / float(base_li) if base_li > 0 else 0.0
+			var band: int = MarketPricer.indicator_band(ratio)
+			var w: Variant = MarketPricer.stock_weeks(o, good_id)
+			var weeks_x: Variant = null
+			if w != null:
+				weeks_x = floori(float(w) * float(weeks_scale))
+			goods_snap[String(good_id)] = {
+				KEY_MID_LI: mid_li,
+				KEY_BAND: band,
+				KEY_WEEKS_X: weeks_x,
+			}
+		snaps_by_origin[String(o)] = goods_snap
+	if not errors.is_empty():
+		_emit_errors(errors)
+		return errors
+	for p_v in ports:
+		var p: StringName = p_v
+		var port_s: String = String(p)
+		if not _rec.has(port_s):
+			_rec[port_s] = {}
+		for o_v2 in ports:
+			var o2: StringName = o_v2
+			if String(o2) == port_s:
+				continue
+			var snap: Dictionary = {
+				KEY_SHIP_ID: OPENING_SHIP_ID,
+				KEY_OWNER_ID: &"",
+				KEY_ORIGIN_PORT: o2,
+				KEY_TICK_TAKEN: 0,
+				KEY_DAY_TAKEN: 0,
+				KEY_GOODS: (snaps_by_origin[String(o2)] as Dictionary).duplicate(true),
+				KEY_PUBLISHED: true,
+			}
+			var pair: String = _pair_key(OPENING_SHIP_ID, o2)
+			(_rec[port_s] as Dictionary)[pair] = {
+				KEY_SNAPSHOT: snap,
+				KEY_TICK_ARRIVED: 0,
+			}
 	return errors
 
 
@@ -339,6 +424,14 @@ func board_for(
 		return {}
 	var samples: Array = _visible_samples(actor_id, port_id, origin_port, good_id)
 	return _summarize_board(samples, good_id)
+
+
+func diag_recorded_report_count(port_id: StringName) -> int:
+	## 17-63 Z2(d): raw ship-report entries recorded at present-port board (_rec[port]).
+	var board_v: Variant = _rec.get(String(port_id), {})
+	if typeof(board_v) != TYPE_DICTIONARY:
+		return 0
+	return (board_v as Dictionary).size()
 
 
 func board_samples(

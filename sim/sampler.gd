@@ -18,7 +18,8 @@ const HDR_SEASON_PORTS := (
 	+ "land_rent_li,vacancy_tax_li,city_spend_json,"
 	+ "queue_state,sat_poor,sat_citizen,sat_rich,job_cap,cap_sat_up1,cap_sat_up2,"
 	+ "pf1,pf2,pf3,pf4,pf5,pf6,"
-	+ "unmet_poor_top3,unmet_citizen_top3,unmet_rich_top3"
+	+ "unmet_poor_top3,unmet_citizen_top3,unmet_rich_top3,"
+	+ "city_auto_housing"
 )
 const HDR_DAILY := (
 	"run_id,seed,day,good_id,stock,mid_li,stock_weeks,band,"
@@ -183,6 +184,7 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 		"unmet_poor_top3": unmet_p,
 		"unmet_citizen_top3": unmet_c,
 		"unmet_rich_top3": unmet_r,
+		"city_auto_housing": BuildingEconomy.city_auto_housing_count(StringName(port_s)),
 	})
 
 

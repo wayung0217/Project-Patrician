@@ -210,7 +210,7 @@ func quote(port_id: StringName, good_id: StringName, side: int, qty: int) -> Dic
 		return out
 
 	var stock_after: int = stock - qty if side == SIDE_BUY else stock + qty
-	var area: float = _batch_area(anchor, weekly_offtake, stock, stock_after)
+	var area: float = batch_area(anchor, weekly_offtake, stock, stock_after)
 	var half: float = Params.get_float(PRM_HALF_SPREAD)
 	var total: int = 0
 	if side == SIDE_BUY:
@@ -404,8 +404,10 @@ func _floor_mult() -> float:
 	return _curve.mults[last_i]
 
 
-func _batch_area(anchor: int, weekly_offtake: float, stock_before: int, stock_after: int) -> float:
-	# FRM-SYS04-04／09（改）: Area uses weekly_offtake; weeks via _stock_weeks_raw (N-04).
+func batch_area(anchor: int, weekly_offtake: float, stock_before: int, stock_after: int) -> float:
+	## F4③／D-120(b)④／C-14: public rename of _batch_area (signature unchanged).
+	## FRM-SYS04-04／09（改）: Area uses weekly_offtake; weeks via _stock_weeks_raw (N-04).
+	## Signature: batch_area(anchor: int, weekly_offtake: float, stock_before: int, stock_after: int) -> float
 	var q: int = stock_after - stock_before
 	if q < 0:
 		q = 0 - q
