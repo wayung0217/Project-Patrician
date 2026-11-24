@@ -157,7 +157,6 @@ func _run_scenario_orchestrator(
 		jf.close()
 
 		var exit_code: int = 0
-		var child_output: Array = []
 		if inline_mode:
 			## W4: same-process job (Owner Windows; progress visible).
 			print("sim_runner_inline_job: %s" % job_file)
@@ -167,6 +166,9 @@ func _run_scenario_orchestrator(
 		else:
 			## W1 argv: one element per arg; --job = user:// path (no spaces).
 			## W3: --log-file on engine side (absolute; engine flag before --).
+			## Do not capture child stdout into an Array (read_stdout=false): with
+			## TRADERS on, pipe fill / huge buffers crash Godot OS.execute
+			## (cowdata p_size<0 / SIGSEGV). Diagnostics come from --log-file.
 			var log_abs: String = ProjectSettings.globalize_path(log_file)
 			var cmd_args: PackedStringArray = PackedStringArray([
 				"--headless",
@@ -186,12 +188,11 @@ func _run_scenario_orchestrator(
 			print("sim_runner_child_argv: %s %s" % [exe, " ".join(cmd_args)])
 			## Prove --job value is a single array element (W1 tests).
 			print("sim_runner_job_argv_elem: %s" % job_file)
-			exit_code = OS.execute(exe, cmd_args, child_output, true, false)
+			var child_output: Array = []
+			exit_code = OS.execute(exe, cmd_args, child_output, false, false)
 			if exit_code != 0:
 				## W3: print last 40 log lines; synthesize abort in summary path below.
 				_print_log_tail(log_abs, 40)
-				for line in child_output:
-					print("child: %s" % str(line))
 				push_error(
 					"sim_runner: job run_id=%s exit=%s" % [str(job["run_id"]), str(exit_code)]
 				)

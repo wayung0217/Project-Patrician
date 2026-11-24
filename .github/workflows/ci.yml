@@ -182,14 +182,15 @@ jobs:
           path: out/golden/
           retention-days: 3
 
-  # 17-59 H4 / 17-61 V3: 30d smoke Za G0 A0 + Zb (timeout 15m).
+  # 17-59 H4 / 17-61 V3: 30d smoke Za G0 A0 + Zb.
+  # Timeout 45m: post-Lane-F TRADERS=on makes Za 30d exceed the old 15m budget.
   # Also auto on push to tools-1758 / int-1758 (agent token cannot workflow_dispatch).
   m1b-h4-smoke:
     if: >-
       (github.event_name == 'push' && (github.ref == 'refs/heads/tools-1758' || github.ref == 'refs/heads/int-1758'))
       || (github.event_name == 'workflow_dispatch' && inputs.job == 'h4-smoke')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -238,14 +239,15 @@ jobs:
           path: out/m1b_smoke/
           retention-days: 3
 
-  # 17-60 W4 / 17-61 V3: 30d two-mode cmp (timeout 15m).
+  # 17-60 W4 / 17-61 V3: 30d two-mode cmp (sub then inline; needs 2× Za budget).
+  # Timeout 45m: TRADERS=on after Lane F; was 15m pre-int.
   # Also auto on push to tools-1758 / int-1758 (agent token cannot workflow_dispatch).
   m1b-w4-inline-cmp:
     if: >-
       (github.event_name == 'push' && (github.ref == 'refs/heads/tools-1758' || github.ref == 'refs/heads/int-1758'))
       || (github.event_name == 'workflow_dispatch' && inputs.job == 'w4-inline-cmp')
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - name: Checkout
         uses: actions/checkout@v4
