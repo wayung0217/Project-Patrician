@@ -34,7 +34,8 @@ jobs:
   gut-unit:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Per-shard cap: main tip outlier was ~35m for full unit; balanced shards should be ≪ that.
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -118,30 +119,34 @@ jobs:
           fi
           echo "IMPORT_CLEAN_TREE_OK"
 
-      - name: Select unit shard scripts (4-way) + property on shard 0
+      - name: Select unit shard scripts (size-balanced 4-way) + property on shard 0
         id: shard
         run: |
           set -euo pipefail
           SHARD="${{ matrix.shard }}"
-          N=4
-          mapfile -t files < <(find tests/unit -name 'test_*.gd' | sort)
-          echo "UNIT_FILES_TOTAL=${#files[@]}"
-          : > /tmp/gut_shard_tests.txt
-          selected=0
-          for i in "${!files[@]}"; do
-            if (( i % N == SHARD )); then
-              echo "res://${files[$i]}" >> /tmp/gut_shard_tests.txt
-              selected=$((selected + 1))
-            fi
-          done
-          if [[ "$SHARD" == "0" ]]; then
-            find tests/property -name 'test_*.gd' | sort | while read -r f; do
-              echo "res://${f}" >> /tmp/gut_shard_tests.txt
-            done
-          fi
-          echo "SHARD=${SHARD} selected_unit=${selected} scripts=$(wc -l < /tmp/gut_shard_tests.txt)"
-          echo "selected_unit=${selected}" >> "$GITHUB_OUTPUT"
-          cat /tmp/gut_shard_tests.txt
+          python3 - <<PY
+          from pathlib import Path
+          shard = int("${SHARD}")
+          files = sorted(Path("tests/unit").glob("test_*.gd"), key=lambda p: (-p.stat().st_size, p.name))
+          bins = [[] for _ in range(4)]
+          sizes = [0] * 4
+          for f in files:
+              i = min(range(4), key=lambda k: sizes[k])
+              bins[i].append(f)
+              sizes[i] += f.stat().st_size
+          selected = bins[shard]
+          out = Path("/tmp/gut_shard_tests.txt")
+          lines = [f"res://{p.as_posix()}" for p in sorted(selected, key=lambda p: p.name)]
+          if shard == 0:
+              for p in sorted(Path("tests/property").glob("test_*.gd")):
+                  lines.append(f"res://{p.as_posix()}")
+          out.write_text("\n".join(lines) + "\n")
+          print(f"SHARD={shard} unit={len(selected)} bytes={sizes[shard]} scripts={len(lines)}")
+          for ln in lines:
+              print(ln)
+          Path("/tmp/gut_shard_selected_unit.txt").write_text(str(len(selected)))
+          PY
+          echo "selected_unit=$(cat /tmp/gut_shard_selected_unit.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Run GUT unit shard
         run: |
