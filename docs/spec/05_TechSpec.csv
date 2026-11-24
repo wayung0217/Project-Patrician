@@ -1,5 +1,5 @@
 ﻿05_TechSpec — Phase 0 代碼實作落實書（給 Cursor）v0.4,,,,,,,,
-狀態：main ade2dc8；17-55 已交付、R9-71 審畢；D-120 已核准；17-58（合併步 0 與線 B／C／D／E、修散商、重跑 M1b）待發送，docs/spec v6.99.183｜2026-11-24｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，已合併）｜16 派工單 Round 10（WP-22 SYS-06 居民消費）｜17 派工單 Round 11（WP-33 至 37，草稿）,,,,,,,,
+狀態：main 1252ab1（17-58 步 M 完成：#71、#74、#75、#73、#77 已合）；17-58 已發送（docs/spec v6.99.183）；17-59、17-60、17-61 追加已發送：步 Z 改由 Owner 本機跑、模擬器 Windows 相容、驗證一律走 GitHub CI（D-121）｜2026-11-24｜規格權威：03_Systems（C 欄以公式即時引用）｜硬規則權威：AI_README 第 6 節｜本書未寫的事 = 不准做，先問｜目錄：0 守則｜1 範圍｜2 目錄與排程｜3 模組規格｜4 常數｜5 驗收｜6 禁止事項｜7 工作包總表（唯一 WP 清單）｜8 Owner 裁決（D 系列）｜9 收件審查與合併紀錄（R 系列）｜10 派工單 Round 4（WP-16、17）｜11 派工單 Round 5（WP-18、25）｜12 派工單 Round 6（WP-19、20，依序派）｜13 派工單 Round 7（船隊：WP-28、29 先派，WP-30、31 後派）｜14 派工單 Round 8（收尾：WP-21、23、24，今夜接力開分支）｜15 派工單 Round 9（WP-32 有效去化與中轉清理，已合併）｜16 派工單 Round 10（WP-22 SYS-06 居民消費）｜17 派工單 Round 11（WP-33 至 37，草稿）,,,,,,,,
 ,,,,,,,,
 0 給 Cursor 的守則（每條皆為退件標準）,,,,,,,,
 編號,規則,內容,判定／實作要求,來源,狀態,,,
@@ -282,7 +282,7 @@ N-10,實作第 1 節「禁止碰」任何一項,見 1-X1..X8,,C-01,Locked,,,
 ,,,,,,,,
 7 工作包總表（WP）— 唯一的工作包清單：新工作包一律接在表尾、編號連續；同一 WP 的後續修改記在 G 欄，不另開表（Owner 追蹤用；Cursor 不得修改）,,,,,,,,
 用法,Cursor 依 WP 編號與依賴開工；一個 PR 只做一個 WP；從最新 main 開分支、不堆疊（Owner 另行核准者除外）；依序搬到 main 後以 merge commit 合併；測試數以「合併前 main ＋ 該 PR 自己新增數」累計，舊測名不得消失。,PR 描述必須回報：WP 編號、新增檔案、測試結果（通過數／總數與新增測名）、遇到的規格缺口（未裁決不得自行補）。,狀態下拉：未開始／進行中／PR 待審／退件／完成；Owner 審後更新。,,,,,
-進度,共 70 個 WP｜完成 56｜進行中 1｜PR 待審 2｜退件 0｜未開始 11　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
+進度,共 70 個 WP｜完成 58｜進行中 1｜PR 待審 0｜退件 0｜未開始 11　（新增 WP：在第 7 節表尾空白列上方插入整列，公式自動擴充）,,,,,,,
 WP 編號,內容（對應規格）,依賴,交付物,驗收,狀態,PR／合併紀錄,階段,最後更新
 WP-00,專案骨架：Godot 4.7.2 專案、第 2.1 節全部目錄、GUT 安裝、CI headless,—,project.godot、第 2.1 節目錄、CI 設定檔、一個空白通過測試,CI headless 執行 GUT 綠燈；目錄與第 2.1 節逐字一致，無本書外目錄；.github／addons/gut／.cursor／docs 為 2.1-05 允許的工具目錄；不登錄 Autoload（1-A1）,完成,R1：PR #1｜1/1 ／ R2：無改動｜2026-11-18T03:19:32Z 合併 33018d6（main 1/1）,Phase 0（Round 1–2）,2026-11-18
 WP-01,Params（1-A1／params.gd）：讀 params.json，第 4 節 PRM 表全部鍵,WP-00,res://autoload/params.gd、測試,第 4 節每個 PRM 鍵皆可讀；缺 1-A8 所列鍵即拒絕啟動；代碼內無 magic number,完成,R1：PR #2｜9/9 ／ R2：+TICKS_PER_DAY、ROUND_EPS｜13/13｜搬到 main 後合併 57435c7（main 13）,Phase 0（Round 1–2）,2026-11-18
@@ -339,7 +339,7 @@ WP-35,SYS-09 商籍（MVP 0 至 2 階）：TierRegistry、ReputationProvider 介
 ★ 2026-11-21（D-66、D-70）：WP-35 派工時一併同步資料檔：ports（PT-07 regime_id＝無主、is_free_port＝true；PT-08／09＝西班牙；新增 ladder_id）、tax_rates（PT-07＝0）、opening_public（PT-07 刪 CB-03、04、07、09、16 共 5 列）；測試若斷言這些數量須依規格同步，不得為過測而改規格。
 【原 PR／合併紀錄欄（部分可能已過時，以上方進度紀錄與 R 系列為準）】
 派工單草稿見第 17 節（未派）；D-24a 至 h、D-26a、c、d｜D-97(g)：試行測試先行（先派測試包、後派實作包）",Phase 2（成交與制度）,2026-11-22
-WP-36,SYS-17 散商（TraderRegistry）：ST-TRADER、每日決策、探索、起始資金專用入口、開局配船與水手、破產退場五步（03_Systems 17.1）｜★ D-44g：FRM-SYS17-02 的評估核心須實作為 res://core/trade_evaluator.gd（純函數，SYS-18 共用）；若本包先於 WP-42 派工，請在派工時一併要求。,WP-30、WP-33、WP-35 合併後；順序排在 WP-37 之後（正式開機需 TradeObserver）,trader_registry.gd、cash_ledger.gd（genesis 例外入口）、sim_loop.gd、params.gd、測試,TST-SYS17-01 至 12；見 17-08、17-09,進行中,派工單草稿見第 17 節（未派）；D-23b 至 g、D-26e｜★ D-50：破產與清算由 SYS-22（WP-44）統一執行；本包只做「對凍結者每日步驟跳過」與 retire 入口（待 WP-44 配合），不得自寫清算（N-04）。｜★ D-104(c)（待 Owner 核對）：提前至 M1b，取代 L2 遷移作為運貨層｜R9-71：#72 不合併——模擬未接線（G-INT-01）、遠港行情 board_for 用法錯、規範四項（17-58）｜D-120：修正與重跑派 17-58 線 F（#72 續用）,Phase 2（成交與制度）,2026-11-24
+WP-36,SYS-17 散商（TraderRegistry）：ST-TRADER、每日決策、探索、起始資金專用入口、開局配船與水手、破產退場五步（03_Systems 17.1）｜★ D-44g：FRM-SYS17-02 的評估核心須實作為 res://core/trade_evaluator.gd（純函數，SYS-18 共用）；若本包先於 WP-42 派工，請在派工時一併要求。,WP-30、WP-33、WP-35 合併後；順序排在 WP-37 之後（正式開機需 TradeObserver）,trader_registry.gd、cash_ledger.gd（genesis 例外入口）、sim_loop.gd、params.gd、測試,TST-SYS17-01 至 12；見 17-08、17-09,進行中,派工單草稿見第 17 節（未派）；D-23b 至 g、D-26e｜★ D-50：破產與清算由 SYS-22（WP-44）統一執行；本包只做「對凍結者每日步驟跳過」與 retire 入口（待 WP-44 配合），不得自寫清算（N-04）。｜★ D-104(c)（待 Owner 核對）：提前至 M1b，取代 L2 遷移作為運貨層｜R9-71：#72 不合併——模擬未接線（G-INT-01）、遠港行情 board_for 用法錯、規範四項（17-58）｜D-120：修正與重跑派 17-58 線 F（#72 續用）｜17-58 線 F 進行中（Cursor 10:2x 回報）,Phase 2（成交與制度）,2026-11-24
 WP-37,SYS-11 聲望（MVP 買賣驅動）：ReputationLedger、TradeObserver 與 ReputationProvider 實作、政權聲望（人口加權）、飽和、apply_rep_event 預留入口（03_Systems 22.1）,WP-33（TradeObserver 介面與通知點）、WP-34（satisfaction_weights 正式資料）、WP-35（ReputationProvider 介面、PortDef.ladder_id）合併後；有效去化（WP-32）、人口（WP-21）已完成,reputation_ledger.gd、trade_observer.gd 的正式實作、demand_model.gd（新增唯讀 satisfaction_weight_points，D-28f）、params.gd、sim_loop.gd（注入與信號）、測試,TST-SYS11-01 至 13；見 17-10、17-11,未開始,派工單草稿見第 17 節（未派）；D-28a 至 e,M3 制度軸（D-118(a)，原 M4）,2026-11-23
 WP-38,SYS-10 沒收執行器：ConfiscationLedger、寬限計數、案件原子沒收與次日賣回、confiscate_port 入口（03_Systems 23.1）,WP-33（TradeDesk）、WP-35（SYS-09 階級與管制港）合併後；可與 WP-37 平行（檔案不重疊者），建議排在 WP-37 之後,confiscation_ledger.gd、building_economy.gd（confiscate_building）、goods_ledger.gd（CONFISCATE pending）、trade_desk.gd（CONFISCATED 賣回）、reputation_ledger.gd（略過城市）、params.gd、sim_loop.gd、測試,TST-SYS10-01 至 12；見 17-14、17-15,未開始,派工單草稿見第 17 節（未派）；D-29a 至 e,Phase 2（成交與制度）,2026-11-19
 WP-39,SYS-12 稅制：TaxLedger、一種稅（全港通用交易稅 FLOW；倉儲、地段、營業特許、人頭稅暫緩，D-42）、稅率資料表與調整入口、季末結算進城市錢包（03_Systems 24.1）,WP-33（TradeDesk）、WP-37（SYS-11，TradeObserver 先落地）合併後（D-42 後不再依賴 WP-35）；Owner 先匯出 tax_rates、tax_bounds 兩個 CSV（值由 Owner 審定）,tax_ledger.gd、trade_desk.gd（觀察者清單）、cash_ledger.gd（TAX_* 原因碼）、sim_loop.gd、params.gd、測試、data/tax/,TST-SYS12-01 至 17；見 17-17、17-18,未開始,派工單草稿見第 17 節（未派）；D-31a 至 f,Phase 4（制度與稅）,2026-11-19
@@ -415,8 +415,8 @@ WP-65,城市建設隊列改正（A8，D-96b 核准 a8_design.md）：新建步�
 WP-66,黃金輸出 v2（R9-64 高-3、D-96c）：把 night-17-47 步 0 harness 收進 repo（tools/golden_harness.gd，只讀公開方法），模擬 360 日；欄位加：各港各貨 mid_li、stock_weeks、window_qty；每棟建築 building_id／type／level／state／slot_id／ring；每棟住宅住戶三階人數；地租、空置稅、城市支出分項（OBS-05 同口徑）；玩家與城市現金；另輸出各欄位逐日雜湊，方便定位第一個差異日,17-50 步 0 合併完成,tools/golden_harness.gd、tools/golden_compare.py（比對兩份輸出，列每欄第一個差異日與筆數）,同一 commit 跑兩次逐位元相同；對 pre-1750 產生基線；故意改一個參數（只在臨時分支）能被比對工具抓到並指出欄位,完成,優先級 P1（審計強化，AI_README S9h）｜17-50 步 0｜17-50 已交（R9-65 不合併）；17-51 修正中｜R9-66：#65 雜湊已獨立驗證，可合併（17-53 步 0）；harness 只在季結算後查 OBS-05（F5）｜#65 黃金 v2 合併（17-53 步 0）；#66 CI 腳本錯誤閘門合併 a835ec9（17-56 步 M1）,工具批 T-1（模擬器）,2026-11-23
 WP-67,"SYS-08 小修（D-97d、e）：(1) 駐軍採購原子化（FRM-SYS08-14 D-97 補充：先驗證後寫入，失敗以沖銷還原）；(2) OBS-05 三個唯讀查詢：BuildingEconomy.city_spend_by_category(port_id: StringName, season_index: int) -> Dictionary（鍵 build_upgrade_li、garrison_li、levy_li、other_li，int 厘）；BuildingEconomy.season_land_rent_li(port_id: StringName, season_index: int) -> int；BuildingEconomy.season_vacancy_tax_li(port_id: StringName, season_index: int) -> int。查無港或季未結算依 D-08c 回失敗值（Dictionary 回空、int 回 −1）並設 last_error。",—（從最新 main 開，17-52 N4）,building_economy.gd、sim_runner OBS-05 輸出、測試,原子化：模擬貨物轉移失敗時 CITY 現金與庫存皆還原、原分錄保留；三查詢名稱逐字；步 Z 的 OBS-05 地租、空置稅、支出分項三欄有值,完成,17-52 N4｜R9-66：新建費用歸類錯（D-102e，17-53 F3）；#64 待補 diff｜R9-69：#64 與 #60 的六檔衝突解法待補（17-57 E2），隨 #60 之後合併｜R9-70 高-1：城市升級支出重複記帳，先修再合（D-114(b)，17-55 步 0-A）｜R9-71：#64 已合併（ade2dc8），D-114(b) 已修；220b8fc 的 --cc 待補（17-58）,M1 模擬器校準,2026-11-24
 WP-68,SYS-08 城市自建住宅（D-101，FRM-SYS08-24）＋開關：新局設定 city_auto_housing（bool）與情境檔 layers.CITY_HOUSING；已建比例第二道擴區門檻（D-100，FRM-SYS08-16 加註、PRM-SYS08-ZONE_USED_MIN_PPM）一併實作,WP-65（城市隊列 order_build，actor＝CITY）,building_economy.gd、sim_runner 情境欄位、params 登錄、測試,"開關關閉時與現行為逐格相同（黃金輸出 v2 零差異）；開啟時 ② 至 ⑦ 各一測試；擴區門檻含已建比例（累計）測試；十年 L1 開／關對照輸出人口、已建比例、開區季序
-★ D-115(a)：已建比例門檻是規則、不受開關控制，開關關閉時只允許開區相關欄位與黃金輸出不同（須逐港逐季說明）；十年 L1 開／關對照由 17-55 步 Z4 執行。",PR 待審,17-55 線 D（D-115(a)；原 D-110(f) 定為 M1c 另派，D-115 提前）｜R9-71：#75 可合（D-120(a)）；城市自建住宅棟數查詢待補（D-120(c)）｜D-120(c)：city_auto_housing_count 查詢派 17-58 線 G,M1 模擬器校準,2026-11-24
-WP-69,既有測試衛生（D-114(d)、D-115(c)）：既有測試不得寫入或清除 res://data、不得在測試內呼叫 git；改在 user:// 或 tests/fixtures 建資料,17-55 步 0 head（從步 0 head 開，與線 A 至 D 檔案不重疊）,步 0 head 已存在的 tests/ 測試檔與測試輔助檔（不改產品碼、不改各線新增測試）,改前改後測試名清單相同；GUT 連跑兩次全綠；每次跑完 git status --porcelain res://data 為空；tests/ 內無 git 呼叫（貼 grep 輸出）,PR 待審,17-55 線 E（D-115(c)；原 D-114 定為 M1b 後開，D-115 提前）｜R9-71：#77 可合（D-120(a)），合併後重跑 GUT,品質修復,2026-11-24
+★ D-115(a)：已建比例門檻是規則、不受開關控制，開關關閉時只允許開區相關欄位與黃金輸出不同（須逐港逐季說明）；十年 L1 開／關對照由 17-55 步 Z4 執行。",完成,17-55 線 D（D-115(a)；原 D-110(f) 定為 M1c 另派，D-115 提前）｜R9-71：#75 可合（D-120(a)）；城市自建住宅棟數查詢待補（D-120(c)）｜D-120(c)：city_auto_housing_count 查詢派 17-58 線 G｜17-58 步 M：#75 已合 main（1252ab1，D-120(a)）；R9-72 核對逐欄比對；住宅棟數查詢線 G #79 進行中,M1 模擬器校準,2026-11-24
+WP-69,既有測試衛生（D-114(d)、D-115(c)）：既有測試不得寫入或清除 res://data、不得在測試內呼叫 git；改在 user:// 或 tests/fixtures 建資料,17-55 步 0 head（從步 0 head 開，與線 A 至 D 檔案不重疊）,步 0 head 已存在的 tests/ 測試檔與測試輔助檔（不改產品碼、不改各線新增測試）,改前改後測試名清單相同；GUT 連跑兩次全綠；每次跑完 git status --porcelain res://data 為空；tests/ 內無 git 呼叫（貼 grep 輸出）,完成,17-55 線 E（D-115(c)；原 D-114 定為 M1b 後開，D-115 提前）｜R9-71：#77 可合（D-120(a)），合併後重跑 GUT｜17-58 步 M：#77 已合 main（1252ab1，D-120(a)）；R9-72 核對 GUT 兩次與 res://data 乾淨,品質修復,2026-11-24
 ,,,,,,,,
 8 Owner 裁決總表（D 系列）— 所有實作裁決集中於此，新裁決接在表尾；優先於第 3 節同主題的 D 欄註記,,,,,,,,
 編號,主題,裁決,實作要求,影響 WP,回寫來源 Sheet,,,
@@ -929,6 +929,27 @@ D-120,R9-71 後續：合併線 B／C／D／E 與步 0；17-58 修散商接線與
 (d) M1b 判讀延到 17-58 結果出來；本輪無散商基線（人口 5 年 −41%、391／448 格在天花板）記為「無貿易基線」，作為散商效果的對照組。
 (e) AI_README S9a 加一條：報告須列出每次失敗的執行與原因（D-113(e) 重申），只在 log 不算。
 ★ 落實說明（AI 2026-11-24，寫 17-58 時補）：(f) (b)① 的「全部允許」資格替身是 D-63b「一律放行的替身一律不准」的限定例外：類名 SimQualificationOpenFixture、只放 sim/、只在模擬情境 layers.QUAL_OPEN＝1 時注入；正式開機一律不載入（掃描證明）；WP-35 正式資格提供者上線後刪除。(g) 線 A 的 TOP_N_PRECISE＝3 改為參數 PRM-SYS17-TOP_N_PRECISE（試驗值 3，sim_overrides_draft），不走 EX 例外。(h) (c) 的查詢簽章定為 BuildingEconomy.city_auto_housing_count(port_id: StringName) -> int（03_Systems 8.6 H 可觀察性）。",05_TechSpec 17-58；03_Systems 8.6 H 可觀察性、FRM-SYS15-06、FRM-SYS17-04 加註、PRM-SYS17-TOP_N_PRECISE；sim_overrides_draft；AI_README S9a,R9-71；WP-36；WP-68；WP-69；17-55,D-109；D-113(e)；D-115；25.1 FRM-SYS15-06；S9h,,,
+D-121,多年模擬改由 Owner 本機跑；CI 留在 GitHub Actions（只跑測試與 30 日黃金）；Cursor 不在自己環境跑任何驗證（Owner 2026-11-24）,"【Owner 2026-11-24 指示：模擬器由 Owner 自己在本機跑；GitHub Actions 額度已被模擬用完；17-58 已依 v6.99.183 發送，以追加派工 17-59 修正】
+(a) M1b 的多年模擬（17-58 步 Z）改由 Owner 在本機用 Godot 4.7.2 跑；Cursor 不跑步 Z，改交執行工具（一個 PowerShell 指令跑完全部組、README、報告產生工具）並以 30 日自證可用。Owner 跑完把輸出資料夾交回，AI 依報告審查（R9 系列）。
+(b) 【AI 起草，待 Owner 確認】之後所有派工：任何多年模擬都不得在 GitHub Actions 跑；CI 只跑 GUT 與 30 日黃金。
+(c) 【AI 起草，待 Owner 確認】Actions 無法執行時，Cursor 在自己的環境跑同一指令並貼完整輸出，可暫代 S9b 的「CI 綠」作為合併依據，報告註明，額度恢復後補跑 CI。
+(d) AI 自省：17-53 起把十年與多組模擬交給 Cursor 跑，沒有先問 Owner 本機能不能跑、也沒評估 Actions 額度，應先提出。
+(e)【Owner 2026-11-24 發送 17-60，已核准】Owner 本機試跑 S-01（05_SimunulationGuild R-01）發現：sim_runner 主程序在 Windows 開子程序即崩潰（exit −1073741819＝0xC0000005），子程序連 log 都沒寫；同一 job 用 console 版直接跑則正常完成（1 年 85.5 秒、結果完整）。疑因：子程序被以一般版 exe 啟動，且 job 路徑含空格（user 資料夾名 Project Patrician）。修正派 17-60。
+(f)【Owner 2026-11-24 定案】CI 繼續用 GitHub Actions 託管機（GUT、UI 測試、30 日黃金；小額費用 Owner 接受）；只有多年模擬由 Owner 本機跑。Cursor 不在自己的環境跑任何測試、黃金或模擬，一律以 GitHub CI 結果為準，讀結果只取摘要與失敗段以省 token（17-61）。(b) 確定：多年模擬不在 Actions 跑。(c) 撤回：Actions 額度用完時不改在 Cursor 環境跑，由 Owner 調高 GitHub 付費上限或等額度重置。（AI 先前誤提的「自架 runner」案作廢。）",05_TechSpec 17-59（17-58 追加）；AI_README S9b,17-58；D-120,D-115(b)；S9b；S9h,,,
+D-122,repo 暫時公開：多年模擬改回 Cursor 在 GitHub Actions 跑（17-62）；Owner 本機跑改選做（Owner 2026-11-24）,"【Owner 2026-11-24 10:52 指示：repo 暫時改為公開，GitHub Actions 託管機不限分鐘，放權給 Cursor】
+(a) 多年模擬（17-58 步 Z）改回由 Cursor 在 GitHub Actions 跑：matrix 平行 9 組、--inline 模式、推 tag 觸發、結果為 artifact＋report.md（17-62）。D-121(a)「Owner 本機跑」與 (b)「多年模擬不在 Actions 跑」在 repo 公開期間暫停適用；Owner 本機跑改為選做（抽驗）。
+(b) 不變：Cursor 不在自己環境跑任何驗證，讀結果只取摘要（17-61 V1、V4）。
+(c) repo 改回私人時，本條自動失效，回到 D-121。
+(d) 【AI 提醒，待 Owner 知悉】公開 repo 期間：docs/spec 內的完整設計規格（03_Systems、05_TechSpec 等匯出檔）與全部代碼任何人可見、可複製；Cursor 須先掃描確認無密鑰（17-62 P6）。建議 Owner 在 GitHub → Settings → Actions → General 設定「外部貢獻者的 fork PR 一律需要核准才跑 workflow」。",05_TechSpec 17-62；05_SimunulationGuild S-03,17-58；17-59；D-121,D-121；17-61,,,
+D-123,開局沒有行情導致散商不出航：採 A 開局船報（FRM-SYS15-11）、修探索、加出航數輸出、補正式開局測試、z-1758-3 重跑（Owner 2026-11-24 核准）,"【Owner 2026-11-24 核准：(a) 選 A，(b)(c)(d)(e) 照建議】依 17-63 診斷：散商全部因「本港牙行沒有目的港船報」而沒有候選；開局時沒有任何船報，探索抽中 2 人也沒出航，形成死結。規格（17.1、25.1）沒有寫開局行情，屬缺口。
+(a) 開局行情怎麼來（三選一）：
+　A【採用】開局船報：開機時在每個港的牙行放入「其他 15 港各貨的開局價」各一筆，觀測日＝第 0 日、來源標記 OPENING，照一般船報一樣隨 PRM-SYS15-DECAY_DAYS 衰減、之後被真實船報取代。所有行為者（玩家、散商、AI）同樣看得到，不違反對等（LCR-04）。理由：1630 年的商人本來就知道各港行情大概，只是不準、不即時；開局後約一個月由真船報接手。
+　B 無行情時用基準價：沒有船報時，候選賣價以全域基準價 base_price_li 估。簡單，但基準價不反映各港缺貨，散商會亂跑。
+　C 只靠探索：修好探索（抽中卻不出航的原因），讓少數散商先跑出船報再帶動其他人。最貼近原規格，但開局前幾個月幾乎沒貿易，五年模擬前段失真。
+(b) 不論選哪個，探索「抽中 2、出航 0」都要查明並修（探索本應不靠行情）。
+(c) 報告加 season_sail_count（每季出航數），步 Z 報告①至⑤另列散商總出航、總運量。
+(d) Z3 差異（F1 測試綠而步 Z 不出航）：推測 F1 測試是在有船報的設定下跑；Cursor 須在報告寫明測試的初始條件，並加一個「正式開局、無人工船報」的 30 日測試，要求出航 ≥ 1。
+(e) z-1758-2 的結果只用來確認 duration_s 修好，不作 M1b 判讀；修好後以 z-1758-3 重跑 9 組。",03_Systems 25.1 FRM-SYS15-06 加註（開局船報）、17.1 FRM-SYS17-04（探索）；05_TechSpec 下一則派工,17-63；17-58；WP-36,17.1；25.1；LCR-04；C-05,,,
 D-62e,PRM-SYS15 七項試驗值審定為試跑起點（Owner 2026-11-21）,WINDOW_DAYS＝28、DECAY_DAYS＝28、DIVERGENCE_LO_PPM＝100000（10%）、DIVERGENCE_HI_PPM＝300000（30%）、DIRECTION_DEADBAND_PPM＝20000（2%）、WEEKS_SCALE＝100、PUBLIC_DELAY_TICKS＝0（牙行資格特權先關，跑無特權基線）。依據與遊戲用途見 sheet sim_overrides_draft 第 85 至 91 列。,仍為試驗值、非正式值：升正式值須日後逐項裁決（D-45b、OQ-15l）；SYS-23 統計牙行牌價空白率與高分歧出現頻率，必要時調整（例：視窗延長至 45 日）。要開「資格提早看」，延遲 tick 數須另請 Owner 審定。BROKER_MIN_TIER_BY_LADDER 仍無值，留待 WP-41。,WP-40；WP-41,Owner 2026-11-21；R9-29；sim_overrides_draft,,,
 D-59b,今晚通宵包：核准唯讀稽核與屬性測試新增（Owner 2026-11-20）,Owner 指示「能開始做的都開始做」，核准：(1) 全倉唯讀稽核四項（規範合規、介面對照、測試覆蓋、GUT 警告）；(2) 屬性測試新增（只新增 tests/property/，不改任何產品碼）；(3) WP-33 補證、WP-40 階段 2 同夜並行。堆疊接力不核准。,屬性測試只驗規格已明文的性質，反證（臨時注入錯誤）不得 commit；稽核結果由 AI 分類後記為技術債（TD）或判定不成立，技術債只記工作簿。,WP-48；WP-49,Owner 2026-11-20；17-41,,,
 9 收件審查與合併紀錄（R 系列）— 每份 Cursor 報告的審查結論集中於此，新紀錄接在表尾,,,,,,,,
@@ -2263,4 +2284,139 @@ Z-d：M1b_G0 種子 2（看種子是否有影響）。
 ① 匯出 docs/spec：AI_README.csv、03_Systems.csv、05_TechSpec.csv、sim_overrides_draft.csv（工作簿 v6.99.183；共 4 檔）。
 ② commit 到 main，訊息：spec v6.99.183（17-58）。
 ③ 在 GitHub 確認 main 的 docs/spec/AI_README.csv 版本是 v6.99.183。
-④ 把本列 C 欄整段貼給 Cursor（D-120 已由 Owner 2026-11-24 核准）。",R9-71；D-120；D-63b；WP-36；WP-68；FRM-SYS15-06；FRM-SYS17-04；PRM-SYS17-TOP_N_PRECISE；S9a；S9c；S9d,待發送（Owner commit spec v6.99.183 後貼給 Cursor）,,,
+④ 把本列 C 欄整段貼給 Cursor（D-120 已由 Owner 2026-11-24 核准）。",R9-71；D-120；D-63b；WP-36；WP-68；FRM-SYS15-06；FRM-SYS17-04；PRM-SYS17-TOP_N_PRECISE；S9a；S9c；S9d,"已發送 2026-11-24；進行中（Cursor 10:2x 回報）：步 M 完成，#71 → #74 → #75 → #73 → #77 已合 main 1252ab1；線 F、G（#79 e484548）、H（含 17-60）並行中；Cursor 預估合計約 5 至 8 小時（約香港 15:00 至 18:00），不含 Owner 本機五年模擬｜10:4x：線 F #72 tip 5fc9853（F1 至 F5）、線 G #79 e484548、線 H #80 40bc606 均等 CI；h4-smoke、w4-inline-cmp 手動 job Cursor 無權觸發，請 Owner 在 tools-1758 各跑一次（05_SimunulationGuild S-02a）｜15:5x：int-1758 #81（5467e4e）CI 綠，tag z-1758-1 在 Actions 跑完 9 組×5 年（約 14:15 至 15:44）。結果：9 組 sail_sum 全 0；Za_G0 與 Zb（散商關）、Zc（自建住宅）、Zd（種子 2）四組數字逐格相同（人口 20,365＝R9-71 無貿易基線），② 貼邊格 96.7%～97.3%。判讀：散商在步 Z 仍未運作，M1b 結果無效；已請 Cursor 先診斷、不收包不做 U2（17-63 Z1 至 Z4）",,,
+17-59,17-58 追加：步 Z 改由 Owner 本機跑；線 H 交模擬執行工具（PowerShell＋README＋報告工具，30 日自證）；Actions 停跑模擬、額度不足時以本機輸出代替 CI（D-121，2026-11-24）,"【派工 17-59：17-58 追加——步 Z 改由 Owner 在本機跑；GitHub Actions 不得再跑任何模擬（Owner 2026-11-24，D-121）】
+本則修改已發送的 17-58；17-58 其餘內容（步 0-0、步 M、M-2、線 F、線 G、整合、U2、交付規則）全部照舊。本則與 17-58 衝突處以本則為準。
+
+━━ 立即（收到即做，最先）
+① GitHub Actions：停止並取消所有排隊中與執行中的模擬相關 workflow run（步 Z、Z2 至 Z4、十年或多組模擬）；列出被取消的 run id。
+② 若 workflow 檔內有模擬工作（job 名、步驟或排程觸發），在線 H 的 PR 內移除或改為只能手動觸發且預設不跑；交 diff。CI 只保留 GUT（unit、property、ui）與 30 日黃金 gated。
+③ 回報目前 Actions 是否還能執行；不能執行時照下方「額度規則」。
+
+━━ 額度規則（D-121(c)）：Actions 無法執行時，17-58 每一處要求「GUT、黃金」的步驟（含步 M 每個合併），改在 Cursor 自己的環境跑同一指令並貼完整輸出作為通過依據；報告逐處註明「CI 因額度未跑，改用本機輸出」，額度恢復後補跑 CI 並貼 run 連結。任何多年模擬都不得在 Actions 跑。
+
+━━ 步 Z 改由 Owner 在本機跑（取代 17-58 的步 Z 全段）：Cursor 不跑步 Z。
+線 H（模擬執行工具；從步 M 後的新 main 開分支 tools-1758，PR base main；整合時最後合併：G → F → H）。只新增 tools/ 下檔案與修改 .github/workflows（只限上方 ②），不改產品碼、不改測試：
+ H1 tools/run_m1b.ps1（Windows PowerShell 5.1 可執行，不需另裝模組）。參數名稱逐字照下：-GodotPath（Godot console 版 exe 的完整路徑，必填，不寫死）；-Group（all 或下列組名之一，可用逗號列多個，預設 all）；-Resume（略過 out\m1b\<組名>\ 內已有 done.txt 的組）；-SmokeDays（只供試跑，指定天數；輸出改到 out\m1b_smoke\，不得混入正式輸出）；-ReportOnly（只跑報告工具）。組名固定為：Za_G0_A0、Za_G0_A250、Za_G1_A0、Za_G1_A250、Za_G2_A0、Za_G2_A250、Zb_G0_notrader、Zc_G0H_A0、Zd_G0_seed2。
+  執行內容：依序以 headless 呼叫現有模擬入口；情境檔直接用 repo 內 docs/spec/scenario_M1b_*.json；每組輸出到 out\m1b\<組名>\，完成時寫 done.txt；summary 與 timing 含 commit SHA、開始與結束時間。任一組失敗：記錄錯誤、繼續下一組，最後列出失敗清單。開跑前先檢查：GodotPath 存在、檔名含 console、git 工作區乾淨並印出目前分支與 commit SHA；不符即停並說明原因。
+  ★ 進度顯示（Owner 2026-11-24 要求）：(1) PowerShell 視窗用 Write-Progress 顯示兩層進度條：全部組（第 i／9 組）與本組（已模擬日數／總日數、百分比、已用時間、預估剩餘時間）；(2) 每模擬完一個商季，在視窗印一行並同時追加寫入 out\m1b\progress.log，格式：「時間｜組 i／9 組名｜第 y 年第 q 季｜本組 xx%｜全部 xx%｜已用 h:mm｜預估剩 h:mm｜人口｜散商出航累計」；(3) 每組結束印一行摘要（耗時、成功或失敗）。若現有模擬入口不會逐季輸出，可在 sim/ 入口加「只印出、不改任何狀態」的逐季進度行；須證明黃金輸出逐格不變（交比對）。
+  另：.gitignore 加 out/，模擬輸出不得被 commit。
+ H2 tools/run_m1b_README.md：前置條件（Godot 4.7.2 官方 Windows zip 內的 Godot_v4.7.2-stable_win64_console.exe 與一般版放同一資料夾）；逐字可貼的指令，範例路徑用 Owner 的實際路徑：Godot 在 C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe，repo 在 C:\Users\user\Documents\GitHub\Project-Patrician（試跑一組、全部組、續跑、只產報告各一例）；看進度的方法（第二個視窗 Get-Content .\out\m1b\progress.log -Wait -Tail 20）；每組預計耗時（以 17-55 timing 實測每年耗時推算，寫明推算方式）與全部合計；中途停止（Ctrl+C）與續跑（-Resume）；輸出位置與跑完要壓縮交回的資料夾。
+ H3 報告工具（GDScript，以 godot --headless -s 執行；不得要求 Owner 另裝 Python）：讀 out/m1b/ 產生 report.md，內容為下列報告 ① 至 ⑤ 的表格；缺組時該欄標「未跑」。
+ H4 自證（在 Cursor 自己的環境跑，不在 Actions；用 -SmokeDays 30）：用 int-1758 跑 Z-a 的 G0（ABUND 0）與 Z-b 各 30 日，貼與 run_m1b.ps1 等價指令的完整輸出、兩組 trader_summary、報告工具產生的 report.md，證明工具可用；30 日結果不作 M1b 判讀。
+組別（Owner 照 README 跑；種子未註明者為 1；每組 5 年）：Z-a：M1b_G0、G1、G2 × ABUND_BONUS 0／250000，共 6 組（散商開、QUAL_OPEN 開、CITY_HOUSING 0）；Z-b：M1b_G0 散商關（對照組）；Z-c：M1b_G0H（CITY_HOUSING＝1）× ABUND_BONUS 0；Z-d：M1b_G0 種子 2。
+輸出同 17-55 步 Z（summary 含 commit SHA、season_ports（含新欄 city_auto_housing）、season_cells、obs_ext、trader_summary、timing）。
+報告工具要產生：① 散商逐季：出航次數、運量（擔）、按貨別前 5 名的運量、散商季末現金分布（最小、中位、最大）、凍結數、閒置日數分布；② 每組 M1b 達標三條（第 5 年地板或天花板格 ≤ 30%、三階比與開局同量級、城市現金不單調上升）逐條對照，並與 Z-b 並列；③ 人口與各階人數逐年，對照 Z-b；④ Z-c 對 Z-a 同組逐季的城市自建住宅數、已建比例、開區數；⑤ Z-d 對 Z-a 的 G0（ABUND 0）達標三條與散商指標對照。
+
+━━ 交付修改：evening-17-58 不交 step_Z（Owner 自跑），改交 laneH（diff.patch、report.md、H4 自證完整輸出、被取消的 Actions run 清單）。報告第一頁狀態表把「Z-a 至 Z-d」換成「線 H」與「Actions 取消」。U2 改為「整合完成後才做」（不再等步 Z）。
+★ 特別證據：H4 自證完整輸出（含進度行與 Write-Progress 以外的 progress.log 全文）；workflow 檔 diff；被取消的 run id 清單；每處「CI 因額度未跑」的本機完整輸出。",發送前：這則只改流程，不改規格，不必重新匯出 docs/spec（main 維持 v6.99.183）。直接把本列 C 欄整段貼給 Cursor，接在 17-58 的同一個對話後面。,17-58；D-121；S9b；S9d,已發送 2026-11-24（更新版，含進度顯示；接在 17-58 對話後，未重新匯出 spec，main docs/spec 維持 v6.99.183）｜10:48 Owner 本機驗證：run_m1b.ps1 在 Windows PowerShell 5.1 因中文字元解析失敗，已回報 Cursor｜14:40 Owner 本機 R-05：run_m1b.ps1（bbd4975）在 Windows 全程跑通,,,
+17-60,17-58／17-59 追加：模擬器 Windows 相容——子程序參數逐一傳、job 路徑免空格、失敗不崩潰並留 log、新增 --inline 單程序模式與逐季進度（Owner 本機試跑 R-01，D-121(e)）,"【派工 17-60：17-58／17-59 追加——模擬器在 Windows 能跑（Owner 本機試跑發現的崩潰）】
+本則追加到 17-58／17-59，內容併入線 H（tools-1758）或另開分支 simwin-1758（PR base main，整合時排在 H 之前）；17-58、17-59 其餘照舊。只改 res://sim/ 與 tools/，不改 autoload、core。
+
+━━ 現象（Owner 2026-11-24，Windows 11、Godot 4.7.2 官方版、main@39ee136、情境 L1 baseline 改 1 年）
+① 主程序：godot_console.exe --headless --path . --script res://sim/sim_runner.gd -- --scenario <路徑> → 印出 sim_runner_child_argv: C:/Users/user/Desktop/Godot_v4.7.2-stable_win64.exe --headless --path C:/Users/user/Documents/GitHub/Project-Patrician -s res://sim/sim_runner.gd -- --job C:/Users/user/AppData/Roaming/Godot/app_userdata/Project Patrician/sim_jobs/job_0.json，接著 ERROR: sim_runner: job run_id=0 exit=-1073741819（sim_runner.gd:132）。子程序沒留下任何 log；sim_out 空。
+② 用 console 版直接跑同一個子程序（--job 路徑以引號包住）：exit=0，result_0.json 正常寫出（572,868 bytes、elapsed_ms 85,547、aborted 0）。
+③ 兩點可疑：(a) 子程序以一般版 exe（OS.get_executable_path() 在 Windows 回傳非 console 版）啟動，stdout 不顯示；(b) job 路徑含空格（user 資料夾名「Project Patrician」）。
+
+━━ 修正（每項附 diff 與測試）
+W1 子程序參數：一律以參數陣列逐一傳遞，不得把路徑串成一個字串再切；--job 改傳 user://sim_jobs/job_<n>.json（不含空格的 user:// 路徑），由子程序自行 ProjectSettings.globalize_path。測試：組出的參數陣列中，job 路徑為單一元素；模擬含空格的路徑時仍為單一元素。
+W2 子程序收到的參數不全或 job 檔讀不到：push_error 印出收到的完整 argv 與原因，以非 0 結束；不得崩潰或靜默結束（C-06）。測試各一。
+W3 子程序 log：主程序啟動子程序時加 --log-file user://sim_jobs/job_<n>.log；子程序非 0 結束時，主程序把該 log 最後 40 行印到自己的輸出，並在 summary 標 aborted＝1、abort_reason 寫 exit 碼。
+W4 單程序模式：sim_runner 加參數 --inline（不開子程序，在同一程序內依序跑每個 job，結果與子程序模式逐格相同——交兩模式 result 與五個 CSV 的 cmp）。17-59 的 run_m1b.ps1 一律用 --inline，讓 Write-Progress 與逐季進度行直接顯示在 Owner 的視窗；子程序模式保留給 Linux 多核平行。
+W5 逐季進度行（17-59 H1 要求的進度）由 sim 入口在 --inline 模式印出，格式照 17-59 H1 (2)；只印出、不改狀態，黃金逐格不變（交比對）。
+
+━━ 驗收：Cursor 無 Windows 環境時，以 Linux 跑 W1 至 W5 的測試與兩模式 cmp；另在報告寫「Owner Windows 驗證步驟」：Owner 照 05_SimunulationGuild 教程 T5 跑 -SmokeDays 30，主程序與 --inline 兩種都要能產出 sim_out 或 out\m1b 的 CSV。Owner 回報前，本項狀態為「待 Owner 驗證」。
+交付：併入 evening-17-58 的 laneH（或 laneW）資料夾；狀態表加一列「17-60 Windows 修正」。
+★ 特別證據：W1 參數陣列組法的完整 diff 與測試輸出；W4 兩模式 cmp 輸出；W3 故意讓子程序失敗時主程序印出的 log 尾段。",發送前：只改流程與模擬工具，不改規格，不必匯出 docs/spec。直接把本列 C 欄整段貼給 Cursor，接在 17-59 之後。,17-58；17-59；D-121(e)；05_SimunulationGuild R-01；C-06,已發送 2026-11-24（接在 17-59 後；不改規格，main docs/spec 維持 v6.99.183）；待 Owner Windows 驗證（05_SimunulationGuild S-02）｜10:48 Owner 本機驗證：主程序模式在 Windows 通過（tools-1758@40bc606，6 個 CSV 產出）｜14:40 Owner 本機 R-05：--inline 模式在 Windows 通過（17-60 Owner 驗證完成）,,,
+17-61,驗證一律走 GitHub CI（只跑測試與 30 日黃金，多年模擬由 Owner 本機跑）；Cursor 不在自己環境跑；讀 CI 只取摘要與失敗段（D-121(f)）,"【派工 17-61：驗證一律走 GitHub CI，Cursor 不在自己的環境跑；讀 CI 結果只取摘要（D-121(f)）】
+本則修改 17-58、17-59、17-60 的執行方式，自收到起適用其尚未完成的部分；不改規格、不改產品碼。17-59、17-60 中「Actions 無法執行時改在自己環境跑」的規定撤回，以本則為準。
+
+━━ 規則
+V1 Cursor 不在自己的環境跑 GUT、UI 測試、黃金輸出或任何模擬。驗證一律推 commit 後由 GitHub Actions CI 跑，以 CI 結果為準。
+V2 CI 只跑：GUT unit＋property、tests/ui、30 日黃金 gated。不得在 CI 跑任何多年模擬（D-121(b)）；多年模擬由 Owner 用 run_m1b.ps1 在本機跑。
+V3 17-59 H4 自證（30 日試跑）與 17-60 W4 兩模式 cmp（用 30 日），改為 CI 的手動 job（workflow_dispatch，只跑這兩項，timeout 15 分鐘）；需要時手動觸發一次，結果以該 run 為證據。
+V4 讀 CI 結果只用 gh run view <run id> 取摘要；失敗時用 --log-failed 只讀失敗步驟；不得把成功步驟的完整 log 讀進對話。完整 log 以 artifact（retention-days 3）為準，報告貼 run 連結與 artifact 名。
+V5 Actions 無法執行（額度用完或排隊超過 30 分鐘）：停止等待，在報告寫「CI 未能執行，等待 Owner」並列出未跑的 run；不得改在自己環境跑。
+V6 證據格式（AI_README S9a 已加註）：diff、函數本體、信號順序照舊完整貼出；測試與黃金輸出改為「run 連結＋摘要行（通過數／總數、ERROR 行數）＋失敗段全文」。
+
+━━ 交付：併入 evening-17-58；報告列出每個步驟用的 CI run 連結；若有步驟已在自己環境跑過，照實列出，之後不再這樣做。
+★ 特別證據：V3 手動 job 的 workflow diff 與一次執行的 run 連結。
+
+━━ 補充（Owner 2026-11-24 10:4x）：V3 的兩個 30 日 job（h4-smoke、w4-inline-cmp）不要只靠手動觸發（Cursor 的 GitHub 權限無法 workflow_dispatch）。改為：推到 tools-1758、int-1758 兩個分支時自動跑（push 觸發，限這兩個分支；workflow_dispatch 保留）。只跑 30 日，不跑多年模擬（V2）。",發送前：不改規格，不必匯出 docs/spec。直接把本列 C 欄整段貼給 Cursor，接在 17-60 之後。,D-121(b)(c)(f)；17-58；17-59；17-60；S9a,已發送 2026-11-24（接在 17-60 後；不改規格，main docs/spec 維持 v6.99.183）｜10:44 補充（h4-smoke、w4-inline-cmp 改 push 自動跑）已發送,,,
+17-62,repo 暫時公開、Actions 不限分鐘：步 Z 9 組改由 Cursor 在 GitHub Actions 以 matrix 平行跑（推 tag 觸發）；Cursor 仍不在自己環境跑；公開 repo 衛生（D-122）,"【派工 17-62：repo 暫時公開，GitHub Actions 不限分鐘——步 Z 改回由 Cursor 在 Actions 跑（D-122）】
+本則修改 17-58 至 17-61，與之衝突處以本則為準；不改規格、不改產品碼。
+
+P1 步 Z 改在 GitHub Actions 跑（取代 17-59「Owner 本機跑」）：新增 workflow（例 m1b-z.yml），在 int-1758 同一 commit 以 matrix 平行跑 9 組（Za_G0_A0、Za_G0_A250、Za_G1_A0、Za_G1_A250、Za_G2_A0、Za_G2_A250、Zb_G0_notrader、Zc_G0H_A0、Zd_G0_seed2），每組一個 job、timeout-minutes 360、用 17-60 的 --inline 模式，每組 5 年；組別、年數、種子照 17-59，不得縮短或改種子。各組輸出上傳為 artifact（retention-days 14）；最後一個 job 下載全部 artifact，跑 17-59 H3 報告工具產生 report.md 並上傳。
+P2 觸發只用推 tag（例 z-1758-<序號>），不綁一般 push，避免每次 push 都跑 9 組；Cursor 在整合完成、int-1758 的 CI 全綠後推 tag 觸發一次。任何一組失敗：報告列出失敗組與原因，修正後推新 tag 重跑該組或全部，舊 run 不刪。
+P3 Cursor 仍不在自己環境跑任何驗證（17-61 V1 不變）。讀模擬結果只讀 report.md 與各組 summary；不得把 season_cells 等大檔讀進對話（17-61 V4 精神）。
+P4 線 H 工具照交（Owner 本機抽驗用），並修好 10:48 回報的 PowerShell 5.1 問題（.ps1 純 ASCII、CI 檢查非 ASCII）；Owner 本機跑改為選做。
+P5 手動觸發：Cursor 無 workflow_dispatch 權限，一律用 push 或 tag 觸發（與 17-61 補充一致）。
+P6 公開 repo 衛生：(a) 掃描整個 repo 與 git 歷史，確認沒有任何密鑰、token、帳號密碼或個人資料，貼掃描指令與結果；(b) workflow 對 fork 來的 PR 只跑 GUT，不跑模擬 job，也不使用任何 secrets。
+P7 若 repo 改回私人，本則自動失效，回到 D-121（多年模擬由 Owner 本機跑）。
+
+交付：併入 evening-17-58，新增 step_Z 資料夾（9 組 run 連結、report.md、各組 summary 與 timing；大檔留在 artifact 不必放入交付包）；狀態表加「17-62 Actions 步 Z」。
+★ 特別證據：m1b-z.yml 全文；觸發 tag 與 run 連結；P6 掃描輸出。",發送前：不改規格，不必匯出 docs/spec。直接把本列 C 欄整段貼給 Cursor，接在之前的訊息後面。,D-122；D-121；17-58；17-59；17-60；17-61,待發送,,,
+17-63,17-58 補充：步 Z 結果無效（9 組散商出航全 0、有無散商相同），停收包與 U2，診斷散商不出航原因（Z1 至 Z4），修好後 z-1758-2 重跑,"【派工 17-63：17-58 補充——步 Z 結果無效，先診斷散商為何不出航（Owner 2026-11-24 約 16:00 發送；原稱「17-58 補充」，Cursor 登記為 dispatch-17-63，本書從之）】
+Z1 先不收晚報包、不做 U2、不合 #81。
+Z2 在 CI 用 int-1758（5467e4e）跑 Za_G0_A0 30 日，走和步 Z 完全相同的入口（run_m1b／sim_runner --inline、repo 內情境檔），印出並交：(a) 開機時 set_layers 收到的參數與注入的資格替身類名；(b) 散商人數、船數、各船所在港；(c) 每日：可評估候選數、因「無行市」被排除的目的港數、探索抽中的散商數、實際出航數；(d) 第 1、7、30 日各港牙行（board_for）的船報筆數。
+Z3 說明 F1 測試 (a) 為何綠而步 Z sail_sum＝0：兩者入口、情境、層開關的逐項差異。若是開局無船報導致無候選，且探索也未出航，先列缺口回報，不要自行加「開局行情」或放寬規則（C-05），等 Owner／AI 裁決。
+Z4 報告工具：⑤ duration_s 空白要修（讀 timing）。
+修好後重新推 tag（z-1758-2）跑步 Z；舊 run 保留。
+依據：步 Z（tag z-1758-1，int-1758 5467e4e）9 組 sail_sum 全 0，Za_G0＝Zb（散商關）＝Zc＝Zd 逐格相同（人口 20,365）。",已發送（Owner 2026-11-24 約 16:00，貼在 17-58 對話後）。不改規格，未匯出 docs/spec。,17-58；D-120；D-122；17-62；C-05,已發送；Cursor 已接（dispatch-17-63，由 Trader sail diagnosis 執行）｜16:3x 診斷結果：開機層與 SimQualificationOpenFixture 正常，48 散商、83 船都在；每日可評估候選＝0，16 港全因「無行市」排除；探索抽中 2 但出航 0；第 1、7、30 日各港牙行船報全 0。結論：開局無行情的死結（規格缺口），待 D-123 裁決。z-1758-2 已重跑（只修 duration_s，結果預期同 z-1758-1，不作判讀）,,,2026-11-24
+17-64,CI 提速（同 commit 不重跑、取消舊 run、快取、平行、黃金基準用 artifact）＋模擬工具小修 T1 至 T5；附 17-63 補充（診斷不必等完整 CI）（Owner 2026-11-24 由原 17-64 拆出）,"【派工 17-64：CI 提速＋模擬工具小修，附 17-63 補充（Owner 2026-11-24）】
+━━ 先處理：17-63 補充
+Z2 診斷只看 M1b-Diag-Z 的結果，跑完就先回報 (a) 至 (d) 與 Z3 差異說明，不必等 CI #492；CI #492 照跑，結果晚點補在報告即可。17-63 其他規定不變（不收包、不做 U2、不合 #81）。
+
+━━ 本則主體：CI 提速與模擬工具小修（一個 PR，可與 17-63 診斷並行）
+分支 ci-speed，base main。
+只改 .github/workflows/ 與 tools/；不改產品碼、不改測試內容。不影響手上的線 F、整合與 tag 觸發的步 Z。
+
+S0 先量測（只讀）：用 gh run view --json jobs 取最近 3 個 CI run（例：#483、#484、#486），列出每個 job、每個 step 的耗時表，指出最慢的 5 個 step。
+S1 同一個 commit 不再跑兩次：目前每次推 PR 分支都同時觸發 push 與 pull_request 兩個 run（例 #483／#484、#485／#486）。改為：pull_request 跑完整 CI；push 只在 main 與 tools-1758、int-1758（H4／W4 用）觸發；其他分支不跑 push。
+S2 新 commit 取消舊 run：加 concurrency（group＝workflow＋分支，cancel-in-progress: true）。目前 10:55、10:57、10:58 連推三次，三個 run 全部跑完（各 26 至 48 分鐘）。
+S3 快取：用 actions/cache 快取 Godot 4.7.2 執行檔與匯入快取（.godot/imported 等，以 project.godot、所有 .import 檔與 data/ 的雜湊為鍵）；不得快取測試結果或黃金輸出。
+S4 平行：GUT unit、tests/ui、黃金 gated 拆成三個平行 job；GUT unit 若仍超過 10 分鐘，依目錄分 2 至 4 片（matrix）平行跑，總測試數照舊相加核對（舊測名不得消失）。
+S5 黃金基準不重跑：若目前每次都重跑 base 一次再比對，改為 main 每次合併後把黃金輸出存成 artifact，PR 直接下載最新 main 的黃金 artifact 比對；找不到 artifact 時才重跑 base。
+S6 H4、W4（30 日）只在 tools-1758、int-1758 的 push 跑，不在一般 PR 跑。
+
+驗收：同一 commit 的 CI 前後耗時對照（目標 15 分鐘內，給出實測）；測試數與黃金結果與改前完全相同（貼摘要行對照）；S1 至 S6 各自 diff。
+合併授權：CI 全綠、測試數不變、黃金逐格相同即可由 Cursor 以 merge commit 合併到 main（只限本 PR），合併後各分支 rebase 不需要，PR 的 CI 會自動用到新 workflow。
+★ 特別證據：S0 耗時表；改後同一 commit 的耗時表；workflow 全文 diff。
+
+━━ 模擬工具小修（Owner 本機 R-04、R-05，同一 PR）
+T1 addons/gut 下 26 個 .import 檔：在 Godot 4.7.2 匯入後內容會改變，導致 Owner 每次匯入後 run_m1b.ps1 的乾淨檢查失敗。提交 4.7.2 匯入後的版本（CI 加檢查：匯入後 git status 必須乾淨）。
+T2 SmokeDays 小於一季時沒有任何季末取樣：-SmokeDays 時在最後一日額外取一次樣（標記為非季末），或最小值改為一季；README 寫明。
+T3 報告沒有資料時一律顯示 N/A，不得判 PASS 或 FAIL（R-05：30 日試跑出現 ② band 0.0 PASS、④ 0 港 FAIL）。
+T4 進度行 pop 改讀當下人口，不依賴季末樣本（R-05 顯示 pop=0）。
+T5 README 加一句：PowerShell 5.1 看中文請用 Get-Content -Encoding UTF8。
+
+交付：evening-17-64（diff.patch、report.md、CI run 連結、S0 與改後耗時表）。報告依 AI_README S9a。",發送前：不改規格，不必匯出 docs/spec。把本列 C 欄整段貼給 Cursor（接在 17-63 對話後）。,17-61；17-62；17-63；05_SimunulationGuild R-04、R-05；S9a,已發送 2026-11-24；Cursor 開 #82（ci-speed），第一次 CI 失敗、修正中,,,2026-11-24
+17-65,M0 試玩回饋修正：海圖座標、船員、海圖上的船、首日卡頓、單趟損益（只改 ui/）（由原 17-64 PR-B 拆出）,"【派工 17-65：M0 試玩回饋修正（只改 ui/，Owner 2026-11-24 試玩 main）】
+驗證一律走 GitHub CI（17-61）。
+分支 ui-m0fix-1765。
+依據：工作簿 M0_試玩清單（Owner 2026-11-24 填寫）#2、#4、#8、#11。只改 ui/（D-90）與 tests/ui；需要動產品碼（autoload、core、sim）或缺公開查詢時，照 C-05 列缺口停該項，不得自行加。base 為當時最新 main（17-58 的 #78 處理後再開）。
+
+U1 海圖位置（#2，錯誤）：Owner 回報「地理位置完全不一致」。港口與航點必須用規格座標：X＝(經度－115)×50、Y＝(38－緯度)×50（04_Content 第 1 節；Y 向下為南）。先查 ui 目前用什麼座標、ports／nodes 資料是否帶座標欄；若資料缺座標，列缺口停（AI 補規格）。交：16 港「port_id、名稱、資料座標、畫面像素座標」對照表＋修正後海圖截圖（CI 產出）。
+U2 玩家面板船員（#4，錯誤）：目前只顯示 ship_id、狀態、港、目的、艙容與貨，沒有船員。加顯示：船型、船員數（PRM-SYS13-CREW 依船型）、每週船員工資（PRM-SYS13-CREW_WAGE_WK × 船員數，單位兩）。只經公開查詢取得；查不到即列缺口。
+U3 海圖上的船（#8，體驗）：航行中的船要在海圖上畫出目前位置（依航段進度在兩航點間內插），停泊的船畫在港口旁；只讀 ShipRegistry 公開資訊。
+U4 首次「前進一日」卡 3 至 4 分鐘（#8，體驗）：先量測、不先改。在 CI 以 headless 跑「正式開機 → 前進 1 日 → 再前進 1 日」，以及 UI 場景同流程，印出每一步耗時（開機、各系統 daily_step、價格與情報刷新、UI 重建）；報告附量測表、最慢 5 項與原因。耗時在 ui/（例如每日重建整張表、重複查詢）就修；在產品碼則列缺口與提案，等 Owner 裁決。修後第一次前進一日的耗時要列出前後對照。
+U5 單趟損益（#11，體驗）：玩家面板加「本趟損益」：船離港時記下該趟買入成本與出發日；賣出後顯示 賣出收入 －買入成本 －（航程日數 × 每日船員工資）＝本趟損益，並列出各項。只做顯示、不入帳、不改任何狀態（正式會計報表 SYS-24 屬 M5）。每日船員工資＝每週工資 ÷ DAYS_PER_WEEK（讀參數，不寫死 7）。
+
+測試：U1 至 U5 各至少一個 tests/ui 測試（U1 檢查 3 個港的畫面座標符合公式；U2 顯示船員數與工資；U3 航行中第 n 日的位置在兩航點之間；U4 量測腳本可跑；U5 以固定買賣與航程算出的損益）。
+
+交付：evening-17-65（diff.patch、report.md、CI run 連結、截圖、U4 量測表）。報告依 AI_README S9a。不合併。
+★ 特別證據：U1 對照表與前後截圖；U4 量測表全文。",發送前：等 17-58 的 #78 處理後再發（兩者都改 ui/）。不改規格，不必匯出 docs/spec。,M0_試玩清單 #2、#4、#8、#11；D-90；17-61；C-05；S9a,暫緩：Owner 2026-11-24 指示下次派工發,,,2026-11-24
+17-66,開局船報（FRM-SYS15-11）＋探索修正＋出航數輸出＋正式開局測試，修好後 z-1758-3 重跑步 Z（D-123）,"【派工 17-66：開局船報＋探索修正＋出航數輸出，重跑步 Z（D-123，Owner 2026-11-24 核准）】
+前提：docs/spec 為工作簿 v6.99.210（AI_README B9）。本則接續 17-63 診斷；17-63 的 Z1（不收包、不做 U2、不合 #81）仍有效，直到本則步 Z 結果交付。17-64（CI 提速）照常進行，互不阻擋。不得自行增減規則；遇缺口照 C-05 停該項。驗證一律走 GitHub CI（17-61）。
+必讀：03_Systems 25.1 FRM-SYS15-11（新）、F 寫入順序「開機」列、ST-BOARD 加註；17.1 FRM-SYS17-04（D-123(b) 加註）；05_TechSpec D-123。
+
+分支：從 int-1758 目前 tip（71b094d 或之後）開 m1b-fix-1766，修好後併回 int-1758。檔案限 intel_ledger、sim_loop（只加開機呼叫一行）、trader_registry、trade_evaluator、sim/ 輸出與報告工具、對應測試。
+K1 開局船報（FRM-SYS15-11）：新增公開方法 IntelLedger.seed_opening_board()（屬 D-123 已核准的介面變更，PR 描述逐字列出簽章），SimLoop.boot() 在開局市場庫存寫入後呼叫一次。測試：(a) 開機後任一港 P 對任一 O≠P、任一貨 g，board_for 回 n ＝ 1、consensus_mid_li ＝ O 的開局 mid_li；(b) 日齡達 WINDOW_DAYS 後該筆被修剪；(c) 真實船報抵港後兩筆並存、權重照 FRM-SYS15-03；(d) 不寫 own_snap、不改 contact；(e) 取價失敗收集全部錯誤、拒絕啟動。
+K2 探索（FRM-SYS17-04 加註）：查明 17-63「探索抽中 2、出航 0」的原因並修正；報告逐步說明原因與 diff。測試：所有港都無船報時（不呼叫 seed_opening_board），抽中探索的散商仍出航 ≥ 1。
+K3 輸出：season_ports 或 trader_summary 加 season_sail_count（每季出航數）與 season_cargo_dan（每季運量）；報告工具另列各組散商總出航、總運量、各季出航數。
+K4 Z3 說明與正式開局測試：報告寫明 F1 測試的初始條件（為何會綠）；新增測試「正式開機（含 K1）、無人工注入船報、TRADERS＝1、QUAL_OPEN＝1，跑 30 日，散商出航 ≥ 1，且至少 1 船完成買、航、賣」。
+K5 黃金：開局船報只影響有讀行市的行為者；TRADERS＝0 的 30 日黃金若有差異，逐欄說明原因，不得直接更新黃金。
+K6 整合與步 Z：修正併入 int-1758，CI 綠後推 tag z-1758-3，在 Actions 跑 9 組 × 5 年（同 17-62）。z-1758-2 結果只用來確認 duration_s 已修，不作判讀。
+
+交付：evening-17-66（diff.patch、report.md、CI run 連結、K2 原因說明、K4 測試輸出、z-1758-3 的 report.md 與各組 summary、trader_summary）。報告依 AI_README S9a（每次失敗的 run 都要報）。#81 不合併，等 R9-72。
+★ 特別證據：seed_opening_board 函數全文；K2 修正前後 diff；K4 測試 30 日 trader_summary；z-1758-3 報告的散商總出航與總運量。",發送前（依序）：① 匯出 docs/spec：AI_README.csv、03_Systems.csv、05_TechSpec.csv（工作簿 v6.99.210）。② commit 到 main，訊息：spec v6.99.210（17-66）。③ 在 GitHub 確認 main 的 docs/spec/AI_README.csv 版本為 v6.99.210。④ 把本列 C 欄整段貼給 Cursor。,D-123；17-63；17-62；17-61；FRM-SYS15-11；FRM-SYS17-04；S9a,待發送,,,2026-11-24
