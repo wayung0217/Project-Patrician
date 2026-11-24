@@ -20,9 +20,10 @@ on:
           - h4-smoke
           - w4-inline-cmp
 
-# 17-64 S2: cancel superseded runs on the same workflow+ref.
+# 17-64／17-67 S2: one concurrency group per head branch so push+PR cancel each other.
+# github.ref differs (refs/heads/X vs refs/pull/N/merge) — use head_ref || ref_name.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 env:
@@ -34,19 +35,19 @@ jobs:
   gut-unit:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
-    # Per-shard cap: main tip outlier was ~35m for full unit; balanced shards should be ≪ that.
-    timeout-minutes: 35
+    # 17-67: per-shard GUT wall 30m (whole CI ≤50m).
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         shard: [0, 1, 2, 3]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -93,7 +94,7 @@ jobs:
 
       # 17-64 S3: cache .godot/imported (never test/golden outputs).
       - name: Cache Godot imported assets
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -188,7 +189,7 @@ jobs:
 
       - name: Upload GUT unit shard logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gut-unit-logs-${{ matrix.shard }}
           path: |
@@ -203,7 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download shard passing counts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: gut-unit-logs-*
           merge-multiple: false
@@ -230,14 +231,14 @@ jobs:
   gut-ui:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -261,7 +262,7 @@ jobs:
           ./godot --version
 
       - name: Cache Godot imported assets
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -298,7 +299,7 @@ jobs:
 
       - name: Upload GUT UI logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gut-ui-logs
           path: gut_ui.log
@@ -310,17 +311,17 @@ jobs:
       (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
       && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       actions: read
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -344,7 +345,7 @@ jobs:
           ./godot --version
 
       - name: Cache Godot imported assets
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -431,7 +432,7 @@ jobs:
 
       - name: Upload golden artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: golden-30d
           path: out/golden/
@@ -446,11 +447,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -495,7 +496,7 @@ jobs:
 
       - name: Upload H4 smoke artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: m1b-h4-smoke
           path: out/m1b_smoke/
@@ -510,11 +511,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -575,7 +576,7 @@ jobs:
 
       - name: Upload W4 cmp artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: m1b-w4-inline-cmp
           path: out/w4_cmp/
