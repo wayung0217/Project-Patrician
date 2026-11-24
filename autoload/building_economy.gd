@@ -164,6 +164,8 @@ var _season_land_rent_acc: Dictionary = {} ## port → int
 var _season_vacancy_tax_acc: Dictionary = {} ## port → int
 ## WP-68／D-115(a): layers.CITY_HOUSING（sim only; default off）.
 var _city_housing_on: bool = false
+## WP-68／D-120(c): bld_id → port_id for FRM-SYS08-24 city-auto residences（拆除後 erase）.
+var _city_auto_housing: Dictionary = {}
 const SPEND_CAT_BUILD := "build_upgrade_li"
 const SPEND_CAT_GARRISON := "garrison_li"
 const SPEND_CAT_LEVY := "levy_li"
@@ -721,6 +723,7 @@ func demolish(actor: StringName, bld_key: StringName) -> int:
 
 	var key := String(bld.building_id)
 	_buildings.erase(key)
+	_city_auto_housing.erase(key) ## D-120(c): demolished city-auto residences drop from count
 	var port_arr: Array = _buildings_by_port.get(bld.port_id, [])
 	var i := 0
 	while i < port_arr.size():
@@ -2221,6 +2224,28 @@ func is_city_housing_on() -> bool:
 	return _city_housing_on
 
 
+func city_auto_housing_count(port_id: StringName) -> int:
+	## 8.6 H／D-120(c)(h)／FRM-SYS08-24: 該港由城市自建、目前仍存在的住宅棟數
+	## （含建造中與暫停；拆除後不計；開局城營住宅不算）。查無港 → −1 + last_error.
+	## 唯讀；不得改變任何狀態（除 last_error 慣例）.
+	assert(_loaded, "BuildingEconomy.city_auto_housing_count before load")
+	_clear_last_error()
+	var pid: String = String(port_id)
+	if not _slots_by_port.has(pid) and not _buildings_by_port.has(pid) and not _queue_by_port.has(pid):
+		_record_fail(
+			ERR_SYS08_08, "port_id", port_id, "unknown port for city_auto_housing_count (D-120c)"
+		)
+		return -1
+	var n := 0
+	for bid_s in _city_auto_housing.keys():
+		if String(_city_auto_housing[bid_s]) != pid:
+			continue
+		if not _buildings.has(String(bid_s)):
+			continue
+		n = n + 1
+	return n
+
+
 func zone_built_ratio_ppm(port_id: StringName, next_zone: int) -> int:
 	## D-100／FRM-SYS08-16: 已建槽 ÷ 第 1..next_zone−1 民用槽，× PPM_SCALE；total＝0 → 0.
 	assert(_loaded, "BuildingEconomy.zone_built_ratio_ppm before load")
@@ -3014,6 +3039,8 @@ func _season_city_auto_housing(port_id: String) -> void:
 		var bid: StringName = order_build(city, slot_id, StringName(TYPE_RESIDENCE))
 		if bid == &"":
 			break
+		## D-120(c): private record for city_auto_housing_count（開局城營不經此路徑）.
+		_city_auto_housing[String(bid)] = port_id
 		built_n = built_n + 1
 
 
@@ -3340,6 +3367,7 @@ func _clear_state() -> void:
 	_season_land_rent_acc = {}
 	_season_vacancy_tax_acc = {}
 	_land_held_days = {}
+	_city_auto_housing = {}
 	## Keep _city_housing_on: scenario layer switch（SimEngine）；not world state.
 	_loaded = false
 	_clear_last_error()

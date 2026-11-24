@@ -114,6 +114,7 @@ func test_D110d_season_headers_include_queue_and_flows() -> void:
 	assert_true(SimSampler.HDR_SEASON_PORTS.find("unmet_poor_top3") >= 0)
 	assert_true(SimSampler.HDR_SEASON_PORTS.find("sat_poor") >= 0)
 	assert_true(SimSampler.HDR_SEASON_PORTS.find("job_cap") >= 0)
+	assert_true(SimSampler.HDR_SEASON_PORTS.find("city_auto_housing") >= 0)
 	assert_true(SimSampler.HDR_SEASON_CELLS.find("excess_consumed") >= 0)
 	assert_true(SimSampler.HDR_TRADER_SUMMARY.find("sail_count") >= 0)
 
@@ -132,6 +133,7 @@ func test_D110d_csv_out_writes_new_columns_and_trader_summary() -> void:
 		"cap_sat_up1": 600, "cap_sat_up2": 700,
 		"pf1": 0, "pf2": 0, "pf3": 0, "pf4": 0, "pf5": 0, "pf6": 0,
 		"unmet_poor_top3": "", "unmet_citizen_top3": "", "unmet_rich_top3": "",
+		"city_auto_housing": 0,
 	})
 	sampler.season_cells.append({
 		"run_id": 0, "seed": 1, "season_index": 0, "port_id": PORT, "good_id": "GD-001",
