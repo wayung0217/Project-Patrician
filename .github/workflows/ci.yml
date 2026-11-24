@@ -43,11 +43,11 @@ jobs:
         shard: [0, 1, 2, 3]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -94,7 +94,7 @@ jobs:
 
       # 17-64 S3: cache .godot/imported (never test/golden outputs).
       - name: Cache Godot imported assets
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -189,7 +189,7 @@ jobs:
 
       - name: Upload GUT unit shard logs
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: gut-unit-logs-${{ matrix.shard }}
           path: |
@@ -204,7 +204,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download shard passing counts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           pattern: gut-unit-logs-*
           merge-multiple: false
@@ -234,11 +234,11 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -262,7 +262,7 @@ jobs:
           ./godot --version
 
       - name: Cache Godot imported assets
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -299,7 +299,7 @@ jobs:
 
       - name: Upload GUT UI logs
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: gut-ui-logs
           path: gut_ui.log
@@ -317,11 +317,11 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -345,7 +345,7 @@ jobs:
           ./godot --version
 
       - name: Cache Godot imported assets
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .godot/imported
           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
@@ -432,7 +432,7 @@ jobs:
 
       - name: Upload golden artifact
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: golden-30d
           path: out/golden/
@@ -447,11 +447,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -496,7 +496,7 @@ jobs:
 
       - name: Upload H4 smoke artifact
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: m1b-h4-smoke
           path: out/m1b_smoke/
@@ -511,11 +511,11 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Cache Godot binary
         id: cache-godot
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: godot
           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -576,7 +576,7 @@ jobs:
 
       - name: Upload W4 cmp artifact
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: m1b-w4-inline-cmp
           path: out/w4_cmp/
