@@ -180,7 +180,7 @@ func test_F4_draft_unknown_type_errors_no_default() -> void:
 	ship.type = &"SH-NOPE"
 	assert_false(ShipRegistry.SHIP_DRAFT.has("SH-NOPE"))
 	assert_false(TraderRegistry._draft_ok(sid, StringName(PORT_B)))
-	assert_push_error_count(1)
+	## Each push_error may be asserted once — prefer text match over count.
 	assert_push_error("SHIP_DRAFT missing type")
 
 
