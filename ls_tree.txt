@@ -6,5 +6,8 @@
 100644 blob 08b69f1cb20623f82ae077270cdda86aeade3fcf     574	drop_commit_meta.txt
 100644 blob ad507549e563bf2ac4d2ec7c532c77efc4ff52a8     764	drop_commit_stat.txt
 100644 blob eeaba345fdebbd5ea842f774e8f0555036b92de0     108	four_paths.txt
+100644 blob 226ee65e1e4267557d740182e1925441381545c2     815	ls_tree.txt
+100644 blob 8a435501a3a3365292e8dbd389ce27b7ae2c9ea2       8	orphan_push.log
+100644 blob 1371b784f4f76a737a6133c48ac4fa26a0b435eb      41	orphan_sha.txt
 100644 blob adebbd7546314862c6cf95e16bd37eba316d7ed5    2483	report.md
 100644 blob e0aa6c5b6fd96ee0a02a48cda6ed821a505a3f92      41	tip_sha.txt
