@@ -2,15 +2,31 @@
   "scenario_id": "L2_f010",
   "years": 10,
   "warmup_years": 1,
-  "seeds": [1],
-  "layers": {"RELOCATE": true},
+  "seeds": [
+    1
+  ],
+  "layers": {
+    "RELOCATE": true
+  },
   "relocate_f": 0.1,
   "overrides": {
     "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
     "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 4,
     "PRM-SYS05-START_CASH": 150000,
-    "PRM-SYS07-ACADEMY_MULT": [1000,1500,2000],
-    "PRM-SYS07-ALMS_FLOOR": [50,100,180],
+    "PRM-SYS07-ABUND_BONUS_MAX_PPM": 0,
+    "PRM-SYS07-ABUND_FULL_WEEKS": 12,
+    "PRM-SYS07-ABUND_START_WEEKS": 8,
+    "PRM-SYS07-ACADEMY_MULT": [
+      1000,
+      1500,
+      2000
+    ],
+    "PRM-SYS07-ALMS_FLOOR": [
+      50,
+      100,
+      180
+    ],
+    "PRM-SYS07-EXCESS_RATE_PPM": 20000,
     "PRM-SYS07-HOUSEHOLD_SIZE": 4,
     "PRM-SYS07-HOUSE_CAPACITY": 100,
     "PRM-SYS07-LAMBDA_RING": 0.35,
@@ -31,7 +47,12 @@
     "PRM-SYS07-SAT_SCALE": 1000,
     "PRM-SYS07-SAT_UP1_MIN": 600,
     "PRM-SYS07-SAT_UP2_MIN": 700,
-    "PRM-SYS07-TEMPLE_BONUS": [20,40,70],
+    "PRM-SYS07-SCARCE_START_WEEKS": 2,
+    "PRM-SYS07-TEMPLE_BONUS": [
+      20,
+      40,
+      70
+    ],
     "PRM-SYS07-TIER2_MIN_ACTIVE": 2,
     "PRM-SYS07-TIER3_MIN_ACTIVE": 1,
     "PRM-SYS07-UNEMPLOYED_CAP_PPM": 100000,
@@ -40,17 +61,86 @@
     "PRM-SYS08-ACC_SCALE": 1000000,
     "PRM-SYS08-ARMS_PER_SOLDIER_WK": 0.01,
     "PRM-SYS08-BASE_LAND_LI": 212000,
-    "PRM-SYS08-BUILD_CASH_LI": {"RESIDENCE":100000,"WAREHOUSE":80000,"IND1":150000,"IND2":200000,"IND3":300000,"PUBLIC":500000,"KONTOR":500000},
-    "PRM-SYS08-BUILD_DAYS": {"RESIDENCE":28,"WAREHOUSE":21,"IND1":42,"IND2":56,"IND3":70,"PUBLIC":84,"KONTOR":84},
-    "PRM-SYS08-BUILD_MAT": {"RESIDENCE":{"GD-003":40,"GD-004":50},"WAREHOUSE":{"GD-003":50,"GD-004":30},"IND1":{"GD-003":60,"GD-004":40},"IND2":{"GD-003":80,"GD-004":100},"IND3":{"GD-003":100,"GD-004":150,"GD-021":10},"PUBLIC":{"GD-003":150,"GD-004":250},"KONTOR":{"GD-003":150,"GD-004":250}},
-    "PRM-SYS08-CLASS_SPEND_LI": {"POOR":568,"CITIZEN":1561,"RICH":3372},
+    "PRM-SYS08-BUILD_CASH_LI": {
+      "RESIDENCE": 100000,
+      "WAREHOUSE": 80000,
+      "IND1": 150000,
+      "IND2": 200000,
+      "IND3": 300000,
+      "PUBLIC": 500000,
+      "KONTOR": 500000
+    },
+    "PRM-SYS08-BUILD_DAYS": {
+      "RESIDENCE": 28,
+      "WAREHOUSE": 21,
+      "IND1": 42,
+      "IND2": 56,
+      "IND3": 70,
+      "PUBLIC": 84,
+      "KONTOR": 84
+    },
+    "PRM-SYS08-BUILD_MAT": {
+      "RESIDENCE": {
+        "GD-003": 40,
+        "GD-004": 50
+      },
+      "WAREHOUSE": {
+        "GD-003": 50,
+        "GD-004": 30
+      },
+      "IND1": {
+        "GD-003": 60,
+        "GD-004": 40
+      },
+      "IND2": {
+        "GD-003": 80,
+        "GD-004": 100
+      },
+      "IND3": {
+        "GD-003": 100,
+        "GD-004": 150,
+        "GD-021": 10
+      },
+      "PUBLIC": {
+        "GD-003": 150,
+        "GD-004": 250
+      },
+      "KONTOR": {
+        "GD-003": 150,
+        "GD-004": 250
+      }
+    },
+    "PRM-SYS08-CLASS_SPEND_LI": {
+      "POOR": 568,
+      "CITIZEN": 1561,
+      "RICH": 3372
+    },
     "PRM-SYS08-COMPENSATION_WEEKS": 52,
     "PRM-SYS08-DEMAND_BASIS": 1,
-    "PRM-SYS08-GARRISON": [50,150,400],
+    "PRM-SYS08-GARRISON": [
+      50,
+      150,
+      400
+    ],
     "PRM-SYS08-HOUSING_SHARE": 0.15,
-    "PRM-SYS08-KONTOR_CAP": [2000,3500,5000],
+    "PRM-SYS08-KONTOR_CAP": [
+      2000,
+      3500,
+      5000
+    ],
     "PRM-SYS08-KONTOR_PLOTS": 5,
-    "PRM-SYS08-KONTOR_UPGRADE": [{"CASH_LI":0,"DAYS":1,"GD-003":0},{"CASH_LI":0,"DAYS":1,"GD-003":0}],
+    "PRM-SYS08-KONTOR_UPGRADE": [
+      {
+        "CASH_LI": 0,
+        "DAYS": 1,
+        "GD-003": 0
+      },
+      {
+        "CASH_LI": 0,
+        "DAYS": 1,
+        "GD-003": 0
+      }
+    ],
     "PRM-SYS08-LAND_RENT_RATE_YEAR": 0.06,
     "PRM-SYS08-LEVY_RATE": 0,
     "PRM-SYS08-LEVY_THRESHOLD_SEASONS": 4,
@@ -59,39 +149,230 @@
     "PRM-SYS08-OUTPUT_PER_WORKER_K": 1.83,
     "PRM-SYS08-POP_UNIT": 1000,
     "PRM-SYS08-POWDER_PER_SOLDIER_WK": 0.01,
+    "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS": 4,
     "PRM-SYS08-RECIPE_KEEP_N": 0.6,
     "PRM-SYS08-RING_ALPHA": 0.25,
     "PRM-SYS08-SCARCITY_FLOOR": 0.15,
     "PRM-SYS08-TRANSFER_PREMIUM": 0.25,
-    "PRM-SYS08-UPGRADE_PER_CAPITA": [{"CASH_LI":10000,"GD-003":0.3,"GD-004":0.5},{"CASH_LI":40000,"GD-003":1,"GD-004":1.5,"GD-021":0.1}],
+    "PRM-SYS08-UPGRADE_PER_CAPITA": [
+      {
+        "CASH_LI": 10000,
+        "GD-003": 0.3,
+        "GD-004": 0.5
+      },
+      {
+        "CASH_LI": 40000,
+        "GD-003": 1,
+        "GD-004": 1.5,
+        "GD-021": 0.1
+      }
+    ],
     "PRM-SYS08-VACANCY_GRACE_DAYS": 84,
-    "PRM-SYS08-VACANCY_RATE": [0.2,0.35,0.5],
+    "PRM-SYS08-VACANCY_RATE": [
+      0.2,
+      0.35,
+      0.5
+    ],
     "PRM-SYS08-WAGE_BASE_LI": 2500,
     "PRM-SYS08-WAGE_SHARE_W": 1,
     "PRM-SYS08-WAREHOUSE_CAP": 1000,
-    "PRM-SYS08-ZONE_OPEN_COST_LI": [2000000,4000000,6000000,8000000],
-    "PRM-SYS08-ZONE_POP_MIN": [2500,4500,6500,8500],
+    "PRM-SYS08-ZONE_OPEN_COST_LI": [
+      2000000,
+      4000000,
+      6000000,
+      8000000
+    ],
+    "PRM-SYS08-ZONE_POP_MIN": [
+      2500,
+      4500,
+      6500,
+      8500
+    ],
     "PRM-SYS08-ZONE_SAT_DAYS": 28,
     "PRM-SYS08-ZONE_SAT_MIN": 600,
-    "PRM-SYS13-BUILD_DAYS": {"SH-01": 30, "SH-02": 40, "SH-03": 45, "SH-04": 75},
-    "PRM-SYS13-BUILD_MATERIALS": {"SH-01": {"GD-003": 60, "GD-017": 10, "GD-021": 3}, "SH-02": {"GD-003": 50, "GD-017": 10, "GD-021": 3}, "SH-03": {"GD-003": 80, "GD-017": 15, "GD-021": 5}, "SH-04": {"GD-003": 200, "GD-017": 40, "GD-021": 15}},
-    "PRM-SYS13-CAPACITY": {"SH-01": 150, "SH-02": 100, "SH-03": 250, "SH-04": 600},
-    "PRM-SYS13-CREW": {"SH-01": 10, "SH-02": 12, "SH-03": 8, "SH-04": 30},
+    "PRM-SYS13-BUILD_DAYS": {
+      "SH-01": 30,
+      "SH-02": 40,
+      "SH-03": 45,
+      "SH-04": 75
+    },
+    "PRM-SYS13-BUILD_MATERIALS": {
+      "SH-01": {
+        "GD-003": 60,
+        "GD-017": 10,
+        "GD-021": 3
+      },
+      "SH-02": {
+        "GD-003": 50,
+        "GD-017": 10,
+        "GD-021": 3
+      },
+      "SH-03": {
+        "GD-003": 80,
+        "GD-017": 15,
+        "GD-021": 5
+      },
+      "SH-04": {
+        "GD-003": 200,
+        "GD-017": 40,
+        "GD-021": 15
+      }
+    },
+    "PRM-SYS13-CAPACITY": {
+      "SH-01": 150,
+      "SH-02": 100,
+      "SH-03": 250,
+      "SH-04": 600
+    },
+    "PRM-SYS13-CREW": {
+      "SH-01": 10,
+      "SH-02": 12,
+      "SH-03": 8,
+      "SH-04": 30
+    },
     "PRM-SYS13-CREW_WAGE_WK": 2500,
-    "PRM-SYS13-PRICE_CASH": {"SH-01": 300000, "SH-02": 400000, "SH-03": 450000, "SH-04": 1200000},
+    "PRM-SYS13-PRICE_CASH": {
+      "SH-01": 300000,
+      "SH-02": 400000,
+      "SH-03": 450000,
+      "SH-04": 1200000
+    },
     "PRM-SYS13-REPAIR_RATE_SEASON": 0.02,
     "PRM-SYS13-SALVAGE_RATE": 0.5,
-    "PRM-SYS13-TICKS_PER_WAYPOINT": {"SH-01": 12, "SH-02": 9, "SH-03": 12, "SH-04": 14},
-    "PRM-SYS13-YARD_CONCURRENT": [1,2,3],
+    "PRM-SYS13-TICKS_PER_WAYPOINT": {
+      "SH-01": 12,
+      "SH-02": 9,
+      "SH-03": 12,
+      "SH-04": 14
+    },
+    "PRM-SYS13-YARD_CONCURRENT": [
+      1,
+      2,
+      3
+    ],
+    "PRM-SYS15-DECAY_DAYS": 28,
+    "PRM-SYS15-DIRECTION_DEADBAND_PPM": 20000,
+    "PRM-SYS15-DIVERGENCE_HI_PPM": 300000,
+    "PRM-SYS15-DIVERGENCE_LO_PPM": 100000,
+    "PRM-SYS15-PUBLIC_DELAY_TICKS": 0,
     "PRM-SYS15-WEEKS_SCALE": 100,
     "PRM-SYS15-WINDOW_DAYS": 28,
-    "PRM-SYS15-DECAY_DAYS": 28,
-    "PRM-SYS15-DIVERGENCE_LO_PPM": 100000,
-    "PRM-SYS15-DIVERGENCE_HI_PPM": 300000,
-    "PRM-SYS15-DIRECTION_DEADBAND_PPM": 20000,
-    "PRM-SYS15-PUBLIC_DELAY_TICKS": 0
+    "PRM-SYS17-EXPLORE_QTY": 50,
+    "PRM-SYS17-EXPLORE_RATE": 0.05,
+    "PRM-SYS17-IDLE_DAYS_MAX": 5,
+    "PRM-SYS17-LOSS_TOL_PPM": 50000,
+    "PRM-SYS17-MERCHANT_COUNT_MAX": 48,
+    "PRM-SYS17-PROFIT_MIN_LI": 0,
+    "PRM-SYS17-SHIP_MIX": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "PRM-SYS17-START_CASH": 1000000,
+    "PRM-SYS17-TIER_MIX": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
   },
   "grid": {},
   "daily_detail_ports": [],
-  "thresholds": {"TH-01": 0.4, "TH-01b": 0.6, "TH-02": 3, "TH-03": 0.05, "TH-04": 100, "TH-05a": 1}
+  "thresholds": {
+    "TH-01": 0.4,
+    "TH-01b": 0.6,
+    "TH-02": 3,
+    "TH-03": 0.05,
+    "TH-04": 100,
+    "TH-05a": 1
+  }
 }

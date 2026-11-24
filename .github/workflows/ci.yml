@@ -38,6 +38,14 @@ jobs:
             exit 1
           fi
 
+      # Unit/property suites wipe res://data (opening_population, demand, …).
+      # Restore committed formal data before UI so this job matches isolated gut-ui.
+      - name: Restore res://data after unit wipe
+        run: |
+          set -euo pipefail
+          git checkout HEAD -- data/
+          git clean -fd data/
+
       - name: Run GUT UI tests
         run: |
           set -euo pipefail

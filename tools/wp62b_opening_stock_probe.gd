@@ -1,10 +1,10 @@
 extends SceneTree
-## WP-62b: formal boot → sum MARKET stocks; expect ≈ 111,639 dan.
+## WP-62b: formal boot → sum MARKET stocks; expect 136088 dan（D-107）.
 ## Usage: godot --headless --path . -s res://tools/wp62b_opening_stock_probe.gd
 
 
 const SCENARIO_PATH := "res://docs/spec/scenario_L1_baseline.json"
-const EXPECT_TOTAL := 111639
+const EXPECT_TOTAL := 136088
 const TOP_N := 20
 
 

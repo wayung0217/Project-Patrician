@@ -576,5 +576,71 @@
   "PRM-SYS08-OPENING_STOCK_OUTPUT_WEEKS": {
     "type": "int",
     "min": 0
+  },
+  "PRM-SYS07-ABUND_START_WEEKS": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS07-ABUND_FULL_WEEKS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS07-EXCESS_RATE_PPM": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-ABUND_BONUS_MAX_PPM": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-SCARCE_START_WEEKS": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS17-MERCHANT_COUNT_MAX": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS17-START_CASH": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS17-SHIP_MIX": {
+    "type": "int_array",
+    "length": 48,
+    "min": 1
+  },
+  "PRM-SYS17-TIER_MIX": {
+    "type": "int_array",
+    "length": 48,
+    "min": 0
+  },
+  "PRM-SYS17-EXPLORE_RATE": {
+    "type": "float",
+    "min": 0,
+    "max": 1
+  },
+  "PRM-SYS17-EXPLORE_QTY": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS17-PROFIT_MIN_LI": {
+    "type": "int",
+    "min": 0
+  },
+  "PRM-SYS17-IDLE_DAYS_MAX": {
+    "type": "int",
+    "min": 1
+  },
+  "PRM-SYS17-LOSS_TOL_PPM": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
   }
 }
