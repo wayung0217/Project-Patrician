@@ -1,6 +1,6 @@
 # 17-71 HANDOFF
 
-Branch tip: `2b6ff456fdb82aecd0cb655661a6cdf9435395fd`（`review/1771-handoff`）  
+Branch tip: `TIP_PENDING`（`review/1771-handoff`）  
 Main tip at closeout: `fd5eb16c8d598b7a82f31097c9fb2207c0e4ebcd`  
 Main CI: `45735400939` success（7 success ＋ 2 skipped；勿報「9／9」成功——N-21）。  
 Golden artifact id: **`15078752004`**（name `golden-30d`，run `45735400939`）.
@@ -18,8 +18,8 @@ Shard Passing: 0→2, 1→208, 2→190, 3→211（合計 611）.
 gut-ui: Passing Tests 6.
 
 ## Open PRs
-**1 個（#88 TD-18，依 Owner 指示暫不合併）**。  
-另：#78 `cursor/ui-1755-debug-panels-ff98` 為搁置 UI 枝（見下方 disposition；不計入 17-71 收尾「應為 0」目標，Owner 明示保留）。
+**0 個**（17-71 收尾目標）。#88 TD-18 已 **closed**（wall-sum gate FAIL；未合併）。  
+另：#78 `cursor/ui-1755-debug-panels-ff98` 為搁置 UI 枝（見下方 disposition；不計入收尾「應為 0」目標，Owner 明示保留）。
 
 ## Merges closed
 | Step | Result |
@@ -119,6 +119,8 @@ TD-17｜GoodsLedger 容器查詢（get_qty、can_transfer）會順帶登記容�
       未處理，併入 TD-02。
 TD-18｜test_sys23_wp26.gd 單檔約 34 分鐘，為 CI 關鍵路徑
       已派工（17-71），#88 待交付；合併不預批。D-132 已據此修正 D-130(1) 判準。
+★ 17-71 closeout：#88 closed（run 45749712431；slowest 1004s PASS／sum 2581s FAIL vs fd5eb16）。
+      下一輪：**分片依據改為實測耗時權重**。
 
 ## R9-75 未結項（照 R9-75 審查紀錄原文；來源：docs/spec/05_TechSpec.csv R9-75 C 欄）
 
@@ -158,10 +160,10 @@ N-21｜CI 結果曾以「9／9」回報，實為 7 success ＋ 2 skipped；往�
 0bcb548aaf78c5865ef784d421b581bc4fe5b523	refs/heads/review/1770-evidence3
 173d731beb2fbc1bdfca521abe8507bcad10297e	refs/heads/review/evening-17-69-lane3
 1fd181acf5012a49494b3084e4045202987e4507	refs/heads/cursor/ui-1755-debug-panels-ff98
-2b6ff456fdb82aecd0cb655661a6cdf9435395fd	refs/heads/review/1771-handoff
 32f0a43c2d8c680178d610f907a8869d73f69598	refs/heads/review/1770-d130
 40670fc03681a1b8eabee618eebf4401c7d5fdac	refs/heads/review/1770-t3
 69a793a473bb8eb8c0696eb7a5944d34eb726228	refs/heads/review/1770-t1
+6d3ce415a57e22f164166cf07337be1633b954a1	refs/heads/review/1771-handoff
 76bacbf848a7dc7d6220fa5f1818130254ec3c71	refs/heads/review/1770-merge1
 7d8ece439134c109e5f8a112771f3c32029a91e4	refs/heads/review/evening-17-69-int
 8468b864149604e8e6b2cb8acf060ced8b559e4e	refs/heads/review/evening-17-69-lane5
@@ -177,57 +179,30 @@ dc6aa1c30f7d46cffb9a7986e2da5e3d43602d5b	refs/heads/cursor/td18-wp26-split-5665
 fd5eb16c8d598b7a82f31097c9fb2207c0e4ebcd	refs/heads/main
 ```
 
-## TD-18／#88 L-乙（not TD-15；**依 Owner 指示暫不合併**）
-PR **#88** `cursor/td18-wp26-split-5665` @ `dc6aa1c`  
-CI run **`45738371952`** conclusion **`success`**（7 success ＋ 2 skipped）。
+## TD-18／#88 — **CLOSED, not merged**（not TD-15）
+PR **#88** `cursor/td18-wp26-split-5665` tip `2936303` — state **CLOSED**（2026-11-26T03:51:47Z）。  
+Final CI run **`45749712431`** conclusion **`success`**。
 
-### gate（verbatim）
-```
-TOTAL_PASSING=611
-BASELINE_COUNT=555
-SEEN_NAMES=611 BASELINE_NAMES=555
-REMOVED_NAMES:
-無
-```
+### Owner wall gate vs main `fd5eb16`（1302s／2072s；sum ≤2176）
+| shard | wall_s |
+|-------|--------|
+| gut-unit (0) | 1004 |
+| gut-unit (1) | 956 |
+| gut-unit (2) | 21 |
+| gut-unit (3) | 600 |
+| slowest / sum | **1004** / **2581** |
 
-### test names before ≡ after（30；逐名）
-```
-test_TST_SYS23_01_two_runs_csv_match_except_elapsed
-test_TST_SYS23_02_formal_params_unchanged_sha256
-test_TST_SYS23_03_unknown_scenario_key
-test_TST_SYS23_04_grid_cartesian_run_id_order
-test_TST_SYS23_08_fnv_vectors
-test_TST_SYS23_09_one_combo_aborts_on_conservation
-test_TST_SYS23_09_print_summary_csv
-test_TST_SYS23_10_met_hand_fixture
-test_TST_SYS23_11_missing_threshold_pass_na
-test_WP26_abort_summary_mets_blank
-test_WP26_bad_missing_required_key_errors
-test_WP26_bad_override_grid_clash_errors
-test_WP26_csv_integer_columns_no_dot
-test_WP26_empty_sample_mets_blank_not_zero
-test_WP26_evidence_accounts_after_boot_layer1
-test_WP26_evidence_bad_triple_all_at_once
-test_WP26_evidence_cli_twice_cmp
-test_WP26_evidence_ERR_SYS23_01_missing_file
-test_WP26_evidence_ERR_SYS23_03_type
-test_WP26_evidence_ERR_SYS23_05_unknown_port
-test_WP26_evidence_ERR_SYS23_06_relocate_f
-test_WP26_evidence_years10_player_arrears
-test_WP26_json_int_rejects_non_integral
-test_WP26_layer1_two_years_headers_and_counts
-test_WP26_obs03_blank_not_zero
-test_WP58_A32_bad_job_json_exits_nonzero
-test_WP58_A32_missing_job_exits_nonzero
-test_WP58_A33_sampler_uses_market_pricer_stock_weeks
-test_WP58_A34_write_failure_reports_ok_false
-test_WP58_Y1_A31_day_error_aborts_summary
-```
+slowest < 1302 ✓；sum ≤ 2176 ✗ → **no merge；#88 closed**。  
+**下一輪：分片依據改為實測耗時權重。**
 
-### shard wall-clock
-- Before（Owner／E3 tip `80d3d68` run `45620046075`）：slowest **gut-unit (3) = 2078s**
-- Before main `fd5eb16` run `45735400939`：0=24s，1=143s，2=603s，3=1302s（slowest 1302s）
-- After #88 run `45738371952`：0=19s，1=596s，2=1733s，3=31s（slowest **1733s**）
+### Final shard lists（run 45749712431）
+```
+SHARD=0 … wp26_b + 2 property
+SHARD=1 … wp26_a + 1 property
+SHARD=2 … wp27 + 1 property
+SHARD=3 … 45 other unit/property scripts
+```
+Full lists: `evening-17-69-lane3/td18_wp26/GATE_FAIL_45749712431.md`
 
 Pack: `evening-17-69-lane3/td18_wp26/`
 
