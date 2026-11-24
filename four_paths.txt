@@ -1,0 +1,4 @@
+docs/spec/03_Systems.csv
+docs/spec/05_TechSpec.csv
+docs/spec/AI_README.csv
+docs/spec/Project Patrician.xlsx

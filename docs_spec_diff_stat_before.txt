@@ -1,0 +1,5 @@
+ docs/spec/03_Systems.csv         |   8 +-
+ docs/spec/05_TechSpec.csv        | 168 +++++++++++++++++++++++++++++++++++++--
+ docs/spec/AI_README.csv          |  32 +++++++-
+ docs/spec/Project Patrician.xlsx | Bin 1824768 -> 1849856 bytes
+ 4 files changed, 198 insertions(+), 10 deletions(-)

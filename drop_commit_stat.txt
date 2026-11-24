@@ -1,0 +1,17 @@
+commit 39d199de43b7cb059cc9ac5c64e77b04834015cf
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Tue Nov 24 14:20:00 2026 +0000
+
+    chore(17-70): D-129 drop cb84393 docs/spec from #83 (T2)
+    
+    Restore 03_Systems/05_TechSpec/AI_README/xlsx to int-1758 so
+    PR docs/spec diff is empty. Owner export v6.99.222 is authoritative;
+    #83 must not carry agent-gated v6.99.210 workbook edits.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ docs/spec/03_Systems.csv         |   8 +-
+ docs/spec/05_TechSpec.csv        | 168 ++-------------------------------------
+ docs/spec/AI_README.csv          |  32 +-------
+ docs/spec/Project Patrician.xlsx | Bin 1849856 -> 1824768 bytes
+ 4 files changed, 10 insertions(+), 198 deletions(-)
