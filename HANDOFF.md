@@ -1,8 +1,8 @@
 # 17-71 HANDOFF
 
-Branch tip: `2c1c2c08ae12983593c93d8ea93e9dce6b2a35b7`（`review/1771-handoff`）  
+Branch tip: `TIP_PLACEHOLDER`（`review/1771-handoff`）  
 Main tip at closeout: `fd5eb16c8d598b7a82f31097c9fb2207c0e4ebcd`  
-Main CI: `45735400939` success (9 checks).  
+Main CI: `45735400939` success（7 success ＋ 2 skipped；勿報「9／9」成功——N-21）。  
 Golden artifact id: **`15078752004`**（name `golden-30d`，run `45735400939`）.
 
 ## GUT at main `fd5eb16`
@@ -39,7 +39,7 @@ GOLDEN_GATE PASS
 GOLDEN_SUMMARY rows=527 cols=19
 ```
 本項為本機比對，非 CI 實證（D-121(f)）。  
-已知缺口：CI 在 main **push** 後不會自動比對連續兩次 golden baseline（compare 步驟僅 `pull_request`）→ ⑥ 類合併的 DIFF 無 CI 自動實證，屬結構缺口。
+CI 沒有「main push 後自動比對前後兩份 golden 基準」的步驟，因此 ⑥ 這類 int→main 的合併無法取得 CI 層級的 golden 比對證據，只能以本機比對替代（本次即是）。這是 CI 結構缺口，留給下一輪評估是否補。
 
 ## z-1758-3
 z-1758-3 尚未跑。
@@ -76,34 +76,72 @@ z-1758-3 尚未跑。
 
 本項與 D-108(c)（M1b 期間 ABUND_BONUS_MAX_PPM 固定為 0）可能抵觸，Owner 裁決中（D-136），grid 是否保留 250000 待定。
 
-## Tech debt TD-01..TD-17（自 docs/spec/05_TechSpec.csv D 列／審計；不臆造）
-來源：工作簿對應之 TechSpec CSV（D-32b、D-39c、D-40d、D-43b、D-60e、D-60g、D-63d、D-69、D-75、D-76、D-80、D-82、D-84、D-91 等）。R9-78：截至本寫入時 `docs/spec`／store **未見** R9-78 列。
+## Tech debt TD-01..TD-18（05_TechSpec §18；Owner 原文照錄，不改寫編號／狀態）
 
-| ID | 摘要（照 TechSpec） | 狀態摘記 |
-|----|---------------------|----------|
-| TD-01 | 測試重置／公開查詢介面；PopulationModel 讀 BuildingEconomy._building_defs | D-32b；日後小 WP |
-| TD-02 | BuildingEconomy 扣款後搬貨失敗不退款 | D-39c；日後小 WP |
-| TD-03 | DemandModel 不檢查每貨皆有需求率與權重 | D-40d |
-| TD-04 | csv_import 舊路徑殘留 int(row[…]) | D-43b |
-| TD-05 | 測試名無 TST ID（後更新 255／427） | D-60e；舊測不追溯 |
-| TD-06 | sim/ 非整數 JSON push_error 後回 0 | D-60g |
-| TD-07 | 冗餘 int( 與產品碼跨模組私有存取 | D-63d |
-| TD-08 | sim_engine 寫入 TradeDesk._loaded | D-69 |
-| TD-09 | population_model 既有跨模組私有讀取與字面量 | D-75 |
-| TD-10 | #43 合併報告既有項與占用重建缺口 | D-76 |
-| TD-11 | building_economy 讀 CashLedger._postings；sim_engine 呼叫 _as_int | D-80；WP-52 |
-| TD-12 | data/ 與 docs/spec 不同步 | D-80；WP-52 |
-| TD-13 | building_economy floor/ceil 未用 floori/ceili | D-80；WP-52 |
-| TD-14 | 測試大量碰私有；**不允許**測試專用重置介面 | D-80／D-91；改正式注入 |
-| TD-15 | params_schema 有鍵代碼未讀（工作簿側驗證） | D-80／D-91；代碼不重複檢查（**非** wp26 拆檔；wp26＝**TD-18**） |
-| TD-16 | 升級期間維持原等級效果 | D-82／D-84(b) 已裁決 |
-| TD-17 | GoodsLedger 查詢時登記容器 | D-82；併 TD-02 小 WP |
+TD-01｜測試與產品碼的跨模組私有成員存取；缺統一的公開查詢
+      未處理（解法須重訂）。原解法已被 D-91 否決（不允許測試專用重置介面），
+      現僅剩「PopulationModel 讀 BuildingEconomy._building_defs 三處改為公開查詢」仍有效。
+TD-02｜BuildingEconomy 兩條採購路徑扣款後搬貨失敗不退款
+      未處理。日後小 WP；TD-17 併入本項一併處理。
+TD-03｜DemandModel 不檢查「每一種貨都有需求率與權重」
+      未處理。待 SYS-23 模擬器可跑後，與 TD-01、TD-02 一併處理。
+TD-04｜csv_import 舊路徑殘留 int(row[...])
+      未處理（WP-52 A2 可能已涵蓋，未逐項回核）。
+TD-05｜★ 本號被重複使用，含兩個不同事項
+      (a) ZONE 陣列過短時城市永不開區且不報錯 — 未處理；
+      (b) 226 個測試名不含 TST ID — 已裁決不追溯（D-60e）。
+      ★ 不得重用此號；日後處理 (a) 須另立新號。
+TD-06｜sim/ 非整數 JSON 值 push_error 後回 0
+      未處理，只記工作簿。
+TD-07｜冗餘 int( 與產品碼跨模組私有存取（_container_meta）
+      推定由 WP-52 處理（WP-52 至 60 已全部合併入 main）；★ 未逐項回核。
+TD-08｜sim_engine.gd 寫入 TradeDesk._loaded（跨模組私有寫入）
+      推定由 WP-52 處理；★ 未逐項回核。
+TD-09｜population_model.gd 既有的跨模組私有讀取與字面量
+      推定由 WP-52 處理；★ 未逐項回核。
+TD-10｜#43 合併報告揭露的既有項目與缺口
+      部分押後：存檔讀檔後的占用重建維持不實作（存檔不在 Phase 0）。
+TD-11｜building_economy.gd 讀 CashLedger._postings；sim_engine.gd 呼叫 SimScenarioValidator._as_int
+      推定由 WP-52 A4 處理；★ 未逐項回核。
+TD-12｜data/ 與 docs/spec 不同步
+      推定由 WP-52 A1 處理；★ 未逐項回核。
+TD-13｜取整未統一（含 int／int 經 float 的除法、float 處理厘金額）
+      推定由 WP-52 A3 處理；★ 未逐項回核。注意修正後鏡像測試期望值須同步改。
+TD-14｜是否允許單一「測試專用重置介面」
+      ★ 已結案：D-91 裁決【不允許】。一律改用正式注入介面或既有 fixture。
+TD-15｜工作簿側驗證用或補代碼檢查（原始定義）
+      未處理（定義待釐清）。完整定義散在 D-80 內，處理前須先回查確認範圍。
+      ★ 注意：TD-15 不是 wp26 拆檔，那是 TD-18。
+TD-16｜建築升級期間的效果歸零
+      ★ 已結案：D-84(b) 裁決升級期間維持原等級效果；規格與代碼皆已處理。
+TD-17｜GoodsLedger 容器查詢（get_qty、can_transfer）會順帶登記容器，
+      使 is_container_registered 失去「未登記」判斷力；MarketPricer.quote 對不存在的港照樣報價為同一延伸。
+      未處理，併入 TD-02。
+TD-18｜test_sys23_wp26.gd 單檔約 34 分鐘，為 CI 關鍵路徑
+      已派工（17-71），#88 待交付；合併不預批。D-132 已據此修正 D-130(1) 判準。
 
-### R9-75 未結／交接相關（開項）
-- N-10～N-14：收尾過程已處理（D-128／D-129 甲、COMPARED_CELLS、#86 入序、W9 三枝為 stale false positive）；細節見 R9-75 原文。
-- **仍開：** D-127 量級對帳缺 `season_cells.csv`；R9-75 §8.2 其餘項（驗收門改寫）交下一模型；z-1758-3 尚未跑。
-- **R9-78：** `docs/spec`／store **未見** R9-78 列（不臆造）。
-- Golden push 無連續 baseline 自動比對（本 HANDOFF 結構缺口）。
+## R9-75 未結項（照 R9-75 審查紀錄原文；來源：docs/spec/05_TechSpec.csv R9-75 C 欄）
+
+【四、新缺失】N-10 HANDOFF 的 W9 聲明不實；N-11 _clear_state() 跨模組呼叫；N-12 orphan 分支 SHA 漂移（lane5：6dba86b／8468b864／8b7df9a9；int：ae816f2／7d8ece439／8b41864eb）；N-13 黃金比較未輸出 COMPARED_CELLS；N-14 #86 不在合併順序內。
+
+【五、D 系列核對】D-127：量級對帳仍無法進行——無 season_cells.csv；現有僅帶別總計 band0＝385、中段＝126、band4＝3,521、合計 4,032（每組 448 格），商人 sail_count＝0（run 45356709933／71b094d），D-126 之後無新矩陣。
+
+【七、處置】17-69 不通過；四個 PR 一律不合併；z-1758-3 與 M3 不開。
+
+★ Owner 2026-11-25 14:00 覆核摘錄：season_cells.csv 與驗收門改寫（§8.2 其餘項）待 PR 全部合併、repo 乾淨後交下一個編寫程序 AI。
+
+（註：N-10～N-14／D-128／D-129／合併序其後由 17-70／17-71 執行；上列仍照 R9-75 原文登錄為「該筆審查時」未結項。）
+
+## R9-78 未結項
+(1) D-128 要求的 tests/ 完整 diff 從未交出，因此「兩處 _clear_state() 已刪」
+    與期望值 300／120／0／124 未改，至今只有自述，無逐行證據。
+(2) #85（0b0e220）對 origin/int-1758 的三點差異中含 5 個 docs/spec 檔，
+    其歸屬經 D-134 判定為情境檔區、非 C-14 違規，但未逐 commit 核對作者。
+
+## N-20 / N-21
+N-20｜manifest 曾在最後一次 push 之前產生，三筆 SHA 與實檔不符；
+      D-133 硬規則 (a) 已要求往後一律在最後一次 CI 完成之後才產生。
+N-21｜CI 結果曾以「9／9」回報，實為 7 success ＋ 2 skipped；往後須區分。
 
 ## W5 / branch disposition
 
@@ -119,7 +157,6 @@ z-1758-3 尚未跑。
 ```
 0bcb548aaf78c5865ef784d421b581bc4fe5b523	refs/heads/review/1770-evidence3
 173d731beb2fbc1bdfca521abe8507bcad10297e	refs/heads/review/evening-17-69-lane3
-1927947fb1119c9713278cae275f736b8774ce95	refs/heads/review/1771-handoff
 1fd181acf5012a49494b3084e4045202987e4507	refs/heads/cursor/ui-1755-debug-panels-ff98
 32f0a43c2d8c680178d610f907a8869d73f69598	refs/heads/review/1770-d130
 40670fc03681a1b8eabee618eebf4401c7d5fdac	refs/heads/review/1770-t3
@@ -130,6 +167,7 @@ z-1758-3 尚未跑。
 85627c4576e1b96ba112187cb36eb57d2d8aa7d9	refs/heads/review/evening-17-57
 88da300c61dcf2c340e3bdd705b14307068b4af5	refs/heads/review/1770-t2
 88fdddb3ed46c0b1ceb2fe73095447abd58c70e8	refs/heads/review/evening-17-69-lane2
+a58fe04b9141b21ed39909ca48a706bb34ff487a	refs/heads/review/1771-handoff
 add25848677bf95be8e430ff9f6a8c1bcab977f9	refs/heads/review/evening-17-55
 c1fd855611cad108c5c03604f4e47b1e63c95dda	refs/heads/review/evening-17-69-lane1
 d52d92ac1909ae995b429e65e814774da83a1ab2	refs/heads/review/1770-evidence2
@@ -138,10 +176,59 @@ d834963e3903bad8461fa2ff74e2445d26bac515	refs/heads/review/evening-17-69-handoff
 dc6aa1c30f7d46cffb9a7986e2da5e3d43602d5b	refs/heads/cursor/td18-wp26-split-5665
 fd5eb16c8d598b7a82f31097c9fb2207c0e4ebcd	refs/heads/main
 ```
-（推送本 HANDOFF 修訂後，`review/1771-handoff` tip SHA 將更新；以本檔開頭 Branch tip 為準。）
 
-## TD-18（not TD-15）
-PR **#88** `cursor/td18-wp26-split-5665` @ `dc6aa1c` — CI run **`45738371952` success**；L-乙：30 測名 before≡after、REMOVED_NAMES=無、TOTAL_PASSING=611／BASELINE_COUNT=555；wall before slowest 2078s（E3）／main 1302s → after 1733s。**依 Owner 指示暫不合併**。  
+## TD-18／#88 L-乙（not TD-15；**依 Owner 指示暫不合併**）
+PR **#88** `cursor/td18-wp26-split-5665` @ `dc6aa1c`  
+CI run **`45738371952`** conclusion **`success`**（7 success ＋ 2 skipped）。
+
+### gate（verbatim）
+```
+TOTAL_PASSING=611
+BASELINE_COUNT=555
+SEEN_NAMES=611 BASELINE_NAMES=555
+REMOVED_NAMES:
+無
+```
+
+### test names before ≡ after（30；逐名）
+```
+test_TST_SYS23_01_two_runs_csv_match_except_elapsed
+test_TST_SYS23_02_formal_params_unchanged_sha256
+test_TST_SYS23_03_unknown_scenario_key
+test_TST_SYS23_04_grid_cartesian_run_id_order
+test_TST_SYS23_08_fnv_vectors
+test_TST_SYS23_09_one_combo_aborts_on_conservation
+test_TST_SYS23_09_print_summary_csv
+test_TST_SYS23_10_met_hand_fixture
+test_TST_SYS23_11_missing_threshold_pass_na
+test_WP26_abort_summary_mets_blank
+test_WP26_bad_missing_required_key_errors
+test_WP26_bad_override_grid_clash_errors
+test_WP26_csv_integer_columns_no_dot
+test_WP26_empty_sample_mets_blank_not_zero
+test_WP26_evidence_accounts_after_boot_layer1
+test_WP26_evidence_bad_triple_all_at_once
+test_WP26_evidence_cli_twice_cmp
+test_WP26_evidence_ERR_SYS23_01_missing_file
+test_WP26_evidence_ERR_SYS23_03_type
+test_WP26_evidence_ERR_SYS23_05_unknown_port
+test_WP26_evidence_ERR_SYS23_06_relocate_f
+test_WP26_evidence_years10_player_arrears
+test_WP26_json_int_rejects_non_integral
+test_WP26_layer1_two_years_headers_and_counts
+test_WP26_obs03_blank_not_zero
+test_WP58_A32_bad_job_json_exits_nonzero
+test_WP58_A32_missing_job_exits_nonzero
+test_WP58_A33_sampler_uses_market_pricer_stock_weeks
+test_WP58_A34_write_failure_reports_ok_false
+test_WP58_Y1_A31_day_error_aborts_summary
+```
+
+### shard wall-clock
+- Before（Owner／E3 tip `80d3d68` run `45620046075`）：slowest **gut-unit (3) = 2078s**
+- Before main `fd5eb16` run `45735400939`：0=24s，1=143s，2=603s，3=1302s（slowest 1302s）
+- After #88 run `45738371952`：0=19s，1=596s，2=1733s，3=31s（slowest **1733s**）
+
 Pack: `evening-17-69-lane3/td18_wp26/`
 
 ## Pack index
