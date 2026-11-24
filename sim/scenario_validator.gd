@@ -23,8 +23,11 @@ const KEY_THRESHOLDS := "thresholds"
 const KEY_RELOCATE := "RELOCATE"
 const KEY_TRADERS := "TRADERS"
 const KEY_QUAL_OPEN := "QUAL_OPEN"
-## D-109(e)／D-110／17-55: optional sim switches; RELOCATE remains required.
-const ALLOWED_LAYER_KEYS: PackedStringArray = [KEY_RELOCATE, KEY_TRADERS, KEY_QUAL_OPEN]
+const KEY_CITY_HOUSING := "CITY_HOUSING"
+## D-109(e)／D-110／D-115／17-55: optional sim switches; RELOCATE remains required.
+const ALLOWED_LAYER_KEYS: PackedStringArray = [
+	KEY_RELOCATE, KEY_TRADERS, KEY_QUAL_OPEN, KEY_CITY_HOUSING
+]
 
 const SCHEMA_PATH := "res://data/params/params_schema.json"
 
