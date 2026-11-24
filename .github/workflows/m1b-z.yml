@@ -27,7 +27,7 @@ jobs:
           - Zd_G0_seed2
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download Godot 4.7.2-stable
         run: |
@@ -99,7 +99,7 @@ jobs:
 
       - name: Upload group artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: m1b-z-${{ matrix.group }}
           path: out/m1b/${{ matrix.group }}/
@@ -113,7 +113,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download Godot 4.7.2-stable
         run: |
@@ -128,7 +128,7 @@ jobs:
         run: ./godot --headless --path . --import
 
       - name: Download all group artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: m1b-z-*
           path: out/m1b_artifacts
@@ -173,7 +173,7 @@ jobs:
 
       - name: Upload Z report pack
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: m1b-z-report
           path: |

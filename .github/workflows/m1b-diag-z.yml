@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 90
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download Godot 4.7.2-stable
         run: |
@@ -79,7 +79,7 @@ jobs:
 
       - name: Upload diag artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: m1b-diag-z-Za_G0_A0
           path: out/m1b_diag/
