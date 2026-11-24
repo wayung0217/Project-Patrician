@@ -98,3 +98,18 @@ After a full pack, zip `out\m1b\` (keep under 150 MB; if over, keep per group `s
 
 3. Confirm CSVs under `out\m1b_smoke\Za_G0_A0\` and `progress.log` season lines (read with `Get-Content -Encoding UTF8`).
 4. Optional subprocess cmp (Linux CI `m1b-w4-inline-cmp` job) — Owner: status **待 Owner 驗證** until you confirm Guild T5.
+
+## 17-69 SEED_NO_EFFECT / trader totals
+
+`tools/run_m1b_report.gd` (Lane 5):
+
+1. **SEED_NO_EFFECT** — compares seed-only pairs (`Za_G0_A0` vs `Zd_G0_seed2`). If ①②③④ metrics are identical, emits a **WARNING: SEED_NO_EFFECT** plus the identical column list. Warning only; does not change PASS/FAIL.
+2. **season_sail_count / season_cargo_dan** — shown when those exact CSV columns exist; otherwise **N/A** (T3; never PASS/FAIL). Does not require Lane 4 output changes.
+3. **Trader totals** — per-group `trader_sails_total` + `trader_cargo_dan_total` from `trader_summary.csv`.
+
+Rebuild report only:
+
+```powershell
+.\tools\run_m1b.ps1 -GodotPath "...console.exe" -ReportOnly
+```
+
