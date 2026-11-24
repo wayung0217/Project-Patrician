@@ -122,7 +122,7 @@ jobs:
           echo "IMPORT_CLEAN_TREE_OK"
 
       # D-130／E3(e)：測檔權重（property 先 round-robin，再 unit 按 size greedy）；
-      # wp26 不得獨佔一片；timeout 仍 45（不加長）。
+      # boot-heavy unit（wp26_a/b、wp27）視同 property round-robin，a/b 不同片；timeout 仍 45。
       - name: Select unit+property shard scripts (file-weight balanced 4-way)
         id: shard
         run: |
@@ -132,15 +132,22 @@ jobs:
           from pathlib import Path
 
           PROP_MULT = 80  # property wall ≫ unit per byte (runtime proxy)
+          BOOT_HEAVY = {
+              "test_sys23_wp26_a.gd",
+              "test_sys23_wp26_b.gd",
+              "test_sys23_wp27.gd",
+          }
           shard = int("${SHARD}")
           props = sorted(
               Path("tests/property").glob("test_*.gd"),
               key=lambda p: (-p.stat().st_size, p.name),
           )
-          units = sorted(
+          units_all = sorted(
               Path("tests/unit").glob("test_*.gd"),
               key=lambda p: (-p.stat().st_size, p.name),
           )
+          boot = [p for p in units_all if p.name in BOOT_HEAVY]
+          units = [p for p in units_all if p.name not in BOOT_HEAVY]
           bins = [[] for _ in range(4)]
           loads = [0] * 4
           # Property first, round-robin heaviest→lightest (spread; ≤2 props/shard).
@@ -148,7 +155,12 @@ jobs:
               i = idx % 4
               bins[i].append(f)
               loads[i] += f.stat().st_size * PROP_MULT
-          # Units by file size → lightest bin.
+          # Boot-heavy units: same PROP_MULT + round-robin so wp26_a/b never share a shard.
+          for idx, f in enumerate(boot):
+              i = idx % 4
+              bins[i].append(f)
+              loads[i] += f.stat().st_size * PROP_MULT
+          # Remaining units by file size → lightest bin.
           for f in units:
               i = min(range(4), key=lambda k: loads[k])
               bins[i].append(f)
@@ -157,7 +169,7 @@ jobs:
           out = Path("/tmp/gut_shard_tests.txt")
           lines = [f"res://{p.as_posix()}" for p in sorted(selected, key=lambda p: p.name)]
           out.write_text("\n".join(lines) + "\n")
-          wp26 = any(p.name == "test_sys23_wp26.gd" for p in selected)
+          wp26 = any(p.name.startswith("test_sys23_wp26") for p in selected)
           n_prop = sum(1 for p in selected if p.parent.name == "property")
           print(
               f"SHARD={shard} scripts={len(selected)} file_weight={loads[shard]} "
