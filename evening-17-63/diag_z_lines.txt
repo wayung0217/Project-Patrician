@@ -1,0 +1,168 @@
+DIAG_Z: enabled out=out/m1b_diag/Za_G0_A0/diag_z.json
+DIAG_Z_A: set_layers traders_on=true qual_open=true fixture=SimQualificationOpenFixture
+DIAG_Z_B_SHIP: trader=TR-001 ship=SHIP:0002 port=PT-01 state=DOCKED home=PT-01
+DIAG_Z_B_SHIP: trader=TR-001 ship=SHIP:0003 port=PT-01 state=DOCKED home=PT-01
+DIAG_Z_B_SHIP: trader=TR-001 ship=SHIP:0004 port=PT-01 state=DOCKED home=PT-01
+DIAG_Z_B_SHIP: trader=TR-002 ship=SHIP:0005 port=PT-02 state=DOCKED home=PT-02
+DIAG_Z_B_SHIP: trader=TR-002 ship=SHIP:0006 port=PT-02 state=DOCKED home=PT-02
+DIAG_Z_B_SHIP: trader=TR-002 ship=SHIP:0007 port=PT-02 state=DOCKED home=PT-02
+DIAG_Z_B_SHIP: trader=TR-003 ship=SHIP:0008 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-003 ship=SHIP:0009 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-003 ship=SHIP:0010 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-004 ship=SHIP:0011 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-004 ship=SHIP:0012 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-004 ship=SHIP:0013 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-005 ship=SHIP:0014 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-005 ship=SHIP:0015 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-005 ship=SHIP:0016 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-006 ship=SHIP:0017 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-006 ship=SHIP:0018 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-006 ship=SHIP:0019 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-007 ship=SHIP:0020 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-007 ship=SHIP:0021 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-007 ship=SHIP:0022 port=PT-04 state=DOCKED home=PT-04
+DIAG_Z_B_SHIP: trader=TR-008 ship=SHIP:0023 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-008 ship=SHIP:0024 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-008 ship=SHIP:0025 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-009 ship=SHIP:0026 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-009 ship=SHIP:0027 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-009 ship=SHIP:0028 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-010 ship=SHIP:0029 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-010 ship=SHIP:0030 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-010 ship=SHIP:0031 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-011 ship=SHIP:0032 port=PT-01 state=DOCKED home=PT-01
+DIAG_Z_B_SHIP: trader=TR-011 ship=SHIP:0033 port=PT-01 state=DOCKED home=PT-01
+DIAG_Z_B_SHIP: trader=TR-012 ship=SHIP:0034 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-012 ship=SHIP:0035 port=PT-03 state=DOCKED home=PT-03
+DIAG_Z_B_SHIP: trader=TR-013 ship=SHIP:0036 port=PT-06 state=DOCKED home=PT-06
+DIAG_Z_B_SHIP: trader=TR-013 ship=SHIP:0037 port=PT-06 state=DOCKED home=PT-06
+DIAG_Z_B_SHIP: trader=TR-014 ship=SHIP:0038 port=PT-07 state=DOCKED home=PT-07
+DIAG_Z_B_SHIP: trader=TR-014 ship=SHIP:0039 port=PT-07 state=DOCKED home=PT-07
+DIAG_Z_B_SHIP: trader=TR-015 ship=SHIP:0040 port=PT-07 state=DOCKED home=PT-07
+DIAG_Z_B_SHIP: trader=TR-015 ship=SHIP:0041 port=PT-07 state=DOCKED home=PT-07
+DIAG_Z_B_SHIP: trader=TR-016 ship=SHIP:0042 port=PT-08 state=DOCKED home=PT-08
+DIAG_Z_B_SHIP: trader=TR-016 ship=SHIP:0043 port=PT-08 state=DOCKED home=PT-08
+DIAG_Z_B_SHIP: trader=TR-017 ship=SHIP:0044 port=PT-09 state=DOCKED home=PT-09
+DIAG_Z_B_SHIP: trader=TR-017 ship=SHIP:0045 port=PT-09 state=DOCKED home=PT-09
+DIAG_Z_B_SHIP: trader=TR-018 ship=SHIP:0046 port=PT-10 state=DOCKED home=PT-10
+DIAG_Z_B_SHIP: trader=TR-018 ship=SHIP:0047 port=PT-10 state=DOCKED home=PT-10
+DIAG_Z_B_SHIP: trader=TR-019 ship=SHIP:0048 port=PT-11 state=DOCKED home=PT-11
+DIAG_Z_B_SHIP: trader=TR-019 ship=SHIP:0049 port=PT-11 state=DOCKED home=PT-11
+DIAG_Z_B_SHIP: trader=TR-020 ship=SHIP:0050 port=PT-11 state=DOCKED home=PT-11
+DIAG_Z_B_SHIP: trader=TR-020 ship=SHIP:0051 port=PT-11 state=DOCKED home=PT-11
+DIAG_Z_B_SHIP: trader=TR-021 ship=SHIP:0052 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-021 ship=SHIP:0053 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-022 ship=SHIP:0054 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-022 ship=SHIP:0055 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-023 ship=SHIP:0056 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-023 ship=SHIP:0057 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-024 ship=SHIP:0058 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-024 ship=SHIP:0059 port=PT-12 state=DOCKED home=PT-12
+DIAG_Z_B_SHIP: trader=TR-025 ship=SHIP:0060 port=PT-13 state=DOCKED home=PT-13
+DIAG_Z_B_SHIP: trader=TR-025 ship=SHIP:0061 port=PT-13 state=DOCKED home=PT-13
+DIAG_Z_B_SHIP: trader=TR-026 ship=SHIP:0062 port=PT-02 state=DOCKED home=PT-02
+DIAG_Z_B_SHIP: trader=TR-027 ship=SHIP:0063 port=PT-05 state=DOCKED home=PT-05
+DIAG_Z_B_SHIP: trader=TR-028 ship=SHIP:0064 port=PT-06 state=DOCKED home=PT-06
+DIAG_Z_B_SHIP: trader=TR-029 ship=SHIP:0065 port=PT-08 state=DOCKED home=PT-08
+DIAG_Z_B_SHIP: trader=TR-030 ship=SHIP:0066 port=PT-10 state=DOCKED home=PT-10
+DIAG_Z_B_SHIP: trader=TR-031 ship=SHIP:0067 port=PT-13 state=DOCKED home=PT-13
+DIAG_Z_B_SHIP: trader=TR-032 ship=SHIP:0068 port=PT-13 state=DOCKED home=PT-13
+DIAG_Z_B_SHIP: trader=TR-033 ship=SHIP:0069 port=PT-13 state=DOCKED home=PT-13
+DIAG_Z_B_SHIP: trader=TR-034 ship=SHIP:0070 port=PT-14 state=DOCKED home=PT-14
+DIAG_Z_B_SHIP: trader=TR-035 ship=SHIP:0071 port=PT-14 state=DOCKED home=PT-14
+DIAG_Z_B_SHIP: trader=TR-036 ship=SHIP:0072 port=PT-14 state=DOCKED home=PT-14
+DIAG_Z_B_SHIP: trader=TR-037 ship=SHIP:0073 port=PT-14 state=DOCKED home=PT-14
+DIAG_Z_B_SHIP: trader=TR-038 ship=SHIP:0074 port=PT-14 state=DOCKED home=PT-14
+DIAG_Z_B_SHIP: trader=TR-039 ship=SHIP:0075 port=PT-14 state=DOCKED home=PT-14
+DIAG_Z_B_SHIP: trader=TR-040 ship=SHIP:0076 port=PT-14 state=DOCKED home=PT-14
+DIAG_Z_B_SHIP: trader=TR-041 ship=SHIP:0077 port=PT-15 state=DOCKED home=PT-15
+DIAG_Z_B_SHIP: trader=TR-042 ship=SHIP:0078 port=PT-15 state=DOCKED home=PT-15
+DIAG_Z_B_SHIP: trader=TR-043 ship=SHIP:0079 port=PT-15 state=DOCKED home=PT-15
+DIAG_Z_B_SHIP: trader=TR-044 ship=SHIP:0080 port=PT-15 state=DOCKED home=PT-15
+DIAG_Z_B_SHIP: trader=TR-045 ship=SHIP:0081 port=PT-15 state=DOCKED home=PT-15
+DIAG_Z_B_SHIP: trader=TR-046 ship=SHIP:0082 port=PT-16 state=DOCKED home=PT-16
+DIAG_Z_B_SHIP: trader=TR-047 ship=SHIP:0083 port=PT-16 state=DOCKED home=PT-16
+DIAG_Z_B_SHIP: trader=TR-048 ship=SHIP:0084 port=PT-16 state=DOCKED home=PT-16
+DIAG_Z_B: trader_count=48 ship_count=83
+DIAG_Z_C: day=1 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_D: day=1 port=PT-01 board_reports=0
+DIAG_Z_D: day=1 port=PT-02 board_reports=0
+DIAG_Z_D: day=1 port=PT-03 board_reports=0
+DIAG_Z_D: day=1 port=PT-04 board_reports=0
+DIAG_Z_D: day=1 port=PT-05 board_reports=0
+DIAG_Z_D: day=1 port=PT-06 board_reports=0
+DIAG_Z_D: day=1 port=PT-07 board_reports=0
+DIAG_Z_D: day=1 port=PT-08 board_reports=0
+DIAG_Z_D: day=1 port=PT-09 board_reports=0
+DIAG_Z_D: day=1 port=PT-10 board_reports=0
+DIAG_Z_D: day=1 port=PT-11 board_reports=0
+DIAG_Z_D: day=1 port=PT-12 board_reports=0
+DIAG_Z_D: day=1 port=PT-13 board_reports=0
+DIAG_Z_D: day=1 port=PT-14 board_reports=0
+DIAG_Z_D: day=1 port=PT-15 board_reports=0
+DIAG_Z_D: day=1 port=PT-16 board_reports=0
+DIAG_Z_C: day=2 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=3 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=4 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=5 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=6 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=7 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_D: day=7 port=PT-01 board_reports=0
+DIAG_Z_D: day=7 port=PT-02 board_reports=0
+DIAG_Z_D: day=7 port=PT-03 board_reports=0
+DIAG_Z_D: day=7 port=PT-04 board_reports=0
+DIAG_Z_D: day=7 port=PT-05 board_reports=0
+DIAG_Z_D: day=7 port=PT-06 board_reports=0
+DIAG_Z_D: day=7 port=PT-07 board_reports=0
+DIAG_Z_D: day=7 port=PT-08 board_reports=0
+DIAG_Z_D: day=7 port=PT-09 board_reports=0
+DIAG_Z_D: day=7 port=PT-10 board_reports=0
+DIAG_Z_D: day=7 port=PT-11 board_reports=0
+DIAG_Z_D: day=7 port=PT-12 board_reports=0
+DIAG_Z_D: day=7 port=PT-13 board_reports=0
+DIAG_Z_D: day=7 port=PT-14 board_reports=0
+DIAG_Z_D: day=7 port=PT-15 board_reports=0
+DIAG_Z_D: day=7 port=PT-16 board_reports=0
+DIAG_Z_C: day=8 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=9 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=10 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=11 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=12 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=13 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=14 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=15 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=16 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=17 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=18 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=19 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=20 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=21 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=22 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=23 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=24 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=25 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=26 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=27 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=28 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=29 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_C: day=30 evaluable=0 dest_excl_no_market=16 explore_hit=2 sails=0
+DIAG_Z_D: day=30 port=PT-01 board_reports=0
+DIAG_Z_D: day=30 port=PT-02 board_reports=0
+DIAG_Z_D: day=30 port=PT-03 board_reports=0
+DIAG_Z_D: day=30 port=PT-04 board_reports=0
+DIAG_Z_D: day=30 port=PT-05 board_reports=0
+DIAG_Z_D: day=30 port=PT-06 board_reports=0
+DIAG_Z_D: day=30 port=PT-07 board_reports=0
+DIAG_Z_D: day=30 port=PT-08 board_reports=0
+DIAG_Z_D: day=30 port=PT-09 board_reports=0
+DIAG_Z_D: day=30 port=PT-10 board_reports=0
+DIAG_Z_D: day=30 port=PT-11 board_reports=0
+DIAG_Z_D: day=30 port=PT-12 board_reports=0
+DIAG_Z_D: day=30 port=PT-13 board_reports=0
+DIAG_Z_D: day=30 port=PT-14 board_reports=0
+DIAG_Z_D: day=30 port=PT-15 board_reports=0
+DIAG_Z_D: day=30 port=PT-16 board_reports=0
+DIAG_Z: sails_total=0 days_logged=30
+DIAG_Z_JSON_BEGIN
+DIAG_Z_JSON_END
+DIAG_Z: wrote /home/runner/work/Project-Patrician/Project-Patrician/out/m1b_diag/Za_G0_A0/diag_z.json

@@ -1,0 +1,69 @@
+commit 8456c57f8f0a331ce4224741e433839a619321cb
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Tue Nov 24 12:45:29 2026 +0000
+
+    fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI
+    
+    Root hang: max_affordable_qty probed qty>stock → MarketPricer
+    ERR-SYS04-06 push_error storm (K4 formal / #499 ~3h44m). Cap search
+    by GoodsLedger stock when PortRegistry knows the port.
+    
+    CI: concurrency group head_ref||ref_name (push+PR cancel); GUT/golden
+    timeout-minutes 30; actions checkout/cache/artifact → v5 (Node 24).
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+diff --git a/autoload/cash_ledger.gd b/autoload/cash_ledger.gd
+index c9d05f0..850bdca 100644
+--- a/autoload/cash_ledger.gd
++++ b/autoload/cash_ledger.gd
+@@ -657,6 +657,8 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
+ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
+ 	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
+ 	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
++	# 17-67：真實市場路徑先以 GoodsLedger 庫存為 exclusive 上界，避免倍增／二分
++	# 探測 qty>stock 觸發 MarketPricer push_error 風暴（K2/K4／#499 hung ~3h44m）。
+ 	assert(_loaded, "CashLedger.max_affordable_qty before load")
+ 	var bal: int = balance(actor)
+ 	if bal <= 0:
+@@ -664,10 +666,29 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+ 	if _quote_provider == null:
+ 		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
+ 		return 0
+-	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗
++	## Exclusive upper (hi): stock+1 when PortRegistry+GoodsLedger know the market.
++	## DemoQuoteProvider tests skip this (PortRegistry not loaded) and keep quote-fail path.
++	## Use all_ids (not get_port) so we do not pollute PortRegistry.last_error.
++	var abs_hi: int = -1
++	if GoodsLedger.is_loaded() and PortRegistry.is_loaded():
++		var port_s: String = String(port)
++		var port_known := false
++		for pid_v in PortRegistry.all_ids():
++			if String(pid_v) == port_s:
++				port_known = true
++				break
++		if port_known:
++			var stock_cap: int = GoodsLedger.get_qty(GoodsLedger.make_market(port_s), good)
++			if stock_cap < 1:
++				return 0
++			abs_hi = stock_cap + 1
++	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到庫存上界）
+ 	var lo: int = 0
+ 	var hi: int = 1
+ 	while true:
++		if abs_hi > 0 and hi >= abs_hi:
++			hi = abs_hi
++			break
+ 		var t_hi: int = _quote_buy_total(port, good, hi)
+ 		if t_hi < 0 or t_hi > bal:
+ 			break
+@@ -677,6 +698,9 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+ 		if next_hi <= hi:
+ 			# overflow / cap
+ 			break
++		if abs_hi > 0 and next_hi >= abs_hi:
++			hi = abs_hi
++			break
+ 		hi = next_hi
+ 	# 二分
+ 	while lo + 1 < hi:

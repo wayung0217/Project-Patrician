@@ -1,0 +1,45 @@
+name: CI
+
+# 17-64 S1: one full CI per commit on pull_request; push only main + tools-1758 + int-1758.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - tools-1758
+      - int-1758
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Manual job (H4 smoke / W4 inline-cmp / default all CI)"
+        required: true
+        default: "ci"
+        type: choice
+        options:
+          - ci
+          - h4-smoke
+          - w4-inline-cmp
+
+# 17-64／17-67 S2: one concurrency group per head branch so push+PR cancel each other.
+# github.ref differs (refs/heads/X vs refs/pull/N/merge) — use head_ref || ref_name.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2-stable"
+  GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+
+jobs:
+  # 17-64 S4: parallel gut-unit / gut-ui / golden; unit matrix 4-way when wall >10m.
+  gut-unit:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+    runs-on: ubuntu-latest
+    # 17-67: per-shard GUT wall 30m (whole CI ≤50m).
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - name: Checkout

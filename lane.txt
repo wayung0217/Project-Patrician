@@ -1,0 +1,8 @@
+lane1
+agent: bc-2b43a7ba-52fb-5f67-a87d-e5144aa0313c
+task: PP-187
+dispatch: 17-69 L1
+ownership: no repo product edits; orphan deliverable only
+branch: review/evening-17-69-lane1
+h5: orphan (no SharePoint)
+assembled_hkt: 2026-11-24 22:12 Asia/Hong_Kong

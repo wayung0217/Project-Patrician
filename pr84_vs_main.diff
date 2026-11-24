@@ -1,0 +1,260 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 288cca3..6cdf625 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -20,9 +20,10 @@ on:
+           - h4-smoke
+           - w4-inline-cmp
+ 
+-# 17-64 S2: cancel superseded runs on the same workflow+ref.
++# 17-64／17-67 S2: one concurrency group per head branch so push+PR cancel each other.
++# github.ref differs (refs/heads/X vs refs/pull/N/merge) — use head_ref || ref_name.
+ concurrency:
+-  group: ${{ github.workflow }}-${{ github.ref }}
++  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+   cancel-in-progress: true
+ 
+ env:
+@@ -34,19 +35,19 @@ jobs:
+   gut-unit:
+     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+     runs-on: ubuntu-latest
+-    # Per-shard cap: main tip outlier was ~35m for full unit; balanced shards should be ≪ that.
+-    timeout-minutes: 35
++    # 17-67: per-shard GUT wall 30m (whole CI ≤50m).
++    timeout-minutes: 30
+     strategy:
+       fail-fast: false
+       matrix:
+         shard: [0, 1, 2, 3]
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v4
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -93,7 +94,7 @@ jobs:
+ 
+       # 17-64 S3: cache .godot/imported (never test/golden outputs).
+       - name: Cache Godot imported assets
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: .godot/imported
+           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+@@ -188,7 +189,7 @@ jobs:
+ 
+       - name: Upload GUT unit shard logs
+         if: always()
+-        uses: actions/upload-artifact@v4
++        uses: actions/upload-artifact@v7
+         with:
+           name: gut-unit-logs-${{ matrix.shard }}
+           path: |
+@@ -203,7 +204,7 @@ jobs:
+     runs-on: ubuntu-latest
+     steps:
+       - name: Download shard passing counts
+-        uses: actions/download-artifact@v4
++        uses: actions/download-artifact@v8
+         with:
+           pattern: gut-unit-logs-*
+           merge-multiple: false
+@@ -230,14 +231,14 @@ jobs:
+   gut-ui:
+     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+     runs-on: ubuntu-latest
+-    timeout-minutes: 15
++    timeout-minutes: 30
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v4
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -261,7 +262,7 @@ jobs:
+           ./godot --version
+ 
+       - name: Cache Godot imported assets
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: .godot/imported
+           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+@@ -298,7 +299,7 @@ jobs:
+ 
+       - name: Upload GUT UI logs
+         if: always()
+-        uses: actions/upload-artifact@v4
++        uses: actions/upload-artifact@v7
+         with:
+           name: gut-ui-logs
+           path: gut_ui.log
+@@ -310,17 +311,17 @@ jobs:
+       (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
+       && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
+     runs-on: ubuntu-latest
+-    timeout-minutes: 15
++    timeout-minutes: 30
+     permissions:
+       actions: read
+       contents: read
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v4
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -344,7 +345,7 @@ jobs:
+           ./godot --version
+ 
+       - name: Cache Godot imported assets
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: .godot/imported
+           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+@@ -431,7 +432,7 @@ jobs:
+ 
+       - name: Upload golden artifact
+         if: always()
+-        uses: actions/upload-artifact@v4
++        uses: actions/upload-artifact@v7
+         with:
+           name: golden-30d
+           path: out/golden/
+@@ -446,11 +447,11 @@ jobs:
+     timeout-minutes: 15
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v4
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -495,7 +496,7 @@ jobs:
+ 
+       - name: Upload H4 smoke artifact
+         if: always()
+-        uses: actions/upload-artifact@v4
++        uses: actions/upload-artifact@v7
+         with:
+           name: m1b-h4-smoke
+           path: out/m1b_smoke/
+@@ -510,11 +511,11 @@ jobs:
+     timeout-minutes: 15
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v4
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v4
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -575,7 +576,7 @@ jobs:
+ 
+       - name: Upload W4 cmp artifact
+         if: always()
+-        uses: actions/upload-artifact@v4
++        uses: actions/upload-artifact@v7
+         with:
+           name: m1b-w4-inline-cmp
+           path: out/w4_cmp/
+diff --git a/autoload/cash_ledger.gd b/autoload/cash_ledger.gd
+index c9d05f0..ae50080 100644
+--- a/autoload/cash_ledger.gd
++++ b/autoload/cash_ledger.gd
+@@ -657,6 +657,8 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
+ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
+ 	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
+ 	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
++	# 17-67：真實市場路徑先以 GoodsLedger 庫存為 exclusive 上界，避免倍增／二分
++	# 探測 qty>stock 觸發 MarketPricer push_error 風暴（K2/K4／#499 hung ~3h44m）。
+ 	assert(_loaded, "CashLedger.max_affordable_qty before load")
+ 	var bal: int = balance(actor)
+ 	if bal <= 0:
+@@ -664,10 +666,23 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+ 	if _quote_provider == null:
+ 		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
+ 		return 0
+-	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗
++	## Exclusive upper (hi): stock+1 only for real MarketPricer (not DemoQuoteProvider).
++	## Autoload PortRegistry often stays loaded across GUT scripts; gating on it falsely
++	## treated empty markets as stock=0 and broke TST-SYS05-08 / WP56 demo q=124.
++	var abs_hi: int = -1
++	if _quote_provider == MarketPricer and GoodsLedger.is_loaded():
++		var port_s: String = String(port)
++		var stock_cap: int = GoodsLedger.get_qty(GoodsLedger.make_market(port_s), good)
++		if stock_cap < 1:
++			return 0
++		abs_hi = stock_cap + 1
++	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到庫存上界）
+ 	var lo: int = 0
+ 	var hi: int = 1
+ 	while true:
++		if abs_hi > 0 and hi >= abs_hi:
++			hi = abs_hi
++			break
+ 		var t_hi: int = _quote_buy_total(port, good, hi)
+ 		if t_hi < 0 or t_hi > bal:
+ 			break
+@@ -677,6 +692,9 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+ 		if next_hi <= hi:
+ 			# overflow / cap
+ 			break
++		if abs_hi > 0 and next_hi >= abs_hi:
++			hi = abs_hi
++			break
+ 		hi = next_hi
+ 	# 二分
+ 	while lo + 1 < hi:
+diff --git a/tests/unit/test_sys23_wp27.gd b/tests/unit/test_sys23_wp27.gd
+index f2fbeaf..2883dc5 100644
+--- a/tests/unit/test_sys23_wp27.gd
++++ b/tests/unit/test_sys23_wp27.gd
+@@ -23,11 +23,16 @@ const EX01_TOTAL := 110
+ 
+ 
+ func before_each() -> void:
+-	pass
++	## 17-67: size-balanced CI shards may run BuildingEconomy WP-18/19 first in the same
++	## process; leftover _loaded=true makes SimMetrics._obs05 call public_upgrade_fee →
++	## ERR-SYS08-08 "season not open" Unexpected Errors (monolithic order often unloaded).
++	if BuildingEconomy.is_loaded():
++		BuildingEconomy._loaded = false
+ 
+ 
+ func after_each() -> void:
+-	pass
++	if BuildingEconomy.is_loaded():
++		BuildingEconomy._loaded = false
+ 
+ 
+ func _boot_cash() -> void:

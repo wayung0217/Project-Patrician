@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Manual job (H4 smoke / W4 inline-cmp / default all CI)"
+        required: true
+        default: "ci"
+        type: choice
+        options:
+          - ci
+          - h4-smoke
+          - w4-inline-cmp
+
+jobs:
+  # 17-62 P6b: fork PRs run GUT only (no secrets; sim jobs gated elsewhere).
+  gut-unit-property:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \

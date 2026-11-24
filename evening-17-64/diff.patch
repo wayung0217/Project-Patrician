@@ -1,0 +1,1475 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 3ec6976..288cca3 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -1,50 +1,288 @@
+ name: CI
+ 
++# 17-64 S1: one full CI per commit on pull_request; push only main + tools-1758 + int-1758.
+ on:
+-  push:
+   pull_request:
++  push:
++    branches:
++      - main
++      - tools-1758
++      - int-1758
++  workflow_dispatch:
++    inputs:
++      job:
++        description: "Manual job (H4 smoke / W4 inline-cmp / default all CI)"
++        required: true
++        default: "ci"
++        type: choice
++        options:
++          - ci
++          - h4-smoke
++          - w4-inline-cmp
++
++# 17-64 S2: cancel superseded runs on the same workflow+ref.
++concurrency:
++  group: ${{ github.workflow }}-${{ github.ref }}
++  cancel-in-progress: true
++
++env:
++  GODOT_VERSION: "4.7.2-stable"
++  GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+ 
+ jobs:
+-  gut-unit-property:
++  # 17-64 S4: parallel gut-unit / gut-ui / golden; unit matrix 4-way when wall >10m.
++  gut-unit:
++    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+     runs-on: ubuntu-latest
++    # Per-shard cap: main tip outlier was ~35m for full unit; balanced shards should be ≪ that.
++    timeout-minutes: 35
++    strategy:
++      fail-fast: false
++      matrix:
++        shard: [0, 1, 2, 3]
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v4
+ 
++      - name: Cache Godot binary
++        id: cache-godot
++        uses: actions/cache@v4
++        with:
++          path: godot
++          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
++
+       - name: Download Godot 4.7.2-stable
++        if: steps.cache-godot.outputs.cache-hit != 'true'
+         run: |
+           set -euo pipefail
+           curl -fsSL -o godot.zip \
+-            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
++            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
+           unzip -q godot.zip
+-          chmod +x Godot_v4.7.2-stable_linux.x86_64
+-          mv Godot_v4.7.2-stable_linux.x86_64 godot
++          rm -f godot.zip
++          chmod +x "${GODOT_BIN}"
++          mv "${GODOT_BIN}" godot
++          ./godot --version
++
++      - name: Ensure godot executable
++        run: |
++          set -euo pipefail
++          chmod +x godot
+           ./godot --version
+ 
++      - name: tools/*.ps1 must be pure ASCII
++        if: matrix.shard == 0
++        run: |
++          set -euo pipefail
++          fail=0
++          shopt -s nullglob
++          for f in tools/*.ps1; do
++            if LC_ALL=C grep -n '[^[:print:][:space:]]' "$f" >/tmp/ps1_nonascii.txt; then
++              echo "::error::non-ASCII bytes in $f"
++              cat /tmp/ps1_nonascii.txt
++              fail=1
++            fi
++            if python3 -c "import sys; b=open(sys.argv[1],'rb').read(); sys.exit(0 if all(x<128 for x in b) else 1)" "$f"; then
++              echo "ASCII_OK $f"
++            else
++              echo "::error::byte>127 in $f"
++              python3 -c "b=open('$f','rb').read(); print([(i,b[i]) for i in range(len(b)) if b[i]>127][:20])"
++              fail=1
++            fi
++          done
++          exit "$fail"
++
++      # 17-64 S3: cache .godot/imported (never test/golden outputs).
++      - name: Cache Godot imported assets
++        uses: actions/cache@v4
++        with:
++          path: .godot/imported
++          key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
++          restore-keys: |
++            godot-imported-
++
+       - name: Import project (register global classes)
+         run: |
+           set -euo pipefail
+           ./godot --headless --path . --import
+ 
+-      - name: Run GUT unit + property tests
++      # 17-64 T1: Godot 4.7.2 gut .import must leave a clean tree.
++      # Ignore download artifacts (godot.zip / godot binary) left in the workspace.
++      - name: Assert import leaves clean tree
++        run: |
++          set -euo pipefail
++          dirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"
++          if [[ -n "${dirty}" ]]; then
++            echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"
++            echo "$dirty"
++            git diff --stat
++            exit 1
++          fi
++          echo "IMPORT_CLEAN_TREE_OK"
++
++      - name: Select unit shard scripts (size-balanced 4-way) + property on shard 0
++        id: shard
++        run: |
++          set -euo pipefail
++          SHARD="${{ matrix.shard }}"
++          python3 - <<PY
++          from pathlib import Path
++          shard = int("${SHARD}")
++          files = sorted(Path("tests/unit").glob("test_*.gd"), key=lambda p: (-p.stat().st_size, p.name))
++          bins = [[] for _ in range(4)]
++          sizes = [0] * 4
++          for f in files:
++              i = min(range(4), key=lambda k: sizes[k])
++              bins[i].append(f)
++              sizes[i] += f.stat().st_size
++          selected = bins[shard]
++          out = Path("/tmp/gut_shard_tests.txt")
++          lines = [f"res://{p.as_posix()}" for p in sorted(selected, key=lambda p: p.name)]
++          if shard == 0:
++              for p in sorted(Path("tests/property").glob("test_*.gd")):
++                  lines.append(f"res://{p.as_posix()}")
++          out.write_text("\n".join(lines) + "\n")
++          print(f"SHARD={shard} unit={len(selected)} bytes={sizes[shard]} scripts={len(lines)}")
++          for ln in lines:
++              print(ln)
++          Path("/tmp/gut_shard_selected_unit.txt").write_text(str(len(selected)))
++          PY
++          echo "selected_unit=$(cat /tmp/gut_shard_selected_unit.txt)" >> "$GITHUB_OUTPUT"
++
++      - name: Run GUT unit shard
+         run: |
+           set -euo pipefail
++          # GUT -gtest takes full res:// paths (keeps original script locations).
++          mapfile -t TESTS < /tmp/gut_shard_tests.txt
++          if [[ ${#TESTS[@]} -eq 0 ]]; then
++            echo "::error::shard selected zero scripts"
++            exit 1
++          fi
++          GTEST_ARGS=()
++          for t in "${TESTS[@]}"; do
++            GTEST_ARGS+=("-gtest=${t}")
++          done
+           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+-            -gdir=res://tests/unit,res://tests/property \
++            -gconfig= \
++            "${GTEST_ARGS[@]}" \
+             -gexit 2>&1 | tee gut_unit.log
+-          # E4／evening-17-51: fail CI if any SCRIPT ERROR appears in GUT log
+           if grep -F "SCRIPT ERROR" gut_unit.log; then
+             echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
+             exit 1
+           fi
++          grep -E 'Passing Tests|Failing|All tests passed' gut_unit.log | tail -20 || true
++          python3 - <<'PY'
++          import re
++          from pathlib import Path
++          text = Path("gut_unit.log").read_text(errors="replace")
++          m = re.findall(r"Passing Tests\s+(\d+)", text)
++          n = int(m[-1]) if m else -1
++          Path("gut_unit_passing.txt").write_text(f"{n}\n")
++          print(f"SHARD_PASSING={n}")
++          PY
++      - name: A35 norm scan (report-only, shard 0)
++        if: matrix.shard == 0
++        continue-on-error: true
++        run: |
++          set -euo pipefail
++          python3 tools/a35_norm_scan.py
++
++      - name: Upload GUT unit shard logs
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: gut-unit-logs-${{ matrix.shard }}
++          path: |
++            gut_unit.log
++            gut_unit_passing.txt
++          retention-days: 3
++
++  # Sum shard passing counts; must equal pre-change 555 (unit+property).
++  gut-unit-gate:
++    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
++    needs: gut-unit
++    runs-on: ubuntu-latest
++    steps:
++      - name: Download shard passing counts
++        uses: actions/download-artifact@v4
++        with:
++          pattern: gut-unit-logs-*
++          merge-multiple: false
++          path: shard_logs
++
++      - name: Verify total Passing == 555
++        run: |
++          set -euo pipefail
++          echo "Shard artifacts:"
++          find shard_logs -type f -print
++          total=0
++          while IFS= read -r f; do
++            n=$(tr -d '[:space:]' < "$f")
++            echo "file=$f passing=$n"
++            total=$((total + n))
++          done < <(find shard_logs -name gut_unit_passing.txt | sort)
++          echo "TOTAL_PASSING=${total}"
++          if [[ "$total" != "555" ]]; then
++            echo "::error::unit+property Passing=${total} expected 555 (pre-change main)"
++            exit 1
++          fi
++          echo "GUT_UNIT_PROPERTY_COUNT_OK=555"
++
++  gut-ui:
++    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
++    runs-on: ubuntu-latest
++    timeout-minutes: 15
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Cache Godot binary
++        id: cache-godot
++        uses: actions/cache@v4
++        with:
++          path: godot
++          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
++
++      - name: Download Godot 4.7.2-stable
++        if: steps.cache-godot.outputs.cache-hit != 'true'
++        run: |
++          set -euo pipefail
++          curl -fsSL -o godot.zip \
++            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
++          unzip -q godot.zip
++          rm -f godot.zip
++          chmod +x "${GODOT_BIN}"
++          mv "${GODOT_BIN}" godot
++          ./godot --version
++
++      - name: Ensure godot executable
++        run: |
++          set -euo pipefail
++          chmod +x godot
++          ./godot --version
++
++      - name: Cache Godot imported assets
++        uses: actions/cache@v4
++        with:
++          path: .godot/imported
++          key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
++          restore-keys: |
++            godot-imported-
++
++      - name: Import project (register global classes)
++        run: |
++          set -euo pipefail
++          ./godot --headless --path . --import
+ 
+-      # Unit/property suites wipe res://data (opening_population, demand, …).
+-      # Restore committed formal data before UI so this job matches isolated gut-ui.
+-      - name: Restore res://data after unit wipe
++      - name: Assert import leaves clean tree
+         run: |
+           set -euo pipefail
+-          git checkout HEAD -- data/
+-          git clean -fd data/
++          dirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"
++          if [[ -n "${dirty}" ]]; then
++            echo "::error::godot --import dirtied the working tree"
++            echo "$dirty"
++            exit 1
++          fi
++          echo "IMPORT_CLEAN_TREE_OK"
+ 
+       - name: Run GUT UI tests
+         run: |
+@@ -56,37 +294,289 @@ jobs:
+             echo "::error::SCRIPT ERROR detected in GUT UI log (ci-script-error-gate)"
+             exit 1
+           fi
++          grep -E 'Tests:|Passing:|Failing:' gut_ui.log | tail -20 || true
+ 
+-      - name: A35 norm scan (report-only)
+-        continue-on-error: true
+-        run: |
+-          set -euo pipefail
+-          python3 tools/a35_norm_scan.py
++      - name: Upload GUT UI logs
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: gut-ui-logs
++          path: gut_ui.log
++          retention-days: 3
+ 
+-  gut-ui:
++  golden-30d:
++    # 17-62 P6b: skip golden on fork PRs. 17-64 S5: main stores artifact; PRs compare to it.
++    if: >-
++      (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
++      && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
+     runs-on: ubuntu-latest
++    timeout-minutes: 15
++    permissions:
++      actions: read
++      contents: read
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v4
+ 
++      - name: Cache Godot binary
++        id: cache-godot
++        uses: actions/cache@v4
++        with:
++          path: godot
++          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
++
+       - name: Download Godot 4.7.2-stable
++        if: steps.cache-godot.outputs.cache-hit != 'true'
+         run: |
+           set -euo pipefail
+           curl -fsSL -o godot.zip \
+-            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
++            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
+           unzip -q godot.zip
+-          chmod +x Godot_v4.7.2-stable_linux.x86_64
+-          mv Godot_v4.7.2-stable_linux.x86_64 godot
++          rm -f godot.zip
++          chmod +x "${GODOT_BIN}"
++          mv "${GODOT_BIN}" godot
+           ./godot --version
+ 
+-      - name: Import project (register global classes)
++      - name: Ensure godot executable
++        run: |
++          set -euo pipefail
++          chmod +x godot
++          ./godot --version
++
++      - name: Cache Godot imported assets
++        uses: actions/cache@v4
++        with:
++          path: .godot/imported
++          key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
++          restore-keys: |
++            godot-imported-
++
++      - name: Import project
+         run: |
+           set -euo pipefail
+           ./godot --headless --path . --import
+ 
+-      - name: Run GUT UI tests (isolated from unit data wipe)
++      - name: Assert import leaves clean tree
+         run: |
+           set -euo pipefail
+-          ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+-            -gdir=res://tests/ui \
+-            -gexit
++          dirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"
++          if [[ -n "${dirty}" ]]; then
++            echo "::error::godot --import dirtied the working tree"
++            echo "$dirty"
++            exit 1
++          fi
++          echo "IMPORT_CLEAN_TREE_OK"
++
++      - name: 30d golden gated
++        run: |
++          set -euo pipefail
++          mkdir -p out/golden
++          tools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \
++            --log "$(pwd)/out/golden/30d.log"
++          echo "GOLDEN_30D_DONE"
++          wc -l out/golden/30d.csv
++          # Cell summary for evening-17-64 gate (row count + sha256).
++          sha256sum out/golden/30d.csv | tee out/golden/30d.sha256
++          python3 - <<'PY'
++          import csv
++          from pathlib import Path
++          p = Path("out/golden/30d.csv")
++          rows = list(csv.DictReader(p.open(newline="", encoding="utf-8")))
++          cols = list(rows[0].keys()) if rows else []
++          print(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")
++          PY
++
++      - name: Download latest main golden baseline (PRs)
++        if: github.event_name == 'pull_request'
++        env:
++          GH_TOKEN: ${{ github.token }}
++        run: |
++          set -euo pipefail
++          mkdir -p out/golden-main
++          # Prefer artifact from latest successful main CI run; else mark missing.
++          set +e
++          RUN_ID=$(gh run list --repo "${{ github.repository }}" --branch main --workflow ci.yml \
++            --json databaseId,conclusion,status --limit 30 \
++            --jq '.[] | select(.conclusion=="success") | .databaseId' | head -n1)
++          set -e
++          if [[ -z "${RUN_ID:-}" ]]; then
++            echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"
++            echo "missing" > out/golden-main/STATUS.txt
++            exit 0
++          fi
++          echo "GOLDEN_BASE_RUN_ID=$RUN_ID"
++          set +e
++          gh run download "$RUN_ID" --repo "${{ github.repository }}" -n golden-30d -D out/golden-main
++          RC=$?
++          set -e
++          if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
++            echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"
++            echo "missing" > out/golden-main/STATUS.txt
++            exit 0
++          fi
++          echo "present" > out/golden-main/STATUS.txt
++          ls -la out/golden-main/
++
++      - name: Compare PR golden to main baseline (or recompute note)
++        if: github.event_name == 'pull_request'
++        run: |
++          set -euo pipefail
++          if [[ ! -f out/golden-main/30d.csv ]]; then
++            echo "GOLDEN_BASE_RECOMPUTE=1 — no main baseline; PR golden stands alone this run"
++            echo "GOLDEN_COMPARE_SKIPPED"
++            exit 0
++          fi
++          python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv
++          echo "GOLDEN_CELLS_IDENTICAL=1"
++
++      - name: Upload golden artifact
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: golden-30d
++          path: out/golden/
++          retention-days: 14
++
++  # 17-64 S6 / 17-59 H4: only push tools-1758/int-1758 (or manual), not general PRs.
++  m1b-h4-smoke:
++    if: >-
++      (github.event_name == 'push' && (github.ref == 'refs/heads/tools-1758' || github.ref == 'refs/heads/int-1758'))
++      || (github.event_name == 'workflow_dispatch' && inputs.job == 'h4-smoke')
++    runs-on: ubuntu-latest
++    timeout-minutes: 15
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Cache Godot binary
++        id: cache-godot
++        uses: actions/cache@v4
++        with:
++          path: godot
++          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
++
++      - name: Download Godot 4.7.2-stable
++        if: steps.cache-godot.outputs.cache-hit != 'true'
++        run: |
++          set -euo pipefail
++          curl -fsSL -o godot.zip \
++            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
++          unzip -q godot.zip
++          rm -f godot.zip
++          chmod +x "${GODOT_BIN}"
++          mv "${GODOT_BIN}" godot
++
++      - name: Ensure godot executable
++        run: chmod +x godot && ./godot --version
++
++      - name: Import project
++        run: ./godot --headless --path . --import
++
++      - name: H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)
++        run: |
++          set -euo pipefail
++          mkdir -p out/m1b_smoke/_scenarios
++          for g in Za_G0_A0 Zb_G0_notrader; do
++            python3 tools/m1b_prepare_scenario.py --group "$g" --out "out/m1b_smoke/_scenarios/${g}.json"
++            mkdir -p "out/m1b_smoke/${g}"
++            export M1B_GROUP_NAME="$g" M1B_GROUP_I=1 M1B_GROUP_N=2
++            ./godot --headless --path . -s res://sim/sim_runner.gd -- \
++              --scenario "$(pwd)/out/m1b_smoke/_scenarios/${g}.json" \
++              --inline --season-progress --days 30 \
++              --out-dir "$(pwd)/out/m1b_smoke/${g}" \
++              2>&1 | tee "out/m1b_smoke/${g}/sim_runner.log"
++            test -f "out/m1b_smoke/${g}/summary.csv"
++            test -f "out/m1b_smoke/${g}/trader_summary.csv"
++          done
++          grep -h "PROGRESS pct=" out/m1b_smoke/*/sim_runner.log > out/m1b_smoke/progress.log || true
++          ./godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b_smoke
++          echo "H4_SMOKE_DONE"
++          test -s out/m1b_smoke/progress.log
++
++      - name: Upload H4 smoke artifact
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: m1b-h4-smoke
++          path: out/m1b_smoke/
++          retention-days: 3
++
++  # 17-64 S6 / 17-60 W4: only push tools-1758/int-1758 (or manual).
++  m1b-w4-inline-cmp:
++    if: >-
++      (github.event_name == 'push' && (github.ref == 'refs/heads/tools-1758' || github.ref == 'refs/heads/int-1758'))
++      || (github.event_name == 'workflow_dispatch' && inputs.job == 'w4-inline-cmp')
++    runs-on: ubuntu-latest
++    timeout-minutes: 15
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Cache Godot binary
++        id: cache-godot
++        uses: actions/cache@v4
++        with:
++          path: godot
++          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
++
++      - name: Download Godot 4.7.2-stable
++        if: steps.cache-godot.outputs.cache-hit != 'true'
++        run: |
++          set -euo pipefail
++          curl -fsSL -o godot.zip \
++            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
++          unzip -q godot.zip
++          rm -f godot.zip
++          chmod +x "${GODOT_BIN}"
++          mv "${GODOT_BIN}" godot
++
++      - name: Ensure godot executable
++        run: chmod +x godot && ./godot --version
++
++      - name: Import project
++        run: ./godot --headless --path . --import
++
++      - name: W4 30d subprocess vs --inline CSV cmp
++        run: |
++          set -euo pipefail
++          mkdir -p out/w4_cmp/_scenarios out/w4_cmp/sub out/w4_cmp/inline
++          python3 tools/m1b_prepare_scenario.py --group Za_G0_A0 --out out/w4_cmp/_scenarios/Za_G0_A0.json
++          SCEN="$(pwd)/out/w4_cmp/_scenarios/Za_G0_A0.json"
++          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
++            --scenario "$SCEN" --days 30 --out-dir "$(pwd)/out/w4_cmp/sub" \
++            2>&1 | tee out/w4_cmp/sub.log
++          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
++            --scenario "$SCEN" --days 30 --inline --out-dir "$(pwd)/out/w4_cmp/inline" \
++            2>&1 | tee out/w4_cmp/inline.log
++          python3 - <<'PY'
++          from pathlib import Path
++          import sys
++          root = Path("out/w4_cmp")
++          ok = True
++          for name in ["summary.csv", "season_cells.csv", "season_ports.csv", "combos.csv", "trader_summary.csv"]:
++              a = (root / "sub" / name).read_bytes()
++              b = (root / "inline" / name).read_bytes()
++              if name == "summary.csv":
++                  def strip(b):
++                      lines = b.decode().splitlines()
++                      out = [lines[0]]
++                      for ln in lines[1:]:
++                          parts = ln.split(",")
++                          out.append(",".join(parts[:-1]) if parts else ln)
++                      return "\n".join(out).encode()
++                  a, b = strip(a), strip(b)
++              same = a == b
++              print(f"CMP {name} equal={same} bytes_a={len(a)} bytes_b={len(b)}")
++              ok = ok and same
++          if not ok:
++              sys.exit(1)
++          print("W4_INLINE_CMP_PASS")
++          PY
++
++      - name: Upload W4 cmp artifact
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: m1b-w4-inline-cmp
++          path: out/w4_cmp/
++          retention-days: 3
+diff --git a/tests/unit/test_golden_fnv_e2.gd.uid b/tests/unit/test_golden_fnv_e2.gd.uid
+new file mode 100644
+index 0000000..7617cd3
+--- /dev/null
++++ b/tests/unit/test_golden_fnv_e2.gd.uid
+@@ -0,0 +1 @@
++uid://da27cy6mt5fcp
+diff --git a/tests/unit/test_sys08_wp65_d97a.gd.uid b/tests/unit/test_sys08_wp65_d97a.gd.uid
+new file mode 100644
+index 0000000..c25cc31
+--- /dev/null
++++ b/tests/unit/test_sys08_wp65_d97a.gd.uid
+@@ -0,0 +1 @@
++uid://ybn7dycgspv8
+diff --git a/tests/unit/test_wp67_garrison_obs05.gd.uid b/tests/unit/test_wp67_garrison_obs05.gd.uid
+new file mode 100644
+index 0000000..a6b34d7
+--- /dev/null
++++ b/tests/unit/test_wp67_garrison_obs05.gd.uid
+@@ -0,0 +1 @@
++uid://tx661mqumydf
+diff --git a/tools/m1b_prepare_scenario.py b/tools/m1b_prepare_scenario.py
+new file mode 100755
+index 0000000..850a1d1
+--- /dev/null
++++ b/tools/m1b_prepare_scenario.py
+@@ -0,0 +1,50 @@
++#!/usr/bin/env python3
++"""Prepare a pinned M1b scenario JSON for smoke / CI (strip ABUND clash; pin grid)."""
++from __future__ import annotations
++
++import argparse
++import json
++from pathlib import Path
++
++
++GROUPS = {
++    "Za_G0_A0": ("docs/spec/scenario_M1b_G0.json", 0, True, 1, False),
++    "Za_G0_A250": ("docs/spec/scenario_M1b_G0.json", 250000, True, 1, False),
++    "Za_G1_A0": ("docs/spec/scenario_M1b_G1.json", 0, True, 1, False),
++    "Za_G1_A250": ("docs/spec/scenario_M1b_G1.json", 250000, True, 1, False),
++    "Za_G2_A0": ("docs/spec/scenario_M1b_G2.json", 0, True, 1, False),
++    "Za_G2_A250": ("docs/spec/scenario_M1b_G2.json", 250000, True, 1, False),
++    "Zb_G0_notrader": ("docs/spec/scenario_M1b_G0.json", 0, False, 1, False),
++    "Zc_G0H_A0": ("docs/spec/scenario_M1b_G0H.json", 0, True, 1, True),
++    "Zd_G0_seed2": ("docs/spec/scenario_M1b_G0.json", 0, True, 2, False),
++}
++
++
++def main() -> int:
++    ap = argparse.ArgumentParser()
++    ap.add_argument("--group", required=True, choices=sorted(GROUPS.keys()))
++    ap.add_argument("--out", required=True)
++    ap.add_argument("--repo", default=".")
++    args = ap.parse_args()
++    rel, abund, traders, seed, housing = GROUPS[args.group]
++    src = Path(args.repo) / rel
++    obj = json.loads(src.read_text(encoding="utf-8"))
++    ov = obj.get("overrides") or {}
++    ov.pop("PRM-SYS07-ABUND_BONUS_MAX_PPM", None)
++    obj["overrides"] = ov
++    obj["grid"] = {"PRM-SYS07-ABUND_BONUS_MAX_PPM": [int(abund)]}
++    obj["seeds"] = [int(seed)]
++    layers = obj.get("layers") or {}
++    layers["TRADERS"] = bool(traders)
++    layers["CITY_HOUSING"] = bool(housing)
++    obj["layers"] = layers
++    obj["scenario_id"] = args.group
++    out = Path(args.out)
++    out.parent.mkdir(parents=True, exist_ok=True)
++    out.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
++    print(f"wrote {out}")
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tools/n2_rich_flow.gd.uid b/tools/n2_rich_flow.gd.uid
+new file mode 100644
+index 0000000..2a54ee0
+--- /dev/null
++++ b/tools/n2_rich_flow.gd.uid
+@@ -0,0 +1 @@
++uid://cy0urpt02d0e0
+diff --git a/tools/run_m1b.ps1 b/tools/run_m1b.ps1
+new file mode 100644
+index 0000000..db6ae28
+--- /dev/null
++++ b/tools/run_m1b.ps1
+@@ -0,0 +1,259 @@
++#Requires -Version 5.1
++<#
++.SYNOPSIS
++  Owner-local M1b multi-year runner (17-59 Lane H). Always uses sim_runner --inline.
++  Pure ASCII only (PS 5.1 / system codepage safe).
++
++.PARAMETER GodotPath
++  Full path to Godot *console* exe (required; never hardcoded).
++
++.PARAMETER Group
++  "all" or comma list of fixed group names (default all).
++
++.PARAMETER Resume
++  Skip groups that already have out\m1b\<name>\done.txt.
++
++.PARAMETER SmokeDays
++  Trial day count -> out\m1b_smoke\ only (sets --days).
++  17-64 T2: values < 1 season (90 days) keep as-is; report samples last
++  season row when present, else N/A (no fabricated PASS/FAIL).
++
++.PARAMETER ReportOnly
++  Only run tools/run_m1b_report.gd against existing out\m1b\.
++#>
++[CmdletBinding()]
++param(
++  [Parameter(Mandatory = $true)]
++  [string]$GodotPath,
++
++  [Parameter(Mandatory = $false)]
++  [string]$Group = "all",
++
++  [Parameter(Mandatory = $false)]
++  [switch]$Resume,
++
++  [Parameter(Mandatory = $false)]
++  [int]$SmokeDays = 0,
++
++  [Parameter(Mandatory = $false)]
++  [switch]$ReportOnly
++)
++
++# 17-64 T2: one season = 90 days (PRM-SYS00-DAYS_PER_SEASON). Short smoke OK.
++$DaysPerSeason = 90
++if ($SmokeDays -gt 0 -and $SmokeDays -lt $DaysPerSeason) {
++  Write-Host ("SmokeDays={0} < 1 season ({1}d): report will sample last season row or N/A" -f $SmokeDays, $DaysPerSeason)
++}
++
++$ErrorActionPreference = "Stop"
++$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
++Set-Location $RepoRoot
++
++$AllGroups = @(
++  "Za_G0_A0",
++  "Za_G0_A250",
++  "Za_G1_A0",
++  "Za_G1_A250",
++  "Za_G2_A0",
++  "Za_G2_A250",
++  "Zb_G0_notrader",
++  "Zc_G0H_A0",
++  "Zd_G0_seed2"
++)
++
++function Fail([string]$Reason) {
++  Write-Host "run_m1b STOP: $Reason" -ForegroundColor Red
++  exit 1
++}
++
++# --- Preflight ---
++if (-not (Test-Path -LiteralPath $GodotPath)) {
++  Fail "GodotPath does not exist: $GodotPath"
++}
++$godotLeaf = [System.IO.Path]::GetFileName($GodotPath)
++if ($godotLeaf -notmatch "console") {
++  Fail "GodotPath filename must contain 'console' (got '$godotLeaf')"
++}
++
++$gitStatus = & git status --porcelain 2>&1
++if ($LASTEXITCODE -ne 0) {
++  Fail "git status failed: $gitStatus"
++}
++if ($gitStatus) {
++  Fail "git working tree not clean:`n$gitStatus"
++}
++$branch = (& git rev-parse --abbrev-ref HEAD).Trim()
++$sha = (& git rev-parse HEAD).Trim()
++Write-Host "run_m1b branch=$branch sha=$sha"
++
++if ($ReportOnly) {
++  $reportOut = if ($SmokeDays -gt 0) { "out\m1b_smoke" } else { "out\m1b" }
++  & $GodotPath --headless --path $RepoRoot -s res://tools/run_m1b_report.gd -- --in $reportOut
++  exit $LASTEXITCODE
++}
++
++$selected = @()
++if ($Group -eq "all") {
++  $selected = $AllGroups
++} else {
++  foreach ($g in ($Group -split ",")) {
++    $name = $g.Trim()
++    if (-not $name) { continue }
++    if ($AllGroups -notcontains $name) {
++      Fail "Unknown group '$name'. Allowed: $($AllGroups -join ', ')"
++    }
++    $selected += $name
++  }
++}
++if ($selected.Count -eq 0) {
++  Fail "No groups selected"
++}
++
++$outRoot = if ($SmokeDays -gt 0) { Join-Path $RepoRoot "out\m1b_smoke" } else { Join-Path $RepoRoot "out\m1b" }
++New-Item -ItemType Directory -Force -Path $outRoot | Out-Null
++$progressLog = Join-Path $outRoot "progress.log"
++$workScenDir = Join-Path $outRoot "_scenarios"
++New-Item -ItemType Directory -Force -Path $workScenDir | Out-Null
++
++function Get-GroupSpec([string]$Name) {
++  switch ($Name) {
++    "Za_G0_A0" { return @{ Scenario = "docs/spec/scenario_M1b_G0.json"; Abund = 0; Traders = $true; Seed = 1; Housing = $false } }
++    "Za_G0_A250" { return @{ Scenario = "docs/spec/scenario_M1b_G0.json"; Abund = 250000; Traders = $true; Seed = 1; Housing = $false } }
++    "Za_G1_A0" { return @{ Scenario = "docs/spec/scenario_M1b_G1.json"; Abund = 0; Traders = $true; Seed = 1; Housing = $false } }
++    "Za_G1_A250" { return @{ Scenario = "docs/spec/scenario_M1b_G1.json"; Abund = 250000; Traders = $true; Seed = 1; Housing = $false } }
++    "Za_G2_A0" { return @{ Scenario = "docs/spec/scenario_M1b_G2.json"; Abund = 0; Traders = $true; Seed = 1; Housing = $false } }
++    "Za_G2_A250" { return @{ Scenario = "docs/spec/scenario_M1b_G2.json"; Abund = 250000; Traders = $true; Seed = 1; Housing = $false } }
++    "Zb_G0_notrader" { return @{ Scenario = "docs/spec/scenario_M1b_G0.json"; Abund = 0; Traders = $false; Seed = 1; Housing = $false } }
++    "Zc_G0H_A0" { return @{ Scenario = "docs/spec/scenario_M1b_G0H.json"; Abund = 0; Traders = $true; Seed = 1; Housing = $true } }
++    "Zd_G0_seed2" { return @{ Scenario = "docs/spec/scenario_M1b_G0.json"; Abund = 0; Traders = $true; Seed = 2; Housing = $false } }
++    default { Fail "internal: bad group $Name" }
++  }
++}
++
++function Write-PreparedScenario([string]$Name, $Spec) {
++  $srcPath = Join-Path $RepoRoot $Spec.Scenario
++  if (-not (Test-Path -LiteralPath $srcPath)) {
++    Fail "scenario missing: $srcPath"
++  }
++  $raw = Get-Content -LiteralPath $srcPath -Raw -Encoding UTF8
++  $obj = $raw | ConvertFrom-Json
++  # Strip ABUND from overrides when also in grid (ERR-SYS23-04 / G-INT-03).
++  if ($null -ne $obj.overrides -and $obj.overrides.PSObject.Properties.Name -contains "PRM-SYS07-ABUND_BONUS_MAX_PPM") {
++    $obj.overrides.PSObject.Properties.Remove("PRM-SYS07-ABUND_BONUS_MAX_PPM")
++  }
++  $obj.grid = @{ "PRM-SYS07-ABUND_BONUS_MAX_PPM" = @([int]$Spec.Abund) }
++  $obj.seeds = @([int]$Spec.Seed)
++  if ($null -eq $obj.layers) { $obj | Add-Member -NotePropertyName layers -NotePropertyValue (@{}) }
++  $obj.layers.TRADERS = [bool]$Spec.Traders
++  $obj.layers.CITY_HOUSING = [bool]$Spec.Housing
++  $obj.scenario_id = $Name
++  $dest = Join-Path $workScenDir ("{0}.json" -f $Name)
++  ($obj | ConvertTo-Json -Depth 100) | Set-Content -LiteralPath $dest -Encoding UTF8
++  return $dest
++}
++
++function Append-Progress([string]$Line) {
++  Add-Content -LiteralPath $progressLog -Value $Line -Encoding UTF8
++  Write-Host $Line
++}
++
++$failures = New-Object System.Collections.Generic.List[string]
++$packStart = Get-Date
++$totalN = $selected.Count
++$idx = 0
++
++foreach ($gName in $selected) {
++  $idx++
++  $groupDir = Join-Path $outRoot $gName
++  $doneFile = Join-Path $groupDir "done.txt"
++  if ($Resume -and (Test-Path -LiteralPath $doneFile)) {
++    Write-Host "RESUME skip $gName (done.txt present)"
++    continue
++  }
++
++  Write-Progress -Id 1 -Activity "M1b groups" -Status ("{0}/{1} {2}" -f $idx, $totalN, $gName) -PercentComplete ([int](100 * ($idx - 1) / $totalN))
++  New-Item -ItemType Directory -Force -Path $groupDir | Out-Null
++  $spec = Get-GroupSpec $gName
++  $scen = Write-PreparedScenario $gName $spec
++  $env:M1B_GROUP_I = "$idx"
++  $env:M1B_GROUP_N = "$totalN"
++  $env:M1B_GROUP_NAME = $gName
++  $env:M1B_ALL_PCT = ("{0:0}" -f (100.0 * ($idx - 1) / [Math]::Max($totalN, 1)))
++
++  $args = @(
++    "--headless",
++    "--path", $RepoRoot,
++    "-s", "res://sim/sim_runner.gd",
++    "--",
++    "--scenario", $scen,
++    "--inline",
++    "--season-progress",
++    "--out-dir", $groupDir
++  )
++  if ($SmokeDays -gt 0) {
++    $args += @("--days", "$SmokeDays")
++  }
++
++  $gStart = Get-Date
++  $timingPath = Join-Path $groupDir "timing.txt"
++  $shaPath = Join-Path $groupDir "commit_sha.txt"
++  Set-Content -LiteralPath $shaPath -Value $sha -Encoding UTF8
++  $logPath = Join-Path $groupDir "sim_runner.log"
++  Write-Host ("START {0} at {1:o}" -f $gName, $gStart)
++  Write-Progress -Id 2 -Activity $gName -Status "running (inline)" -PercentComplete 0
++
++  $ok = $false
++  try {
++    & $GodotPath @args 2>&1 | Tee-Object -FilePath $logPath | ForEach-Object {
++      $line = "$_"
++      # Match ASCII marker from sim_engine (PS 5.1 safe).
++      if ($line -match "PROGRESS pct=(\d+)") {
++        Append-Progress $line
++        $pct = [int]$Matches[1]
++        $elapsed = (Get-Date) - $gStart
++        $eta = if ($pct -gt 0) { [TimeSpan]::FromSeconds($elapsed.TotalSeconds * (100 - $pct) / $pct) } else { [TimeSpan]::Zero }
++        Write-Progress -Id 2 -Activity $gName -Status ("days progress {0}% elapsed={1:hh\:mm\:ss} ETA={2:hh\:mm\:ss}" -f $pct, $elapsed, $eta) -PercentComplete ([Math]::Min(99, $pct))
++      } else {
++        Write-Host $line
++      }
++    }
++    if ($LASTEXITCODE -eq 0) {
++      $ok = $true
++      Set-Content -LiteralPath $doneFile -Value ("ok {0:o}" -f (Get-Date)) -Encoding UTF8
++    }
++  } catch {
++    Write-Host "EXCEPTION $gName : $_" -ForegroundColor Red
++    Add-Content -LiteralPath $logPath -Value "EXCEPTION: $_"
++  }
++
++  $gEnd = Get-Date
++  $dur = $gEnd - $gStart
++  $status = if ($ok) { "ok" } else { "fail" }
++  $summaryLine = ("END {0} status={1} duration={2:hh\:mm\:ss} sha={3}" -f $gName, $status, $dur, $sha)
++  Set-Content -LiteralPath $timingPath -Value @(
++    "commit_sha=$sha",
++    ("start={0:o}" -f $gStart),
++    ("end={0:o}" -f $gEnd),
++    ("duration_s={0:N3}" -f $dur.TotalSeconds),
++    "status=$status"
++  ) -Encoding UTF8
++  Append-Progress $summaryLine
++  Write-Progress -Id 2 -Activity $gName -Completed
++  if (-not $ok) {
++    $failures.Add($gName) | Out-Null
++    Write-Host "FAIL $gName (continuing)" -ForegroundColor Yellow
++  }
++}
++
++Write-Progress -Id 1 -Activity "M1b groups" -Completed
++$packEnd = Get-Date
++Write-Host ("PACK done elapsed={0:hh\:mm\:ss} failures={1}" -f ($packEnd - $packStart), ($failures -join ","))
++if ($failures.Count -gt 0) {
++  Write-Host "FAILURE LIST: $($failures -join ', ')" -ForegroundColor Red
++  # Still emit report for completed groups.
++}
++& $GodotPath --headless --path $RepoRoot -s res://tools/run_m1b_report.gd -- --in $outRoot
++if ($failures.Count -gt 0) {
++  exit 1
++}
++exit 0
+diff --git a/tools/run_m1b_README.md b/tools/run_m1b_README.md
+new file mode 100644
+index 0000000..2a69600
+--- /dev/null
++++ b/tools/run_m1b_README.md
+@@ -0,0 +1,100 @@
++# run_m1b.ps1 — Owner-local M1b runner (17-59 Lane H / 17-64 T1–T5)
++
++Windows PowerShell **5.1**. No extra modules. Always launches Godot with **`--inline`** so season progress prints in your console (17-60 W4).
++
++## Godot 4.7.2
++
++Download the Windows zip from Godot 4.7.2-stable. Extract so the **console** binary sits beside the normal exe:
++
++- `Godot_v4.7.2-stable_win64.exe`
++- `Godot_v4.7.2-stable_win64_console.exe` ← **use this** (`-GodotPath` must contain `console`)
++
++Owner paths used in examples below:
++
++- Godot: `C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe`
++- Repo: `C:\Users\user\Documents\GitHub\Project-Patrician`
++
++After checkout, run once so gut `.import` matches 4.7.2 (17-64 T1); tree must stay clean:
++
++```powershell
++& "C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe" --headless --path . --import
++git status --porcelain
++```
++
++## Pasteable commands
++
++```powershell
++cd C:\Users\user\Documents\GitHub\Project-Patrician
++
++# Smoke one group (30 days → out\m1b_smoke\)
++# 17-64 T2: SmokeDays < 1 season (90d) is OK — report samples last season
++# row when present, else metrics are N/A (never fake PASS/FAIL).
++.\tools\run_m1b.ps1 `
++  -GodotPath "C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe" `
++  -Group Za_G0_A0 `
++  -SmokeDays 30
++
++# Min 1 season smoke (explicit)
++.\tools\run_m1b.ps1 `
++  -GodotPath "C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe" `
++  -Group Za_G0_A0 `
++  -SmokeDays 90
++
++# All nine groups (5y; out\m1b\)
++.\tools\run_m1b.ps1 `
++  -GodotPath "C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe" `
++  -Group all
++
++# Resume after Ctrl+C (skips groups with done.txt)
++.\tools\run_m1b.ps1 `
++  -GodotPath "C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe" `
++  -Group all `
++  -Resume
++
++# Rebuild report.md only
++.\tools\run_m1b.ps1 `
++  -GodotPath "C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe" `
++  -ReportOnly
++```
++
++Fixed group names: `Za_G0_A0`, `Za_G0_A250`, `Za_G1_A0`, `Za_G1_A250`, `Za_G2_A0`, `Za_G2_A250`, `Zb_G0_notrader`, `Zc_G0H_A0`, `Zd_G0_seed2`.
++
++## Progress watch
++
++While a run is going (another window). **17-64 T5:** PS 5.1 needs UTF-8 when the log may contain non-ASCII:
++
++```powershell
++Get-Content .\out\m1b\progress.log -Wait -Tail 20 -Encoding UTF8
++```
++
++Each season line (also printed live; ASCII for PS 5.1):
++
++`PROGRESS pct=<job%> all_pct=<%> group=<i>/<n> <name> y=<y> q=<q> elapsed=<h:mm> eta=<h:mm> pop=<n> sails_cum=<n>`
++
++`pop=<n>` is **live population at emit** (17-64 T4; report prefers this over season-sample sums).  
++`Write-Progress` shows two bars: all groups (i/9) and current group %.  
++`tools/*.ps1` must stay pure ASCII (CI gate).
++
++## Report N/A (17-64 T3)
++
++`tools/run_m1b_report.gd` writes `N/A` for class/band/tier/cash when a group has no season data (short smoke, missing CSV). It never invents PASS/FAIL for empty inputs. Missing groups stay `未跑`.
++
++## ETA / interrupt
++
++From 17-55 timing, ~37–40 s per sim-year per combo on the reference machine; 5y × 1 combo ≈ 3–4 min/group (traders on a bit higher). Ctrl+C, then `-Resume`.
++
++## Zip-back
++
++After a full pack, zip `out\m1b\` (keep under 150 MB; if over, keep per group `summary.csv`, `season_ports.csv`, `trader_summary.csv`, `timing.txt`, `commit_sha.txt`, `done.txt` + md5 of the rest).
++
++## 17-60 Owner Windows verify (Guild T5)
++
++1. Console Godot path as above; clean `git status`.
++2. Smoke with parent+inline (script always passes `--inline`):
++
++```powershell
++.\tools\run_m1b.ps1 -GodotPath "C:\Users\user\Desktop\Godot_v4.7.2-stable_win64_console.exe" -Group Za_G0_A0 -SmokeDays 30
++```
++
++3. Confirm CSVs under `out\m1b_smoke\Za_G0_A0\` and `progress.log` season lines (read with `Get-Content -Encoding UTF8`).
++4. Optional subprocess cmp (Linux CI `m1b-w4-inline-cmp` job) — Owner: status **待 Owner 驗證** until you confirm Guild T5.
+diff --git a/tools/run_m1b_report.gd b/tools/run_m1b_report.gd
+new file mode 100644
+index 0000000..b6334be
+--- /dev/null
++++ b/tools/run_m1b_report.gd
+@@ -0,0 +1,390 @@
++extends SceneTree
++## 17-59 H3: read out/m1b (or --in) → report.md tables ①–⑤. Missing group = 未跑.
++## Usage: godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b
++
++
++## Not const PackedStringArray([...]) — Godot 4.7 rejects that as non-constant.
++var _GROUPS: Array = [
++	"Za_G0_A0",
++	"Za_G0_A250",
++	"Za_G1_A0",
++	"Za_G1_A250",
++	"Za_G2_A0",
++	"Za_G2_A250",
++	"Zb_G0_notrader",
++	"Zc_G0H_A0",
++	"Zd_G0_seed2",
++]
++
++const RICH_LO := 0.03
++const RICH_HI := 0.08
++const CIT_LO := 0.20
++const CIT_HI := 0.40
++const POOR_MIN := 0.45
++const BEGGAR_MAX := 0.10
++const OPENING_TOTAL := 34200
++const POP_FLOOR := 0.90
++## Y5 end = season_index 19 when years=5, seasons_per_year=4.
++const Y5_SEASON := 19
++
++
++var _main_started: bool = false
++
++
++func _process(_delta: float) -> bool:
++	if _main_started:
++		return false
++	_main_started = true
++	_main()
++	return false
++
++
++func _main() -> void:
++	var args: PackedStringArray = OS.get_cmdline_user_args()
++	var in_dir: String = _arg_value(args, "--in")
++	if in_dir.is_empty():
++		in_dir = "out/m1b"
++	var abs_in: String = ProjectSettings.globalize_path(in_dir) if in_dir.begins_with("res://") or in_dir.begins_with("user://") else in_dir
++	if not abs_in.is_absolute_path():
++		abs_in = ProjectSettings.globalize_path("res://").trim_suffix("/").path_join(in_dir)
++	var report_path: String = abs_in.path_join("report.md")
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("# M1b report")
++	lines.append("")
++	lines.append("Input: `%s`" % abs_in)
++	lines.append("")
++	lines.append("## ① Class shares (Y5 season %d / draft_class_test C)" % Y5_SEASON)
++	lines.append("")
++	lines.append("| Group | status | rich% | cit% | poor% | beg% | pop | class |")
++	lines.append("|-------|--------|-------|------|-------|------|-----|-------|")
++	var rows1: Array = []
++	for g in _GROUPS:
++		var gdir: String = abs_in.path_join(g)
++		var st: Dictionary = _analyze_group(g, gdir)
++		rows1.append(st)
++		lines.append(
++			"| %s | %s | %s | %s | %s | %s | %s | %s |" % [
++				g,
++				st["status"],
++				st["rich_pct"],
++				st["cit_pct"],
++				st["poor_pct"],
++				st["beg_pct"],
++				st["pop"],
++				st["class_ok"],
++			]
++		)
++	lines.append("")
++	lines.append("## ② Floor/ceiling band cells ≤30% (Y5)")
++	lines.append("")
++	lines.append("| Group | status | band0+4%% | pass |")
++	lines.append("|-------|--------|----------|------|")
++	for st_v in rows1:
++		var st2: Dictionary = st_v
++		lines.append(
++			"| %s | %s | %s | %s |" % [
++				st2["group"], st2["status"], st2["band04_pct"], st2["band_ok"]
++			]
++		)
++	lines.append("")
++	lines.append("## ③ Three-tier ratio order vs opening")
++	lines.append("")
++	lines.append("| Group | status | order | pass |")
++	lines.append("|-------|--------|-------|------|")
++	for st_v2 in rows1:
++		var st3: Dictionary = st_v2
++		lines.append(
++			"| %s | %s | %s | %s |" % [
++				st3["group"], st3["status"], st3["tier_order"], st3["tier_ok"]
++			]
++		)
++	lines.append("")
++	lines.append("## ④ City cash not monotonically rising")
++	lines.append("")
++	lines.append("| Group | status | mono_ports | ports | pass |")
++	lines.append("|-------|--------|------------|-------|------|")
++	for st_v3 in rows1:
++		var st4: Dictionary = st_v3
++		lines.append(
++			"| %s | %s | %s | %s | %s |" % [
++				st4["group"], st4["status"], st4["cash_mono"], st4["cash_ports"], st4["cash_ok"]
++			]
++		)
++	lines.append("")
++	lines.append("## ⑤ Timing / traders / abort")
++	lines.append("")
++	lines.append("| Group | status | duration_s | aborted | abort_reason | sail_sum |")
++	lines.append("|-------|--------|------------|---------|--------------|----------|")
++	for st_v4 in rows1:
++		var st5: Dictionary = st_v4
++		lines.append(
++			"| %s | %s | %s | %s | %s | %s |" % [
++				st5["group"],
++				st5["status"],
++				st5["duration_s"],
++				st5["aborted"],
++				st5["abort_reason"],
++				st5["sail_sum"],
++			]
++		)
++	lines.append("")
++	var body: String = "\n".join(lines) + "\n"
++	DirAccess.make_dir_recursive_absolute(abs_in)
++	var f := FileAccess.open(report_path, FileAccess.WRITE)
++	if f == null:
++		push_error("run_m1b_report: cannot write %s" % report_path)
++		quit(1)
++		return
++	f.store_string(body)
++	f.close()
++	print("run_m1b_report: wrote %s" % report_path)
++	print(body)
++	quit(0)
++
++
++func _analyze_group(group: String, gdir: String) -> Dictionary:
++	## 17-64 T3: missing data → N/A (never blank PASS/FAIL).
++	var out := {
++		"group": group,
++		"status": "未跑",
++		"rich_pct": "N/A",
++		"cit_pct": "N/A",
++		"poor_pct": "N/A",
++		"beg_pct": "N/A",
++		"pop": "N/A",
++		"class_ok": "N/A",
++		"band04_pct": "N/A",
++		"band_ok": "N/A",
++		"tier_order": "N/A",
++		"tier_ok": "N/A",
++		"cash_mono": "N/A",
++		"cash_ports": "N/A",
++		"cash_ok": "N/A",
++		"duration_s": "N/A",
++		"aborted": "N/A",
++		"abort_reason": "N/A",
++		"sail_sum": "N/A",
++	}
++	if not DirAccess.dir_exists_absolute(gdir):
++		return out
++	var ports_path: String = gdir.path_join("season_ports.csv")
++	var cells_path: String = gdir.path_join("season_cells.csv")
++	var summary_path: String = gdir.path_join("summary.csv")
++	var trader_path: String = gdir.path_join("trader_summary.csv")
++	var timing_path: String = gdir.path_join("timing.txt")
++	if not FileAccess.file_exists(ports_path):
++		out["status"] = "未跑"
++		return out
++	out["status"] = "ok"
++	if FileAccess.file_exists(timing_path):
++		for line in FileAccess.get_file_as_string(timing_path).split("\n"):
++			var s: String = String(line).strip_edges()
++			if s.begins_with("duration_s="):
++				out["duration_s"] = s.trim_prefix("duration_s=")
++			if s.begins_with("status=") and s.trim_prefix("status=") == "fail":
++				out["status"] = "fail"
++	var ports: Array = _read_csv(ports_path)
++	## 17-64 T2: SmokeDays < 1 season (no Y5) → sample last season row if any;
++	## if season_ports empty (short --days never hit cutoff), metrics stay N/A (T3).
++	var y5: Array = []
++	var used_last_season := false
++	for r_v in ports:
++		var r: Dictionary = r_v
++		if int(float(String(r.get("season_index", "-1")))) == Y5_SEASON:
++			y5.append(r)
++	if y5.is_empty():
++		var max_si := -1
++		for r2_v in ports:
++			max_si = maxi(max_si, int(float(String((r2_v as Dictionary).get("season_index", "-1")))))
++		if max_si >= 0:
++			used_last_season = true
++			for r3_v in ports:
++				if int(float(String((r3_v as Dictionary).get("season_index", "-1")))) == max_si:
++					y5.append(r3_v)
++	var rich := 0
++	var cit := 0
++	var poor := 0
++	var beg := 0
++	for r4_v in y5:
++		var rr: Dictionary = r4_v
++		rich += _as_int(rr.get("rich", 0))
++		cit += _as_int(rr.get("citizen", 0))
++		poor += _as_int(rr.get("poor", 0))
++		beg += _as_int(rr.get("beggar", 0))
++	var total: int = rich + cit + poor + beg
++	## 17-64 T4: prefer live pop from progress.log (PopulationModel at emit), not a
++	## stale/empty season-sample sum when short smoke never wrote season_ports.
++	var live_pop := _live_pop_from_progress(gdir)
++	if live_pop >= 0:
++		out["pop"] = str(live_pop)
++	elif total > 0:
++		out["pop"] = str(total)
++	else:
++		out["pop"] = "N/A"
++	## 17-64 T3: no data → N/A (never PASS/FAIL).
++	if total <= 0 or y5.is_empty():
++		out["rich_pct"] = "N/A"
++		out["cit_pct"] = "N/A"
++		out["poor_pct"] = "N/A"
++		out["beg_pct"] = "N/A"
++		out["class_ok"] = "N/A"
++		out["tier_order"] = "N/A"
++		out["tier_ok"] = "N/A"
++	else:
++		var rs: float = float(rich) / float(total)
++		var cs: float = float(cit) / float(total)
++		var ps: float = float(poor) / float(total)
++		var bs: float = float(beg) / float(total)
++		out["rich_pct"] = "%.2f" % (rs * 100.0)
++		out["cit_pct"] = "%.2f" % (cs * 100.0)
++		out["poor_pct"] = "%.2f" % (ps * 100.0)
++		out["beg_pct"] = "%.2f" % (bs * 100.0)
++		## Last-season smoke sample: still score, but only against available rows.
++		var class_ok: bool = (
++			rs >= RICH_LO and rs <= RICH_HI
++			and cs >= CIT_LO and cs <= CIT_HI
++			and ps >= POOR_MIN
++			and bs <= BEGGAR_MAX
++			and total >= int(OPENING_TOTAL * POP_FLOOR)
++		)
++		out["class_ok"] = "PASS" if class_ok else "FAIL"
++		var tier_ok: bool = ps >= cs and cs >= rs
++		out["tier_order"] = "poor≥cit≥rich"
++		out["tier_ok"] = "PASS" if tier_ok else "FAIL"
++		if used_last_season:
++			out["tier_order"] = "poor≥cit≥rich (last season)"
++	## Cash mono across seasons per port.
++	var by_port: Dictionary = {}
++	for r5_v in ports:
++		var rp: Dictionary = r5_v
++		var pid: String = String(rp.get("port_id", ""))
++		if not by_port.has(pid):
++			by_port[pid] = []
++		(by_port[pid] as Array).append(_as_int(rp.get("city_balance_li", 0)))
++	var mono_n := 0
++	var port_n: int = by_port.size()
++	for pid_v in by_port.keys():
++		var series: Array = by_port[pid_v]
++		var rising := true
++		for i in range(series.size() - 1):
++			if int(series[i]) > int(series[i + 1]):
++				rising = false
++				break
++		if rising and series.size() > 1:
++			mono_n += 1
++	out["cash_mono"] = str(mono_n) if port_n > 0 else "N/A"
++	out["cash_ports"] = str(port_n) if port_n > 0 else "N/A"
++	if port_n <= 0 or ports.is_empty():
++		out["cash_ok"] = "N/A"
++	else:
++		out["cash_ok"] = "PASS" if mono_n < port_n else "FAIL"
++	## Band floor+ceil.
++	if FileAccess.file_exists(cells_path):
++		var cells: Array = _read_csv(cells_path)
++		var y5c: Array = []
++		for c_v in cells:
++			if int(float(String((c_v as Dictionary).get("season_index", "-1")))) == Y5_SEASON:
++				y5c.append(c_v)
++		if y5c.is_empty():
++			## T2 short smoke: last season_index present, else all rows.
++			var max_c := -1
++			for c0_v in cells:
++				max_c = maxi(max_c, int(float(String((c0_v as Dictionary).get("season_index", "-1")))))
++			if max_c >= 0:
++				for c1_v in cells:
++					if int(float(String((c1_v as Dictionary).get("season_index", "-1")))) == max_c:
++						y5c.append(c1_v)
++			else:
++				y5c = cells
++		var n: int = y5c.size()
++		if n <= 0:
++			out["band04_pct"] = "N/A"
++			out["band_ok"] = "N/A"
++		else:
++			var edge := 0
++			for c3_v in y5c:
++				var bi2: int = _as_int((c3_v as Dictionary).get("band", -1))
++				if bi2 == 0 or bi2 == 4:
++					edge += 1
++			var pct: float = 100.0 * float(edge) / float(maxi(n, 1))
++			out["band04_pct"] = "%.1f" % pct
++			out["band_ok"] = "PASS" if pct <= 30.0 else "FAIL"
++	else:
++		out["band04_pct"] = "N/A"
++		out["band_ok"] = "N/A"
++	if FileAccess.file_exists(summary_path):
++		var sums: Array = _read_csv(summary_path)
++		if not sums.is_empty():
++			var s0: Dictionary = sums[0]
++			out["aborted"] = String(s0.get("aborted", ""))
++			out["abort_reason"] = String(s0.get("abort_reason", "")).replace("|", "/")
++	if FileAccess.file_exists(trader_path):
++		var sails := 0
++		for t_v in _read_csv(trader_path):
++			sails += _as_int((t_v as Dictionary).get("sail_count", 0))
++		out["sail_sum"] = str(sails)
++	else:
++		if out["sail_sum"] == "":
++			out["sail_sum"] = "N/A"
++	return out
++
++
++## 17-64 T4: read last PROGRESS pop= from group or pack progress.log (live at emit).
++func _live_pop_from_progress(gdir: String) -> int:
++	var candidates: PackedStringArray = PackedStringArray([
++		gdir.path_join("progress.log"),
++		gdir.path_join("sim_runner.log"),
++		gdir.get_base_dir().path_join("progress.log"),
++	])
++	var last_pop := -1
++	for path in candidates:
++		if not FileAccess.file_exists(path):
++			continue
++		for line in FileAccess.get_file_as_string(path).split("\n"):
++			var s: String = String(line)
++			var idx: int = s.find("pop=")
++			if idx < 0:
++				continue
++			var rest: String = s.substr(idx + 4)
++			var num := ""
++			for i in range(rest.length()):
++				var ch: String = rest.substr(i, 1)
++				if ch >= "0" and ch <= "9":
++					num += ch
++				else:
++					break
++			if not num.is_empty():
++				last_pop = int(num)
++	return last_pop
++
++
++func _read_csv(path: String) -> Array:
++	var text: String = FileAccess.get_file_as_string(path)
++	var lines: PackedStringArray = text.strip_edges().split("\n")
++	if lines.is_empty():
++		return []
++	var hdr: PackedStringArray = String(lines[0]).split(",")
++	var rows: Array = []
++	for i in range(1, lines.size()):
++		var cols: PackedStringArray = String(lines[i]).split(",")
++		var row := {}
++		for j in range(mini(hdr.size(), cols.size())):
++			row[String(hdr[j])] = String(cols[j])
++		rows.append(row)
++	return rows
++
++
++func _as_int(v: Variant) -> int:
++	var s: String = String(v)
++	if s.is_valid_int():
++		return int(s)
++	if s.is_valid_float():
++		return int(float(s))
++	return 0
++
++
++func _arg_value(args: PackedStringArray, key: String) -> String:
++	for i in range(args.size()):
++		if String(args[i]) == key and i + 1 < args.size():
++			return String(args[i + 1])
++	return ""
+diff --git a/tools/run_m1b_report.gd.uid b/tools/run_m1b_report.gd.uid
+new file mode 100644
+index 0000000..0b43416
+--- /dev/null
++++ b/tools/run_m1b_report.gd.uid
+@@ -0,0 +1 @@
++uid://bkxppnlt4x0ig
+diff --git a/tools/wp65_newbuild_360_probe.gd.uid b/tools/wp65_newbuild_360_probe.gd.uid
+new file mode 100644
+index 0000000..85e3dd6
+--- /dev/null
++++ b/tools/wp65_newbuild_360_probe.gd.uid
+@@ -0,0 +1 @@
++uid://c5dkgrlrwtebx

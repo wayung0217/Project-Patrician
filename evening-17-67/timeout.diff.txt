@@ -1,0 +1,35 @@
+## timeout-minutes before (main tip 9d293ff / ci-speed)
+5:  pull_request:
+6:  push:
+11:  workflow_dispatch:
+25:  group: ${{ github.workflow }}-${{ github.ref }}
+26:  cancel-in-progress: true
+34:  gut-unit:
+38:    timeout-minutes: 35
+200:  gut-unit-gate:
+230:  gut-ui:
+233:    timeout-minutes: 15
+307:  golden-30d:
+313:    timeout-minutes: 15
+441:  m1b-h4-smoke:
+446:    timeout-minutes: 15
+505:  m1b-w4-inline-cmp:
+510:    timeout-minutes: 15
+
+## timeout-minutes after (8456c57)
+5:  pull_request:
+6:  push:
+11:  workflow_dispatch:
+26:  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+27:  cancel-in-progress: true
+35:  gut-unit:
+39:    timeout-minutes: 30
+201:  gut-unit-gate:
+231:  gut-ui:
+234:    timeout-minutes: 30
+308:  golden-30d:
+314:    timeout-minutes: 30
+442:  m1b-h4-smoke:
+447:    timeout-minutes: 15
+506:  m1b-w4-inline-cmp:
+511:    timeout-minutes: 15

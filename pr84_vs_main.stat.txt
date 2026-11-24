@@ -1,0 +1,4 @@
+ .github/workflows/ci.yml      | 51 ++++++++++++++++++++++---------------------
+ autoload/cash_ledger.gd       | 20 ++++++++++++++++-
+ tests/unit/test_sys23_wp27.gd |  9 ++++++--
+ 3 files changed, 52 insertions(+), 28 deletions(-)

@@ -1,0 +1,859 @@
+{
+	"a_boot": {
+		"qualification_fixture_class": "SimQualificationOpenFixture",
+		"set_layers_qual_open": true,
+		"set_layers_traders_on": true
+	},
+	"b_roster": [
+		{
+			"home_port": "PT-01",
+			"port_id": "PT-01",
+			"ship_id": "SHIP:0002",
+			"state": "DOCKED",
+			"trader_id": "TR-001"
+		},
+		{
+			"home_port": "PT-01",
+			"port_id": "PT-01",
+			"ship_id": "SHIP:0003",
+			"state": "DOCKED",
+			"trader_id": "TR-001"
+		},
+		{
+			"home_port": "PT-01",
+			"port_id": "PT-01",
+			"ship_id": "SHIP:0004",
+			"state": "DOCKED",
+			"trader_id": "TR-001"
+		},
+		{
+			"home_port": "PT-02",
+			"port_id": "PT-02",
+			"ship_id": "SHIP:0005",
+			"state": "DOCKED",
+			"trader_id": "TR-002"
+		},
+		{
+			"home_port": "PT-02",
+			"port_id": "PT-02",
+			"ship_id": "SHIP:0006",
+			"state": "DOCKED",
+			"trader_id": "TR-002"
+		},
+		{
+			"home_port": "PT-02",
+			"port_id": "PT-02",
+			"ship_id": "SHIP:0007",
+			"state": "DOCKED",
+			"trader_id": "TR-002"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0008",
+			"state": "DOCKED",
+			"trader_id": "TR-003"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0009",
+			"state": "DOCKED",
+			"trader_id": "TR-003"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0010",
+			"state": "DOCKED",
+			"trader_id": "TR-003"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0011",
+			"state": "DOCKED",
+			"trader_id": "TR-004"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0012",
+			"state": "DOCKED",
+			"trader_id": "TR-004"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0013",
+			"state": "DOCKED",
+			"trader_id": "TR-004"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0014",
+			"state": "DOCKED",
+			"trader_id": "TR-005"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0015",
+			"state": "DOCKED",
+			"trader_id": "TR-005"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0016",
+			"state": "DOCKED",
+			"trader_id": "TR-005"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0017",
+			"state": "DOCKED",
+			"trader_id": "TR-006"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0018",
+			"state": "DOCKED",
+			"trader_id": "TR-006"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0019",
+			"state": "DOCKED",
+			"trader_id": "TR-006"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0020",
+			"state": "DOCKED",
+			"trader_id": "TR-007"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0021",
+			"state": "DOCKED",
+			"trader_id": "TR-007"
+		},
+		{
+			"home_port": "PT-04",
+			"port_id": "PT-04",
+			"ship_id": "SHIP:0022",
+			"state": "DOCKED",
+			"trader_id": "TR-007"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0023",
+			"state": "DOCKED",
+			"trader_id": "TR-008"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0024",
+			"state": "DOCKED",
+			"trader_id": "TR-008"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0025",
+			"state": "DOCKED",
+			"trader_id": "TR-008"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0026",
+			"state": "DOCKED",
+			"trader_id": "TR-009"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0027",
+			"state": "DOCKED",
+			"trader_id": "TR-009"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0028",
+			"state": "DOCKED",
+			"trader_id": "TR-009"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0029",
+			"state": "DOCKED",
+			"trader_id": "TR-010"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0030",
+			"state": "DOCKED",
+			"trader_id": "TR-010"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0031",
+			"state": "DOCKED",
+			"trader_id": "TR-010"
+		},
+		{
+			"home_port": "PT-01",
+			"port_id": "PT-01",
+			"ship_id": "SHIP:0032",
+			"state": "DOCKED",
+			"trader_id": "TR-011"
+		},
+		{
+			"home_port": "PT-01",
+			"port_id": "PT-01",
+			"ship_id": "SHIP:0033",
+			"state": "DOCKED",
+			"trader_id": "TR-011"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0034",
+			"state": "DOCKED",
+			"trader_id": "TR-012"
+		},
+		{
+			"home_port": "PT-03",
+			"port_id": "PT-03",
+			"ship_id": "SHIP:0035",
+			"state": "DOCKED",
+			"trader_id": "TR-012"
+		},
+		{
+			"home_port": "PT-06",
+			"port_id": "PT-06",
+			"ship_id": "SHIP:0036",
+			"state": "DOCKED",
+			"trader_id": "TR-013"
+		},
+		{
+			"home_port": "PT-06",
+			"port_id": "PT-06",
+			"ship_id": "SHIP:0037",
+			"state": "DOCKED",
+			"trader_id": "TR-013"
+		},
+		{
+			"home_port": "PT-07",
+			"port_id": "PT-07",
+			"ship_id": "SHIP:0038",
+			"state": "DOCKED",
+			"trader_id": "TR-014"
+		},
+		{
+			"home_port": "PT-07",
+			"port_id": "PT-07",
+			"ship_id": "SHIP:0039",
+			"state": "DOCKED",
+			"trader_id": "TR-014"
+		},
+		{
+			"home_port": "PT-07",
+			"port_id": "PT-07",
+			"ship_id": "SHIP:0040",
+			"state": "DOCKED",
+			"trader_id": "TR-015"
+		},
+		{
+			"home_port": "PT-07",
+			"port_id": "PT-07",
+			"ship_id": "SHIP:0041",
+			"state": "DOCKED",
+			"trader_id": "TR-015"
+		},
+		{
+			"home_port": "PT-08",
+			"port_id": "PT-08",
+			"ship_id": "SHIP:0042",
+			"state": "DOCKED",
+			"trader_id": "TR-016"
+		},
+		{
+			"home_port": "PT-08",
+			"port_id": "PT-08",
+			"ship_id": "SHIP:0043",
+			"state": "DOCKED",
+			"trader_id": "TR-016"
+		},
+		{
+			"home_port": "PT-09",
+			"port_id": "PT-09",
+			"ship_id": "SHIP:0044",
+			"state": "DOCKED",
+			"trader_id": "TR-017"
+		},
+		{
+			"home_port": "PT-09",
+			"port_id": "PT-09",
+			"ship_id": "SHIP:0045",
+			"state": "DOCKED",
+			"trader_id": "TR-017"
+		},
+		{
+			"home_port": "PT-10",
+			"port_id": "PT-10",
+			"ship_id": "SHIP:0046",
+			"state": "DOCKED",
+			"trader_id": "TR-018"
+		},
+		{
+			"home_port": "PT-10",
+			"port_id": "PT-10",
+			"ship_id": "SHIP:0047",
+			"state": "DOCKED",
+			"trader_id": "TR-018"
+		},
+		{
+			"home_port": "PT-11",
+			"port_id": "PT-11",
+			"ship_id": "SHIP:0048",
+			"state": "DOCKED",
+			"trader_id": "TR-019"
+		},
+		{
+			"home_port": "PT-11",
+			"port_id": "PT-11",
+			"ship_id": "SHIP:0049",
+			"state": "DOCKED",
+			"trader_id": "TR-019"
+		},
+		{
+			"home_port": "PT-11",
+			"port_id": "PT-11",
+			"ship_id": "SHIP:0050",
+			"state": "DOCKED",
+			"trader_id": "TR-020"
+		},
+		{
+			"home_port": "PT-11",
+			"port_id": "PT-11",
+			"ship_id": "SHIP:0051",
+			"state": "DOCKED",
+			"trader_id": "TR-020"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0052",
+			"state": "DOCKED",
+			"trader_id": "TR-021"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0053",
+			"state": "DOCKED",
+			"trader_id": "TR-021"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0054",
+			"state": "DOCKED",
+			"trader_id": "TR-022"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0055",
+			"state": "DOCKED",
+			"trader_id": "TR-022"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0056",
+			"state": "DOCKED",
+			"trader_id": "TR-023"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0057",
+			"state": "DOCKED",
+			"trader_id": "TR-023"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0058",
+			"state": "DOCKED",
+			"trader_id": "TR-024"
+		},
+		{
+			"home_port": "PT-12",
+			"port_id": "PT-12",
+			"ship_id": "SHIP:0059",
+			"state": "DOCKED",
+			"trader_id": "TR-024"
+		},
+		{
+			"home_port": "PT-13",
+			"port_id": "PT-13",
+			"ship_id": "SHIP:0060",
+			"state": "DOCKED",
+			"trader_id": "TR-025"
+		},
+		{
+			"home_port": "PT-13",
+			"port_id": "PT-13",
+			"ship_id": "SHIP:0061",
+			"state": "DOCKED",
+			"trader_id": "TR-025"
+		},
+		{
+			"home_port": "PT-02",
+			"port_id": "PT-02",
+			"ship_id": "SHIP:0062",
+			"state": "DOCKED",
+			"trader_id": "TR-026"
+		},
+		{
+			"home_port": "PT-05",
+			"port_id": "PT-05",
+			"ship_id": "SHIP:0063",
+			"state": "DOCKED",
+			"trader_id": "TR-027"
+		},
+		{
+			"home_port": "PT-06",
+			"port_id": "PT-06",
+			"ship_id": "SHIP:0064",
+			"state": "DOCKED",
+			"trader_id": "TR-028"
+		},
+		{
+			"home_port": "PT-08",
+			"port_id": "PT-08",
+			"ship_id": "SHIP:0065",
+			"state": "DOCKED",
+			"trader_id": "TR-029"
+		},
+		{
+			"home_port": "PT-10",
+			"port_id": "PT-10",
+			"ship_id": "SHIP:0066",
+			"state": "DOCKED",
+			"trader_id": "TR-030"
+		},
+		{
+			"home_port": "PT-13",
+			"port_id": "PT-13",
+			"ship_id": "SHIP:0067",
+			"state": "DOCKED",
+			"trader_id": "TR-031"
+		},
+		{
+			"home_port": "PT-13",
+			"port_id": "PT-13",
+			"ship_id": "SHIP:0068",
+			"state": "DOCKED",
+			"trader_id": "TR-032"
+		},
+		{
+			"home_port": "PT-13",
+			"port_id": "PT-13",
+			"ship_id": "SHIP:0069",
+			"state": "DOCKED",
+			"trader_id": "TR-033"
+		},
+		{
+			"home_port": "PT-14",
+			"port_id": "PT-14",
+			"ship_id": "SHIP:0070",
+			"state": "DOCKED",
+			"trader_id": "TR-034"
+		},
+		{
+			"home_port": "PT-14",
+			"port_id": "PT-14",
+			"ship_id": "SHIP:0071",
+			"state": "DOCKED",
+			"trader_id": "TR-035"
+		},
+		{
+			"home_port": "PT-14",
+			"port_id": "PT-14",
+			"ship_id": "SHIP:0072",
+			"state": "DOCKED",
+			"trader_id": "TR-036"
+		},
+		{
+			"home_port": "PT-14",
+			"port_id": "PT-14",
+			"ship_id": "SHIP:0073",
+			"state": "DOCKED",
+			"trader_id": "TR-037"
+		},
+		{
+			"home_port": "PT-14",
+			"port_id": "PT-14",
+			"ship_id": "SHIP:0074",
+			"state": "DOCKED",
+			"trader_id": "TR-038"
+		},
+		{
+			"home_port": "PT-14",
+			"port_id": "PT-14",
+			"ship_id": "SHIP:0075",
+			"state": "DOCKED",
+			"trader_id": "TR-039"
+		},
+		{
+			"home_port": "PT-14",
+			"port_id": "PT-14",
+			"ship_id": "SHIP:0076",
+			"state": "DOCKED",
+			"trader_id": "TR-040"
+		},
+		{
+			"home_port": "PT-15",
+			"port_id": "PT-15",
+			"ship_id": "SHIP:0077",
+			"state": "DOCKED",
+			"trader_id": "TR-041"
+		},
+		{
+			"home_port": "PT-15",
+			"port_id": "PT-15",
+			"ship_id": "SHIP:0078",
+			"state": "DOCKED",
+			"trader_id": "TR-042"
+		},
+		{
+			"home_port": "PT-15",
+			"port_id": "PT-15",
+			"ship_id": "SHIP:0079",
+			"state": "DOCKED",
+			"trader_id": "TR-043"
+		},
+		{
+			"home_port": "PT-15",
+			"port_id": "PT-15",
+			"ship_id": "SHIP:0080",
+			"state": "DOCKED",
+			"trader_id": "TR-044"
+		},
+		{
+			"home_port": "PT-15",
+			"port_id": "PT-15",
+			"ship_id": "SHIP:0081",
+			"state": "DOCKED",
+			"trader_id": "TR-045"
+		},
+		{
+			"home_port": "PT-16",
+			"port_id": "PT-16",
+			"ship_id": "SHIP:0082",
+			"state": "DOCKED",
+			"trader_id": "TR-046"
+		},
+		{
+			"home_port": "PT-16",
+			"port_id": "PT-16",
+			"ship_id": "SHIP:0083",
+			"state": "DOCKED",
+			"trader_id": "TR-047"
+		},
+		{
+			"home_port": "PT-16",
+			"port_id": "PT-16",
+			"ship_id": "SHIP:0084",
+			"state": "DOCKED",
+			"trader_id": "TR-048"
+		}
+	],
+	"c_days": [
+		{
+			"day": 1,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 2,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 3,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 4,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 5,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 6,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 7,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 8,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 9,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 10,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 11,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 12,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 13,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 14,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 15,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 16,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 17,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 18,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 19,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 20,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 21,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 22,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 23,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 24,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 25,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 26,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 27,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 28,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 29,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		},
+		{
+			"day": 30,
+			"dest_excluded_no_market": 16,
+			"evaluable_candidates": 0,
+			"explore_hit_traders": 2,
+			"sail_count": 0
+		}
+	],
+	"d_board_for_days": {
+		"1": {
+			"PT-01": 0,
+			"PT-02": 0,
+			"PT-03": 0,
+			"PT-04": 0,
+			"PT-05": 0,
+			"PT-06": 0,
+			"PT-07": 0,
+			"PT-08": 0,
+			"PT-09": 0,
+			"PT-10": 0,
+			"PT-11": 0,
+			"PT-12": 0,
+			"PT-13": 0,
+			"PT-14": 0,
+			"PT-15": 0,
+			"PT-16": 0
+		},
+		"30": {
+			"PT-01": 0,
+			"PT-02": 0,
+			"PT-03": 0,
+			"PT-04": 0,
+			"PT-05": 0,
+			"PT-06": 0,
+			"PT-07": 0,
+			"PT-08": 0,
+			"PT-09": 0,
+			"PT-10": 0,
+			"PT-11": 0,
+			"PT-12": 0,
+			"PT-13": 0,
+			"PT-14": 0,
+			"PT-15": 0,
+			"PT-16": 0
+		},
+		"7": {
+			"PT-01": 0,
+			"PT-02": 0,
+			"PT-03": 0,
+			"PT-04": 0,
+			"PT-05": 0,
+			"PT-06": 0,
+			"PT-07": 0,
+			"PT-08": 0,
+			"PT-09": 0,
+			"PT-10": 0,
+			"PT-11": 0,
+			"PT-12": 0,
+			"PT-13": 0,
+			"PT-14": 0,
+			"PT-15": 0,
+			"PT-16": 0
+		}
+	},
+	"sails_total": 0
+}

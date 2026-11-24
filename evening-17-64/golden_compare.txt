@@ -1,0 +1,9 @@
+A=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-64/golden_pre_30d.csv bytes=2270766 sha256=8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c
+B=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-64/golden_after_30d.csv bytes=2270766 sha256=8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c
+IDENTICAL_BYTES=1
+ROWS_A=528 ROWS_B=528
+COLS_A=19 COLS_B=19
+DIFF_CELLS=0
+IDENTICAL=1
+CELL_BY_CELL: all cells equal (row×col walk); no mismatched cells.
+COMPARED_CELLS=10032

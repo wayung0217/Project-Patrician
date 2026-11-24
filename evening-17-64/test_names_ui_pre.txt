@@ -1,0 +1,6 @@
+tests/ui/test_wp61_debug_ui.gd::test_WP61_advance_day_increments
+tests/ui/test_wp61_debug_ui.gd::test_WP61_buy_reduces_cash_and_stock
+tests/ui/test_wp61_debug_ui.gd::test_WP61_formal_boot_zero_errors
+tests/ui/test_wp61_debug_ui.gd::test_WP61_scene_loads
+tests/ui/test_wp62_m0_apis.gd::test_TST_WP62_UI_capacity_shows_150_dan
+tests/ui/test_wp62_m0_apis.gd::test_TST_WP62_UI_fuzhou_buy_yuegang_sell_last_trade
