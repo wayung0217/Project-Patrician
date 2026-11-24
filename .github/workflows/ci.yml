@@ -202,7 +202,8 @@ jobs:
             gut_unit_names.txt
           retention-days: 3
 
-  # 17-69 2.4: total ≥ recorded baseline AND all baseline names still present (set diff).
+  # 17-69 2.4／Owner 追認(乙): ≥ baseline + name set-diff; print ADDED/REMOVED (or 無).
+  # Removing a baseline name requires Owner pre-approval; never same commit as product.
   gut-unit-gate:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     needs: gut-unit
@@ -220,7 +221,7 @@ jobs:
           merge-multiple: false
           path: shard_logs
 
-      - name: Verify Passing ≥ baseline and old names present
+      - name: Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES
         run: |
           set -euo pipefail
           echo "Shard artifacts:"
@@ -252,13 +253,23 @@ jobs:
                   n = ln.strip()
                   if n:
                       seen.add(n)
-          missing = sorted(baseline - seen)
-          print(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)} MISSING={len(missing)}")
-          if missing:
-              print("MISSING_BASELINE_NAMES:")
-              for n in missing:
+          removed = sorted(baseline - seen)
+          added = sorted(seen - baseline)
+          print(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)}")
+          print("REMOVED_NAMES:")
+          if removed:
+              for n in removed:
                   print(n)
-              print("::error::baseline test names missing from this run (set diff)")
+          else:
+              print("無")
+          print("ADDED_NAMES:")
+          if added:
+              for n in added:
+                  print(n)
+          else:
+              print("無")
+          if removed:
+              print("::error::REMOVED_NAMES non-empty — baseline test deleted/renamed without Owner pre-approval (set diff)")
               raise SystemExit(1)
           print("GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1")
           PY
