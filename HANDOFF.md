@@ -1,6 +1,6 @@
 # 17-71 HANDOFF
 
-Branch tip: `TIP_PENDING`（`review/1771-handoff`）  
+Branch tip: `dcc8aa776635dc0880614cd3e0e5fb1194102c23`（`review/1771-handoff`）  
 Main tip at closeout: `fd5eb16c8d598b7a82f31097c9fb2207c0e4ebcd`  
 Main CI: `45735400939` success（7 success ＋ 2 skipped；勿報「9／9」成功——N-21）。  
 Golden artifact id: **`15078752004`**（name `golden-30d`，run `45735400939`）.
@@ -160,10 +160,10 @@ N-21｜CI 結果曾以「9／9」回報，實為 7 success ＋ 2 skipped；往�
 0bcb548aaf78c5865ef784d421b581bc4fe5b523	refs/heads/review/1770-evidence3
 173d731beb2fbc1bdfca521abe8507bcad10297e	refs/heads/review/evening-17-69-lane3
 1fd181acf5012a49494b3084e4045202987e4507	refs/heads/cursor/ui-1755-debug-panels-ff98
+29363032ce548624d2089028ce5380924288455e	refs/heads/cursor/td18-wp26-split-5665
 32f0a43c2d8c680178d610f907a8869d73f69598	refs/heads/review/1770-d130
 40670fc03681a1b8eabee618eebf4401c7d5fdac	refs/heads/review/1770-t3
 69a793a473bb8eb8c0696eb7a5944d34eb726228	refs/heads/review/1770-t1
-6d3ce415a57e22f164166cf07337be1633b954a1	refs/heads/review/1771-handoff
 76bacbf848a7dc7d6220fa5f1818130254ec3c71	refs/heads/review/1770-merge1
 7d8ece439134c109e5f8a112771f3c32029a91e4	refs/heads/review/evening-17-69-int
 8468b864149604e8e6b2cb8acf060ced8b559e4e	refs/heads/review/evening-17-69-lane5
@@ -175,7 +175,7 @@ c1fd855611cad108c5c03604f4e47b1e63c95dda	refs/heads/review/evening-17-69-lane1
 d52d92ac1909ae995b429e65e814774da83a1ab2	refs/heads/review/1770-evidence2
 d789f0410feee33d1cd65c3ecd5df2cc919e8fa5	refs/heads/review/evening-17-69-lane4
 d834963e3903bad8461fa2ff74e2445d26bac515	refs/heads/review/evening-17-69-handoff
-dc6aa1c30f7d46cffb9a7986e2da5e3d43602d5b	refs/heads/cursor/td18-wp26-split-5665
+dcc8aa776635dc0880614cd3e0e5fb1194102c23	refs/heads/review/1771-handoff
 fd5eb16c8d598b7a82f31097c9fb2207c0e4ebcd	refs/heads/main
 ```
 
