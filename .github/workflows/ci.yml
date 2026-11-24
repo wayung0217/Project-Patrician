@@ -30,11 +30,15 @@ env:
   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
 
 jobs:
-  # 17-64 S4: parallel gut-unit / gut-ui / golden (unit no longer re-runs UI).
+  # 17-64 S4: parallel gut-unit / gut-ui / golden; unit matrix 4-way when wall >10m.
   gut-unit:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,6 +69,7 @@ jobs:
           ./godot --version
 
       - name: tools/*.ps1 must be pure ASCII
+        if: matrix.shard == 0
         run: |
           set -euo pipefail
           fail=0
@@ -113,32 +118,109 @@ jobs:
           fi
           echo "IMPORT_CLEAN_TREE_OK"
 
-      - name: Run GUT unit + property tests
+      - name: Select unit shard scripts (4-way) + property on shard 0
+        id: shard
         run: |
           set -euo pipefail
+          SHARD="${{ matrix.shard }}"
+          N=4
+          mapfile -t files < <(find tests/unit -name 'test_*.gd' | sort)
+          echo "UNIT_FILES_TOTAL=${#files[@]}"
+          : > /tmp/gut_shard_tests.txt
+          selected=0
+          for i in "${!files[@]}"; do
+            if (( i % N == SHARD )); then
+              echo "res://${files[$i]}" >> /tmp/gut_shard_tests.txt
+              selected=$((selected + 1))
+            fi
+          done
+          if [[ "$SHARD" == "0" ]]; then
+            find tests/property -name 'test_*.gd' | sort | while read -r f; do
+              echo "res://${f}" >> /tmp/gut_shard_tests.txt
+            done
+          fi
+          echo "SHARD=${SHARD} selected_unit=${selected} scripts=$(wc -l < /tmp/gut_shard_tests.txt)"
+          echo "selected_unit=${selected}" >> "$GITHUB_OUTPUT"
+          cat /tmp/gut_shard_tests.txt
+
+      - name: Run GUT unit shard
+        run: |
+          set -euo pipefail
+          # GUT -gtest takes full res:// paths (keeps original script locations).
+          mapfile -t TESTS < /tmp/gut_shard_tests.txt
+          if [[ ${#TESTS[@]} -eq 0 ]]; then
+            echo "::error::shard selected zero scripts"
+            exit 1
+          fi
+          GTEST_ARGS=()
+          for t in "${TESTS[@]}"; do
+            GTEST_ARGS+=("-gtest=${t}")
+          done
           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
-            -gdir=res://tests/unit,res://tests/property \
+            -gconfig= \
+            "${GTEST_ARGS[@]}" \
             -gexit 2>&1 | tee gut_unit.log
           if grep -F "SCRIPT ERROR" gut_unit.log; then
             echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
             exit 1
           fi
-          # Emit countable summary line for evening-17-64 gates.
-          grep -E 'Tests:|Passing:|Failing:|scripts|tests/unit|tests/property' gut_unit.log | tail -40 || true
-
-      - name: A35 norm scan (report-only)
+          grep -E 'Passing Tests|Failing|All tests passed' gut_unit.log | tail -20 || true
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          text = Path("gut_unit.log").read_text(errors="replace")
+          m = re.findall(r"Passing Tests\s+(\d+)", text)
+          n = int(m[-1]) if m else -1
+          Path("gut_unit_passing.txt").write_text(f"{n}\n")
+          print(f"SHARD_PASSING={n}")
+          PY
+      - name: A35 norm scan (report-only, shard 0)
+        if: matrix.shard == 0
         continue-on-error: true
         run: |
           set -euo pipefail
           python3 tools/a35_norm_scan.py
 
-      - name: Upload GUT unit logs
+      - name: Upload GUT unit shard logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: gut-unit-logs
-          path: gut_unit.log
+          name: gut-unit-logs-${{ matrix.shard }}
+          path: |
+            gut_unit.log
+            gut_unit_passing.txt
           retention-days: 3
+
+  # Sum shard passing counts; must equal pre-change 555 (unit+property).
+  gut-unit-gate:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+    needs: gut-unit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download shard passing counts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: gut-unit-logs-*
+          merge-multiple: false
+          path: shard_logs
+
+      - name: Verify total Passing == 555
+        run: |
+          set -euo pipefail
+          echo "Shard artifacts:"
+          find shard_logs -type f -print
+          total=0
+          while IFS= read -r f; do
+            n=$(tr -d '[:space:]' < "$f")
+            echo "file=$f passing=$n"
+            total=$((total + n))
+          done < <(find shard_logs -name gut_unit_passing.txt | sort)
+          echo "TOTAL_PASSING=${total}"
+          if [[ "$total" != "555" ]]; then
+            echo "::error::unit+property Passing=${total} expected 555 (pre-change main)"
+            exit 1
+          fi
+          echo "GUT_UNIT_PROPERTY_COUNT_OK=555"
 
   gut-ui:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
