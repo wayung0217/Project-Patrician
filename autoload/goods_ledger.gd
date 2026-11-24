@@ -58,6 +58,8 @@ const REASON_UNLOAD := &"UNLOAD"
 const REASON_CONSTRUCT_USE := &"CONSTRUCT_USE"
 const REASON_CONFISCATE := &"CONFISCATE"
 const REASON_SEA_LOSS := &"SEA_LOSS"
+## FRM-SYS07-16／D-104(h): abundance excess consume (MARKET → EXTERNAL); not in offtake snapshot.
+const REASON_EXCESS_CONSUME := &"EXCESS_CONSUME"
 ## FRM-SYS23-05／D-97(b): simulator-only reason; arming is layers.RELOCATE in SimEngine (no enable API).
 const REASON_SIM_RELOCATE := &"SIM_RELOCATE"
 
@@ -766,12 +768,17 @@ func _container_used(container_key: String) -> int:
 
 
 func _apply_expected_delta(good_s: String, reason: StringName, from_key: String, to_key: String, qty_i: int) -> void:
-	# FRM-SYS03-01 右側：GENESIS／PRODUCE 增加；CONSUME／CONSTRUCT_USE／SEA_LOSS 減少
+	# FRM-SYS03-01 右側：GENESIS／PRODUCE 增加；CONSUME／CONSTRUCT_USE／SEA_LOSS／EXCESS_CONSUME 減少
 	var delta: int = 0
 	if reason == REASON_GENESIS or reason == REASON_PRODUCE:
 		if _is_external_key(from_key) and not _is_external_key(to_key):
 			delta = qty_i
-	elif reason == REASON_CONSUME or reason == REASON_CONSTRUCT_USE or reason == REASON_SEA_LOSS:
+	elif (
+		reason == REASON_CONSUME
+		or reason == REASON_CONSTRUCT_USE
+		or reason == REASON_SEA_LOSS
+		or reason == REASON_EXCESS_CONSUME
+	):
 		if not _is_external_key(from_key) and _is_external_key(to_key):
 			delta = 0 - qty_i
 	if delta != 0:
@@ -916,7 +923,8 @@ func _apply_offtake_on_transfer(
 	from_key: String, to_key: String, good_s: String, qty_i: int, reason: StringName
 ) -> void:
 	# FRM-SYS03-05 (a)–(f). GENESIS／PRODUCE do not record.
-	if reason == REASON_GENESIS or reason == REASON_PRODUCE:
+	# FRM-SYS07-16: EXCESS_CONSUME is not clearance／offtake (居民用得更寬裕).
+	if reason == REASON_GENESIS or reason == REASON_PRODUCE or reason == REASON_EXCESS_CONSUME:
 		return
 	var from_kind: String = String(_kind_by_id.get(from_key, ""))
 	var to_kind: String = String(_kind_by_id.get(to_key, ""))
