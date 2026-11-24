@@ -152,6 +152,10 @@ func _run_one_job(
 	TraderRegistry.set_layers(traders_on, qual_open)
 	## F3／FRM-SYS23-03／FRM-SYS17-04: explore seed = scenario seed (no module-fixed seed).
 	TraderRegistry.set_rng_seed(seed)
+	## 17-63 Z2: gated diagnosis (env M1B_DIAG_Z=1); no behaviour change when off.
+	var diag_z := M1bDiagZ.new()
+	diag_z.begin_from_env()
+	TraderRegistry.set_diag_z(diag_z if diag_z.is_active() else null)
 
 	# D-60f／D-63b: sim expects successful boot → inject fixtures（not formal always-allow）.
 	# D-120(f): QUAL_OPEN＝1 → SimQualificationOpenFixture (sim/ only); else deny-all.
@@ -160,11 +164,18 @@ func _run_one_job(
 	# Allow re-inject after a prior boot left TradeDesk._loaded true without providers.
 	if not TradeDesk.has_qualification_provider() or not TradeDesk.has_trade_observers():
 		TradeDesk.mark_unloaded()
+	var qual_fixture_name := "SimQualificationFixture"
 	if not TradeDesk.has_qualification_provider():
 		if qual_open:
 			TradeDesk.set_qualification_provider(SimQualificationOpenFixture.new())
+			qual_fixture_name = "SimQualificationOpenFixture"
 		else:
 			TradeDesk.set_qualification_provider(SimQualificationFixture.new())
+			qual_fixture_name = "SimQualificationFixture"
+	elif TradeDesk.has_qualification_provider():
+		## Already injected (tests); name best-effort from get_class if available.
+		qual_fixture_name = "preinjected"
+	diag_z.record_boot(traders_on, qual_open, qual_fixture_name)
 	if not TradeDesk.has_trade_observers():
 		TradeDesk.set_trade_observers([SimTradeObserverFixture.new()])
 	var boot_errors: Array = SimLoop.boot(
@@ -178,6 +189,9 @@ func _run_one_job(
 		demand_tables_path
 	)
 	if not boot_errors.is_empty() or not SimLoop.is_booted():
+		diag_z.record_roster_after_boot()
+		diag_z.finish()
+		TraderRegistry.set_diag_z(null)
 		acc.disconnect_ledger()
 		sampler.disconnect_unmet()
 		var reason: String = "%s: boot failed: %s" % [ERR_SYS23_07, str(boot_errors)]
@@ -185,6 +199,7 @@ func _run_one_job(
 			"summary": _abort_summary(run_id, combo_index, seed, combo, reason, t0),
 			"sampler": sampler,
 		}
+	diag_z.record_roster_after_boot()
 
 	## D-115(a)／WP-68: layers.CITY_HOUSING → BuildingEconomy（default off）.
 	var city_housing: bool = bool(layers.get(SimScenarioValidator.KEY_CITY_HOUSING, false))
@@ -198,6 +213,8 @@ func _run_one_job(
 			Params.get_float(PRM_ROUND_EPS)
 		)
 		if not bool(conv.get("ok", false)):
+			diag_z.finish()
+			TraderRegistry.set_diag_z(null)
 			acc.disconnect_ledger()
 			sampler.disconnect_unmet()
 			return {
@@ -271,6 +288,8 @@ func _run_one_job(
 	if print_season_progress:
 		var si_final: int = int(Clock.season_index) if Clock != null else 0
 		_emit_season_progress(si_final, total_days, days_per_season, seasons_y, sampler)
+	diag_z.finish()
+	TraderRegistry.set_diag_z(null)
 	acc.disconnect_ledger()
 	sampler.disconnect_unmet()
 	if GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):

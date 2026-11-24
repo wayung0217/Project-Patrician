@@ -1,0 +1,87 @@
+# 17-63 Z2: 30d Za_G0_A0 diagnosis via same entry as Step Z (sim_runner --inline).
+# Trigger: push to diag-z-* or workflow_dispatch. CI-only (17-61); no secrets.
+name: M1b-Diag-Z
+
+on:
+  push:
+    branches:
+      - "diag-z-*"
+  workflow_dispatch:
+
+jobs:
+  za-g0-a0-30d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          ./godot --version
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Run Za_G0_A0 30d inline with DIAG_Z
+        env:
+          M1B_DIAG_Z: "1"
+          M1B_DIAG_Z_OUT: out/m1b_diag/Za_G0_A0/diag_z.json
+          M1B_GROUP_NAME: Za_G0_A0
+          M1B_GROUP_I: "1"
+          M1B_GROUP_N: "1"
+        run: |
+          set -euo pipefail
+          G=Za_G0_A0
+          mkdir -p "out/m1b_diag/${G}" "out/m1b_diag/_scenarios"
+          python3 tools/m1b_prepare_scenario.py --group "$G" --out "out/m1b_diag/_scenarios/${G}.json"
+          # Same entry as Step Z: sim_runner --inline; only day cap differs (30).
+          START_EPOCH=$(date -u +%s)
+          START=$(date -u -d "@${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
+          SHA=$(git rev-parse HEAD)
+          echo "$SHA" > "out/m1b_diag/${G}/commit_sha.txt"
+          set +e
+          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+            --scenario "$(pwd)/out/m1b_diag/_scenarios/${G}.json" \
+            --inline --season-progress --days 30 \
+            --out-dir "$(pwd)/out/m1b_diag/${G}" \
+            2>&1 | tee "out/m1b_diag/${G}/sim_runner.log"
+          RC=${PIPESTATUS[0]}
+          set -e
+          END_EPOCH=$(date -u +%s)
+          END=$(date -u -d "@${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
+          DUR_S=$((END_EPOCH - START_EPOCH))
+          STATUS=ok
+          if [[ "$RC" -ne 0 ]]; then STATUS=fail; fi
+          {
+            echo "commit_sha=$SHA"
+            echo "start=$START"
+            echo "end=$END"
+            echo "duration_s=${DUR_S}"
+            echo "status=$STATUS"
+            echo "exit_code=$RC"
+          } > "out/m1b_diag/${G}/timing.txt"
+          grep -E '^DIAG_Z' "out/m1b_diag/${G}/sim_runner.log" | tee "out/m1b_diag/${G}/diag_z_lines.txt" || true
+          test -f "out/m1b_diag/${G}/diag_z.json"
+          test -f "out/m1b_diag/${G}/summary.csv"
+          test -f "out/m1b_diag/${G}/trader_summary.csv"
+          if [[ "$STATUS" != "ok" ]]; then
+            echo "::error::diag group $G failed exit=$RC"
+            exit "$RC"
+          fi
+          echo "DIAG_Z_DONE $G duration_s=$DUR_S"
+
+      - name: Upload diag artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1b-diag-z-Za_G0_A0
+          path: out/m1b_diag/
+          retention-days: 14
+          if-no-files-found: warn

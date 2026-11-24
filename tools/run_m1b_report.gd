@@ -176,12 +176,23 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		return out
 	out["status"] = "ok"
 	if FileAccess.file_exists(timing_path):
+		var timing_start := ""
+		var timing_end := ""
 		for line in FileAccess.get_file_as_string(timing_path).split("\n"):
 			var s: String = String(line).strip_edges()
 			if s.begins_with("duration_s="):
 				out["duration_s"] = s.trim_prefix("duration_s=")
+			if s.begins_with("start="):
+				timing_start = s.trim_prefix("start=")
+			if s.begins_with("end="):
+				timing_end = s.trim_prefix("end=")
 			if s.begins_with("status=") and s.trim_prefix("status=") == "fail":
 				out["status"] = "fail"
+		## 17-63 Z4: if Actions only wrote start/end, derive duration_s.
+		if String(out["duration_s"]).is_empty() and not timing_start.is_empty() and not timing_end.is_empty():
+			var derived: String = _duration_s_from_iso(timing_start, timing_end)
+			if not derived.is_empty():
+				out["duration_s"] = derived
 	var ports: Array = _read_csv(ports_path)
 	var y5: Array = []
 	for r_v in ports:
@@ -323,3 +334,38 @@ func _arg_value(args: PackedStringArray, key: String) -> String:
 		if String(args[i]) == key and i + 1 < args.size():
 			return String(args[i + 1])
 	return ""
+
+
+func _duration_s_from_iso(start_s: String, end_s: String) -> String:
+	## Accept ISO-8601 UTC (`…Z`) or with offset; return integer seconds string.
+	var t0: int = _parse_iso_unix(start_s)
+	var t1: int = _parse_iso_unix(end_s)
+	if t0 < 0 or t1 < 0 or t1 < t0:
+		return ""
+	return str(t1 - t0)
+
+
+func _parse_iso_unix(raw: String) -> int:
+	## Minimal parser for `YYYY-MM-DDTHH:MM:SSZ` / `…+00:00` / PowerShell `…o` round-trip.
+	var s: String = raw.strip_edges()
+	if s.is_empty():
+		return -1
+	## Trim fractional seconds and trailing Z / offset for Time.get_unix_time_from_datetime_string.
+	if s.ends_with("Z"):
+		s = s.substr(0, s.length() - 1)
+	var plus: int = s.rfind("+")
+	var minus: int = s.rfind("-")
+	## Offset after the date `YYYY-MM-DD` (index 10 is `T`).
+	if plus > 10:
+		s = s.substr(0, plus)
+	elif minus > 10:
+		s = s.substr(0, minus)
+	var dot: int = s.find(".")
+	if dot >= 0:
+		s = s.substr(0, dot)
+	## Godot expects `YYYY-MM-DDTHH:MM:SS` or space separator.
+	if s.length() < 19:
+		return -1
+	var core: String = s.substr(0, 19)
+	var unix: int = Time.get_unix_time_from_datetime_string(core)
+	return unix

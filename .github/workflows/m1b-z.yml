@@ -61,7 +61,8 @@ jobs:
           assert int(obj.get("years", 0)) == 5, obj.get("years")
           print("years_ok", obj["years"], "scenario_id", obj["scenario_id"])
           PY
-          START=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          START_EPOCH=$(date -u +%s)
+          START=$(date -u -d "@${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
           SHA=$(git rev-parse HEAD)
           echo "$SHA" > "out/m1b/${G}/commit_sha.txt"
           set +e
@@ -72,13 +73,16 @@ jobs:
             2>&1 | tee "out/m1b/${G}/sim_runner.log"
           RC=${PIPESTATUS[0]}
           set -e
-          END=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          END_EPOCH=$(date -u +%s)
+          END=$(date -u -d "@${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
+          DUR_S=$((END_EPOCH - START_EPOCH))
           STATUS=ok
           if [[ "$RC" -ne 0 ]]; then STATUS=fail; fi
           {
             echo "commit_sha=$SHA"
             echo "start=$START"
             echo "end=$END"
+            echo "duration_s=${DUR_S}"
             echo "status=$STATUS"
             echo "exit_code=$RC"
             echo "tag=${GITHUB_REF_NAME}"

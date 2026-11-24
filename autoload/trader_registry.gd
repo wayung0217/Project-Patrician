@@ -65,6 +65,8 @@ var _rng_seed: int = 0
 ## Test-only destination intel inject (F2: product／sim must not depend on this; default empty).
 ## Key "port|good" → {mid_li:int, weeks:float}；null mid → no candidate.
 var _intel_override: Dictionary = {}
+## 17-63 Z2: optional M1bDiagZ (null = off).
+var _diag_z: RefCounted = null
 
 
 func _ready() -> void:
@@ -79,6 +81,11 @@ func set_layers(traders_on: bool, qual_open: bool) -> void:
 
 func set_rng_seed(seed: int) -> void:
 	_rng_seed = seed
+
+
+func set_diag_z(diag: RefCounted) -> void:
+	## 17-63 Z2: attach gated diag sink (M1bDiagZ) or null to clear.
+	_diag_z = diag
 
 
 func set_intel_override(port_id: StringName, good_id: StringName, mid_li: Variant, weeks: Variant = null) -> void:
@@ -300,10 +307,28 @@ func daily_step(day: int) -> Array:
 			return ta < tb
 		return String(a[1]) < String(b[1])
 	)
+	var diag_eval := 0
+	var diag_excl_ports: Dictionary = {}
+	var diag_sails := 0
 	for pair in pairs:
 		var tid: StringName = pair[0]
 		var sid: StringName = pair[1]
-		_process_ship_day(tid, sid, day, explore_set.has(String(tid)))
+		var st: Dictionary = _process_ship_day(tid, sid, day, explore_set.has(String(tid)))
+		diag_eval += int(st.get("evaluable", 0))
+		diag_sails += int(st.get("sailed", 0))
+		var excl_v: Variant = st.get("excl_dests", {})
+		if typeof(excl_v) == TYPE_DICTIONARY:
+			for dk in (excl_v as Dictionary).keys():
+				diag_excl_ports[String(dk)] = true
+	if _diag_z != null and _diag_z.has_method("note_day_eval"):
+		_diag_z.call(
+			"note_day_eval",
+			day,
+			diag_eval,
+			diag_excl_ports.size(),
+			explore_set.size(),
+			diag_sails
+		)
 	return _day_errors
 
 
@@ -554,11 +579,12 @@ func _pick_explore_traders(day: int) -> Dictionary:
 	return out
 
 
-func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool) -> void:
+func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool) -> Dictionary:
+	var empty := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
 	var t: Dictionary = _traders[String(tid)]
 	var info: Dictionary = ShipRegistry.ship_info(sid)
 	if info.is_empty():
-		return
+		return empty
 	var plans: Dictionary = t["plans"]
 	var plan: Dictionary = plans.get(String(sid), TradeEvaluator.empty_plan())
 	var state: StringName = StringName(info.get("state", &""))
@@ -569,13 +595,13 @@ func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool
 		info = ShipRegistry.ship_info(sid)
 		state = StringName(info.get("state", &""))
 	if state != Ship.STATE_DOCKED:
-		return
+		return empty
 	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
 		## Still holding outbound goods that failed to sell — wait.
 		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
-			return
+			return empty
 	## Idle docked → evaluate.
-	_evaluate_and_maybe_sail(tid, sid, t, info, explore)
+	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
 
 
 func _try_sell(tid: StringName, sid: StringName, t: Dictionary, plan: Dictionary, info: Dictionary) -> void:
@@ -606,7 +632,8 @@ func _try_sell(tid: StringName, sid: StringName, t: Dictionary, plan: Dictionary
 
 func _evaluate_and_maybe_sail(
 	tid: StringName, sid: StringName, t: Dictionary, info: Dictionary, explore: bool
-) -> void:
+) -> Dictionary:
+	var stats := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
 	var from_port: StringName = StringName(info.get("port_id", &""))
 	var acct: StringName = t["account_id"]
 	var idle_map: Dictionary = t["idle_days"]
@@ -623,7 +650,7 @@ func _evaluate_and_maybe_sail(
 	var free_cap: int = hold_cap - used
 	if free_cap < 1:
 		idle_map[String(sid)] = idle + 1
-		return
+		return stats
 	var goods: Array = []
 	if GoodCatalog.is_loaded():
 		for g in GoodCatalog.all_ids():
@@ -636,6 +663,8 @@ func _evaluate_and_maybe_sail(
 	ports.sort_custom(func(a, b): return String(a) < String(b))
 
 	var candidates: Array = []
+	## Dest ports excluded because board_for / dest intel empty (F2 "no market").
+	var excl_dests: Dictionary = {}
 	## Coarse pass then top-3 precise (D-104(c)⑤).
 	var coarse: Array = []
 	for dest_v in ports:
@@ -649,6 +678,8 @@ func _evaluate_and_maybe_sail(
 		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
 		if days < 1:
 			continue
+		var dest_had_intel := false
+		var dest_saw_good := false
 		for good_v in goods:
 			var good: StringName = good_v
 			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
@@ -661,9 +692,11 @@ func _evaluate_and_maybe_sail(
 			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
 			if afford < 1:
 				continue
+			dest_saw_good = true
 			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
 			if intel.is_empty() or intel.get("mid_li", null) == null:
 				continue ## D-109(c)／F2: n＝0 or empty board → not a candidate
+			dest_had_intel = true
 			var weekly: int = 0
 			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
 				weekly = DemandModel.weekly_potential_demand(dest, good)
@@ -691,6 +724,9 @@ func _evaluate_and_maybe_sail(
 				"score": score,
 				"rough_buy": rough_buy,
 			})
+		if dest_saw_good and not dest_had_intel:
+			excl_dests[String(dest)] = true
+	stats["excl_dests"] = excl_dests
 	coarse.sort_custom(func(a, b):
 		if int(a["score"]) != int(b["score"]):
 			return int(a["score"]) > int(b["score"])
@@ -727,6 +763,7 @@ func _evaluate_and_maybe_sail(
 			"buy_cost_li": buy_cost,
 			"sell_revenue_li": sell_rev,
 		})
+	stats["evaluable"] = candidates.size()
 	## Explore: destinations with no offtake history preferred; skip profit gate later.
 	if explore:
 		candidates = _filter_explore_candidates(candidates, from_port)
@@ -739,7 +776,7 @@ func _evaluate_and_maybe_sail(
 	if best.is_empty():
 		idle_map[String(sid)] = idle + 1
 		_clear_plan(t, sid)
-		return
+		return stats
 	var decision: Dictionary
 	if explore:
 		decision = {"sail": true, "idle_days_after": 0}
@@ -757,7 +794,7 @@ func _evaluate_and_maybe_sail(
 	if not bool(decision["sail"]):
 		idle_map[String(sid)] = int(decision["idle_days_after"])
 		_clear_plan(t, sid)
-		return
+		return stats
 	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
 	var dest_f: StringName = best["port_id"]
 	var good_f: StringName = best["good_id"]
@@ -771,13 +808,13 @@ func _evaluate_and_maybe_sail(
 		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
 		_clear_plan(t, sid)
 		idle_map[String(sid)] = idle + 1
-		return
+		return stats
 	var arrival: int = ShipRegistry.sail(acct, sid, dest_f)
 	if arrival < 1:
 		## Rollback not available as single API — leave goods in hold; clear plan; record.
 		_day_errors.append(_err(ERR_SYS17_06, "sail", sid, "sail failed after buy"))
 		_clear_plan(t, sid)
-		return
+		return stats
 	var new_plan := {
 		"phase": TradeEvaluator.PHASE_OUTBOUND,
 		"from_port": from_port,
@@ -790,6 +827,8 @@ func _evaluate_and_maybe_sail(
 	t["mode"] = MODE_SAILING
 	idle_map[String(sid)] = 0
 	_queue_signal("trader_plan_set", [tid, sid, new_plan])
+	stats["sailed"] = 1
+	return stats
 
 
 func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Array:
@@ -926,16 +965,19 @@ func _clear_runtime() -> void:
 	_pending_signals.clear()
 	_day_errors.clear()
 	_intel_override.clear()
+	## Keep _diag_z across clear (attached by sim_engine for the job).
 
 
 func _clear_runtime_keep_layers() -> void:
 	var en := _enabled
 	var qo := _qual_open
 	var seed := _rng_seed
+	var diag: RefCounted = _diag_z
 	_clear_runtime()
 	_enabled = en
 	_qual_open = qo
 	_rng_seed = seed
+	_diag_z = diag
 
 
 func _clear_last() -> void:

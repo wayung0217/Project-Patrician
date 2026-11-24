@@ -341,6 +341,14 @@ func board_for(
 	return _summarize_board(samples, good_id)
 
 
+func diag_recorded_report_count(port_id: StringName) -> int:
+	## 17-63 Z2(d): raw ship-report entries recorded at present-port board (_rec[port]).
+	var board_v: Variant = _rec.get(String(port_id), {})
+	if typeof(board_v) != TYPE_DICTIONARY:
+		return 0
+	return (board_v as Dictionary).size()
+
+
 func board_samples(
 	actor_id: StringName,
 	port_id: StringName,
