@@ -1,12 +1,11 @@
 extends GutTest
-## R9-72 丁(1)／17-69 2.1：max_affordable_qty on real MarketPricer path.
-## Basis D-60e：規格無 TST ID → 名稱含 R972 紅隊編號；註解寫明依據。
+## R9-72 丁(1)／17-69 2.1／D-124：max_affordable_qty on real MarketPricer path.
+## Basis D-60e：規格無 TST ID → 名稱含 R972＋EX-05-09-*；註解寫明依據。
 ## 必須載入 PortRegistry＋GoodsLedger；不得走 DemoQuoteProvider。
-## 期望值：庫存／現金邊界為測試設定常數；現金情境以 MarketPricer.quote 單點
-## 觀測 total_li 作外部 oracle（非重寫 FRM-SYS05-09 二分／倍增，S9f）。
+## 期望值只取 frm_examples EX-05-09-01 至 03（D-124(f)；S9f 禁止鏡像產品公式）。
+## docs/spec B9 gate：v6.99.220。
 
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
 const GOODS_ROOT := "user://r972_stock_cap_goods/"
 const PORTS_ROOT := "user://r972_stock_cap_ports/"
@@ -18,13 +17,19 @@ const PORT := "PT-01"
 const GOOD := "GD-001"
 const ACTOR := &"ACT-R972"
 
-## 2.1(a)(b)：庫存上界；現金遠大於單擔價 → 結果受庫存限制。
-const STOCK_CAP_A := 8
-const CASH_HUGE := 500000
+## frm_examples EX-05-09-01：現金足以買 500；s＝300 → q_afford＝300；ERR-SYS04-06＝0。
+const EX_05_09_01_CASH_Q := 500
+const EX_05_09_01_STOCK_S := 300
+const EX_05_09_01_EXPECT_Q := 300
 
-## 2.1(d)：庫存遠大於現金可買量；期望 q＝1（見測試內 oracle 註解）。
-const STOCK_HIGH_D := 40
-const EXPECT_Q_CASH_LIMIT := 1
+## frm_examples EX-05-09-02：現金僅足以買 120；s＝300 → q_afford＝120；ERR-SYS04-06＝0。
+const EX_05_09_02_CASH_Q := 120
+const EX_05_09_02_STOCK_S := 300
+const EX_05_09_02_EXPECT_Q := 120
+
+## frm_examples EX-05-09-03：s＝0 → q＝0；完全不呼叫 quote()。
+const EX_05_09_03_EXPECT_Q := 0
+const EX_05_09_03_SEED_CASH := 500000
 
 const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
 const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
@@ -40,81 +45,86 @@ func before_each() -> void:
 	_wipe_dir(PORTS_ROOT)
 
 
-func test_R972_D1a_max_affordable_le_market_stock() -> void:
-	## 2.1(a)：max_affordable_qty ≤ 該港該貨市場庫存（STOCK_CAP_A 為設定常數）。
+func test_R972_EX_05_09_01_stock_bottleneck_q_300() -> void:
+	## EX-05-09-01／D-124(f)：庫存瓶頸。期望 q＝300（frm_examples），非產品公式。
+	## 預先以 s≥500 觀測 quote(500) 設現金（輸入整備），再抽庫存至 s＝300。
 	_boot_pricing_stack()
 	assert_true(PortRegistry.is_loaded())
 	assert_true(GoodsLedger.is_loaded())
-	_seed_market(STOCK_CAP_A)
-	_fund_actor(CASH_HUGE)
+	_seed_market(EX_05_09_01_CASH_Q)
 	CashLedger.set_quote_provider(MarketPricer)
-	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
-	assert_lte(q, STOCK_CAP_A)
-	assert_gte(q, 0)
+	var q_setup: Dictionary = MarketPricer.quote(
+		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_01_CASH_Q
+	)
+	assert_false(q_setup.has(MarketPricer.KEY_ERROR), "setup quote q=500 must succeed at s>=500")
+	var cash_for_500: int = int(q_setup[MarketPricer.KEY_TOTAL_LI])
+	assert_gt(cash_for_500, 0)
 	_mark_errors_handled()
-
-
-func test_R972_D1b_err_sys04_06_count_zero_during_search() -> void:
-	## 2.1(b)：搜尋過程 ERR-SYS04-06 計數＝0（庫存上界避免 qty>stock 探測）。
-	_boot_pricing_stack()
-	assert_true(PortRegistry.is_loaded())
-	assert_true(GoodsLedger.is_loaded())
-	_seed_market(STOCK_CAP_A)
-	_fund_actor(CASH_HUGE)
-	CashLedger.set_quote_provider(MarketPricer)
+	_fund_actor(cash_for_500)
+	var drain: int = EX_05_09_01_CASH_Q - EX_05_09_01_STOCK_S
+	assert_gt(
+		GoodsLedger.transfer(
+			_market_dict(),
+			GoodsLedger.make_external(),
+			StringName(GOOD),
+			drain,
+			GoodsLedger.REASON_CONSUME,
+			&"TEST"
+		),
+		0
+	)
+	assert_eq(_market_stock(), EX_05_09_01_STOCK_S)
 	var before: int = _count_err_sys04_06()
 	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
 	var after: int = _count_err_sys04_06()
-	assert_eq(after - before, 0, "ERR-SYS04-06 must not fire during stock-capped search")
-	assert_lte(q, STOCK_CAP_A)
-	_mark_errors_handled()
-
-
-func test_R972_D1c_zero_stock_returns_zero() -> void:
-	## 2.1(c)：庫存＝0 → max_affordable_qty 回 0。
-	_boot_pricing_stack()
-	assert_true(PortRegistry.is_loaded())
-	assert_true(GoodsLedger.is_loaded())
-	## 不 seed 市場 → MARKET 庫存 0。
-	_fund_actor(CASH_HUGE)
-	CashLedger.set_quote_provider(MarketPricer)
-	var before: int = _count_err_sys04_06()
-	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
-	var after: int = _count_err_sys04_06()
-	assert_eq(q, 0)
+	assert_eq(q, EX_05_09_01_EXPECT_Q)
 	assert_eq(after - before, 0)
 	_mark_errors_handled()
 
 
-func test_R972_D1d_cash_limit_not_overridden_by_stock_cap() -> void:
-	## 2.1(d)：庫存上界不得蓋過現金限制。
-	## Oracle（S9f）：以 MarketPricer.quote 單點觀測 total_li，非產品二分公式。
-	## 設現金＝quote(q=1).total_li，且 quote(q=2).total_li > 現金 → 期望 q＝1。
+func test_R972_EX_05_09_02_cash_bottleneck_q_120() -> void:
+	## EX-05-09-02／D-124(f)：現金瓶頸。期望 q＝120（frm_examples）。
+	## 設現金＝quote(120).total（整備「僅足以買 120」）；s＝300。
 	_boot_pricing_stack()
 	assert_true(PortRegistry.is_loaded())
 	assert_true(GoodsLedger.is_loaded())
-	_seed_market(STOCK_HIGH_D)
+	_seed_market(EX_05_09_02_STOCK_S)
 	CashLedger.set_quote_provider(MarketPricer)
-	var q1: Dictionary = MarketPricer.quote(
-		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EXPECT_Q_CASH_LIMIT
+	var q120: Dictionary = MarketPricer.quote(
+		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_02_CASH_Q
 	)
-	assert_false(q1.has(MarketPricer.KEY_ERROR), "oracle quote q=1 must succeed")
-	var total_1: int = int(q1[MarketPricer.KEY_TOTAL_LI])
-	assert_gt(total_1, 0)
-	var q2: Dictionary = MarketPricer.quote(
-		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EXPECT_Q_CASH_LIMIT + 1
+	assert_false(q120.has(MarketPricer.KEY_ERROR), "setup quote q=120 must succeed")
+	var cash_for_120: int = int(q120[MarketPricer.KEY_TOTAL_LI])
+	assert_gt(cash_for_120, 0)
+	var q121: Dictionary = MarketPricer.quote(
+		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_02_CASH_Q + 1
 	)
-	assert_false(q2.has(MarketPricer.KEY_ERROR), "oracle quote q=2 must succeed under high stock")
-	var total_2: int = int(q2[MarketPricer.KEY_TOTAL_LI])
-	assert_gt(total_2, total_1)
-	## 清掉 oracle 探測的 push_error（若有）；再量測搜尋本身。
+	assert_false(q121.has(MarketPricer.KEY_ERROR), "setup quote q=121 must succeed under s=300")
+	assert_gt(int(q121[MarketPricer.KEY_TOTAL_LI]), cash_for_120)
 	_mark_errors_handled()
-	_fund_actor(total_1)
+	_fund_actor(cash_for_120)
 	var before: int = _count_err_sys04_06()
 	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
 	var after: int = _count_err_sys04_06()
-	assert_eq(q, EXPECT_Q_CASH_LIMIT, "cash=total(1) → afford exactly 1; stock cap must not raise it")
+	assert_eq(q, EX_05_09_02_EXPECT_Q)
 	assert_eq(after - before, 0)
+	_mark_errors_handled()
+
+
+func test_R972_EX_05_09_03_zero_stock_no_quote() -> void:
+	## EX-05-09-03／D-124(f)：s＝0 → q＝0；完全不呼叫 quote()。
+	## 證明：任一 quote(q≥1) 在 s＝0 必產生 ERR-SYS04-06；計數增量＝0 ⇒ 未呼叫。
+	_boot_pricing_stack()
+	assert_true(PortRegistry.is_loaded())
+	assert_true(GoodsLedger.is_loaded())
+	assert_eq(_market_stock(), 0)
+	_fund_actor(EX_05_09_03_SEED_CASH)
+	CashLedger.set_quote_provider(MarketPricer)
+	var before: int = _count_err_sys04_06()
+	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+	var after: int = _count_err_sys04_06()
+	assert_eq(q, EX_05_09_03_EXPECT_Q)
+	assert_eq(after - before, 0, "ERR-SYS04-06 delta 0 ⇒ quote() never called (EX-05-09-03)")
 	_mark_errors_handled()
 
 
@@ -129,6 +139,17 @@ func _count_err_sys04_06() -> int:
 func _mark_errors_handled() -> void:
 	for e in get_errors():
 		e.handled = true
+
+
+func _market_dict() -> Dictionary:
+	return {
+		GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
+		GoodsLedger.KEY_PORT: PORT,
+	}
+
+
+func _market_stock() -> int:
+	return GoodsLedger.get_qty(_market_dict(), StringName(GOOD))
 
 
 func _fund_actor(cash: int) -> void:
@@ -158,12 +179,10 @@ func _boot_pricing_stack() -> void:
 
 
 func _seed_market(stock: int) -> void:
-	## D-08d：容器地址最終仍由 GoodsLedger.container_id 產生（_container_key）。
-	## 測試用 make_market 與既有 WP56 相同；產品碼 2.8 改走 Dictionary＋KIND（見 cash_ledger）。
 	assert_gt(
 		GoodsLedger.transfer(
 			GoodsLedger.make_external(),
-			GoodsLedger.make_market(PORT),
+			_market_dict(),
 			StringName(GOOD),
 			stock,
 			GoodsLedger.REASON_GENESIS,
