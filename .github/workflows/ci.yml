@@ -1,30 +1,114 @@
 name: CI
 
+# 17-64 S1: one full CI per commit on pull_request; push only main + tools-1758 + int-1758.
 on:
-  push:
   pull_request:
+  push:
+    branches:
+      - main
+      - tools-1758
+      - int-1758
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Manual job (H4 smoke / W4 inline-cmp / default all CI)"
+        required: true
+        default: "ci"
+        type: choice
+        options:
+          - ci
+          - h4-smoke
+          - w4-inline-cmp
+
+# 17-64 S2: cancel superseded runs on the same workflow+ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2-stable"
+  GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
 
 jobs:
-  gut-unit-property:
+  # 17-64 S4: parallel gut-unit / gut-ui / golden (unit no longer re-runs UI).
+  gut-unit:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache Godot binary
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
       - name: Download Godot 4.7.2-stable
+        if: steps.cache-godot.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           curl -fsSL -o godot.zip \
-            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
           unzip -q godot.zip
-          chmod +x Godot_v4.7.2-stable_linux.x86_64
-          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          chmod +x "${GODOT_BIN}"
+          mv "${GODOT_BIN}" godot
           ./godot --version
+
+      - name: Ensure godot executable
+        run: |
+          set -euo pipefail
+          chmod +x godot
+          ./godot --version
+
+      - name: tools/*.ps1 must be pure ASCII
+        run: |
+          set -euo pipefail
+          fail=0
+          shopt -s nullglob
+          for f in tools/*.ps1; do
+            if LC_ALL=C grep -n '[^[:print:][:space:]]' "$f" >/tmp/ps1_nonascii.txt; then
+              echo "::error::non-ASCII bytes in $f"
+              cat /tmp/ps1_nonascii.txt
+              fail=1
+            fi
+            if python3 -c "import sys; b=open(sys.argv[1],'rb').read(); sys.exit(0 if all(x<128 for x in b) else 1)" "$f"; then
+              echo "ASCII_OK $f"
+            else
+              echo "::error::byte>127 in $f"
+              python3 -c "b=open('$f','rb').read(); print([(i,b[i]) for i in range(len(b)) if b[i]>127][:20])"
+              fail=1
+            fi
+          done
+          exit "$fail"
+
+      # 17-64 S3: cache .godot/imported (never test/golden outputs).
+      - name: Cache Godot imported assets
+        uses: actions/cache@v4
+        with:
+          path: .godot/imported
+          key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+          restore-keys: |
+            godot-imported-
 
       - name: Import project (register global classes)
         run: |
           set -euo pipefail
           ./godot --headless --path . --import
+
+      # 17-64 T1: Godot 4.7.2 gut .import must leave a clean tree.
+      - name: Assert import leaves clean tree
+        run: |
+          set -euo pipefail
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"
+            git status --porcelain
+            git diff --stat
+            exit 1
+          fi
+          echo "IMPORT_CLEAN_TREE_OK"
 
       - name: Run GUT unit + property tests
         run: |
@@ -32,19 +116,81 @@ jobs:
           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
             -gdir=res://tests/unit,res://tests/property \
             -gexit 2>&1 | tee gut_unit.log
-          # E4／evening-17-51: fail CI if any SCRIPT ERROR appears in GUT log
           if grep -F "SCRIPT ERROR" gut_unit.log; then
             echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
             exit 1
           fi
+          # Emit countable summary line for evening-17-64 gates.
+          grep -E 'Tests:|Passing:|Failing:|scripts|tests/unit|tests/property' gut_unit.log | tail -40 || true
 
-      # Unit/property suites wipe res://data (opening_population, demand, …).
-      # Restore committed formal data before UI so this job matches isolated gut-ui.
-      - name: Restore res://data after unit wipe
+      - name: A35 norm scan (report-only)
+        continue-on-error: true
         run: |
           set -euo pipefail
-          git checkout HEAD -- data/
-          git clean -fd data/
+          python3 tools/a35_norm_scan.py
+
+      - name: Upload GUT unit logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gut-unit-logs
+          path: gut_unit.log
+          retention-days: 3
+
+  gut-ui:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot binary
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Download Godot 4.7.2-stable
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
+          unzip -q godot.zip
+          chmod +x "${GODOT_BIN}"
+          mv "${GODOT_BIN}" godot
+          ./godot --version
+
+      - name: Ensure godot executable
+        run: |
+          set -euo pipefail
+          chmod +x godot
+          ./godot --version
+
+      - name: Cache Godot imported assets
+        uses: actions/cache@v4
+        with:
+          path: .godot/imported
+          key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+          restore-keys: |
+            godot-imported-
+
+      - name: Import project (register global classes)
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . --import
+
+      - name: Assert import leaves clean tree
+        run: |
+          set -euo pipefail
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "::error::godot --import dirtied the working tree"
+            git status --porcelain
+            exit 1
+          fi
+          echo "IMPORT_CLEAN_TREE_OK"
 
       - name: Run GUT UI tests
         run: |
@@ -56,37 +202,285 @@ jobs:
             echo "::error::SCRIPT ERROR detected in GUT UI log (ci-script-error-gate)"
             exit 1
           fi
+          grep -E 'Tests:|Passing:|Failing:' gut_ui.log | tail -20 || true
 
-      - name: A35 norm scan (report-only)
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          python3 tools/a35_norm_scan.py
+      - name: Upload GUT UI logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gut-ui-logs
+          path: gut_ui.log
+          retention-days: 3
 
-  gut-ui:
+  golden-30d:
+    # 17-62 P6b: skip golden on fork PRs. 17-64 S5: main stores artifact; PRs compare to it.
+    if: >-
+      (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
+      && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache Godot binary
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
       - name: Download Godot 4.7.2-stable
+        if: steps.cache-godot.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           curl -fsSL -o godot.zip \
-            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
           unzip -q godot.zip
-          chmod +x Godot_v4.7.2-stable_linux.x86_64
-          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          chmod +x "${GODOT_BIN}"
+          mv "${GODOT_BIN}" godot
           ./godot --version
 
-      - name: Import project (register global classes)
+      - name: Ensure godot executable
+        run: |
+          set -euo pipefail
+          chmod +x godot
+          ./godot --version
+
+      - name: Cache Godot imported assets
+        uses: actions/cache@v4
+        with:
+          path: .godot/imported
+          key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+          restore-keys: |
+            godot-imported-
+
+      - name: Import project
         run: |
           set -euo pipefail
           ./godot --headless --path . --import
 
-      - name: Run GUT UI tests (isolated from unit data wipe)
+      - name: Assert import leaves clean tree
         run: |
           set -euo pipefail
-          ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
-            -gdir=res://tests/ui \
-            -gexit
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "::error::godot --import dirtied the working tree"
+            git status --porcelain
+            exit 1
+          fi
+          echo "IMPORT_CLEAN_TREE_OK"
+
+      - name: 30d golden gated
+        run: |
+          set -euo pipefail
+          mkdir -p out/golden
+          tools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \
+            --log "$(pwd)/out/golden/30d.log"
+          echo "GOLDEN_30D_DONE"
+          wc -l out/golden/30d.csv
+          # Cell summary for evening-17-64 gate (row count + sha256).
+          sha256sum out/golden/30d.csv | tee out/golden/30d.sha256
+          python3 - <<'PY'
+          import csv
+          from pathlib import Path
+          p = Path("out/golden/30d.csv")
+          rows = list(csv.DictReader(p.open(newline="", encoding="utf-8")))
+          cols = list(rows[0].keys()) if rows else []
+          print(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")
+          PY
+
+      - name: Download latest main golden baseline (PRs)
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p out/golden-main
+          # Prefer artifact from latest successful main CI run; else mark missing.
+          set +e
+          RUN_ID=$(gh run list --repo "${{ github.repository }}" --branch main --workflow ci.yml \
+            --json databaseId,conclusion,status --limit 30 \
+            --jq '.[] | select(.conclusion=="success") | .databaseId' | head -n1)
+          set -e
+          if [[ -z "${RUN_ID:-}" ]]; then
+            echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"
+            echo "missing" > out/golden-main/STATUS.txt
+            exit 0
+          fi
+          echo "GOLDEN_BASE_RUN_ID=$RUN_ID"
+          set +e
+          gh run download "$RUN_ID" --repo "${{ github.repository }}" -n golden-30d -D out/golden-main
+          RC=$?
+          set -e
+          if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
+            echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"
+            echo "missing" > out/golden-main/STATUS.txt
+            exit 0
+          fi
+          echo "present" > out/golden-main/STATUS.txt
+          ls -la out/golden-main/
+
+      - name: Compare PR golden to main baseline (or recompute note)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          if [[ ! -f out/golden-main/30d.csv ]]; then
+            echo "GOLDEN_BASE_RECOMPUTE=1 — no main baseline; PR golden stands alone this run"
+            echo "GOLDEN_COMPARE_SKIPPED"
+            exit 0
+          fi
+          python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv
+          echo "GOLDEN_CELLS_IDENTICAL=1"
+
+      - name: Upload golden artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-30d
+          path: out/golden/
+          retention-days: 14
+
+  # 17-64 S6 / 17-59 H4: only push tools-1758/int-1758 (or manual), not general PRs.
+  m1b-h4-smoke:
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/tools-1758' || github.ref == 'refs/heads/int-1758'))
+      || (github.event_name == 'workflow_dispatch' && inputs.job == 'h4-smoke')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot binary
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Download Godot 4.7.2-stable
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
+          unzip -q godot.zip
+          chmod +x "${GODOT_BIN}"
+          mv "${GODOT_BIN}" godot
+
+      - name: Ensure godot executable
+        run: chmod +x godot && ./godot --version
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)
+        run: |
+          set -euo pipefail
+          mkdir -p out/m1b_smoke/_scenarios
+          for g in Za_G0_A0 Zb_G0_notrader; do
+            python3 tools/m1b_prepare_scenario.py --group "$g" --out "out/m1b_smoke/_scenarios/${g}.json"
+            mkdir -p "out/m1b_smoke/${g}"
+            export M1B_GROUP_NAME="$g" M1B_GROUP_I=1 M1B_GROUP_N=2
+            ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+              --scenario "$(pwd)/out/m1b_smoke/_scenarios/${g}.json" \
+              --inline --season-progress --days 30 \
+              --out-dir "$(pwd)/out/m1b_smoke/${g}" \
+              2>&1 | tee "out/m1b_smoke/${g}/sim_runner.log"
+            test -f "out/m1b_smoke/${g}/summary.csv"
+            test -f "out/m1b_smoke/${g}/trader_summary.csv"
+          done
+          grep -h "PROGRESS pct=" out/m1b_smoke/*/sim_runner.log > out/m1b_smoke/progress.log || true
+          ./godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b_smoke
+          echo "H4_SMOKE_DONE"
+          test -s out/m1b_smoke/progress.log
+
+      - name: Upload H4 smoke artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1b-h4-smoke
+          path: out/m1b_smoke/
+          retention-days: 3
+
+  # 17-64 S6 / 17-60 W4: only push tools-1758/int-1758 (or manual).
+  m1b-w4-inline-cmp:
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/tools-1758' || github.ref == 'refs/heads/int-1758'))
+      || (github.event_name == 'workflow_dispatch' && inputs.job == 'w4-inline-cmp')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Godot binary
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Download Godot 4.7.2-stable
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
+          unzip -q godot.zip
+          chmod +x "${GODOT_BIN}"
+          mv "${GODOT_BIN}" godot
+
+      - name: Ensure godot executable
+        run: chmod +x godot && ./godot --version
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: W4 30d subprocess vs --inline CSV cmp
+        run: |
+          set -euo pipefail
+          mkdir -p out/w4_cmp/_scenarios out/w4_cmp/sub out/w4_cmp/inline
+          python3 tools/m1b_prepare_scenario.py --group Za_G0_A0 --out out/w4_cmp/_scenarios/Za_G0_A0.json
+          SCEN="$(pwd)/out/w4_cmp/_scenarios/Za_G0_A0.json"
+          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+            --scenario "$SCEN" --days 30 --out-dir "$(pwd)/out/w4_cmp/sub" \
+            2>&1 | tee out/w4_cmp/sub.log
+          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+            --scenario "$SCEN" --days 30 --inline --out-dir "$(pwd)/out/w4_cmp/inline" \
+            2>&1 | tee out/w4_cmp/inline.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import sys
+          root = Path("out/w4_cmp")
+          ok = True
+          for name in ["summary.csv", "season_cells.csv", "season_ports.csv", "combos.csv", "trader_summary.csv"]:
+              a = (root / "sub" / name).read_bytes()
+              b = (root / "inline" / name).read_bytes()
+              if name == "summary.csv":
+                  def strip(b):
+                      lines = b.decode().splitlines()
+                      out = [lines[0]]
+                      for ln in lines[1:]:
+                          parts = ln.split(",")
+                          out.append(",".join(parts[:-1]) if parts else ln)
+                      return "\n".join(out).encode()
+                  a, b = strip(a), strip(b)
+              same = a == b
+              print(f"CMP {name} equal={same} bytes_a={len(a)} bytes_b={len(b)}")
+              ok = ok and same
+          if not ok:
+              sys.exit(1)
+          print("W4_INLINE_CMP_PASS")
+          PY
+
+      - name: Upload W4 cmp artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1b-w4-inline-cmp
+          path: out/w4_cmp/
+          retention-days: 3
