@@ -143,26 +143,27 @@ func _main() -> void:
 
 
 func _analyze_group(group: String, gdir: String) -> Dictionary:
+	## 17-64 T3: missing data → N/A (never blank PASS/FAIL).
 	var out := {
 		"group": group,
 		"status": "未跑",
-		"rich_pct": "",
-		"cit_pct": "",
-		"poor_pct": "",
-		"beg_pct": "",
-		"pop": "",
-		"class_ok": "",
-		"band04_pct": "",
-		"band_ok": "",
-		"tier_order": "",
-		"tier_ok": "",
-		"cash_mono": "",
-		"cash_ports": "",
-		"cash_ok": "",
-		"duration_s": "",
-		"aborted": "",
-		"abort_reason": "",
-		"sail_sum": "",
+		"rich_pct": "N/A",
+		"cit_pct": "N/A",
+		"poor_pct": "N/A",
+		"beg_pct": "N/A",
+		"pop": "N/A",
+		"class_ok": "N/A",
+		"band04_pct": "N/A",
+		"band_ok": "N/A",
+		"tier_order": "N/A",
+		"tier_ok": "N/A",
+		"cash_mono": "N/A",
+		"cash_ports": "N/A",
+		"cash_ok": "N/A",
+		"duration_s": "N/A",
+		"aborted": "N/A",
+		"abort_reason": "N/A",
+		"sail_sum": "N/A",
 	}
 	if not DirAccess.dir_exists_absolute(gdir):
 		return out
@@ -176,37 +177,30 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		return out
 	out["status"] = "ok"
 	if FileAccess.file_exists(timing_path):
-		var timing_start := ""
-		var timing_end := ""
 		for line in FileAccess.get_file_as_string(timing_path).split("\n"):
 			var s: String = String(line).strip_edges()
 			if s.begins_with("duration_s="):
 				out["duration_s"] = s.trim_prefix("duration_s=")
-			if s.begins_with("start="):
-				timing_start = s.trim_prefix("start=")
-			if s.begins_with("end="):
-				timing_end = s.trim_prefix("end=")
 			if s.begins_with("status=") and s.trim_prefix("status=") == "fail":
 				out["status"] = "fail"
-		## 17-63 Z4: if Actions only wrote start/end, derive duration_s.
-		if String(out["duration_s"]).is_empty() and not timing_start.is_empty() and not timing_end.is_empty():
-			var derived: String = _duration_s_from_iso(timing_start, timing_end)
-			if not derived.is_empty():
-				out["duration_s"] = derived
 	var ports: Array = _read_csv(ports_path)
+	## 17-64 T2: SmokeDays < 1 season (no Y5) → sample last season row if any;
+	## if season_ports empty (short --days never hit cutoff), metrics stay N/A (T3).
 	var y5: Array = []
+	var used_last_season := false
 	for r_v in ports:
 		var r: Dictionary = r_v
 		if int(float(String(r.get("season_index", "-1")))) == Y5_SEASON:
 			y5.append(r)
 	if y5.is_empty():
-		## Smoke / short runs: use last season present.
 		var max_si := -1
 		for r2_v in ports:
 			max_si = maxi(max_si, int(float(String((r2_v as Dictionary).get("season_index", "-1")))))
-		for r3_v in ports:
-			if int(float(String((r3_v as Dictionary).get("season_index", "-1")))) == max_si:
-				y5.append(r3_v)
+		if max_si >= 0:
+			used_last_season = true
+			for r3_v in ports:
+				if int(float(String((r3_v as Dictionary).get("season_index", "-1")))) == max_si:
+					y5.append(r3_v)
 	var rich := 0
 	var cit := 0
 	var poor := 0
@@ -218,8 +212,25 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		poor += _as_int(rr.get("poor", 0))
 		beg += _as_int(rr.get("beggar", 0))
 	var total: int = rich + cit + poor + beg
-	out["pop"] = str(total)
-	if total > 0:
+	## 17-64 T4: prefer live pop from progress.log (PopulationModel at emit), not a
+	## stale/empty season-sample sum when short smoke never wrote season_ports.
+	var live_pop := _live_pop_from_progress(gdir)
+	if live_pop >= 0:
+		out["pop"] = str(live_pop)
+	elif total > 0:
+		out["pop"] = str(total)
+	else:
+		out["pop"] = "N/A"
+	## 17-64 T3: no data → N/A (never PASS/FAIL).
+	if total <= 0 or y5.is_empty():
+		out["rich_pct"] = "N/A"
+		out["cit_pct"] = "N/A"
+		out["poor_pct"] = "N/A"
+		out["beg_pct"] = "N/A"
+		out["class_ok"] = "N/A"
+		out["tier_order"] = "N/A"
+		out["tier_ok"] = "N/A"
+	else:
 		var rs: float = float(rich) / float(total)
 		var cs: float = float(cit) / float(total)
 		var ps: float = float(poor) / float(total)
@@ -228,6 +239,7 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		out["cit_pct"] = "%.2f" % (cs * 100.0)
 		out["poor_pct"] = "%.2f" % (ps * 100.0)
 		out["beg_pct"] = "%.2f" % (bs * 100.0)
+		## Last-season smoke sample: still score, but only against available rows.
 		var class_ok: bool = (
 			rs >= RICH_LO and rs <= RICH_HI
 			and cs >= CIT_LO and cs <= CIT_HI
@@ -236,10 +248,11 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 			and total >= int(OPENING_TOTAL * POP_FLOOR)
 		)
 		out["class_ok"] = "PASS" if class_ok else "FAIL"
-		## Opening order poor > citizen > rich (beggar separate).
 		var tier_ok: bool = ps >= cs and cs >= rs
 		out["tier_order"] = "poor≥cit≥rich"
 		out["tier_ok"] = "PASS" if tier_ok else "FAIL"
+		if used_last_season:
+			out["tier_order"] = "poor≥cit≥rich (last season)"
 	## Cash mono across seasons per port.
 	var by_port: Dictionary = {}
 	for r5_v in ports:
@@ -259,9 +272,12 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 				break
 		if rising and series.size() > 1:
 			mono_n += 1
-	out["cash_mono"] = str(mono_n)
-	out["cash_ports"] = str(port_n)
-	out["cash_ok"] = "PASS" if mono_n < port_n else "FAIL"
+	out["cash_mono"] = str(mono_n) if port_n > 0 else "N/A"
+	out["cash_ports"] = str(port_n) if port_n > 0 else "N/A"
+	if port_n <= 0 or ports.is_empty():
+		out["cash_ok"] = "N/A"
+	else:
+		out["cash_ok"] = "PASS" if mono_n < port_n else "FAIL"
 	## Band floor+ceil.
 	if FileAccess.file_exists(cells_path):
 		var cells: Array = _read_csv(cells_path)
@@ -270,26 +286,32 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 			if int(float(String((c_v as Dictionary).get("season_index", "-1")))) == Y5_SEASON:
 				y5c.append(c_v)
 		if y5c.is_empty():
-			y5c = cells
+			## T2 short smoke: last season_index present, else all rows.
+			var max_c := -1
+			for c0_v in cells:
+				max_c = maxi(max_c, int(float(String((c0_v as Dictionary).get("season_index", "-1")))))
+			if max_c >= 0:
+				for c1_v in cells:
+					if int(float(String((c1_v as Dictionary).get("season_index", "-1")))) == max_c:
+						y5c.append(c1_v)
+			else:
+				y5c = cells
 		var n: int = y5c.size()
-		var edge := 0
-		for c2_v in y5c:
-			var band: String = String((c2_v as Dictionary).get("band", ""))
-			if band == "0" or band == "4" or band.ends_with("FLOOR") or band.ends_with("CEILING") or band == "BAND_FLOOR" or band == "BAND_CEILING":
-				edge += 1
-			## Numeric band enums often 0/4.
-			var bi: int = _as_int(band)
-			if bi == 0 or bi == 4:
-				edge += 1
-		## Avoid double-count if both string and int matched — use int-only recount.
-		edge = 0
-		for c3_v in y5c:
-			var bi2: int = _as_int((c3_v as Dictionary).get("band", -1))
-			if bi2 == 0 or bi2 == 4:
-				edge += 1
-		var pct: float = 100.0 * float(edge) / float(maxi(n, 1))
-		out["band04_pct"] = "%.1f" % pct
-		out["band_ok"] = "PASS" if pct <= 30.0 else "FAIL"
+		if n <= 0:
+			out["band04_pct"] = "N/A"
+			out["band_ok"] = "N/A"
+		else:
+			var edge := 0
+			for c3_v in y5c:
+				var bi2: int = _as_int((c3_v as Dictionary).get("band", -1))
+				if bi2 == 0 or bi2 == 4:
+					edge += 1
+			var pct: float = 100.0 * float(edge) / float(maxi(n, 1))
+			out["band04_pct"] = "%.1f" % pct
+			out["band_ok"] = "PASS" if pct <= 30.0 else "FAIL"
+	else:
+		out["band04_pct"] = "N/A"
+		out["band_ok"] = "N/A"
 	if FileAccess.file_exists(summary_path):
 		var sums: Array = _read_csv(summary_path)
 		if not sums.is_empty():
@@ -301,7 +323,39 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		for t_v in _read_csv(trader_path):
 			sails += _as_int((t_v as Dictionary).get("sail_count", 0))
 		out["sail_sum"] = str(sails)
+	else:
+		if out["sail_sum"] == "":
+			out["sail_sum"] = "N/A"
 	return out
+
+
+## 17-64 T4: read last PROGRESS pop= from group or pack progress.log (live at emit).
+func _live_pop_from_progress(gdir: String) -> int:
+	var candidates: PackedStringArray = PackedStringArray([
+		gdir.path_join("progress.log"),
+		gdir.path_join("sim_runner.log"),
+		gdir.get_base_dir().path_join("progress.log"),
+	])
+	var last_pop := -1
+	for path in candidates:
+		if not FileAccess.file_exists(path):
+			continue
+		for line in FileAccess.get_file_as_string(path).split("\n"):
+			var s: String = String(line)
+			var idx: int = s.find("pop=")
+			if idx < 0:
+				continue
+			var rest: String = s.substr(idx + 4)
+			var num := ""
+			for i in range(rest.length()):
+				var ch: String = rest.substr(i, 1)
+				if ch >= "0" and ch <= "9":
+					num += ch
+				else:
+					break
+			if not num.is_empty():
+				last_pop = int(num)
+	return last_pop
 
 
 func _read_csv(path: String) -> Array:
@@ -334,38 +388,3 @@ func _arg_value(args: PackedStringArray, key: String) -> String:
 		if String(args[i]) == key and i + 1 < args.size():
 			return String(args[i + 1])
 	return ""
-
-
-func _duration_s_from_iso(start_s: String, end_s: String) -> String:
-	## Accept ISO-8601 UTC (`…Z`) or with offset; return integer seconds string.
-	var t0: int = _parse_iso_unix(start_s)
-	var t1: int = _parse_iso_unix(end_s)
-	if t0 < 0 or t1 < 0 or t1 < t0:
-		return ""
-	return str(t1 - t0)
-
-
-func _parse_iso_unix(raw: String) -> int:
-	## Minimal parser for `YYYY-MM-DDTHH:MM:SSZ` / `…+00:00` / PowerShell `…o` round-trip.
-	var s: String = raw.strip_edges()
-	if s.is_empty():
-		return -1
-	## Trim fractional seconds and trailing Z / offset for Time.get_unix_time_from_datetime_string.
-	if s.ends_with("Z"):
-		s = s.substr(0, s.length() - 1)
-	var plus: int = s.rfind("+")
-	var minus: int = s.rfind("-")
-	## Offset after the date `YYYY-MM-DD` (index 10 is `T`).
-	if plus > 10:
-		s = s.substr(0, plus)
-	elif minus > 10:
-		s = s.substr(0, minus)
-	var dot: int = s.find(".")
-	if dot >= 0:
-		s = s.substr(0, dot)
-	## Godot expects `YYYY-MM-DDTHH:MM:SS` or space separator.
-	if s.length() < 19:
-		return -1
-	var core: String = s.substr(0, 19)
-	var unix: int = Time.get_unix_time_from_datetime_string(core)
-	return unix

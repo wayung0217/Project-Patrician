@@ -31,21 +31,30 @@ def main() -> int:
     b_bytes = b_path.read_bytes()
     print(f"A={a_path} bytes={len(a_bytes)}")
     print(f"B={b_path} bytes={len(b_bytes)}")
-    if a_bytes == b_bytes:
-        print("IDENTICAL=1")
-        return 0
-    print("IDENTICAL=0")
     rows_a = load_rows(a_path)
     rows_b = load_rows(b_path)
     print(f"ROWS_A={len(rows_a)} ROWS_B={len(rows_b)}")
     if not rows_a or not rows_b:
         print("EMPTY_CSV")
+        print("COMPARED_ROWS=0")
+        print("COMPARED_COLS=0")
+        print("COMPARED_CELLS=0")
         return 1
     cols = list(rows_a[0].keys())
+    compared_rows = min(len(rows_a), len(rows_b))
+    compared_cols = len(cols)
+    compared_cells = compared_rows * compared_cols
+    # 17-70 T4／N-13：列印比對網格；CI 要求 COMPARED_CELLS == 列×欄 且 > 0。
+    print(f"COMPARED_ROWS={compared_rows}")
+    print(f"COMPARED_COLS={compared_cols}")
+    print(f"COMPARED_CELLS={compared_cells}")
+    if a_bytes == b_bytes:
+        print("IDENTICAL=1")
+        return 0
+    print("IDENTICAL=0")
     first_day: dict[str, str] = {}
     counts: dict[str, int] = defaultdict(int)
-    n = min(len(rows_a), len(rows_b))
-    for i in range(n):
+    for i in range(compared_rows):
         ra, rb = rows_a[i], rows_b[i]
         day = ra.get("day", "?")
         for c in cols:

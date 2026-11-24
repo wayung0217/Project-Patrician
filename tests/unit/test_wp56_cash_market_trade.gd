@@ -45,9 +45,20 @@ const TWO := 2
 const NEG_ONE := -1
 
 
+## R9-65 A2／D-128 甲：正式注入 weekly_potential_demand（offtake-only → 回 0）；禁止 _clear_state。
+class _ZeroPotentialDemand extends RefCounted:
+	func weekly_potential_demand(_port_id: StringName, _good_id: StringName) -> int:
+		return 0
+
+
 func before_each() -> void:
 	_wipe_dir(GOODS_ROOT)
 	_wipe_dir(PORTS_ROOT)
+
+
+func after_each() -> void:
+	DemandModel.clear_potential_demand_provider()
+	DemandModel.clear_queue_material_shortfall_provider()
 
 
 func test_WP56_A18_max_affordable_respects_market_stock() -> void:
@@ -222,6 +233,18 @@ func test_WP56_demo_q_afford_124_still_holds() -> void:
 		], REASON_OPEN, REQUESTER_SYS04),
 		OK
 	)
+	## D-125 甲：庫存上界無條件；Given 先種足量 MARKET 庫存（期望／測名不變）.
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			GoodsLedger.make_market("PT-01"),
+			&"米",
+			DEMO_Q_AFFORD + DEMO_BUY_Q,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		0
+	)
 	var provider := _Demo124.new()
 	CashLedger.set_quote_provider(provider)
 	var q: int = CashLedger.max_affordable_qty(ACTOR, &"PT-01", &"米")
@@ -261,6 +284,10 @@ class _Demo124 extends RefCounted:
 
 func _boot_pricing_stack() -> void:
 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
+	## D-128 甲／R9-65 A2：正式 set_potential_demand_provider（回 0）→ offtake-only；
+	## 不呼叫 DemandModel._clear_state（禁止私有重置）；不新增公開重置介面。
+	DemandModel.clear_queue_material_shortfall_provider()
+	DemandModel.set_potential_demand_provider(_ZeroPotentialDemand.new())
 	var goods_dir := _build_goods(GOODS_ROOT)
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)

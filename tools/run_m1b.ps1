@@ -15,6 +15,8 @@
 
 .PARAMETER SmokeDays
   Trial day count -> out\m1b_smoke\ only (sets --days).
+  17-64 T2: values < 1 season (90 days) keep as-is; report samples last
+  season row when present, else N/A (no fabricated PASS/FAIL).
 
 .PARAMETER ReportOnly
   Only run tools/run_m1b_report.gd against existing out\m1b\.
@@ -36,6 +38,12 @@ param(
   [Parameter(Mandatory = $false)]
   [switch]$ReportOnly
 )
+
+# 17-64 T2: one season = 90 days (PRM-SYS00-DAYS_PER_SEASON). Short smoke OK.
+$DaysPerSeason = 90
+if ($SmokeDays -gt 0 -and $SmokeDays -lt $DaysPerSeason) {
+  Write-Host ("SmokeDays={0} < 1 season ({1}d): report will sample last season row or N/A" -f $SmokeDays, $DaysPerSeason)
+}
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
