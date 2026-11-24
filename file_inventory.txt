@@ -14,7 +14,7 @@
 464	evening-17-63/status.md
 142	evening-17-63/timing.txt
 165	evening-17-63/z1758_2_failures.md
-268	evening-17-63/z-1758-2/groups_csv_manifest.txt
+2454	evening-17-63/z-1758-2/groups_csv_manifest.txt
 41	evening-17-63/z-1758-2/groups/Za_G0_A0/commit_sha.txt
 501	evening-17-63/z-1758-2/groups/Za_G0_A0/summary.csv
 155	evening-17-63/z-1758-2/groups/Za_G0_A0/timing.txt
@@ -93,7 +93,7 @@
 1057	evening-17-67/s1s2_main_before_s2fix.txt
 890	evening-17-67/timeout.diff.txt
 22923	evening-17-67/workflow.diff
-4303	file_inventory.txt
+4304	file_inventory.txt
 67	.git
 464	git_branch_r.txt
 252	lane.txt

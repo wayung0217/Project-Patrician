@@ -1,5 +1,21 @@
 # z-1758-2 groups CSV manifest (9 groups × summary.csv + trader_summary.csv)
-# refreshed HKT 2026-11-24 Asia/Hong_Kong from store evening-17-63
+# HKT 2026-11-24 Asia/Hong_Kong — bodies from store evening-17-63 (Actions run 45356709933)
 path	bytes	sha256
-evening-17-63/z-1758-2/groups/1000/summary.csv		
-evening-17-63/z-1758-2/groups/1000/trader_summary.csv		
+evening-17-63/z-1758-2/groups/Za_G0_A0/summary.csv	501	51867be6792f978ed2e96129ca2ea05a6559cefc6d4a5a4e8edabfae31c90b94
+evening-17-63/z-1758-2/groups/Za_G0_A0/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Za_G0_A250/summary.csv	506	db570a68cd3ddae288cb878e487d0e575ef9c1267e22cbf359cc34d7db6aa6a3
+evening-17-63/z-1758-2/groups/Za_G0_A250/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Za_G1_A0/summary.csv	500	e5697be4d2a79a8aef9438003a3cda497eb60175dcfcd957201f055db17fdbdf
+evening-17-63/z-1758-2/groups/Za_G1_A0/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Za_G1_A250/summary.csv	504	56eb2bbfda429d1e45e59c0decfae05e30ee73084a745e074212dde8a3ae3066
+evening-17-63/z-1758-2/groups/Za_G1_A250/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Za_G2_A0/summary.csv	501	ef96cfdea7fcc37097a6b8b76b59411c4eb820ba0c17df1122818328fb5a1515
+evening-17-63/z-1758-2/groups/Za_G2_A0/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Za_G2_A250/summary.csv	505	451a0e7387d202476ebee566d5612ea4a3fc8e3aa9076a5505c58c3fc26b6e7a
+evening-17-63/z-1758-2/groups/Za_G2_A250/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Zb_G0_notrader/summary.csv	500	fc0f820d797e92bc5dcad1e1771e90db84e389b1360ab7ef6b4607249c046f75
+evening-17-63/z-1758-2/groups/Zb_G0_notrader/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Zc_G0H_A0/summary.csv	501	672f48e2881b684c1d4cce75856c53f10d62c749a837eaee50d04b545187bcbe
+evening-17-63/z-1758-2/groups/Zc_G0H_A0/trader_summary.csv	7628	c4f9ed2233631c3fea29c9a4ba60c4777add2ca9f24e44df18b9f43ce08c870c
+evening-17-63/z-1758-2/groups/Zd_G0_seed2/summary.csv	501	154a25f609659be270f3fefc16e0d10bb72ecb9ffd1bf749d5b65d15470718f2
+evening-17-63/z-1758-2/groups/Zd_G0_seed2/trader_summary.csv	7628	ad98a117277f717175d7617958bacef606d5b9d2ed93e5f872b1cf7c173458f7
