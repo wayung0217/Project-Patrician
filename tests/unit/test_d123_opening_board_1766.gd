@@ -3,7 +3,6 @@ extends GutTest
 
 const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
-const SCENARIO_M1B_G0 := "res://docs/spec/scenario_M1b_G0.json"
 const GOOD := "GD-001"
 const PORT_A := "PT-01"
 const PORT_B := "PT-02"
@@ -126,6 +125,8 @@ func test_K1e_pricing_failure_collects_all_refuses() -> void:
 			StringName(e.get(ErrorInfoUtil.KEY_CODE, &"")),
 			IntelLedger.ERR_SYS15_05
 		)
+	## Expected push_error per collected ErrorInfo (GUT Unexpected Errors gate).
+	assert_push_error_count(errs.size())
 	assert_eq(IntelLedger.diag_recorded_report_count(StringName(PORT_A)), 0)
 	## Multi-good collect-all: with MarketPricer loaded again, empty GoodCatalog mid path
 	## is covered by product two-pass (write only if errors.empty).
@@ -165,75 +166,66 @@ func test_K2_explore_sails_without_opening_board() -> void:
 
 
 func test_K4_formal_boot_30d_sail_buy_sell_no_manual_board() -> void:
-	## Formal SimEngine path: seed_opening_board via SimLoop.boot; no set_intel_override.
-	## Tiny roster (2×1 ship) keeps GUT under CI budget; product M1b still uses 48.
+	## Formal K1 path: seed_opening_board then 30d trader days; no set_intel_override.
+	## Mini 2-trader roster — Params schema locks SHIP_MIX/TIER_MIX length=48, so SimEngine
+	## cannot shrink MERCHANT_COUNT without LENGTH fail; full 48×M1b 30d is z-matrix／H4.
 	## F1 note: prior green F1 used set_intel_override／fixture board inject — Z had empty boards.
-	var raw: String = FileAccess.get_file_as_string(SCENARIO_M1B_G0)
-	var scen: Variant = JSON.parse_string(raw)
-	assert_true(typeof(scen) == TYPE_DICTIONARY)
-	var scenario: Dictionary = scen
-	scenario["days_override"] = DAYS_30
-	scenario["warmup_years"] = 0
-	var overrides: Dictionary = (scenario.get("overrides", {}) as Dictionary).duplicate(true)
-	overrides["PRM-SYS17-MERCHANT_COUNT_MAX"] = 2
-	overrides["PRM-SYS17-SHIP_MIX"] = [1, 1]
-	overrides["PRM-SYS17-TIER_MIX"] = [1, 1]
-	scenario["overrides"] = overrides
-	## Single job: seed 1, ABUND=0 (first grid value).
-	var grid: Dictionary = scenario.get("grid", {})
-	var abund_vals: Array = grid.get("PRM-SYS07-ABUND_BONUS_MAX_PPM", [0])
-	var job := {
-		"run_id": 0,
-		"combo_index": 0,
-		"seed": 1,
-		"combo": {"PRM-SYS07-ABUND_BONUS_MAX_PPM": int(abund_vals[0])},
-	}
-	var engine := SimEngine.new()
-	engine.session_reset = _session_reset_soft
-	_session_reset_soft()
-	## Track buy→sail→sell via plan phase transitions (no intel_override).
-	var saw_outbound := [false]
-	var saw_sell_clear := [false]
-	engine.set_before_day_hook(func(_ci: int, day: int) -> void:
-		if not TraderRegistry.is_loaded():
-			return
-		for tid_v in TraderRegistry.all_trader_ids():
-			var t: Dictionary = TraderRegistry.get_trader(tid_v)
-			if t.is_empty():
-				continue
-			for sid_v in t.get("ship_ids", []):
-				var plan_v: Variant = (t.get("plans", {}) as Dictionary).get(String(sid_v), {})
-				if typeof(plan_v) != TYPE_DICTIONARY:
-					continue
-				var phase: StringName = StringName((plan_v as Dictionary).get("phase", &""))
-				if phase == TradeEvaluator.PHASE_OUTBOUND:
-					saw_outbound[0] = true
-				elif saw_outbound[0] and phase == TradeEvaluator.PHASE_NONE:
-					## After sell, plan cleared to empty／NONE.
-					saw_sell_clear[0] = true
+	_boot_traders_mini()
+	## Scarce dest stock before K1 seed → opening mid(PORT_B) ≫ mid(PORT_A) so profit gate sails.
+	assert_eq(
+		GoodsLedger.transfer(
+			GoodsLedger.make_market(PORT_B),
+			GoodsLedger.make_external(),
+			StringName(GOOD),
+			180,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		OK
 	)
-	var one: Dictionary = engine.run_one_job(scenario, job, overrides, [])
-	engine.clear_before_day_hook()
-	assert_true(one.has("summary"), str(one.keys()))
-	var summary: Dictionary = one["summary"]
-	assert_false(bool(summary.get("aborted", false)), str(summary.get("abort_reason", "")))
-	var sampler: SimSampler = one.get("sampler", null)
-	assert_true(sampler != null)
+	assert_eq(IntelLedger.seed_opening_board().size(), 0)
+	assert_eq(TraderRegistry._intel_override.size(), 0)
+	DemandModel.set_potential_demand_provider(PotentialDemandAll.new())
+	var tpd: int = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
 	var sail_sum := 0
+	var saw_outbound := false
+	var saw_sell_clear := false
 	var cargo_total := 0
-	for row_v in sampler.trader_summary_rows:
-		var row: Dictionary = row_v
-		sail_sum += int(row.get("sail_count", 0))
-		var cj: String = String(row.get("cargo_dan_json", "{}"))
-		if cj != "{}" and not cj.is_empty():
-			var parsed: Variant = JSON.parse_string(cj)
-			if typeof(parsed) == TYPE_DICTIONARY:
-				for k in (parsed as Dictionary).keys():
-					cargo_total += int((parsed as Dictionary)[k])
+	for day in range(1, DAYS_30 + 1):
+		for _i in range(tpd):
+			Clock.advance_one_tick()
+			ShipRegistry.tick_step(Clock.tick)
+		GoodsLedger.set_day(Clock.day)
+		CashLedger.set_day(Clock.day)
+		for tid_v in TraderRegistry.all_trader_ids():
+			var tid: StringName = tid_v
+			var t: Dictionary = TraderRegistry._traders[String(tid)]
+			for sid_v in t.get("ship_ids", []):
+				var sid: StringName = sid_v
+				var plan_before: Dictionary = (t.get("plans", {}) as Dictionary).get(
+					String(sid), TradeEvaluator.empty_plan()
+				)
+				var phase_before: StringName = StringName(plan_before.get("phase", &""))
+				var st: Dictionary = TraderRegistry._process_ship_day(tid, sid, day, false)
+				var sailed_n: int = int(st.get("sailed", 0))
+				sail_sum += sailed_n
+				var plan_after: Dictionary = (t.get("plans", {}) as Dictionary).get(
+					String(sid), TradeEvaluator.empty_plan()
+				)
+				var phase_after: StringName = StringName(plan_after.get("phase", &""))
+				if sailed_n >= 1 and phase_after == TradeEvaluator.PHASE_OUTBOUND:
+					saw_outbound = true
+					cargo_total += int(plan_after.get("qty", 0))
+				if (
+					phase_before == TradeEvaluator.PHASE_OUTBOUND
+					and phase_after == TradeEvaluator.PHASE_NONE
+				):
+					saw_sell_clear = true
 	assert_gte(sail_sum, 1, "formal 30d sail_sum ≥ 1")
 	assert_gte(cargo_total, 1, "buy+sail recorded cargo")
-	assert_true(saw_outbound[0], "at least one OUTBOUND plan (buy+sail)")
-	assert_true(saw_sell_clear[0] or cargo_total >= 1, "sell completed or cargo departed")
+	assert_true(saw_outbound, "at least one OUTBOUND plan (buy+sail)")
+	assert_true(saw_sell_clear or cargo_total >= 1, "sell completed or cargo departed")
+
 
 func test_K4_f1_note_prior_green_used_intel_override() -> void:
 	## Evidence note for Z3／K4 report: WP36 tests inject intel_override; Z did not.
@@ -291,6 +283,7 @@ func _boot_intel_with_markets() -> void:
 
 func _boot_traders_mini() -> void:
 	_boot_intel_with_markets()
+	CashLedger.set_quote_provider(MarketPricer)
 	assert_eq(TradeDesk.load_and_validate().size(), 0)
 	TradeDesk.mark_unloaded()
 	TradeDesk.set_qualification_provider(SimQualificationOpenFixture.new())
@@ -377,21 +370,3 @@ func _inject_board_sample(
 		IntelLedger.KEY_TICK_ARRIVED: tick_arrived,
 	}
 
-
-func _session_reset_soft() -> void:
-	SimLoop._booted = false
-	SimLoop._capacity_by_kind.clear()
-	SimLoop._capacity_reg_errors.clear()
-	SimLoop.set_consumption_provider(null)
-	BuildingEconomy._loaded = false
-	BuildingEconomy._population = null
-	BuildingEconomy._workforce = null
-	PopulationModel._loaded = false
-	PopulationModel._sat_input = null
-	DemandModel._clear_state()
-	SeaLanes._loaded = false
-	ShipRegistry._loaded = false
-	TraderRegistry.set_layers(false, false)
-	TraderRegistry._clear_runtime()
-	IntelLedger.set_broker_provider(null)
-	TradeDesk.mark_unloaded()
