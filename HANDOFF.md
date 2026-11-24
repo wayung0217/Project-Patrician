@@ -68,3 +68,8 @@ Split `tests/unit/test_sys23_wp26.gd` — pure file split; L-乙; **do not merge
 - `evening-17-69-lane3/merge4_83/` — merge④
 - `evening-17-69-lane3/merge6_gate/` — ⑥ + golden + W5 extras + ABUND
 - `evening-17-69-lane3/w5_prep/` — W5 plan / ls-remote
+
+## TD-18 status
+- Branch: `cursor/td18-wp26-split-5665` @ `dc6aa1c`
+- PR: https://github.com/wayung0217/Project-Patrician/pull/88 (**do not merge**)
+- Pack: `evening-17-69-lane3/td18_wp26/`
