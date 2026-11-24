@@ -3,9 +3,21 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      job:
+        description: "Manual job (H4 smoke / W4 inline-cmp / default all CI)"
+        required: true
+        default: "ci"
+        type: choice
+        options:
+          - ci
+          - h4-smoke
+          - w4-inline-cmp
 
 jobs:
   gut-unit-property:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -63,7 +75,18 @@ jobs:
           set -euo pipefail
           python3 tools/a35_norm_scan.py
 
+      - name: Upload GUT logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gut-unit-property-logs
+          path: |
+            gut_unit.log
+            gut_ui.log
+          retention-days: 3
+
   gut-ui:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -90,3 +113,163 @@ jobs:
           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
             -gdir=res://tests/ui \
             -gexit
+
+  golden-30d:
+    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          ./godot --version
+
+      - name: Import project
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . --import
+
+      - name: 30d golden gated
+        run: |
+          set -euo pipefail
+          mkdir -p out/golden
+          tools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \
+            --log "$(pwd)/out/golden/30d.log"
+          # W5 print-only proof: season-progress engine flag must not change golden cells —
+          # harness path never enables print_season_progress; identical to prior tip is int's job.
+          echo "GOLDEN_30D_DONE"
+
+      - name: Upload golden artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-30d
+          path: out/golden/
+          retention-days: 3
+
+  # 17-59 H4 / 17-61 V3: 30d smoke Za G0 A0 + Zb (manual only; timeout 15m)
+  m1b-h4-smoke:
+    if: github.event_name == 'workflow_dispatch' && inputs.job == 'h4-smoke'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)
+        run: |
+          set -euo pipefail
+          mkdir -p out/m1b_smoke/_scenarios
+          for g in Za_G0_A0 Zb_G0_notrader; do
+            python3 tools/m1b_prepare_scenario.py --group "$g" --out "out/m1b_smoke/_scenarios/${g}.json"
+            mkdir -p "out/m1b_smoke/${g}"
+            export M1B_GROUP_NAME="$g" M1B_GROUP_I=1 M1B_GROUP_N=2
+            ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+              --scenario "$(pwd)/out/m1b_smoke/_scenarios/${g}.json" \
+              --inline --season-progress --days 30 \
+              --out-dir "$(pwd)/out/m1b_smoke/${g}" \
+              2>&1 | tee "out/m1b_smoke/${g}/sim_runner.log"
+            test -f "out/m1b_smoke/${g}/summary.csv"
+            test -f "out/m1b_smoke/${g}/trader_summary.csv"
+          done
+          # progress.log from season lines
+          grep -h "散商出航累計" out/m1b_smoke/*/sim_runner.log > out/m1b_smoke/progress.log || true
+          ./godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b_smoke
+          echo "H4_SMOKE_DONE"
+          ls -la out/m1b_smoke/Za_G0_A0 out/m1b_smoke/Zb_G0_notrader
+          wc -l out/m1b_smoke/progress.log || true
+
+      - name: Upload H4 smoke artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1b-h4-smoke
+          path: out/m1b_smoke/
+          retention-days: 3
+
+  # 17-60 W4 / 17-61 V3: 30d two-mode cmp (manual only; timeout 15m)
+  m1b-w4-inline-cmp:
+    if: github.event_name == 'workflow_dispatch' && inputs.job == 'w4-inline-cmp'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: W4 30d subprocess vs --inline CSV cmp
+        run: |
+          set -euo pipefail
+          mkdir -p out/w4_cmp/_scenarios out/w4_cmp/sub out/w4_cmp/inline
+          python3 tools/m1b_prepare_scenario.py --group Za_G0_A0 --out out/w4_cmp/_scenarios/Za_G0_A0.json
+          SCEN="$(pwd)/out/w4_cmp/_scenarios/Za_G0_A0.json"
+          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+            --scenario "$SCEN" --days 30 --out-dir "$(pwd)/out/w4_cmp/sub" \
+            2>&1 | tee out/w4_cmp/sub.log
+          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+            --scenario "$SCEN" --days 30 --inline --out-dir "$(pwd)/out/w4_cmp/inline" \
+            2>&1 | tee out/w4_cmp/inline.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import sys
+          root = Path("out/w4_cmp")
+          ok = True
+          for name in ["summary.csv", "season_cells.csv", "season_ports.csv", "combos.csv", "trader_summary.csv"]:
+              a = (root / "sub" / name).read_bytes()
+              b = (root / "inline" / name).read_bytes()
+              if name == "summary.csv":
+                  # strip elapsed_ms last column
+                  def strip(b):
+                      lines = b.decode().splitlines()
+                      out = [lines[0]]
+                      for ln in lines[1:]:
+                          parts = ln.split(",")
+                          out.append(",".join(parts[:-1]) if parts else ln)
+                      return "\n".join(out).encode()
+                  a, b = strip(a), strip(b)
+              same = a == b
+              print(f"CMP {name} equal={same} bytes_a={len(a)} bytes_b={len(b)}")
+              ok = ok and same
+          if not ok:
+              sys.exit(1)
+          print("W4_INLINE_CMP_PASS")
+          PY
+
+      - name: Upload W4 cmp artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1b-w4-inline-cmp
+          path: out/w4_cmp/
+          retention-days: 3
