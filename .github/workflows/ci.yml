@@ -180,9 +180,14 @@ jobs:
           Path("gut_unit_passing.txt").write_text(f"{n}\n")
           print(f"SHARD_PASSING={n}")
           # Bare test names for 17-69 2.4 set-diff gate (unique across suite).
-          names = sorted(set(re.findall(r"^\* (test_\w+)", text, flags=re.M)))
+          # Strip ANSI — GUT prefixes the first test of each script with \x1b[0m
+          # so ^\* alone under-counts and falsely lists REMOVED_NAMES.
+          clean = re.sub(r"\x1b\[[0-9;]*m", "", text)
+          names = sorted(set(re.findall(r"^\* (test_\w+)$", clean, flags=re.M)))
           Path("gut_unit_names.txt").write_text("\n".join(names) + ("\n" if names else ""))
           print(f"SHARD_NAMES={len(names)}")
+          if n >= 0 and len(names) != n:
+              print(f"::warning::SHARD_NAMES={len(names)} != SHARD_PASSING={n} (name parse drift)")
           PY
       - name: A35 norm scan (report-only, shard 0)
         if: matrix.shard == 0
