@@ -1,4 +1,8 @@
- .github/workflows/ci.yml      | 51 ++++++++++++++++++++++---------------------
- autoload/cash_ledger.gd       | 20 ++++++++++++++++-
- tests/unit/test_sys23_wp27.gd |  9 ++++++--
- 3 files changed, 52 insertions(+), 28 deletions(-)
+ .github/ci/README.md                            |  13 +
+ .github/ci/gut_unit_property_baseline_names.txt | 555 ++++++++++++++++++++++++
+ .github/workflows/ci.yml                        | 127 ++++--
+ autoload/cash_ledger.gd                         |  37 +-
+ tests/unit/test_r972_cash_stock_cap_1769.gd     | 292 +++++++++++++
+ tests/unit/test_r972_cash_stock_cap_1769.gd.uid |   1 +
+ tests/unit/test_sys23_wp27.gd                   |   9 +-
+ 7 files changed, 994 insertions(+), 40 deletions(-)

@@ -1,5 +1,585 @@
+diff --git a/.github/ci/README.md b/.github/ci/README.md
+new file mode 100644
+index 0000000..884e1d8
+--- /dev/null
++++ b/.github/ci/README.md
+@@ -0,0 +1,13 @@
++# `.github/ci/` — Lane2 ownership (17-69 2.4; Owner 追認 甲)
++
++## Files
++- `gut_unit_property_baseline_names.txt` — recorded unit+property bare test-name baseline (555 at intro). Used by `gut-unit-gate`.
++
++## Baseline control (Owner 追認 乙)
++1. Any edit to `gut_unit_property_baseline_names.txt` → S9a §F must list every added/removed name with a reason.
++2. Removing any name requires **Owner pre-approval**; never in the same commit as product-code changes.
++3. `gut-unit-gate` prints `ADDED_NAMES` and `REMOVED_NAMES` (or `無`); not totals alone.
++4. Rationale: prevent self-certifying by deleting tests and shrinking the baseline together.
++
++## Not golden
++This is **not** the 30d golden CSV baseline. Golden compare uses main CI artifact `golden-30d` only (S9b／S9h③).
+diff --git a/.github/ci/gut_unit_property_baseline_names.txt b/.github/ci/gut_unit_property_baseline_names.txt
+new file mode 100644
+index 0000000..3698f97
+--- /dev/null
++++ b/.github/ci/gut_unit_property_baseline_names.txt
+@@ -0,0 +1,555 @@
++test_D08_TST_get_port_unknown_id_null_last_error
++test_D08_TST_name_zh_blank_rejects
++test_D08_TST_name_zh_empty_rejects
++test_D08_TST_port_id_format_rejects
++test_D08_TST_port_id_format_three_digits_rejects
++test_D08a_TST_season_mask_not_full_year_rejects
++test_D08b_TST_good_id_format_rejects
++test_D08b_TST_name_zh_empty_rejects
++test_D08c_TST_get_good_unknown_id_null_last_error
++test_D08f_TST_catalog_loaded_emits_count
++test_D100_built_ratio_below_blocks
++test_D100_built_ratio_exactly_ok
++test_D100_under_construction_and_paused_count
++test_D102d_city_queue_position
++test_D102e_new_build_spend_build_upgrade_li
++test_D110b_not_waiting_material_returns_empty
++test_D110b_unknown_port_empty_plus_last_error
++test_D110b_waiting_material_shortfall_sorted
++test_D110d_csv_out_writes_new_columns_and_trader_summary
++test_D110d_queue_state_building_and_done
++test_D110d_season_headers_include_queue_and_flows
++test_D110d_transfer_acc_excess_consumed
++test_D111b_formal_newbuild_defs_from_buildings
++test_D111b_missing_cb_error_queue_pos_stuck
++test_D113b_cost_zero_upgrade_starts_no_zero_post
++test_D113c_no_public_slot_err_sys08_01
++test_D114b_city_upgrade_spend_counted_once
++test_E2_fnv_empty_offset_basis
++test_E2_fnv_letter_a_known_vector
++test_E2_golden_harness_fnv_matches_rng
++test_ERR_SYS01_03_non_positive_price_rejects
++test_ERR_SYS03_07_unknown_port_or_good
++test_ERR_SYS03_08_container_departed_invalid
++test_ERR_SYS03_09_hold_missing_owner
++test_ERR_SYS06_01_missing_demand_dir_rejects
++test_ERR_SYS06_01_negative_rate_rejects_boot
++test_ERR_SYS06_02_weight_sum_rejects_boot
++test_ERR_SYS06_03_subst_cap_rejects_boot
++test_ERR_SYS06_04_negative_population
++test_EX_04_09_01_stock0_potential_ceiling
++test_EX_04_09_02_stock940_potential188_platform
++test_EX_04_09_03_max_of_offtake_and_potential
++test_EX_04_09_04_stock0_zero_potential_ceiling
++test_EX_04_09_05_stock_positive_zero_basis_floor
++test_EX_04_09_06_offtake_dominates_potential
++test_EX_08_14_01_garrison_fraction_carry_three_days
++test_EX_08_14_02_garrison_no_stock_keeps_fraction
++test_EX_08_14_03_garrison_zero_afford_same_as_no_stock
++test_EX_08_14_04_garrison_season_reset
++test_EX_08_14_05_garrison_trial_params_buy_on_day_14
++test_EX_08_18_01_rice_workshop_gross
++test_EX_08_18_02_wine_workshop_gross
++test_EX_08_18_03_zero_workers
++test_EX_08_18_04_salt_floor_revenue
++test_EX_08_18_05_negative_gross_not_clamped
++test_EX_08_21_01_wanggang_rice_opening_stock
++test_EX_08_21_02_yuegang_brick_opening_stock
++test_EX_08_21_03_zero_q_skips_genesis
++test_EX_08_21_04_opening_plus_new_exceeds_slots
++test_EX_08_21_skip_level_fixture_err_sys08_13
++test_EX_08_25_01_queue_upgrade_two_materials
++test_EX_08_25_02_uneven_shortfall_plus_resident
++test_EX_08_25_03_materials_complete_addon_zero
++test_EX_08_25_04_cash_short_not_ordered_addon_zero
++test_EX_23_04_01_plan_three_ports
++test_EX_23_04_02_TST_SYS23_06_f_zero_no_move
++test_EX_23_04_03_no_consumer_ports
++test_FRM_SYS05_07_is_single_function
++test_FRM_SYS05_11_and_TST_SYS05_10_stale_quote
++test_N1_formal_data_zero_queue_import_errors
++test_PROP_C08_same_seed_state_hashes_match
++test_PROP_FRM_SYS03_01_conservation_after_mixed_transfers
++test_PROP_FRM_SYS03_02_failed_transfer_leaves_both_sides_unchanged
++test_PROP_SYS04_quote_within_curve_hard_bounds_and_non_negative
++test_PROP_SYS05_sum_balances_zero_after_post_and_charge
++test_R2_05_post_returns_ok_or_failed
++test_R9_65_B2_e_p_overflow_boundary
++test_R9_65_B3_OBS04_unable_to_judge
++test_R9_65_B6_e_p_exceeds_stock_errors
++test_R9_65_C1_negative_margin_buy_fails
++test_R9_65_batch_area_null_w_after_uses_floor
++test_TST_SYS01_01_duplicate_good_id_rejects
++test_TST_SYS01_02_tier_above_max_rejects
++test_TST_SYS01_02_tier_zero_rejects
++test_TST_SYS01_03_count_below_min_rejects
++test_TST_SYS01_04_missing_dried_fish_staple_rejects
++test_TST_SYS02_01_port_count_13_rejects
++test_TST_SYS02_02_free_port_ratio_025_rejects
++test_TST_SYS02_03_missing_role_cell_rejects
++test_TST_SYS02_05_role_change_queues_until_cutoff
++test_TST_SYS03_01_conservation_violated_on_manual_mutate
++test_TST_SYS03_02_insufficient_balance_unchanged
++test_TST_SYS03_03_insufficient_capacity_all_or_nothing
++test_TST_SYS03_03_no_provider_is_capacity_error
++test_TST_SYS03_04_season_produce_sums_to_q
++test_TST_SYS03_05_sea_loss_rejected
++test_TST_SYS03_06_market_unbounded_over_ten_seasons
++test_TST_SYS03_07_cross_owner_export_counts
++test_TST_SYS03_08_same_owner_offsets
++test_TST_SYS03_09_warehouse_roundtrip_zero
++test_TST_SYS03_10_depart_after_berth_days
++test_TST_SYS03_11_local_consume
++test_TST_SYS03_12_warehouse_consume_clears_pending
++test_TST_SYS03_13_window_prunes_old_days
++test_TST_SYS03_14_foreign_cargo_depart_no_export
++test_TST_SYS03_15_same_day_quotes_use_prior_snapshot
++test_TST_SYS03_16_pending_invariant_debug
++test_TST_SYS04_01_curve_validation_errors
++test_TST_SYS04_02_mid_multiplier_platform
++test_TST_SYS04_03_ceiling_and_floor
++test_TST_SYS04_04_split_vs_batch_extra_in_0_1
++test_TST_SYS04_05_roundtrip_loss
++test_TST_SYS04_06_min_half_spread_still_loss
++test_TST_SYS04_07_zero_consumption_floor
++test_TST_SYS04_08_floor_anchor_rejects
++test_TST_SYS04_09_indicator_bands_and_order
++test_TST_SYS04_10_qty_rejects_no_state_change
++test_TST_SYS04_11_zero_window_qty_floor
++test_TST_SYS04_12_transit_uses_base_price_li
++test_TST_SYS04_13_offtake_weeks_fixture
++test_TST_SYS05_01_unbalanced_post_rejected
++test_TST_SYS05_02_insufficient_cash_voluntary
++test_TST_SYS05_03_demo_buy_sell_conservation
++test_TST_SYS05_04_prorate
++test_TST_SYS05_05_charge_mandatory
++test_TST_SYS05_06_arrears_priority_credit
++test_TST_SYS05_07_bankruptcy_referred_and_reset
++test_TST_SYS05_08_max_affordable_qty
++test_TST_SYS05_09_slider_caps
++test_TST_SYS05_11_split_largest_remainder
++test_TST_SYS05_12_unauthorized_and_invalid_amount
++test_TST_SYS05_13_boot_missing_qualification_provider
++test_TST_SYS05_13b_boot_missing_trade_observers
++test_TST_SYS05_14_buy_success
++test_TST_SYS05_15_sell_success
++test_TST_SYS05_16_can_trade_denied
++test_TST_SYS05_17_can_enter_denied
++test_TST_SYS05_18_container_owner_port_hold
++test_TST_SYS05_19_insufficient_and_stale_preview
++test_TST_SYS05_20_and_24_capacity_precheck_no_cash
++test_TST_SYS05_21_qty_and_stock_errors
++test_TST_SYS05_22_same_rules_and_trade_transfer_scan
++test_TST_SYS05_23_can_transfer_matches_transfer
++test_TST_SYS06_01_rice_week_demand_calibration_port
++test_TST_SYS06_02_market_size_target
++test_TST_SYS06_03_daily_share_sums_to_week
++test_TST_SYS06_04_sat_weights_sum_100
++test_TST_SYS06_05_rice_shortage_triggers_fish_subst
++test_TST_SYS06_06_paused_workshops_zero_input_consume
++test_TST_SYS06_07_double_pop_doubles_citizen_demand
++test_TST_SYS06_07b_paused_workshops_no_input_after_double_pop_setup
++test_TST_SYS06_08_cotton_zero_poor_sat_unchanged_cloth_subst
++test_TST_SYS06_09_brocade_zero_only_rich_sat_drops
++test_TST_SYS06_10_consume_equals_min_demand_stock
++test_TST_SYS06_11_small_port_low_volume_averages
++test_TST_SYS06_12_deterministic_replay
++test_TST_SYS06_13_unmet_only_after_flush
++test_TST_SYS06_14_missing_prm_refuses_boot
++test_TST_SYS07_01_weighted_avg_no_inflow
++test_TST_SYS07_02_pf3_integer_flow_accum
++test_TST_SYS07_03_sat_inertia_step
++test_TST_SYS07_04_quantize_sat_input
++test_TST_SYS07_05_streak_resets
++test_TST_SYS07_06_tier2_needs_active_workers
++test_TST_SYS07_07_hire_largest_remainder
++test_TST_SYS07_08_demolish_releases_workers_next_tick
++test_TST_SYS07_09_outflow_beggars_first
++test_TST_SYS07_10_housing_overflow_gradual
++test_TST_SYS07_11_port_iteration_order_independent
++test_TST_SYS07_12_same_seed_placement_replay
++test_TST_SYS07_13_boot_param_errors
++test_TST_SYS07_14_hire_sailors_all_or_nothing
++test_TST_SYS07_15_hire_capped_by_free_beds
++test_TST_SYS07_16_beggar_sat_necessities_only
++test_TST_SYS07_17_temple_bonus_caps_at_sat_scale
++test_TST_SYS07_18_job_cap_overflow_gradual_citizen
++test_TST_SYS07_19_poor_leave_only_after_beggars_gone
++test_TST_SYS07_20_simloop_boot_sat_provider_detection
++test_TST_SYS08_01_land_price_calibration
++test_TST_SYS08_02_closed_zone_buy_land
++test_TST_SYS08_03_kontor_duplicate_err04
++test_TST_SYS08_04_warehouse_then_market_mats
++test_TST_SYS08_05_waiting_material_no_countdown
++test_TST_SYS08_06_seven_day_floor_week_output
++test_TST_SYS08_07_input_shortfall_and_signal
++test_TST_SYS08_08_warehouse_cap_limits_out
++test_TST_SYS08_09_zero_workers_zero_out_wage
++test_TST_SYS08_10_season_wage_mandatory
++test_TST_SYS08_11_rent_source_to_owner_and_city
++test_TST_SYS08_12_vacancy_after_grace
++test_TST_SYS08_12b_vacancy_within_grace_no_tax
++test_TST_SYS08_13_WP53_garrison_buy_success_within_7d
++test_TST_SYS08_13_WP53_garrison_fraction_kept_when_no_stock
++test_TST_SYS08_13_garrison_no_stock_no_debt
++test_TST_SYS08_14_city_queue_no_skip
++test_TST_SYS08_15_missing_levy_prm_boot_error
++test_TST_SYS08_16_buy_city_residence_vs_player
++test_TST_SYS08_17_season_conservation_clean
++test_TST_SYS08_17_season_conservation_fixture
++test_TST_SYS08_18_opening_workshops_city_active
++test_TST_SYS08_R_boot_and_zone_open_max_ring
++test_TST_SYS13_01_opening_sh01_wanggang
++test_TST_SYS13_06_hire_crew_insufficient_beggars
++test_TST_SYS13_07_sail_crew_short_err04
++test_TST_SYS13_08_season_wage_arrears
++test_TST_SYS13_09_repair_prorata_mid_season
++test_TST_SYS13_13_hold_trade_while_sailing_err03
++test_TST_SYS13_14_songjiang_dock_draft_ladder
++test_TST_SYS13_15_missing_prm_err12
++test_TST_SYS13_16_advance_one_day_matches_tpd_ticks
++test_TST_SYS13_16_tick_day_clock_matches_advance_one_day
++test_TST_SYS14_01_55_lanes_zero_errors_16_ports_reachable
++test_TST_SYS14_02_unknown_node_and_waypoints_zero_both_listed
++test_TST_SYS14_03_fuzhou_to_naha_path
++test_TST_SYS14_04_yuegang_to_dayuan_avoids_penghu_port
++test_TST_SYS14_05_fuzhou_naha_arrival_tick
++test_TST_SYS14_06_reroute_next_waypoint
++test_TST_SYS14_07_deep_ship_shallow_port_err02
++test_TST_SYS14_08_same_tick_arrival_ship_id_order
++test_TST_SYS14_09_deterministic_twice
++test_TST_SYS14_09_path_deterministic_twice
++test_TST_SYS15_01_missing_prm
++test_TST_SYS15_01b_bad_param_order
++test_TST_SYS15_02_03_depart_snapshot_weeks_null
++test_TST_SYS15_04_05_batch_atomic_and_stale_mid
++test_TST_SYS15_06_08_consensus_and_divergence
++test_TST_SYS15_07_09_10_dedupe_direction_trim
++test_TST_SYS15_11_12_13_14_presence_contact_samples
++test_TST_SYS15_13_publish_at_actual_arrival_port
++test_TST_SYS15_15_16_snapshot_fail_and_no_observer
++test_TST_SYS15_16_D60f_broker_provider_required
++test_TST_SYS15_17_18_20_deterministic_lcr_no_cash_goods
++test_TST_SYS15_19_stock_weeks_single_site_and_regression
++test_TST_SYS23_01_two_runs_csv_match_except_elapsed
++test_TST_SYS23_02_formal_params_unchanged_sha256
++test_TST_SYS23_03_unknown_scenario_key
++test_TST_SYS23_04_grid_cartesian_run_id_order
++test_TST_SYS23_05_transfer_matches_EX_23_04_01
++test_TST_SYS23_07_sim_relocate_rejected_when_disabled
++test_TST_SYS23_08_fnv_empty
++test_TST_SYS23_08_fnv_letter_a
++test_TST_SYS23_08_fnv_vectors
++test_TST_SYS23_09_one_combo_aborts_on_conservation
++test_TST_SYS23_09_print_summary_csv
++test_TST_SYS23_10_met_hand_fixture
++test_TST_SYS23_11_missing_threshold_pass_na
++test_TST_WP62_D95d_container_used
++test_TST_WP62_D95d_lane_ids_ascending_full_chart
++test_TST_WP62_D95d_lane_ids_method_and_sort_contract
++test_TST_WP62_D95d_last_trade_total_li_boot_and_clear
++test_WP16_10_07_array_loads
++test_WP16_10_07_below_min_rejects
++test_WP16_10_07_enum_rejects
++test_WP16_10_07_missing_key_rejects
++test_WP16_10_07_novalue_key_missing_rejects
++test_WP16_10_07_object_extra_key_rejects
++test_WP16_10_07_object_loads
++test_WP16_10_07_scalar_loads
++test_WP16_10_07_type_mismatch_rejects
++test_WP16_brief_empty_value_rejects
++test_WP17_10_06_1_port_or_good_id_missing
++test_WP17_10_06_2_build_class_invalid
++test_WP17_10_06_3_cb_id_format
++test_WP17_10_06_4_open_at_start_range
++test_WP17_10_06_5_int_nonnegative
++test_WP17_10_06_6_unique_keys
++test_WP17_all_or_nothing
++test_WP17_build_queue_ok_import
++test_WP17_buildings_ok_import
++test_WP17_opening_workshops_ok_import
++test_WP17_zones_ok_import
++test_WP18_11_07_1_zone_slot_totals
++test_WP18_11_07_2_97_slots_four_rings_25_24_24_24
++test_WP18_11_07_3_slot_id_format_order
++test_WP18_11_07_4_public_kontor_counts
++test_WP18_11_07_5_ring_scarcity_price_direction
++test_WP18_11_07_6_buy_land_post_and_owner
++test_WP18_11_07_7_err08_err02_err07
++test_WP18_11_07_8_no_population_provider_boot_error
++test_WP18_11_07_9_csv_new_csvs_fail_10_06
++test_WP18_11_07_9_csv_slots_and_new_csvs_ok
++test_WP18_11_07_9_warehouse_capacity_empty
++test_WP19_12_08_1_err01_zone_closed_not_belt
++test_WP19_12_08_1_err02_slot_occupied
++test_WP19_12_08_1_err03_wrong_placement
++test_WP19_12_08_1_err05_not_land_owner
++test_WP19_12_08_1_err07_insufficient_build_cash
++test_WP19_12_08_1_err08_unknown_slot_type
++test_WP19_12_08_2_gathering_belt_ind1_only
++test_WP19_12_08_3_err13_no_kontor_residence
++test_WP19_12_08_4_warehouse_full_market_buy
++test_WP19_12_08_5_buy_mats_cash_short_waiting
++test_WP19_12_08_6_signals_flush_only
++test_WP19_12_08_7_public_upgrade_fee
++test_WP19_12_08_8_pause_resume_demolish
++test_WP19_12_08_9_demolish_kontor_err03
++test_WP19_12_08_simloop_hooks
++test_WP19_D15b_kontor_upgrade_missing_boot_err09
++test_WP20_12_11_wage_accrues_when_starved
++test_WP20_12_12_2_upstream_same_day_feeds_downstream
++test_WP20_12_12_3_paused_no_out_no_wage
++test_WP20_12_12_4_missing_workforce_boot_error
++test_WP21_14_04_1_missing_sat_provider_boot_error
++test_WP21_14_04_2_providers_inject_into_building_economy
++test_WP21_14_04_3_same_seed_same_result
++test_WP21_D17b_acquire_materials_public
++test_WP21_D18a_buildings_float_qty_import
++test_WP21_D18a_negative_qty_rejected
++test_WP23_14_07_1_season_order_reproducible
++test_WP24_14_09_1_opening_population_beggar_zero
++test_WP24_14_09_2_opening_public_level_1
++test_WP24_14_09_3_player_kontor_warehouse
++test_WP24_14_09_residences_match_pop
++test_WP24_ERR_SYS07_09_duplicate_port
++test_WP24_ERR_SYS07_09_empty_opening_pop_dir
++test_WP24_ERR_SYS07_09_missing_port
++test_WP24_ERR_SYS08_10_empty_public_no_writes
++test_WP24_ERR_SYS08_10_empty_workshops_no_writes
++test_WP24_ERR_SYS08_10_missing_port_in_workshops_no_writes
++test_WP24_csv_import_opening_population_ok
++test_WP24_csv_only_opening_resources
++test_WP24_opening_pop_duplicate_port_refuses
++test_WP24_opening_pop_missing_file_refuses
++test_WP24_opening_pop_unknown_port_refuses
++test_WP25_11_08_field_sep_no_collision
++test_WP25_11_08_same_input_same_output
++test_WP25_11_08_splitmix64_state0_first
++test_WP26_abort_summary_mets_blank
++test_WP26_bad_missing_required_key_errors
++test_WP26_bad_override_grid_clash_errors
++test_WP26_csv_integer_columns_no_dot
++test_WP26_empty_sample_mets_blank_not_zero
++test_WP26_evidence_ERR_SYS23_01_missing_file
++test_WP26_evidence_ERR_SYS23_03_type
++test_WP26_evidence_ERR_SYS23_05_unknown_port
++test_WP26_evidence_ERR_SYS23_06_relocate_f
++test_WP26_evidence_accounts_after_boot_layer1
++test_WP26_evidence_bad_triple_all_at_once
++test_WP26_evidence_cli_twice_cmp
++test_WP26_evidence_years10_player_arrears
++test_WP26_json_int_rejects_non_integral
++test_WP26_layer1_two_years_headers_and_counts
++test_WP26_obs03_blank_not_zero
++test_WP27_MET01_TH01b_upper_bound
++test_WP27_MET05b_no_pass
++test_WP27_OBS02_longest_zero_beggar_streak
++test_WP27_relocate_f_C02_float_snap
++test_WP27_scenario_list_dir_sorted_R9_64
++test_WP27_weekly_potential_demand_D96f
++test_WP29_13_05_no_path_err_sys14_03
++test_WP29_13_05_same_origin_dest_err_sys14_04
++test_WP29_13_06_1_csv_headers_missing_extra_type_abort
++test_WP29_13_06_2_port_registry_mismatch_err_sys14_01
++test_WP29_13_06_3_tie_break_fewer_hops
++test_WP29_13_06_4_tie_break_lane_id_lexicographic
++test_WP29_13_06_5_ports_not_intermediate
++test_WP29_D14e_batch_all_or_nothing_on_bad_lane
++test_WP29_D14e_batch_ok_writes_sea_tres
++test_WP29_D14e_header_mismatch_aborts_batch
++test_WP30_13_08_missing_sailor_pool_boot_error
++test_WP33_D63b_sim_fixtures_satisfy_boot_gate
++test_WP33_D63b_sim_qualification_fixture_always_denies
++test_WP33_D63b_sim_trade_observer_fixture_no_record
++test_WP34_all_or_nothing_keeps_stale_on_error
++test_WP34_batch_ok_writes_28_28_7
++test_WP34_extra_col_aborts
++test_WP34_headers_match_docs_spec_csv
++test_WP34_missing_col_aborts
++test_WP34_parse_scaled_decimal_examples
++test_WP34_ppm_excess_decimals_aborts
++test_WP34_rate_excess_decimals_aborts
++test_WP34_row_roundtrip_28_28_7
++test_WP34_type_mismatch_aborts
++test_WP34_weight_non_int_aborts
++test_WP34_weight_sum_neq_weight_sum_aborts
++test_WP40_D60f_broker_provider_base_2_1_03
++test_WP51_T2_different_seeds_differ_placement
++test_WP51_movers_change_occupants
++test_WP51_no_cross_port_placement
++test_WP51_occupants_stable_when_no_movers
++test_WP51_opening_full_placement
++test_WP51_port_iteration_order_independent
++test_WP51_same_seed_same_result
++test_WP51_sum_occupants_equals_st_pop
++test_WP53_A10_built_land_held_days_prorate
++test_WP53_A12_upgrade_waiting_keeps_upgrade_days
++test_WP53_A6_weekly_income_negative_gap_path
++test_WP53_A6_weekly_income_positive_margin
++test_WP53_A6_weekly_income_zero_workers
++test_WP54_A11_bad_opening_workshop_tres_reported
++test_WP54_V1_opening_processing_outermost_ring
++test_WP54_V1_opening_residence_before_workshop_rings
++test_WP54_city_queue_success_starts_when_funded
++test_WP55_A13_derive_seed_draw_seq_changes_hash
++test_WP55_A13_draw_seq_optional_preserves_legacy
++test_WP55_A13_movers_disperse_across_residences
++test_WP55_A13_same_day_repeat_draw_differs
++test_WP55_A16_pf3_academy_lv0_uses_unit_mult
++test_WP55_A17_unknown_port_no_silent_create
++test_WP55_D87_partial_opening_writes_nothing
++test_WP56_A18_max_affordable_respects_market_stock
++test_WP56_A19_bankruptcy_referred_once_only
++test_WP56_A20_prorate_and_split_overflow
++test_WP56_A20_reverse_after_arrears_keeps_sum_zero
++test_WP56_A21_quote_unknown_port
++test_WP56_A22_buy_slider_max_rejects_negative
++test_WP56_A22_post_requires_goods_ledger_seq
++test_WP56_A23_trade_desk_reverse_with_arrears
++test_WP56_demo_q_afford_124_still_holds
++test_WP57_A24_M22_signals_only_at_flush
++test_WP57_A28_skipped_tick_still_arrives
++test_WP57_A29_missing_tpw_type_errors
++test_WP58_A32_bad_job_json_exits_nonzero
++test_WP58_A32_missing_job_exits_nonzero
++test_WP58_A33_sampler_uses_market_pricer_stock_weeks
++test_WP58_A34_write_failure_reports_ok_false
++test_WP58_Y1_A31_day_error_aborts_summary
++test_WP59_13_03_1_tick_starts_zero_increments_by_one
++test_WP59_13_03_2_day_boundary_across_days
++test_WP59_13_03_3_paused_advance_one_tick_no_progress
++test_WP59_15_08_01_missing_offtake_window_days_refuses_boot
++test_WP59_15_08_04_cross_day_resale_red_team_60
++test_WP59_2_1_04_rule1_good_csv_rejected_as_port_def
++test_WP59_2_1_04_rule1_matching_kind_imports
++test_WP59_2_1_04_rule1_port_csv_rejected_as_good_def
++test_WP59_2_1_04_rule2_headers_match_field_names
++test_WP59_2_1_04_rule3_extra_column_aborts
++test_WP59_2_1_04_rule3_missing_column_aborts
++test_WP59_2_1_04_rule3_type_mismatch_aborts
++test_WP59_2_1_04_rule4_tests_use_fixtures_only
++test_WP59_2_1_04_rule5_no_formal_data_csv
++test_WP59_BB2_port_exists_but_unreachable
++test_WP59_D01_quantize_amount_snaps_near_integer
++test_WP59_D01_quantize_amount_xlsx_buy_total
++test_WP59_D02_queue_producer_payload_applies_output
++test_WP59_D02_queue_rejects_bad_producer_payload_at_enqueue
++test_WP59_D02_queue_rejects_bad_transit_and_terminal_payload_at_enqueue
++test_WP59_D02_queue_transit_payload_applies_downstream
++test_WP59_D03_genesis_grant
++test_WP59_D03_genesis_requester_is_sole_auth_exception
++test_WP59_D04_error_info_shape_not_int_codes
++test_WP59_D05_consume_shortage_err_sys03_02_all_or_nothing
++test_WP59_D08c_array_lookups_unknown_empty_last_error
++test_WP59_D08c_get_role_unknown_returns_role_invalid
++test_WP59_D08c_queue_role_change_unknown_rejects
++test_WP59_D08c_success_clears_last_error_empty_not_failure
++test_WP59_D08d_container_id_unique_formats
++test_WP59_D08e_duplicate_kind_err_sys03_06_blocks_boot
++test_WP59_D08e_duplicate_provider_err_sys03_06
++test_WP59_D08e_register_capacity_provider_before_boot_applies
++test_WP59_D08e_register_capacity_provider_ignored_after_boot
++test_WP59_D08e_unregistered_kind_err_sys03_03
++test_WP59_D08f_conservation_violated_signal_params
++test_WP59_D08f_goods_transferred_event_param
++test_WP59_D08g_named_band_enum_order
++test_WP59_D08i_all_or_nothing_no_write_on_error
++test_WP59_D08i_batch_writes_all_outputs
++test_WP59_D08i_clears_old_outputs_before_write
++test_WP59_D08i_fixed_in_out_paths
++test_WP59_D08i_role_values_match_port_registry_role_enum
++test_WP59_D08j_public_api_names_match_ruling
++test_WP59_D08j_set_consumption_provider_ignored_after_boot
++test_WP59_D20a_sail_depart_arrive_container_port
++test_WP59_D21b_public_upgrade_fee_scales_with_pop
++test_WP59_D28d_observer_failure_keeps_trade
++test_WP59_D30a_complete_demand_boots
++test_WP59_D30a_missing_demand_refuses_boot
++test_WP59_D37c_public_delay_visibility
++test_WP59_D40a_excess_decimals
++test_WP59_D40a_scale_not_power_of_10
++test_WP59_D40b_non_int_value
++test_WP59_D40c_bad_tres_load_collects_filename
++test_WP59_D40c_empty_substitutions_dir_passes
++test_WP59_D40c_missing_substitutions_dir_fails
++test_WP59_G4_boot_with_formal_populated_opening
++test_WP59_V1_FRM_SYS08_17_levy_surplus_via_season
++test_WP59_V1_TD16_upgrade_keeps_prior_kontor_cap
++test_WP59_V1_TD16_upgrade_keeps_prior_public_level
++test_WP59_account_player_constant
++test_WP59_advance_one_day_advances_exactly_tpd_ticks
++test_WP59_advance_one_day_does_not_emit_signals
++test_WP59_all_section4_params_json_keys_readable
++test_WP59_autoload_order_2_2_01
++test_WP59_autoload_order_cash_after_goods
++test_WP59_boot_collects_all_module_errors_2_2_02
++test_WP59_boot_day_zero_and_genesis_grant_D03_D05
++test_WP59_boot_day_zero_first_advance_to_one
++test_WP59_boot_requires_consumption_provider_2_3_03
++test_WP59_boot_success_and_tick_advances_clock_2_3_01
++test_WP59_capacity_provider_base_push_error
++test_WP59_close_season_prorate_via_schedule
++test_WP59_collects_all_missing_errors
++test_WP59_conservation_runs_on_tick_when_debug_prm
++test_WP59_consume_shortage_err_sys03_02_into_day_errors_D05
++test_WP59_consumption_provider_base_push_error
++test_WP59_consumption_provider_base_push_error_2_1_03
++test_WP59_count_above_max_rejects
++test_WP59_first_tick_runs_k0_produce_D05
++test_WP59_fixture_values_match_techspec_section4
++test_WP59_load_requires_params
++test_WP59_load_requires_ticks_per_day
++test_WP59_missing_arrears_rejects
++test_WP59_missing_round_eps_rejects
++test_WP59_missing_start_cash_rejects
++test_WP59_missing_ticks_per_day_rejects
++test_WP59_next_seq_starts_at_1_and_increments
++test_WP59_no_public_subday_methods_D07
++test_WP59_no_season_cutoff_from_clock_at_season_end
++test_WP59_official_params_json_rejects_without_pending_keys
++test_WP59_out_of_range_rejects
++test_WP59_params_fixture_not_official_pending_keys
++test_WP59_paused_advance_push_error_and_no_progress
++test_WP59_qty_zero_is_err_01
++test_WP59_qualification_provider_base_push_error_2_1_03
++test_WP59_red_team_94_same_ship_dedupe
++test_WP59_red_team_96_batch_atomic_before_read
++test_WP59_red_team_97_registry_not_live_price
++test_WP59_round_eps_out_of_range_rejects
++test_WP59_season_cutoff_close_season_index_zero_D05
++test_WP59_season_index_formula
++test_WP59_set_paused_updates_is_paused
++test_WP59_ship_event_observer_base_2_1_03
++test_WP59_step6_emits_day_ticked_after_writes_D05
++test_WP59_tick_consume_ascending_order_no_role_cell_produce_2_3_03
++test_WP59_tick_paused_push_error_no_progress
++test_WP59_ticks_per_day_out_of_range_rejects
++test_WP59_trade_observer_base_push_error_2_1_03
++test_WP59_transfer_event_day_uses_injected_set_day
++test_WP59_transfer_seq_and_timestamp_match
++test_WP59_type_mismatch_rejects
++test_WP59_valid_catalog_loads_sorted_ids_and_derives_scale
++test_WP59_valid_ports_load_queries_and_warnings
++test_WP63_TST_public_upgrade_cash_oob_err_sys08_09
++test_WP63_TST_reverse_last_post_keeps_original
++test_WP65_TST_city_queue_missing_upgrade_target_stops
++test_WP65_TST_city_queue_new_build_construct_use
++test_WP65_TST_city_queue_upgrade_no_new_slot
++test_WP67_OBS05_queries_after_season
++test_WP67_garrison_goods_fail_restores_cash_and_stock
++test_WP68_02_beggars_below_capacity_no_build
++test_WP68_02_free_beds_blocks
++test_WP68_03_insufficient_reserve_no_build
++test_WP68_04_max_per_season
++test_WP68_05_no_empty_slot_no_build
++test_WP68_05_outermost_unowned_only
++test_WP68_07_only_residence
++test_WP68_scenario_layer_city_housing_allowed
++test_WP68_switch_off_never_runs
++test_abund_01_bonus_zero_no_accel
++test_abund_02_excess_consume_reduces_stock
++test_abund_03_excess_not_in_offtake_snapshot
++test_scarce_01_no_trigger_no_downflow
++test_scarce_02_bonus_zero_no_scarce_accel
++test_scarce_03_triggered_accel_with_bonus
++test_season_flow_counts_settled_and_unsettled
 diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
-index 288cca3..6cdf625 100644
+index 288cca3..231ade2 100644
 --- a/.github/workflows/ci.yml
 +++ b/.github/workflows/ci.yml
 @@ -20,9 +20,10 @@ on:
@@ -30,12 +610,12 @@ index 288cca3..6cdf625 100644
      steps:
        - name: Checkout
 -        uses: actions/checkout@v4
-+        uses: actions/checkout@v7
++        uses: actions/checkout@v5
  
        - name: Cache Godot binary
          id: cache-godot
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: godot
            key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
@@ -44,178 +624,324 @@ index 288cca3..6cdf625 100644
        # 17-64 S3: cache .godot/imported (never test/golden outputs).
        - name: Cache Godot imported assets
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: .godot/imported
            key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
-@@ -188,7 +189,7 @@ jobs:
+@@ -178,6 +179,15 @@ jobs:
+           n = int(m[-1]) if m else -1
+           Path("gut_unit_passing.txt").write_text(f"{n}\n")
+           print(f"SHARD_PASSING={n}")
++          # Bare test names for 17-69 2.4 set-diff gate (unique across suite).
++          # Strip ANSI — GUT prefixes the first test of each script with \x1b[0m
++          # so ^\* alone under-counts and falsely lists REMOVED_NAMES.
++          clean = re.sub(r"\x1b\[[0-9;]*m", "", text)
++          names = sorted(set(re.findall(r"^\* (test_\w+)$", clean, flags=re.M)))
++          Path("gut_unit_names.txt").write_text("\n".join(names) + ("\n" if names else ""))
++          print(f"SHARD_NAMES={len(names)}")
++          if n >= 0 and len(names) != n:
++              print(f"::warning::SHARD_NAMES={len(names)} != SHARD_PASSING={n} (name parse drift)")
+           PY
+       - name: A35 norm scan (report-only, shard 0)
+         if: matrix.shard == 0
+@@ -188,28 +198,35 @@ jobs:
  
        - name: Upload GUT unit shard logs
          if: always()
 -        uses: actions/upload-artifact@v4
-+        uses: actions/upload-artifact@v7
++        uses: actions/upload-artifact@v5
          with:
            name: gut-unit-logs-${{ matrix.shard }}
            path: |
-@@ -203,7 +204,7 @@ jobs:
+             gut_unit.log
+             gut_unit_passing.txt
++            gut_unit_names.txt
+           retention-days: 3
+ 
+-  # Sum shard passing counts; must equal pre-change 555 (unit+property).
++  # 17-69 2.4／Owner 追認(乙): ≥ baseline + name set-diff; print ADDED/REMOVED (or 無).
++  # Removing a baseline name requires Owner pre-approval; never same commit as product.
+   gut-unit-gate:
+     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+     needs: gut-unit
      runs-on: ubuntu-latest
++    # 17-69 2.3: only job previously missing a wall-clock cap.
++    timeout-minutes: 5
      steps:
++      - name: Checkout (baseline name list)
++        uses: actions/checkout@v5
++
        - name: Download shard passing counts
 -        uses: actions/download-artifact@v4
-+        uses: actions/download-artifact@v8
++        uses: actions/download-artifact@v5
          with:
            pattern: gut-unit-logs-*
            merge-multiple: false
-@@ -230,14 +231,14 @@ jobs:
+           path: shard_logs
+ 
+-      - name: Verify total Passing == 555
++      - name: Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES
+         run: |
+           set -euo pipefail
+           echo "Shard artifacts:"
+@@ -221,23 +238,60 @@ jobs:
+             total=$((total + n))
+           done < <(find shard_logs -name gut_unit_passing.txt | sort)
+           echo "TOTAL_PASSING=${total}"
+-          if [[ "$total" != "555" ]]; then
+-            echo "::error::unit+property Passing=${total} expected 555 (pre-change main)"
++          BASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"
++          BASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)
++          echo "BASELINE_COUNT=${BASELINE_COUNT}"
++          if [[ "$total" -lt "$BASELINE_COUNT" ]]; then
++            echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"
+             exit 1
+           fi
+-          echo "GUT_UNIT_PROPERTY_COUNT_OK=555"
++          python3 - <<'PY'
++          from pathlib import Path
++          baseline = {
++              ln.strip()
++              for ln in Path(".github/ci/gut_unit_property_baseline_names.txt").read_text().splitlines()
++              if ln.strip()
++          }
++          seen = set()
++          for f in Path("shard_logs").rglob("gut_unit_names.txt"):
++              for ln in f.read_text(errors="replace").splitlines():
++                  n = ln.strip()
++                  if n:
++                      seen.add(n)
++          removed = sorted(baseline - seen)
++          added = sorted(seen - baseline)
++          print(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)}")
++          print("REMOVED_NAMES:")
++          if removed:
++              for n in removed:
++                  print(n)
++          else:
++              print("無")
++          print("ADDED_NAMES:")
++          if added:
++              for n in added:
++                  print(n)
++          else:
++              print("無")
++          if removed:
++              print("::error::REMOVED_NAMES non-empty — baseline test deleted/renamed without Owner pre-approval (set diff)")
++              raise SystemExit(1)
++          print("GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1")
++          PY
++          echo "GUT_UNIT_PROPERTY_COUNT_OK>=${BASELINE_COUNT} actual=${total}"
+ 
    gut-ui:
      if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
      runs-on: ubuntu-latest
--    timeout-minutes: 15
-+    timeout-minutes: 30
++    # 17-69 2.2: restore 15 (measured ~2m09s); whole-CI ≤50m is not a per-job raise.
+     timeout-minutes: 15
      steps:
        - name: Checkout
 -        uses: actions/checkout@v4
-+        uses: actions/checkout@v7
++        uses: actions/checkout@v5
  
        - name: Cache Godot binary
          id: cache-godot
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: godot
            key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-@@ -261,7 +262,7 @@ jobs:
+@@ -261,7 +315,7 @@ jobs:
            ./godot --version
  
        - name: Cache Godot imported assets
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: .godot/imported
            key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
-@@ -298,7 +299,7 @@ jobs:
+@@ -298,7 +352,7 @@ jobs:
  
        - name: Upload GUT UI logs
          if: always()
 -        uses: actions/upload-artifact@v4
-+        uses: actions/upload-artifact@v7
++        uses: actions/upload-artifact@v5
          with:
            name: gut-ui-logs
            path: gut_ui.log
-@@ -310,17 +311,17 @@ jobs:
+@@ -310,17 +364,18 @@ jobs:
        (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
        && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
      runs-on: ubuntu-latest
--    timeout-minutes: 15
-+    timeout-minutes: 30
++    # 17-69 2.2: restore 15 (measured ~1m14s).
+     timeout-minutes: 15
      permissions:
        actions: read
        contents: read
      steps:
        - name: Checkout
 -        uses: actions/checkout@v4
-+        uses: actions/checkout@v7
++        uses: actions/checkout@v5
  
        - name: Cache Godot binary
          id: cache-godot
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: godot
            key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-@@ -344,7 +345,7 @@ jobs:
+@@ -344,7 +399,7 @@ jobs:
            ./godot --version
  
        - name: Cache Godot imported assets
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: .godot/imported
            key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
-@@ -431,7 +432,7 @@ jobs:
+@@ -393,7 +448,8 @@ jobs:
+         run: |
+           set -euo pipefail
+           mkdir -p out/golden-main
+-          # Prefer artifact from latest successful main CI run; else mark missing.
++          # Prefer artifact from latest successful main CI run.
++          # 17-69 2.5: missing baseline must fail the job (no silent GREEN skip).
+           set +e
+           RUN_ID=$(gh run list --repo "${{ github.repository }}" --branch main --workflow ci.yml \
+             --json databaseId,conclusion,status --limit 30 \
+@@ -402,7 +458,8 @@ jobs:
+           if [[ -z "${RUN_ID:-}" ]]; then
+             echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"
+             echo "missing" > out/golden-main/STATUS.txt
+-            exit 0
++            echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"
++            exit 1
+           fi
+           echo "GOLDEN_BASE_RUN_ID=$RUN_ID"
+           set +e
+@@ -412,26 +469,26 @@ jobs:
+           if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
+             echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"
+             echo "missing" > out/golden-main/STATUS.txt
+-            exit 0
++            echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"
++            exit 1
+           fi
+           echo "present" > out/golden-main/STATUS.txt
+           ls -la out/golden-main/
+ 
+-      - name: Compare PR golden to main baseline (or recompute note)
++      - name: Compare PR golden to main baseline
+         if: github.event_name == 'pull_request'
+         run: |
+           set -euo pipefail
+           if [[ ! -f out/golden-main/30d.csv ]]; then
+-            echo "GOLDEN_BASE_RECOMPUTE=1 — no main baseline; PR golden stands alone this run"
+-            echo "GOLDEN_COMPARE_SKIPPED"
+-            exit 0
++            echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"
++            exit 1
+           fi
+           python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv
+           echo "GOLDEN_CELLS_IDENTICAL=1"
  
        - name: Upload golden artifact
          if: always()
 -        uses: actions/upload-artifact@v4
-+        uses: actions/upload-artifact@v7
++        uses: actions/upload-artifact@v5
          with:
            name: golden-30d
            path: out/golden/
-@@ -446,11 +447,11 @@ jobs:
+@@ -446,11 +503,11 @@ jobs:
      timeout-minutes: 15
      steps:
        - name: Checkout
 -        uses: actions/checkout@v4
-+        uses: actions/checkout@v7
++        uses: actions/checkout@v5
  
        - name: Cache Godot binary
          id: cache-godot
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: godot
            key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-@@ -495,7 +496,7 @@ jobs:
+@@ -495,7 +552,7 @@ jobs:
  
        - name: Upload H4 smoke artifact
          if: always()
 -        uses: actions/upload-artifact@v4
-+        uses: actions/upload-artifact@v7
++        uses: actions/upload-artifact@v5
          with:
            name: m1b-h4-smoke
            path: out/m1b_smoke/
-@@ -510,11 +511,11 @@ jobs:
+@@ -510,11 +567,11 @@ jobs:
      timeout-minutes: 15
      steps:
        - name: Checkout
 -        uses: actions/checkout@v4
-+        uses: actions/checkout@v7
++        uses: actions/checkout@v5
  
        - name: Cache Godot binary
          id: cache-godot
 -        uses: actions/cache@v4
-+        uses: actions/cache@v6
++        uses: actions/cache@v5
          with:
            path: godot
            key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-@@ -575,7 +576,7 @@ jobs:
+@@ -575,7 +632,7 @@ jobs:
  
        - name: Upload W4 cmp artifact
          if: always()
 -        uses: actions/upload-artifact@v4
-+        uses: actions/upload-artifact@v7
++        uses: actions/upload-artifact@v5
          with:
            name: m1b-w4-inline-cmp
            path: out/w4_cmp/
 diff --git a/autoload/cash_ledger.gd b/autoload/cash_ledger.gd
-index c9d05f0..ae50080 100644
+index c9d05f0..0ab8b88 100644
 --- a/autoload/cash_ledger.gd
 +++ b/autoload/cash_ledger.gd
-@@ -657,6 +657,8 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
+@@ -655,8 +655,13 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
+ 
+ 
  func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
- 	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
- 	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
-+	# 17-67：真實市場路徑先以 GoodsLedger 庫存為 exclusive 上界，避免倍增／二分
-+	# 探測 qty>stock 觸發 MarketPricer push_error 風暴（K2/K4／#499 hung ~3h44m）。
+-	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
+-	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
++	# FRM-SYS05-09／D-124（Owner 2026-11-24；docs/spec v6.99.220；03_Systems r574）：
++	# q_afford = 最大 q 同時滿足 buy_total(q) ≤ balance 且 q ≤ s
++	# ＝ MIN(現金可負擔量, s)；s = 該港該貨 MARKET 庫存。
++	# s = 0 → 回 0，不以 q = 1 試探；倍增／二分不得以 q > s 呼叫 quote()
++	# （r451：買量須 ≤ s，否則 ERR-SYS04-06；收斂上界＝回到 quote 定義域，非 C-06 clamp）。
++	# A18：quote 失敗不得當 total＝0；視為該 q 不可買。
++	# 數值例：frm_examples EX-05-09-01 至 03。庫存不再於 FRM-SYS05-10 重做。
  	assert(_loaded, "CashLedger.max_affordable_qty before load")
  	var bal: int = balance(actor)
  	if bal <= 0:
-@@ -664,10 +666,23 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+@@ -664,10 +669,32 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
  	if _quote_provider == null:
  		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
  		return 0
 -	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗
-+	## Exclusive upper (hi): stock+1 only for real MarketPricer (not DemoQuoteProvider).
-+	## Autoload PortRegistry often stays loaded across GUT scripts; gating on it falsely
-+	## treated empty markets as stock=0 and broke TST-SYS05-08 / WP56 demo q=124.
++	## FRM-SYS05-09／D-124：exclusive upper = s+1 only for real MarketPricer
++	## (not DemoQuoteProvider — PortRegistry.is_loaded gating broke TST-SYS05-08 / WP56).
++	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
++	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；KIND+PORT Dictionary
++	## → get_qty → _container_key → container_id（不用 make_market）。
++	## 2.8：GoodsLedger.is_loaded／make_market、PortRegistry.is_loaded 未見 03_Systems H
++	## → 缺口見 evening-17-69-lane2（is_loaded 沿用既有 Autoload 慣例）。
 +	var abs_hi: int = -1
 +	if _quote_provider == MarketPricer and GoodsLedger.is_loaded():
 +		var port_s: String = String(port)
-+		var stock_cap: int = GoodsLedger.get_qty(GoodsLedger.make_market(port_s), good)
++		var market: Dictionary = {
++			GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
++			GoodsLedger.KEY_PORT: port_s,
++		}
++		var stock_cap: int = GoodsLedger.get_qty(market, good)
++		## D-124／EX-05-09-03：s = 0 → 0；不得以 q = 1 呼叫 quote()。
 +		if stock_cap < 1:
 +			return 0
 +		abs_hi = stock_cap + 1
-+	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到庫存上界）
++	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到 s+1，永不 quote q>s）
  	var lo: int = 0
  	var hi: int = 1
  	while true:
@@ -225,7 +951,7 @@ index c9d05f0..ae50080 100644
  		var t_hi: int = _quote_buy_total(port, good, hi)
  		if t_hi < 0 or t_hi > bal:
  			break
-@@ -677,6 +692,9 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+@@ -677,6 +704,9 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
  		if next_hi <= hi:
  			# overflow / cap
  			break
@@ -235,6 +961,319 @@ index c9d05f0..ae50080 100644
  		hi = next_hi
  	# 二分
  	while lo + 1 < hi:
+@@ -696,6 +726,7 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+ 
+ func buy_slider_max(q_afford: int, hold_free: int, stock: int) -> int:
+ 	# FRM-SYS05-10：買 = MIN(q_afford, hold_free, stock)
++	# D-124：庫存上界已在 FRM-SYS05-09 的 q_afford；此處不再重做 stock 語意。
+ 	# A22／C-06：負數不得靜默夾成 0
+ 	_clear_last_error()
+ 	if q_afford < 0 or hold_free < 0 or stock < 0:
+diff --git a/tests/unit/test_r972_cash_stock_cap_1769.gd b/tests/unit/test_r972_cash_stock_cap_1769.gd
+new file mode 100644
+index 0000000..1eee168
+--- /dev/null
++++ b/tests/unit/test_r972_cash_stock_cap_1769.gd
+@@ -0,0 +1,292 @@
++extends GutTest
++## R9-72 丁(1)／17-69 2.1／D-124：max_affordable_qty on real MarketPricer path.
++## Basis D-60e：規格無 TST ID → 名稱含 R972＋EX-05-09-*；註解寫明依據。
++## 必須載入 PortRegistry＋GoodsLedger；不得走 DemoQuoteProvider。
++## 期望值只取 frm_examples EX-05-09-01 至 03（D-124(f)；S9f 禁止鏡像產品公式）。
++## docs/spec B9 gate：v6.99.220。
++
++
++const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
++const GOODS_ROOT := "user://r972_stock_cap_goods/"
++const PORTS_ROOT := "user://r972_stock_cap_ports/"
++
++const REQUESTER_SYS04 := &"SYS-04"
++const REASON_OPEN := &"OPEN"
++
++const PORT := "PT-01"
++const GOOD := "GD-001"
++const ACTOR := &"ACT-R972"
++
++## frm_examples EX-05-09-01：現金足以買 500；s＝300 → q_afford＝300；ERR-SYS04-06＝0。
++const EX_05_09_01_CASH_Q := 500
++const EX_05_09_01_STOCK_S := 300
++const EX_05_09_01_EXPECT_Q := 300
++
++## frm_examples EX-05-09-02：現金僅足以買 120；s＝300 → q_afford＝120；ERR-SYS04-06＝0。
++const EX_05_09_02_CASH_Q := 120
++const EX_05_09_02_STOCK_S := 300
++const EX_05_09_02_EXPECT_Q := 120
++
++## frm_examples EX-05-09-03：s＝0 → q＝0；完全不呼叫 quote()。
++const EX_05_09_03_EXPECT_Q := 0
++const EX_05_09_03_SEED_CASH := 500000
++
++const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
++const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
++const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
++const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
++const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
++const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
++const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
++
++
++func before_each() -> void:
++	_wipe_dir(GOODS_ROOT)
++	_wipe_dir(PORTS_ROOT)
++
++
++func test_R972_EX_05_09_01_stock_bottleneck_q_300() -> void:
++	## EX-05-09-01／D-124(f)：庫存瓶頸。期望 q＝300（frm_examples），非產品公式。
++	## 預先以 s≥500 觀測 quote(500) 設現金（輸入整備），再抽庫存至 s＝300。
++	_boot_pricing_stack()
++	assert_true(PortRegistry.is_loaded())
++	assert_true(GoodsLedger.is_loaded())
++	_seed_market(EX_05_09_01_CASH_Q)
++	CashLedger.set_quote_provider(MarketPricer)
++	var q_setup: Dictionary = MarketPricer.quote(
++		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_01_CASH_Q
++	)
++	assert_false(q_setup.has(MarketPricer.KEY_ERROR), "setup quote q=500 must succeed at s>=500")
++	var cash_for_500: int = int(q_setup[MarketPricer.KEY_TOTAL_LI])
++	assert_gt(cash_for_500, 0)
++	_mark_errors_handled()
++	_fund_actor(cash_for_500)
++	var drain: int = EX_05_09_01_CASH_Q - EX_05_09_01_STOCK_S
++	assert_gt(
++		GoodsLedger.transfer(
++			_market_dict(),
++			GoodsLedger.make_external(),
++			StringName(GOOD),
++			drain,
++			GoodsLedger.REASON_CONSUME,
++			&"TEST"
++		),
++		0
++	)
++	assert_eq(_market_stock(), EX_05_09_01_STOCK_S)
++	var before: int = _count_err_sys04_06()
++	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
++	var after: int = _count_err_sys04_06()
++	assert_eq(q, EX_05_09_01_EXPECT_Q)
++	assert_eq(after - before, 0)
++	_mark_errors_handled()
++
++
++func test_R972_EX_05_09_02_cash_bottleneck_q_120() -> void:
++	## EX-05-09-02／D-124(f)：現金瓶頸。期望 q＝120（frm_examples）。
++	## 設現金＝quote(120).total（整備「僅足以買 120」）；s＝300。
++	_boot_pricing_stack()
++	assert_true(PortRegistry.is_loaded())
++	assert_true(GoodsLedger.is_loaded())
++	_seed_market(EX_05_09_02_STOCK_S)
++	CashLedger.set_quote_provider(MarketPricer)
++	var q120: Dictionary = MarketPricer.quote(
++		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_02_CASH_Q
++	)
++	assert_false(q120.has(MarketPricer.KEY_ERROR), "setup quote q=120 must succeed")
++	var cash_for_120: int = int(q120[MarketPricer.KEY_TOTAL_LI])
++	assert_gt(cash_for_120, 0)
++	var q121: Dictionary = MarketPricer.quote(
++		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_02_CASH_Q + 1
++	)
++	assert_false(q121.has(MarketPricer.KEY_ERROR), "setup quote q=121 must succeed under s=300")
++	assert_gt(int(q121[MarketPricer.KEY_TOTAL_LI]), cash_for_120)
++	_mark_errors_handled()
++	_fund_actor(cash_for_120)
++	var before: int = _count_err_sys04_06()
++	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
++	var after: int = _count_err_sys04_06()
++	assert_eq(q, EX_05_09_02_EXPECT_Q)
++	assert_eq(after - before, 0)
++	_mark_errors_handled()
++
++
++func test_R972_EX_05_09_03_zero_stock_no_quote() -> void:
++	## EX-05-09-03／D-124(f)：s＝0 → q＝0；完全不呼叫 quote()。
++	## 證明：任一 quote(q≥1) 在 s＝0 必產生 ERR-SYS04-06；計數增量＝0 ⇒ 未呼叫。
++	_boot_pricing_stack()
++	assert_true(PortRegistry.is_loaded())
++	assert_true(GoodsLedger.is_loaded())
++	assert_eq(_market_stock(), 0)
++	_fund_actor(EX_05_09_03_SEED_CASH)
++	CashLedger.set_quote_provider(MarketPricer)
++	var before: int = _count_err_sys04_06()
++	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
++	var after: int = _count_err_sys04_06()
++	assert_eq(q, EX_05_09_03_EXPECT_Q)
++	assert_eq(after - before, 0, "ERR-SYS04-06 delta 0 ⇒ quote() never called (EX-05-09-03)")
++	_mark_errors_handled()
++
++
++func _count_err_sys04_06() -> int:
++	var n: int = 0
++	for e in get_errors():
++		if e.contains_text("ERR-SYS04-06"):
++			n += 1
++	return n
++
++
++func _mark_errors_handled() -> void:
++	for e in get_errors():
++		e.handled = true
++
++
++func _market_dict() -> Dictionary:
++	return {
++		GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
++		GoodsLedger.KEY_PORT: PORT,
++	}
++
++
++func _market_stock() -> int:
++	return GoodsLedger.get_qty(_market_dict(), StringName(GOOD))
++
++
++func _fund_actor(cash: int) -> void:
++	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
++	assert_eq(
++		CashLedger.post([
++			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - cash),
++			CashLedger.make_entry(ACTOR, cash),
++		], REASON_OPEN, REQUESTER_SYS04),
++		OK
++	)
++
++
++func _boot_pricing_stack() -> void:
++	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
++	var goods_dir := _build_goods(GOODS_ROOT)
++	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
++	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)
++	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
++	assert_eq(GoodsLedger.load_and_validate().size(), 0)
++	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
++	assert_eq(CashLedger.load_and_validate().size(), 0)
++	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
++	GoodsLedger.seed_offtake_snapshot(
++		StringName(PORT), StringName(GOOD), 105, 105, days_pw, 0
++	)
++
++
++func _seed_market(stock: int) -> void:
++	assert_gt(
++		GoodsLedger.transfer(
++			GoodsLedger.make_external(),
++			_market_dict(),
++			StringName(GOOD),
++			stock,
++			GoodsLedger.REASON_GENESIS,
++			&"TEST"
++		),
++		0
++	)
++
++
++func _build_goods(dir: String) -> String:
++	_wipe_dir(dir)
++	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
++	var count: int = Params.get_int(PRM_GOOD_COUNT_MIN)
++	var staples: Array = [
++		{"id": GOOD, "name": "米", "build": false},
++		{"id": "GD-002", "name": "鹽", "build": false},
++		{"id": "GD-003", "name": "木材", "build": true},
++		{"id": "GD-004", "name": "魚乾", "build": false},
++	]
++	var free_max: int = Params.get_int(PRM_FREE_PORT_TIER_MAX)
++	var written: int = 0
++	for s in staples:
++		if written >= count:
++			break
++		var def := GoodDef.new()
++		def.good_id = String(s["id"])
++		def.name_zh = String(s["name"])
++		def.tier = 1
++		def.is_staple = true
++		def.is_build_material = bool(s["build"])
++		def.is_strategic = false
++		def.base_price_li = 1000
++		def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
++		ResourceSaver.save(def, dir + "%s.tres" % def.good_id)
++		written += 1
++	var next_n: int = 5
++	while written < count:
++		var gid := "GD-%03d" % next_n
++		var def2 := GoodDef.new()
++		def2.good_id = gid
++		def2.name_zh = "填料%d" % next_n
++		def2.tier = mini((next_n % (free_max + 1)) + 1, Params.get_int(PRM_TIER_MAX))
++		def2.is_staple = false
++		def2.is_build_material = false
++		def2.is_strategic = false
++		def2.base_price_li = 1000
++		def2.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
++		ResourceSaver.save(def2, dir + "%s.tres" % gid)
++		written += 1
++		next_n += 1
++	return dir
++
++
++func _build_ports(port_count: int, dir: String) -> String:
++	_wipe_dir(dir)
++	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
++	var free_count: int = _valid_free_count(port_count)
++	var good_ids: PackedStringArray = GoodCatalog.all_ids()
++	for i in range(port_count):
++		var n: int = i + 1
++		var port_id := "PT-%02d" % n
++		var def := PortDef.new()
++		def.port_id = port_id
++		def.name_zh = "港%d" % n
++		def.is_free_port = i < free_count
++		def.draft_limit_class = 0
++		def.regime_id = "RG-TEST"
++		def.role_cells = {}
++		for good_variant in good_ids:
++			var good_id: String = String(good_variant)
++			var cell := RoleCell.new()
++			if i == 0:
++				cell.role = PortRegistry.ROLE_PRODUCER
++				cell.base_output_per_season = 1
++				cell.downstream_terminals = PackedStringArray()
++			else:
++				cell.role = PortRegistry.ROLE_TERMINAL
++				cell.base_output_per_season = 0
++				cell.downstream_terminals = PackedStringArray()
++			def.role_cells[good_id] = cell
++		ResourceSaver.save(def, dir + "%s.tres" % port_id)
++	return dir
++
++
++func _valid_free_count(port_count: int) -> int:
++	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
++	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
++	var free_count: int = 0
++	while free_count <= port_count:
++		var ratio: float = float(free_count) / float(port_count)
++		if ratio >= ratio_min and ratio <= ratio_max:
++			return free_count
++		free_count += 1
++	return 0
++
++
++func _wipe_dir(dir: String) -> void:
++	var abs_path := ProjectSettings.globalize_path(dir)
++	if DirAccess.dir_exists_absolute(abs_path):
++		var d := DirAccess.open(dir)
++		if d:
++			d.list_dir_begin()
++			var fn := d.get_next()
++			while fn != "":
++				if fn != "." and fn != "..":
++					d.remove(fn)
++				fn = d.get_next()
+diff --git a/tests/unit/test_r972_cash_stock_cap_1769.gd.uid b/tests/unit/test_r972_cash_stock_cap_1769.gd.uid
+new file mode 100644
+index 0000000..4e291e9
+--- /dev/null
++++ b/tests/unit/test_r972_cash_stock_cap_1769.gd.uid
+@@ -0,0 +1 @@
++uid://jr6a3hb8k08tq
 diff --git a/tests/unit/test_sys23_wp27.gd b/tests/unit/test_sys23_wp27.gd
 index f2fbeaf..2883dc5 100644
 --- a/tests/unit/test_sys23_wp27.gd

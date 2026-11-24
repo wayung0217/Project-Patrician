@@ -1,5 +1,9 @@
 # file inventory (relative path + bytes)
 1467	00_summary.md
+1276	band1/band1_y5_counts.csv
+854	band1/band1_y5_counts.md
+1276	band1_y5_counts.csv
+854	band1_y5_counts.md
 1261	evening-17-63/00_summary.md
 607	evening-17-63/a.md
 866	evening-17-63/b.md
@@ -93,13 +97,18 @@
 1057	evening-17-67/s1s2_main_before_s2fix.txt
 890	evening-17-67/timeout.diff.txt
 22923	evening-17-67/workflow.diff
-4304	file_inventory.txt
-67	.git
-464	git_branch_r.txt
-252	lane.txt
-8808	pr84_vs_main.diff
-231	pr84_vs_main.stat.txt
+4412	file_inventory.txt
+68	.git
+625	git_branch_r.txt
+1653	h1_branch_inventory.csv
+3944	h1_deletable_branches.md
+271	lane.txt
+292	pr84_tip.txt
+53004	pr84_vs_main.diff
+494	pr84_vs_main.stat.txt
+53004	pr84_vs_pr_base_9d293ff.diff
 305	pr85_vs_int.stat.txt
+469	r973_lane1.md
 3380	s9a_84.md
 3013	s9a_85.md
 2358	sha_map.md
