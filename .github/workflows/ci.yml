@@ -53,6 +53,7 @@ jobs:
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
           unzip -q godot.zip
+          rm -f godot.zip
           chmod +x "${GODOT_BIN}"
           mv "${GODOT_BIN}" godot
           ./godot --version
@@ -99,12 +100,14 @@ jobs:
           ./godot --headless --path . --import
 
       # 17-64 T1: Godot 4.7.2 gut .import must leave a clean tree.
+      # Ignore download artifacts (godot.zip / godot binary) left in the workspace.
       - name: Assert import leaves clean tree
         run: |
           set -euo pipefail
-          if [[ -n "$(git status --porcelain)" ]]; then
+          dirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"
+          if [[ -n "${dirty}" ]]; then
             echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"
-            git status --porcelain
+            echo "$dirty"
             git diff --stat
             exit 1
           fi
@@ -159,6 +162,7 @@ jobs:
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
           unzip -q godot.zip
+          rm -f godot.zip
           chmod +x "${GODOT_BIN}"
           mv "${GODOT_BIN}" godot
           ./godot --version
@@ -185,9 +189,10 @@ jobs:
       - name: Assert import leaves clean tree
         run: |
           set -euo pipefail
-          if [[ -n "$(git status --porcelain)" ]]; then
+          dirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"
+          if [[ -n "${dirty}" ]]; then
             echo "::error::godot --import dirtied the working tree"
-            git status --porcelain
+            echo "$dirty"
             exit 1
           fi
           echo "IMPORT_CLEAN_TREE_OK"
@@ -240,6 +245,7 @@ jobs:
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
           unzip -q godot.zip
+          rm -f godot.zip
           chmod +x "${GODOT_BIN}"
           mv "${GODOT_BIN}" godot
           ./godot --version
@@ -266,9 +272,10 @@ jobs:
       - name: Assert import leaves clean tree
         run: |
           set -euo pipefail
-          if [[ -n "$(git status --porcelain)" ]]; then
+          dirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"
+          if [[ -n "${dirty}" ]]; then
             echo "::error::godot --import dirtied the working tree"
-            git status --porcelain
+            echo "$dirty"
             exit 1
           fi
           echo "IMPORT_CLEAN_TREE_OK"
@@ -368,6 +375,7 @@ jobs:
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
           unzip -q godot.zip
+          rm -f godot.zip
           chmod +x "${GODOT_BIN}"
           mv "${GODOT_BIN}" godot
 
@@ -431,6 +439,7 @@ jobs:
           curl -fsSL -o godot.zip \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
           unzip -q godot.zip
+          rm -f godot.zip
           chmod +x "${GODOT_BIN}"
           mv "${GODOT_BIN}" godot
 
