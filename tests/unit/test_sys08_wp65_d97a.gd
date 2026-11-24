@@ -2,8 +2,8 @@ extends GutTest
 ## WP-65／N1／D-97(a): ERR-SYS08-13 build_queue import validation.
 ## EX-08-21-04 + skip-level fixture + formal data 0 errors.
 
-## Formal .tres under data/ are wiped by earlier suites (sim_loop／SYS23／trade_desk).
-## Restore from git HEAD — never edit docs/spec (blank rows stay; D-111 hard rule).
+## WP-69／D-114(d): suites must not wipe res://data or call git (removed d6bb0a6 restore).
+## Formal asserts read committed trees under res://data/ only.
 
 
 func before_each() -> void:
@@ -12,25 +12,6 @@ func before_each() -> void:
 	GoodCatalog._loaded = false
 	CashLedger._loaded = false
 	Params._loaded = false
-
-
-func _restore_formal_data_tres() -> void:
-	var root: String = ProjectSettings.globalize_path("res://").rstrip("/")
-	var paths: Array = [
-		"data/build_queue",
-		"data/buildings",
-		"data/city_center",
-		"data/opening",
-		"data/opening_public",
-		"data/opening_population",
-		"data/zones",
-	]
-	var args: PackedStringArray = PackedStringArray(["-C", root, "checkout", "HEAD", "--"])
-	for p in paths:
-		args.append(String(p))
-	var output: Array = []
-	var rc: int = OS.execute("git", args, output, true, false)
-	assert_eq(rc, 0, "git restore formal data failed rc=%s out=%s" % [str(rc), str(output)])
 
 
 func test_EX_08_21_04_opening_plus_new_exceeds_slots() -> void:
@@ -121,7 +102,6 @@ func test_D102d_city_queue_position() -> void:
 
 func test_N1_formal_data_zero_queue_import_errors() -> void:
 	## Formal city centers + opening_public + build_queue → 0 ERR-SYS08-13.
-	_restore_formal_data_tres()
 	_boot_registry()
 	var city_by: Dictionary = {}
 	var dir := DirAccess.open("res://data/city_center/")
@@ -226,7 +206,6 @@ func test_D113c_no_public_slot_err_sys08_01() -> void:
 func test_D111b_formal_newbuild_defs_from_buildings() -> void:
 	## D-111(b) blind-2 (static half): every formal target_level=1 cb_id has loaded BuildingDef.
 	## 360d start-day listing is produced by tools/wp65_newbuild_360_probe.gd (F1 evidence).
-	_restore_formal_data_tres()
 	_boot_registry()
 	BuildingEconomy._clear_state()
 	BuildingEconomy._loaded = true
