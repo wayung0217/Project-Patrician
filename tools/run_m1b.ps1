@@ -2,6 +2,7 @@
 <#
 .SYNOPSIS
   Owner-local M1b multi-year runner (17-59 Lane H). Always uses sim_runner --inline.
+  Pure ASCII only (PS 5.1 / system codepage safe).
 
 .PARAMETER GodotPath
   Full path to Godot *console* exe (required; never hardcoded).
@@ -13,7 +14,7 @@
   Skip groups that already have out\m1b\<name>\done.txt.
 
 .PARAMETER SmokeDays
-  Trial day count → out\m1b_smoke\ only (sets --days).
+  Trial day count -> out\m1b_smoke\ only (sets --days).
 
 .PARAMETER ReportOnly
   Only run tools/run_m1b_report.gd against existing out\m1b\.
@@ -197,15 +198,13 @@ foreach ($gName in $selected) {
   try {
     & $GodotPath @args 2>&1 | Tee-Object -FilePath $logPath | ForEach-Object {
       $line = "$_"
-      if ($line -match "第 .+ 年第 .+ 季") {
+      # Match ASCII marker from sim_engine (PS 5.1 safe).
+      if ($line -match "PROGRESS pct=(\d+)") {
         Append-Progress $line
-        # Rough % from 本組 token when present.
-        if ($line -match "本組\s+(\d+)%") {
-          $pct = [int]$Matches[1]
-          $elapsed = (Get-Date) - $gStart
-          $eta = if ($pct -gt 0) { [TimeSpan]::FromSeconds($elapsed.TotalSeconds * (100 - $pct) / $pct) } else { [TimeSpan]::Zero }
-          Write-Progress -Id 2 -Activity $gName -Status ("days progress {0}% elapsed={1:hh\:mm\:ss} ETA={2:hh\:mm\:ss}" -f $pct, $elapsed, $eta) -PercentComplete ([Math]::Min(99, $pct))
-        }
+        $pct = [int]$Matches[1]
+        $elapsed = (Get-Date) - $gStart
+        $eta = if ($pct -gt 0) { [TimeSpan]::FromSeconds($elapsed.TotalSeconds * (100 - $pct) / $pct) } else { [TimeSpan]::Zero }
+        Write-Progress -Id 2 -Activity $gName -Status ("days progress {0}% elapsed={1:hh\:mm\:ss} ETA={2:hh\:mm\:ss}" -f $pct, $elapsed, $eta) -PercentComplete ([Math]::Min(99, $pct))
       } else {
         Write-Host $line
       }

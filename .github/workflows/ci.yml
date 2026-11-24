@@ -33,6 +33,28 @@ jobs:
           mv Godot_v4.7.2-stable_linux.x86_64 godot
           ./godot --version
 
+      - name: tools/*.ps1 must be pure ASCII
+        run: |
+          set -euo pipefail
+          fail=0
+          shopt -s nullglob
+          for f in tools/*.ps1; do
+            if LC_ALL=C grep -n '[^[:print:][:space:]]' "$f" >/tmp/ps1_nonascii.txt; then
+              echo "::error::non-ASCII bytes in $f"
+              cat /tmp/ps1_nonascii.txt
+              fail=1
+            fi
+            # Also reject any byte > 127 (covers multi-byte UTF-8).
+            if python3 -c "import sys; b=open(sys.argv[1],'rb').read(); sys.exit(0 if all(x<128 for x in b) else 1)" "$f"; then
+              echo "ASCII_OK $f"
+            else
+              echo "::error::byte>127 in $f"
+              python3 -c "b=open('$f','rb').read(); print([(i,b[i]) for i in range(len(b)) if b[i]>127][:20])"
+              fail=1
+            fi
+          done
+          exit "$fail"
+
       - name: Import project (register global classes)
         run: |
           set -euo pipefail
@@ -195,12 +217,13 @@ jobs:
             test -f "out/m1b_smoke/${g}/summary.csv"
             test -f "out/m1b_smoke/${g}/trader_summary.csv"
           done
-          # progress.log from season lines
-          grep -h "散商出航累計" out/m1b_smoke/*/sim_runner.log > out/m1b_smoke/progress.log || true
+          # progress.log from ASCII PROGRESS markers
+          grep -h "PROGRESS pct=" out/m1b_smoke/*/sim_runner.log > out/m1b_smoke/progress.log || true
           ./godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b_smoke
           echo "H4_SMOKE_DONE"
           ls -la out/m1b_smoke/Za_G0_A0 out/m1b_smoke/Zb_G0_notrader
           wc -l out/m1b_smoke/progress.log || true
+          test -s out/m1b_smoke/progress.log
 
       - name: Upload H4 smoke artifact
         if: always()

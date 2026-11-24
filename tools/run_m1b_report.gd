@@ -3,7 +3,8 @@ extends SceneTree
 ## Usage: godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b
 
 
-const GROUPS: PackedStringArray = PackedStringArray([
+## Not const PackedStringArray([...]) — Godot 4.7 rejects that as non-constant.
+var _GROUPS: Array = [
 	"Za_G0_A0",
 	"Za_G0_A250",
 	"Za_G1_A0",
@@ -13,7 +14,7 @@ const GROUPS: PackedStringArray = PackedStringArray([
 	"Zb_G0_notrader",
 	"Zc_G0H_A0",
 	"Zd_G0_seed2",
-])
+]
 
 const RICH_LO := 0.03
 const RICH_HI := 0.08
@@ -57,7 +58,7 @@ func _main() -> void:
 	lines.append("| Group | status | rich% | cit% | poor% | beg% | pop | class |")
 	lines.append("|-------|--------|-------|------|-------|------|-----|-------|")
 	var rows1: Array = []
-	for g in GROUPS:
+	for g in _GROUPS:
 		var gdir: String = abs_in.path_join(g)
 		var st: Dictionary = _analyze_group(g, gdir)
 		rows1.append(st)

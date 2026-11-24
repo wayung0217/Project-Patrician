@@ -371,8 +371,8 @@ func _emit_season_progress(
 	seasons_y: int,
 	sampler: SimSampler
 ) -> void:
-	## Print-only (W5／H1(2)). Group i/9 + 全部% filled by run_m1b.ps1 via env.
-	## Format: 時間｜組 i／9 組名｜第 y 年第 q 季｜本組 xx%｜全部 xx%｜已用 h:mm｜預估剩 h:mm｜人口｜散商出航累計
+	## Print-only (W5/H1). ASCII markers for PS 5.1 (no CJK in tools/*.ps1).
+	## Format: PROGRESS pct=<job%> all_pct=<%> group=<i>/<n> <name> y=<y> q=<q> elapsed=<h:mm> eta=<h:mm> pop=<n> sails_cum=<n>
 	var group_i: String = OS.get_environment("M1B_GROUP_I")
 	var group_n: String = OS.get_environment("M1B_GROUP_N")
 	var group_name: String = OS.get_environment("M1B_GROUP_NAME")
@@ -410,24 +410,22 @@ func _emit_season_progress(
 	for row_v3 in sampler.trader_summary_rows:
 		sails_cum += int((row_v3 as Dictionary).get("sail_count", 0))
 	var all_pct: String = all_pct_env if not all_pct_env.is_empty() else ("%.0f" % pct_job)
-	var now: Dictionary = Time.get_datetime_dict_from_system()
-	var time_s: String = "%02d:%02d:%02d" % [
-		int(now.get("hour", 0)), int(now.get("minute", 0)), int(now.get("second", 0))
-	]
-	var line: String = "%s｜組 %s／%s %s｜第 %d 年第 %d 季｜本組 %.0f%%｜全部 %s%%｜已用 %s｜預估剩 %s｜人口 %d｜散商出航累計 %d" % [
-		time_s,
-		group_i,
-		group_n,
-		group_name,
-		y,
-		q,
-		pct_job,
-		all_pct,
-		_fmt_hmm(elapsed_s),
-		_fmt_hmm(eta_s),
-		pop,
-		sails_cum,
-	]
+	var line: String = (
+		"PROGRESS pct=%.0f all_pct=%s group=%s/%s %s y=%d q=%d elapsed=%s eta=%s pop=%d sails_cum=%d"
+		% [
+			pct_job,
+			all_pct,
+			group_i,
+			group_n,
+			group_name,
+			y,
+			q,
+			_fmt_hmm(elapsed_s),
+			_fmt_hmm(eta_s),
+			pop,
+			sails_cum,
+		]
+	)
 	print(line)
 
 

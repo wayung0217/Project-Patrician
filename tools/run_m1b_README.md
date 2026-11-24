@@ -52,11 +52,12 @@ While a run is going (another window):
 Get-Content .\out\m1b\progress.log -Wait -Tail 20
 ```
 
-Each season line (also printed live):
+Each season line (also printed live; ASCII for PS 5.1):
 
-`時間｜組 i／9 組名｜第 y 年第 q 季｜本組 xx%｜全部 xx%｜已用 h:mm｜預估剩 h:mm｜人口｜散商出航累計`
+`PROGRESS pct=<job%> all_pct=<%> group=<i>/<n> <name> y=<y> q=<q> elapsed=<h:mm> eta=<h:mm> pop=<n> sails_cum=<n>`
 
 `Write-Progress` shows two bars: all groups (i/9) and current group %.
+`tools/*.ps1` must stay pure ASCII (CI gate).
 
 ## ETA / interrupt
 

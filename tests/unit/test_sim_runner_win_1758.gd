@@ -146,7 +146,7 @@ func test_W5_season_progress_print_only_source() -> void:
 	var eng_src: String = FileAccess.get_file_as_string("res://sim/sim_engine.gd")
 	assert_true(eng_src.find("print_season_progress") >= 0)
 	assert_true(eng_src.find("_emit_season_progress") >= 0)
-	assert_true(eng_src.find("散商出航累計") >= 0)
+	assert_true(eng_src.find("PROGRESS pct=") >= 0)
 	## Progress must not write sampler / ledger — only print after sample_season.
 	var emit_idx: int = eng_src.find("func _emit_season_progress")
 	assert_gt(emit_idx, 0)
