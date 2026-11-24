@@ -788,6 +788,8 @@ func _evaluate_and_maybe_sail(
 				## D-109(c)／F2: empty board → not a profit candidate.
 				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
 				## catalog base_price_li as ranking stand-in only (profit gate skipped).
+				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
 				if not explore:
 					continue
 				if not GoodCatalog.is_loaded():
