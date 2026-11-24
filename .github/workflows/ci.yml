@@ -16,6 +16,7 @@ on:
           - w4-inline-cmp
 
 jobs:
+  # 17-62 P6b: fork PRs run GUT only (no secrets; sim jobs gated elsewhere).
   gut-unit-property:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
@@ -110,6 +111,7 @@ jobs:
   gut-ui:
     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
     runs-on: ubuntu-latest
+    # fork PRs: GUT only (this job is GUT)
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -137,7 +139,10 @@ jobs:
             -gexit
 
   golden-30d:
-    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+    # 17-62 P6b: skip golden/sim on fork PRs (GUT-only). Same-repo PR/push OK.
+    if: >-
+      (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
+      && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

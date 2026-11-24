@@ -1,0 +1,182 @@
+# 17-62 / D-122: Actions Step Z — tag trigger only (z-1758-*).
+# Matrix: 9 M1b groups x 5y x --inline. No workflow_dispatch. No secrets.
+# Fork PRs never run this workflow (tag-only).
+name: M1b-Z
+
+on:
+  push:
+    tags:
+      - "z-1758-*"
+
+jobs:
+  z-group:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        group:
+          - Za_G0_A0
+          - Za_G0_A250
+          - Za_G1_A0
+          - Za_G1_A250
+          - Za_G2_A0
+          - Za_G2_A250
+          - Zb_G0_notrader
+          - Zc_G0H_A0
+          - Zd_G0_seed2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          ./godot --version
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Run M1b group (5y inline)
+        env:
+          M1B_GROUP_NAME: ${{ matrix.group }}
+          M1B_GROUP_I: "1"
+          M1B_GROUP_N: "9"
+        run: |
+          set -euo pipefail
+          G="${{ matrix.group }}"
+          mkdir -p "out/m1b/${G}" "out/m1b/_scenarios"
+          python3 tools/m1b_prepare_scenario.py --group "$G" --out "out/m1b/_scenarios/${G}.json"
+          # Confirm years=5 (no shorten; V2 / 17-59).
+          python3 - <<PY
+          import json
+          from pathlib import Path
+          p = Path("out/m1b/_scenarios/${G}.json")
+          obj = json.loads(p.read_text(encoding="utf-8"))
+          assert int(obj.get("years", 0)) == 5, obj.get("years")
+          print("years_ok", obj["years"], "scenario_id", obj["scenario_id"])
+          PY
+          START=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          SHA=$(git rev-parse HEAD)
+          echo "$SHA" > "out/m1b/${G}/commit_sha.txt"
+          set +e
+          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+            --scenario "$(pwd)/out/m1b/_scenarios/${G}.json" \
+            --inline --season-progress \
+            --out-dir "$(pwd)/out/m1b/${G}" \
+            2>&1 | tee "out/m1b/${G}/sim_runner.log"
+          RC=${PIPESTATUS[0]}
+          set -e
+          END=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          STATUS=ok
+          if [[ "$RC" -ne 0 ]]; then STATUS=fail; fi
+          {
+            echo "commit_sha=$SHA"
+            echo "start=$START"
+            echo "end=$END"
+            echo "status=$STATUS"
+            echo "exit_code=$RC"
+            echo "tag=${GITHUB_REF_NAME}"
+          } > "out/m1b/${G}/timing.txt"
+          grep -h "PROGRESS pct=" "out/m1b/${G}/sim_runner.log" >> "out/m1b/${G}/progress_snip.log" || true
+          test -f "out/m1b/${G}/summary.csv"
+          test -f "out/m1b/${G}/season_ports.csv"
+          test -f "out/m1b/${G}/trader_summary.csv"
+          if [[ "$STATUS" != "ok" ]]; then
+            echo "::error::group $G failed exit=$RC"
+            exit "$RC"
+          fi
+          echo "Z_GROUP_DONE $G"
+
+      - name: Upload group artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1b-z-${{ matrix.group }}
+          path: out/m1b/${{ matrix.group }}/
+          retention-days: 14
+          if-no-files-found: warn
+
+  z-report:
+    needs: z-group
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Download all group artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: m1b-z-*
+          path: out/m1b_artifacts
+          merge-multiple: false
+
+      - name: Assemble out/m1b and H3 report
+        run: |
+          set -euo pipefail
+          mkdir -p out/m1b
+          # download-artifact layout: out/m1b_artifacts/m1b-z-<group>/...
+          for d in out/m1b_artifacts/m1b-z-*; do
+            [[ -d "$d" ]] || continue
+            g=$(basename "$d" | sed 's/^m1b-z-//')
+            mkdir -p "out/m1b/${g}"
+            cp -a "$d"/. "out/m1b/${g}/"
+            echo "assembled $g"
+          done
+          ls -la out/m1b || true
+          ./godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b
+          test -f out/m1b/report.md
+          echo "==== report.md (head) ===="
+          head -80 out/m1b/report.md
+          # Failure rollup for re-tag guidance
+          {
+            echo "# Z failures"
+            echo
+            for g in Za_G0_A0 Za_G0_A250 Za_G1_A0 Za_G1_A250 Za_G2_A0 Za_G2_A250 Zb_G0_notrader Zc_G0H_A0 Zd_G0_seed2; do
+              t="out/m1b/${g}/timing.txt"
+              if [[ ! -f "$t" ]]; then
+                echo "- ${g}: missing (artifact absent)"
+                continue
+              fi
+              st=$(grep '^status=' "$t" | head -1 | cut -d= -f2-)
+              rc=$(grep '^exit_code=' "$t" | head -1 | cut -d= -f2- || true)
+              if [[ "$st" != "ok" ]]; then
+                echo "- ${g}: status=${st} exit_code=${rc}"
+              else
+                echo "- ${g}: ok"
+              fi
+            done
+          } | tee out/m1b/failures.md
+
+      - name: Upload Z report pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1b-z-report
+          path: |
+            out/m1b/report.md
+            out/m1b/failures.md
+            out/m1b/*/summary.csv
+            out/m1b/*/timing.txt
+            out/m1b/*/commit_sha.txt
+            out/m1b/*/trader_summary.csv
+          retention-days: 14
