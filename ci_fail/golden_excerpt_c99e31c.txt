@@ -1,0 +1,20 @@
+1:golden-30d	Download latest main golden baseline (PRs)	﻿2026-11-24T16:03:15.1551744Z ##[group]Run set -euo pipefail
+2:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1552093Z ^[[36;1mset -euo pipefail^[[0m
+3:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1552360Z ^[[36;1mmkdir -p out/golden-main^[[0m
+4:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1552689Z ^[[36;1m# Prefer artifact from latest successful main CI run.^[[0m
+5:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1553137Z ^[[36;1m# 17-69 2.5: missing baseline must fail the job (no silent GREEN skip).^[[0m
+6:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1553511Z ^[[36;1mset +e^[[0m
+7:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1553918Z ^[[36;1mRUN_ID=$(gh run list --repo "wayung0217/Project-Patrician" --branch main --workflow ci.yml \^[[0m
+8:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1554690Z ^[[36;1m  --json databaseId,conclusion,status --limit 30 \^[[0m
+9:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1555352Z ^[[36;1m  --jq '.[] | select(.conclusion=="success") | .databaseId' | head -n1)^[[0m
+10:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1555735Z ^[[36;1mset -e^[[0m
+11:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1555953Z ^[[36;1mif [[ -z "${RUN_ID:-}" ]]; then^[[0m
+12:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1556307Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"^[[0m
+13:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1556713Z ^[[36;1m  echo "missing" > out/golden-main/STATUS.txt^[[0m
+14:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1557313Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"^[[0m
+15:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1557800Z ^[[36;1m  exit 1^[[0m
+16:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1558046Z ^[[36;1mfi^[[0m
+17:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1558265Z ^[[36;1mecho "GOLDEN_BASE_RUN_ID=$RUN_ID"^[[0m
+18:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1558547Z ^[[36;1mset +e^[[0m
+19:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1558952Z ^[[36;1mgh run download "$RUN_ID" --repo "wayung0217/Project-Patrician" -n golden-30d -D out/golden-main^[[0m
+20:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:03:15.1559416Z ^[[36;1mRC=$?^[[0m

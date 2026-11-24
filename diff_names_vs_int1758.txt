@@ -1,0 +1,5 @@
+.github/ci/README.md
+.github/ci/golden_30d_bootstrap_1764.csv
+.github/ci/golden_30d_bootstrap_1764.sha256
+.github/ci/gut_unit_property_baseline_names.txt
+.github/workflows/ci.yml

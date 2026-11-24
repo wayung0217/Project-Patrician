@@ -1,0 +1,30 @@
+2061:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0503012Z * test_WP27_MET01_TH01b_upper_bound
+2069:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0532057Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2079:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0542100Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2089:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0548043Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2099:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0553510Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2109:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0559174Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2119:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0564844Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2123:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0566422Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2131:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0575254Z * test_WP27_MET05b_no_pass
+2139:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0579339Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2149:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0586861Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2159:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0593008Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2169:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0597729Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2179:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0602263Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2189:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0608089Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2193:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0609631Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2201:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0617460Z * test_WP27_OBS02_longest_zero_beggar_streak
+2209:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0623832Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2219:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0632066Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2229:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0640797Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2239:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0649311Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2249:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0657504Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2259:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0665432Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2269:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0673889Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2279:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0681720Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2289:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0689852Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2299:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0698264Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2309:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0706640Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2319:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0714636Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2323:gut-unit (3)	Run GUT unit shard	2026-11-24T16:10:31.0717123Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:

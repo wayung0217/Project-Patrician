@@ -1,0 +1,37 @@
+GOLDEN_GATE PASS
+GOLDEN_BOOTSTRAP=0 (main artifact used)
+IDENTICAL=1
+COMPARED_ROWS=527
+COMPARED_COLS=19
+COMPARED_CELLS=10013
+DIFF_CELLS=0
+GOLDEN_CELLS_IDENTICAL=1
+golden-30d	30d golden gated	2026-11-25T07:39:13.9293573Z GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.log
+golden-30d	30d golden gated	2026-11-25T07:39:13.9294701Z GOLDEN_GATE PASS
+golden-30d	Download latest main golden baseline (PRs)	2026-11-25T07:39:13.9856265Z ^[[36;1m    echo "GOLDEN_BOOTSTRAP=0"^[[0m
+golden-30d	Download latest main golden baseline (PRs)	2026-11-25T07:39:13.9866778Z ^[[36;1mecho "GOLDEN_BOOTSTRAP=1"^[[0m
+golden-30d	Download latest main golden baseline (PRs)	2026-11-25T07:39:14.9788002Z GOLDEN_BOOTSTRAP=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9879381Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=1"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9880010Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=0"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9882420Z ^[[36;1m# 17-70 T4／N-13：COMPARED_* 以 CSV 網格為準（不依賴 compare.out 是否印 COMPARED_*；^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9882928Z ^[[36;1m# 舊 golden_compare 在 IDENTICAL=1 時提早 return 會漏印 → 誤判 cells=0）。^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9888316Z ^[[36;1mif "IDENTICAL=1" in text:^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9890813Z ^[[36;1mprint(f"COMPARED_ROWS={rows}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9891095Z ^[[36;1mprint(f"COMPARED_COLS={cols}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9891377Z ^[[36;1mprint(f"COMPARED_CELLS={cells}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9891671Z ^[[36;1mprint(f"DIFF_CELLS={diff}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9893871Z ^[[36;1mecho "COMPARED_ROWS=${COMPARED_ROWS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9894205Z ^[[36;1mecho "COMPARED_COLS=${COMPARED_COLS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9894526Z ^[[36;1mecho "COMPARED_CELLS=${COMPARED_CELLS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9894840Z ^[[36;1mecho "DIFF_CELLS=${DIFF_CELLS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9896058Z ^[[36;1mexpect=$((COMPARED_ROWS * COMPARED_COLS))^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9896504Z ^[[36;1mif [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9897127Z ^[[36;1m  echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:14.9898699Z ^[[36;1mecho "GOLDEN_CELLS_IDENTICAL=1"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:15.0012394Z GOLDEN_BOOTSTRAP=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:15.0243128Z IDENTICAL=1
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:15.0878940Z COMPARED_ROWS=527
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:15.0879375Z COMPARED_COLS=19
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:15.0879745Z COMPARED_CELLS=10013
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:15.0880114Z DIFF_CELLS=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:39:15.0880836Z GOLDEN_CELLS_IDENTICAL=1

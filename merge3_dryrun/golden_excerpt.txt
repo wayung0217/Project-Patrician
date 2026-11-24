@@ -1,0 +1,9 @@
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5268977Z COMPARED_ROWS=527
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5269291Z COMPARED_COLS=19
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5269599Z COMPARED_CELLS=10013
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5269947Z IDENTICAL=1
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5946049Z COMPARED_ROWS=527
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5946544Z COMPARED_COLS=19
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5947159Z COMPARED_CELLS=10013
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5947532Z DIFF_CELLS=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T09:28:12.5948544Z GOLDEN_CELLS_IDENTICAL=1

@@ -1,0 +1,301 @@
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6282082Z        [3] transfer (res://autoload/goods_ledger.gd:222)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6282528Z        [4] test_TST_SYS23_07_sim_relocate_rejected_when_disabled (res://tests/unit/test_sys23_wp27.gd:153)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6282966Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6283281Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6283632Z ^[[34m[ExpectedError]^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6284019Z TST-SYS23-07 SIM_RELOCATE rejected offline
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6284274Z * test_WP27_MET01_TH01b_upper_bound
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6299585Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6300279Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6300582Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6300899Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6301258Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6301591Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6301861Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6302139Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6302377Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6302562Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6306143Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6306818Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6307059Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6307307Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6307948Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6308281Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6308672Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6309012Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6309369Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6309651Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6310306Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6310967Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6311263Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6311570Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6311926Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6312153Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6312320Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6312539Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6312789Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6312969Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6313376Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6313937Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6314130Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6314372Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6314595Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6314796Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6314964Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6315176Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6315400Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6315580Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6315994Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6316408Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6316599Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6316796Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6317023Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6317229Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6317395Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6317610Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6317831Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6318016Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6318421Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6328141Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6328475Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6329049Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6329408Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6329711Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6329882Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6330105Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6330331Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6330514Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6330700Z WP27 MET-01 TH-01b upper reject ok
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6330915Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6331339Z     [1] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6331994Z     [2] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6332648Z     [3] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6333283Z     [4] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6334057Z     [5] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6334701Z     [6] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6335101Z       at line -1
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6335230Z * test_WP27_MET05b_no_pass
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6335619Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6336030Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6336226Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6336423Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6336642Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6336852Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6337022Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6337221Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6337428Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6337611Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6338021Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6338427Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6338611Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6338808Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6339030Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6339241Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6339500Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6339699Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6339991Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6340361Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6340923Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6341330Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6341514Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6341708Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6341933Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6342143Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6342313Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6342569Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6342903Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6343131Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6343536Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6344066Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6344250Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6344447Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6344671Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6344878Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6345048Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6345248Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6345460Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6345642Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6346048Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6346457Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6346646Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6346836Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6347059Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6347272Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6347438Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6347634Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6347846Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6348029Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6348436Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6348840Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6349028Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6349217Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6349440Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6349651Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6349908Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6350110Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6350322Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6350580Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6350760Z WP27 MET-05b pass=N/A ok value=1.0
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6350945Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6351348Z     [1] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6351995Z     [2] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6352802Z     [3] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6353940Z     [4] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6355059Z     [5] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6356150Z     [6] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6356801Z       at line -1
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6357010Z * test_WP27_OBS02_longest_zero_beggar_streak
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6357666Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6358353Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6358667Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6358988Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6359364Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6359702Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6359974Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6360357Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6360752Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6361058Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6361753Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6362443Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6362762Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6363088Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6363479Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6363952Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6364231Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6364637Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6365034Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6365480Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6366188Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6366995Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6367320Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6367649Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6368041Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6368398Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6368676Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6369085Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6369512Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6369822Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6370499Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6371211Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6371530Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6371849Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6372239Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6372573Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6372849Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6373248Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6373668Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6374081Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6374743Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6375465Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6375773Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6376084Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6376454Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6376787Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6377061Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6377452Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6377861Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6378167Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6378849Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6379541Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6379852Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6380164Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6380523Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6380845Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6381113Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6381483Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6382038Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6382329Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6383074Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 2, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6383861Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6384156Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6384461Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6384817Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6385137Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6385403Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6385776Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6386176Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6386472Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6387162Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 2, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6387850Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6388162Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6388481Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6388854Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6389195Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6389468Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6389857Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6390241Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6390530Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6391190Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 2, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6391849Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6392148Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6392448Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6392800Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6393130Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6393386Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6393872Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6394264Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6394559Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6395244Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 3, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6395938Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6396248Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6396562Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6396926Z        [1] season_land_rent_li (res://autoload/building_economy.gd:3197)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6397262Z        [2] _obs05_rows (res://sim/metrics.gd:639)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6397527Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6398023Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6398419Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6398799Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6399452Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 3, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6400106Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6400406Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6400708Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6401059Z        [1] season_vacancy_tax_li (res://autoload/building_economy.gd:3212)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6401387Z        [2] _obs05_rows (res://sim/metrics.gd:641)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6401649Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6402013Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6402391Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6402685Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6403368Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 3, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6404148Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6404456Z    GDScript backtrace (most recent call first):
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6404770Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6405142Z        [1] city_spend_by_category (res://autoload/building_economy.gd:3182)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6405484Z        [2] _obs05_rows (res://sim/metrics.gd:643)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6405756Z        [3] compute (res://sim/metrics.gd:69)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6406142Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6406540Z        [5] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6406841Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6407116Z WP27 OBS-02 streak=3 ok
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6407403Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6408065Z     [1] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6409111Z     [2] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6410153Z     [3] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6411198Z     [4] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6412294Z     [5] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6413378Z     [6] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6414567Z     [7] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 2, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6415767Z     [8] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 2, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6416914Z     [9] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 2, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6417959Z     [10] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 3, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6419009Z     [11] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 3, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6420064Z     [12] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 3, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6420736Z       at line -1
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6420942Z * test_WP27_relocate_f_C02_float_snap
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6421340Z WP27 relocate_f C-02: 0.1→100000 0.05→50000 0.2→200000 bad_ok=false
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6421669Z * test_WP27_weekly_potential_demand_D96f
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:50.6421936Z WP27 D-96f weekly_potential_demand present
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8813088Z Totals
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8813196Z ------
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8813305Z Warnings              9
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8813388Z 
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8813437Z Scripts              11
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8813564Z Tests               153
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8813683Z Passing Tests       150
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8814072Z Failing Tests         3
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8814200Z Asserts           1983/1986
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8814333Z Time              292.151s
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8814415Z 
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8814418Z 
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8814638Z ^[[31m---- 3 failing tests ----
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.8814775Z ^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:15:51.9546798Z ##[error]Process completed with exit code 1.

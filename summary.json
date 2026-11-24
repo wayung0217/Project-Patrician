@@ -1,0 +1,82 @@
+{
+  "lane": 3,
+  "pr": 85,
+  "tip": "0b0e22044b126559e3d5d54173358f81e44a304d",
+  "lane2_tip": "9f228f04abfff6ac1a1a03586a7b5250378ff97e",
+  "ci_yml_blob": "46b3218af404bce972c7780c21cb3c5e0d53c541",
+  "byte_match_84_85": true,
+  "merge": false,
+  "await": "owner_approve_merge4_83",
+  "diff_names": [
+    ".github/ci/README.md",
+    ".github/ci/golden_30d_bootstrap_1764.csv",
+    ".github/ci/golden_30d_bootstrap_1764.sha256",
+    ".github/ci/gut_unit_property_baseline_names.txt",
+    ".github/workflows/ci.yml"
+  ],
+  "orphan_sha": "8ec9a6d8b53c091c1d6b088dfbd5938619b1a7e3",
+  "ci_9f3effd": {
+    "run": 45569611882,
+    "conclusion": "failure",
+    "golden_30d": "success",
+    "compared_cells": 10013,
+    "identical": 1,
+    "gut_unit_3": "failure_wp27_ERR-SYS08-08",
+    "d120e": true
+  },
+  "golden_confirmed": {
+    "after_84_green": true,
+    "lane2_tip": "9f228f04abfff6ac1a1a03586a7b5250378ff97e",
+    "tip_85": "9f3effd831c765ccb1bc2c827e0660a86fbb3aa4",
+    "compared_cells": 10013,
+    "identical": 1,
+    "diff_cells": 0,
+    "run": 45569611882,
+    "at_utc": "2026-11-25T08:14:59Z"
+  },
+  "main_merge_84": "e07bb3c",
+  "self_merge": false,
+  "merge3_dryrun": {
+    "tip_85": "0b0e22044b126559e3d5d54173358f81e44a304d",
+    "main": "e07bb3c16347b30d68c3869203fc19d8ae345e1a",
+    "int1758_untouched": "71b094d773125cc96ee66ff65691d5219a22eedf",
+    "conflicts_prefer_main": [
+      ".github/workflows/ci.yml",
+      "tools/run_m1b.ps1",
+      "tools/run_m1b_README.md",
+      "tools/run_m1b_report.gd"
+    ],
+    "ci_byte_match_main": true,
+    "self_merge": false,
+    "wp27_from_main": true,
+    "ci": {
+      "run": 45585429371,
+      "conclusion": "success",
+      "gut_unit_3": "success",
+      "golden_30d": "success",
+      "wp27_cleared": true
+    }
+  },
+  "merge3": {
+    "tip_checked": "0b0e22044b126559e3d5d54173358f81e44a304d",
+    "merge_commit": "90377de260060540dd06114095c546611dc329d8",
+    "int_tip": "90377de260060540dd06114095c546611dc329d8",
+    "int_ci": {
+      "run": 45632929489,
+      "conclusion": "success"
+    }
+  },
+  "merge4": {
+    "pr": 83,
+    "tip": "4d0fc3c06b4b3dc9fa9a07ce0cea1d014400eb43",
+    "ci_run": 45638446798,
+    "ci_conclusion": "success",
+    "total_passing": 611,
+    "baseline": 555,
+    "removed_names": [],
+    "docs_spec_empty": true,
+    "self_merge": false,
+    "l_yi": "merge4_83/l_yi/L_YI.md"
+  },
+  "no_merge_87": true
+}

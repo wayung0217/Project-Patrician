@@ -1,0 +1,11 @@
+【已過期，以 e2/ （#85 tip 0b0e220 / run 45585429371）；見 /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/1770-evidence2/e2/ 為準】
+---- original body below (not deleted) ----
+lane: 3
+parent: PP-172 / PP-190
+timeline: 17-69
+branch: cursor/int-ci-1767-866d
+pr: https://github.com/wayung0217/Project-Patrician/pull/85
+base: int-1758
+tip: da3d911a9a6882d85a4d1bee523b78e9af0ad365
+lane2_tip: 19d1a4e862e0dbe5ef15f9deb36721cc3690df48
+ownership: ci.yml + names + README + golden bootstrap csv/sha256 (NO paths.txt)

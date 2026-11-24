@@ -1,0 +1,80 @@
+golden-30d	Compare PR golden to main baseline	﻿2026-11-25T07:11:44.2779139Z ##[group]Run set -euo pipefail
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2779544Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2779816Z ^[[36;1mif [[ ! -f out/golden-main/30d.csv ]]; then^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2780228Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2780591Z ^[[36;1m  exit 1^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2780856Z ^[[36;1mfi^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2781173Z ^[[36;1mSTATUS="$(cat out/golden-main/STATUS.txt 2>/dev/null || echo unknown)"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2781534Z ^[[36;1mif [[ "${STATUS}" == "bootstrap" ]]; then^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2781838Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=1"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2782096Z ^[[36;1melse^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2782366Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=0"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2782591Z ^[[36;1mfi^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2782835Z ^[[36;1mset +e^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2783194Z ^[[36;1mpython3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2783672Z ^[[36;1mRC=${PIPESTATUS[0]}^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2783963Z ^[[36;1mset -e^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2784240Z ^[[36;1m# 17-70 T4／N-13：COMPARED_CELLS／列／欄；DIFF_CELLS；網格完整性閘門。^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2784631Z ^[[36;1meval "$(python3 - <<'PY'^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2784871Z ^[[36;1mfrom pathlib import Path^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2785275Z ^[[36;1mtext = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2785644Z ^[[36;1mrows = cols = cells = 0^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2785896Z ^[[36;1mdiff = 0^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2786145Z ^[[36;1mfor line in text.splitlines():^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2786502Z ^[[36;1m    if line.startswith("COMPARED_ROWS="):^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2786849Z ^[[36;1m        rows = int(line.split("=", 1)[1])^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2787144Z ^[[36;1m    elif line.startswith("COMPARED_COLS="):^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2787371Z ^[[36;1m        cols = int(line.split("=", 1)[1])^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2787573Z ^[[36;1m    elif line.startswith("COMPARED_CELLS="):^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2787978Z ^[[36;1m        cells = int(line.split("=", 1)[1])^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2788182Z ^[[36;1m    elif "diff_cells=" in line:^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2788348Z ^[[36;1m        try:^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2788547Z ^[[36;1m            diff += int(line.rsplit("diff_cells=", 1)[1].strip())^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2788767Z ^[[36;1m        except ValueError:^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2788940Z ^[[36;1m            pass^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2789093Z ^[[36;1mif "IDENTICAL=1" in text:^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2789257Z ^[[36;1m    diff = 0^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2789410Z ^[[36;1mprint(f"COMPARED_ROWS={rows}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2789586Z ^[[36;1mprint(f"COMPARED_COLS={cols}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2789762Z ^[[36;1mprint(f"COMPARED_CELLS={cells}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2789947Z ^[[36;1mprint(f"DIFF_CELLS={diff}")^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2790105Z ^[[36;1mPY^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2790230Z ^[[36;1m)"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2790373Z ^[[36;1mecho "COMPARED_ROWS=${COMPARED_ROWS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2790572Z ^[[36;1mecho "COMPARED_COLS=${COMPARED_COLS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2790774Z ^[[36;1mecho "COMPARED_CELLS=${COMPARED_CELLS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2790965Z ^[[36;1mecho "DIFF_CELLS=${DIFF_CELLS}"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2791162Z ^[[36;1mexpect=$((COMPARED_ROWS * COMPARED_COLS))^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2791424Z ^[[36;1mif [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2791794Z ^[[36;1m  echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2792209Z ^[[36;1m  exit 1^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2792336Z ^[[36;1mfi^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2792470Z ^[[36;1mif [[ $RC -ne 0 ]]; then^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2792629Z ^[[36;1m  exit "$RC"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2792765Z ^[[36;1mfi^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2792903Z ^[[36;1mecho "GOLDEN_CELLS_IDENTICAL=1"^[[0m
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2820376Z shell: /usr/bin/bash -e {0}
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2820543Z env:
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2820843Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2821024Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2821213Z ##[endgroup]
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.2894517Z GOLDEN_BOOTSTRAP=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3064713Z A=out/golden-main/30d.csv bytes=2270766
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3065043Z B=out/golden/30d.csv bytes=2270766
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3065207Z IDENTICAL=1
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3272378Z COMPARED_ROWS=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3272691Z COMPARED_COLS=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3272887Z COMPARED_CELLS=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3273125Z DIFF_CELLS=0
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3287633Z ##[error]COMPARED_CELLS_INVALID cells=0 expect_rows_x_cols=0 (N-13)
+golden-30d	Compare PR golden to main baseline	2026-11-25T07:11:44.3294375Z ##[error]Process completed with exit code 1.
+gut-unit (3)	Run GUT unit shard	﻿2026-11-25T07:10:58.2581819Z ##[group]Run set -euo pipefail
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2582019Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2582242Z ^[[36;1m# GUT -gtest takes full res:// paths (keeps original script locations).^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2582484Z ^[[36;1mmapfile -t TESTS < /tmp/gut_shard_tests.txt^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2582667Z ^[[36;1mif [[ ${#TESTS[@]} -eq 0 ]]; then^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2582845Z ^[[36;1m  echo "::error::shard selected zero scripts"^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2583018Z ^[[36;1m  exit 1^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2583135Z ^[[36;1mfi^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2583249Z ^[[36;1mGTEST_ARGS=()^[[0m
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:10:58.2583390Z ^[[36;1mfor t in "${TESTS[@]}"; do^[[0m

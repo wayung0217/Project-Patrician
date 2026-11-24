@@ -1,0 +1,6 @@
+de0779a3ab9cdd5a47fadf8ba0dc3dd575305fcc2f2164f340eb1f2048c89ceb  /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-69-lane3/ci.yml.transplanted
+de0779a3ab9cdd5a47fadf8ba0dc3dd575305fcc2f2164f340eb1f2048c89ceb  /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-69-lane3/ci.yml.lane2
+3c7f6357d8caf51a1db40ec9fdbecf81a87b1457135feaeec0a01322e7bf3588  /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-69-lane3/baseline_names.transplanted.txt
+3c7f6357d8caf51a1db40ec9fdbecf81a87b1457135feaeec0a01322e7bf3588  /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-69-lane3/baseline_names.lane2.txt
+bfa9b7bffae2a03faf73d2d71ba9cc75f9b0500540d39e36d29a851392dbc991  /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-69-lane3/README.transplanted.md
+bfa9b7bffae2a03faf73d2d71ba9cc75f9b0500540d39e36d29a851392dbc991  /cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-69-lane3/README.lane2.md

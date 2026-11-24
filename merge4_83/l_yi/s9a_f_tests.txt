@@ -1,0 +1,3 @@
+A	tests/unit/test_d123_opening_board_1766.gd
+A	tests/unit/test_d123_opening_board_1766.gd.uid
+M	tests/unit/test_wp67_garrison_obs05.gd

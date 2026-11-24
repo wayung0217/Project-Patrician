@@ -1,0 +1,50 @@
+21:gut-unit (3)	Run GUT unit shard	2026-11-24T15:24:17.8724859Z ^[[36;1mgrep -E 'Passing Tests|Failing|All tests passed' gut_unit.log | tail -20 || true^[[0m
+26:gut-unit (3)	Run GUT unit shard	2026-11-24T15:24:17.8726175Z ^[[36;1mm = re.findall(r"Passing Tests\s+(\d+)", text)^[[0m
+32:gut-unit (3)	Run GUT unit shard	2026-11-24T15:24:17.8728275Z ^[[36;1m# so ^\* alone under-counts and falsely lists REMOVED_NAMES.^[[0m
+2021:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8552283Z * test_WP27_MET01_TH01b_upper_bound
+2029:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8578552Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2039:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8593592Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2049:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8597615Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2059:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8601372Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2069:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8604930Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2079:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8610038Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+2083:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8612004Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2091:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8619611Z * test_WP27_MET05b_no_pass
+2099:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8622557Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2109:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8626234Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2119:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8630091Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2129:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8633537Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2139:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8637216Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2149:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8640899Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+2153:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8642708Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2161:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8650492Z * test_WP27_OBS02_longest_zero_beggar_streak
+2169:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8653615Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2179:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8657676Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2189:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8661548Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2199:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8665266Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2209:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8669034Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2219:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8672635Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2229:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8677558Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2239:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8683467Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2249:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8688044Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2259:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8691785Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2269:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8695454Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2279:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8699175Z        [4] test_WP27_OBS02_longest_zero_beggar_streak (res://tests/unit/test_sys23_wp27.gd:232)
+2283:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8700371Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2297:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8712488Z * test_WP27_relocate_f_C02_float_snap
+2299:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8713228Z * test_WP27_weekly_potential_demand_D96f
+2301:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:50.8713739Z * test_WP27_scenario_list_dir_sorted_R9_64
+2581:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2167273Z ^[[0m- test_WP27_MET01_TH01b_upper_bound
+2582:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2167722Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2590:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2174701Z - test_WP27_MET05b_no_pass
+2591:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2175010Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2599:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2181996Z - test_WP27_OBS02_longest_zero_beggar_streak
+2600:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2182299Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+2621:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2205457Z Passing Tests       150
+2622:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.2205833Z Failing Tests         3
+2629:gut-unit (3)	Run GUT unit shard	2026-11-24T15:31:52.3366782Z ##[error]Process completed with exit code 1.
+2641:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1119529Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"^[[0m
+2643:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1120562Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"^[[0m
+2652:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1123697Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"^[[0m
+2654:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1124724Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"^[[0m
+2667:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:39.6547750Z GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run 45358265237)

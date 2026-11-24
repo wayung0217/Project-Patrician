@@ -1,0 +1,50 @@
+gut-unit (3)	Assert import leaves clean tree	﻿2026-11-25T07:37:53.8278897Z ##[group]Run set -euo pipefail
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8279417Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8279922Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8280483Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8281010Z ^[[36;1m  echo "::error::godot --import dirtied the working tree (commit missing .import / .uid)"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8281520Z ^[[36;1m  echo "$dirty"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8281925Z ^[[36;1m  git diff --stat^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8282241Z ^[[36;1m  exit 1^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8282581Z ^[[36;1mfi^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8282884Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8303786Z shell: /usr/bin/bash -e {0}
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8304165Z env:
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8304526Z   GODOT_VERSION: 4.7.2-stable
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8304944Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:53.8305360Z ##[endgroup]
+gut-unit (3)	Assert import leaves clean tree	2026-11-25T07:37:54.0598101Z IMPORT_CLEAN_TREE_OK
+gut-unit (3)	Select unit shard scripts (size-balanced 4-way) + property on shard 0	2026-11-25T07:37:54.0907733Z res://tests/unit/test_sys23_wp27.gd
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:37:56.9074635Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "slot_id", "value": &"SLOT:PT-01:9999", "message": "unknown slot" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:37:57.6444140Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "slot_id", "value": &"SLOT:NOPE", "message": "unknown slot" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:37:58.6325997Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "port_id", "value": &"PT-NOPE", "message": "unknown port for city_queue_material_shortfall (D-110b)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.1952729Z res://tests/unit/test_sys23_wp27.gd
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2106426Z        [4] test_TST_SYS23_07_sim_relocate_rejected_when_disabled (res://tests/unit/test_sys23_wp27.gd:153)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2108371Z * test_WP27_MET01_TH01b_upper_bound
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2135327Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2138755Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2146914Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2150895Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2152327Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2155342Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2156758Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2159872Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2161287Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2164099Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2165502Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2168645Z        [4] test_WP27_MET01_TH01b_upper_bound (res://tests/unit/test_sys23_wp27.gd:186)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2169865Z WP27 MET-01 TH-01b upper reject ok
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2170405Z ^[[31m    [Failed]:  ^[[0mUnexpected Errors:
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2171358Z     [1] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2173186Z     [2] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2174981Z     [3] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2176291Z     [4] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2177371Z     [5] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2178743Z     [6] <push_error>BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 1, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2180237Z * test_WP27_MET05b_no_pass
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2180908Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2183732Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2185131Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2188159Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2190047Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "season_index", "value": 0, "message": "season not settled (OBS-05)" } }
+gut-unit (3)	Run GUT unit shard	2026-11-25T07:45:36.2192866Z        [4] test_WP27_MET05b_no_pass (res://tests/unit/test_sys23_wp27.gd:210)

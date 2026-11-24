@@ -1,0 +1,40 @@
+2630:golden-30d	Download latest main golden baseline (PRs)	﻿2026-11-24T15:25:38.1114628Z ##[group]Run set -euo pipefail
+2631:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1115012Z ^[[36;1mset -euo pipefail^[[0m
+2632:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1115285Z ^[[36;1mmkdir -p out/golden-main^[[0m
+2633:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1115636Z ^[[36;1m# Prefer artifact from latest successful main CI run.^[[0m
+2634:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1116101Z ^[[36;1m# 17-69 2.5: missing baseline must fail the job (no silent GREEN skip).^[[0m
+2635:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1116488Z ^[[36;1mset +e^[[0m
+2636:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1116910Z ^[[36;1mRUN_ID=$(gh run list --repo "wayung0217/Project-Patrician" --branch main --workflow ci.yml \^[[0m
+2637:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1117463Z ^[[36;1m  --json databaseId,conclusion,status --limit 30 \^[[0m
+2638:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1118515Z ^[[36;1m  --jq '.[] | select(.conclusion=="success") | .databaseId' | head -n1)^[[0m
+2639:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1118925Z ^[[36;1mset -e^[[0m
+2640:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1119160Z ^[[36;1mif [[ -z "${RUN_ID:-}" ]]; then^[[0m
+2641:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1119529Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"^[[0m
+2642:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1119947Z ^[[36;1m  echo "missing" > out/golden-main/STATUS.txt^[[0m
+2643:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1120562Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"^[[0m
+2644:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1121097Z ^[[36;1m  exit 1^[[0m
+2645:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1121302Z ^[[36;1mfi^[[0m
+2646:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1121521Z ^[[36;1mecho "GOLDEN_BASE_RUN_ID=$RUN_ID"^[[0m
+2647:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1121800Z ^[[36;1mset +e^[[0m
+2648:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1122232Z ^[[36;1mgh run download "$RUN_ID" --repo "wayung0217/Project-Patrician" -n golden-30d -D out/golden-main^[[0m
+2649:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1122727Z ^[[36;1mRC=$?^[[0m
+2650:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1122937Z ^[[36;1mset -e^[[0m
+2651:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1123222Z ^[[36;1mif [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then^[[0m
+2652:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1123697Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"^[[0m
+2653:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1124139Z ^[[36;1m  echo "missing" > out/golden-main/STATUS.txt^[[0m
+2654:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1124724Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"^[[0m
+2655:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1125259Z ^[[36;1m  exit 1^[[0m
+2656:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1125461Z ^[[36;1mfi^[[0m
+2657:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1125714Z ^[[36;1mecho "present" > out/golden-main/STATUS.txt^[[0m
+2658:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1126034Z ^[[36;1mls -la out/golden-main/^[[0m
+2659:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1158010Z shell: /usr/bin/bash -e {0}
+2660:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1158290Z env:
+2661:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1158493Z   GODOT_VERSION: 4.7.2-stable
+2662:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1158783Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2663:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1161476Z   GH_TOKEN: ***
+2664:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:38.1161715Z ##[endgroup]
+2665:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:39.3656969Z GOLDEN_BASE_RUN_ID=45358265237
+2666:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:39.6529115Z no valid artifacts found to download
+2667:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:39.6547750Z GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run 45358265237)
+2668:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:39.6570333Z ##[error]GOLDEN_BASE_MISSING — golden-30d artifact absent on main run 45358265237; compare not merge-eligible
+2669:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T15:25:39.6580222Z ##[error]Process completed with exit code 1.

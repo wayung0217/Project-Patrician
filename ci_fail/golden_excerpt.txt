@@ -1,0 +1,5 @@
+golden-30d	Download latest main golden baseline (PRs)	2026-11-24T14:52:38.6735897Z GOLDEN_BASE_RUN_ID=45358265237
+golden-30d	Download latest main golden baseline (PRs)	2026-11-24T14:52:39.1139123Z no valid artifacts found to download
+golden-30d	Download latest main golden baseline (PRs)	2026-11-24T14:52:39.1167987Z GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run 45358265237)
+golden-30d	Download latest main golden baseline (PRs)	2026-11-24T14:52:39.1188387Z ##[error]GOLDEN_BASE_MISSING — golden-30d artifact absent on main run 45358265237; compare not merge-eligible
+golden-30d	Download latest main golden baseline (PRs)	2026-11-24T14:52:39.1197624Z ##[error]Process completed with exit code 1.

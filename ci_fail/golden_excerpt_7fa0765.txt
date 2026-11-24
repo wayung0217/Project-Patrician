@@ -1,0 +1,6 @@
+2641:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:44:14.5454404Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"^[[0m
+2643:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:44:14.5455338Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"^[[0m
+2652:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:44:14.5458358Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"^[[0m
+2654:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:44:14.5459445Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"^[[0m
+2667:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:44:18.9648198Z GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run 45358265237)
+2668:golden-30d	Download latest main golden baseline (PRs)	2026-11-24T16:44:18.9665999Z ##[error]GOLDEN_BASE_MISSING — golden-30d artifact absent on main run 45358265237; compare not merge-eligible

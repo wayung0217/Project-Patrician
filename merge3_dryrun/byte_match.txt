@@ -1,0 +1,5 @@
+BYTE_MATCH .github/workflows/ci.yml
+BYTE_MATCH .github/ci/gut_unit_property_baseline_names.txt
+BYTE_MATCH .github/ci/README.md
+BYTE_MATCH .github/ci/golden_30d_bootstrap_1764.csv
+BYTE_MATCH .github/ci/golden_30d_bootstrap_1764.sha256
