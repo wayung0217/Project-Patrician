@@ -258,6 +258,10 @@ func _run_one_job(
 
 	if Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.disconnect(on_cutoff)
+	## SmokeDays < one season never hits season_cutoff — still emit one ASCII PROGRESS.
+	if print_season_progress:
+		var si_final: int = int(Clock.season_index) if Clock != null else 0
+		_emit_season_progress(si_final, total_days, days_per_season, seasons_y, sampler)
 	acc.disconnect_ledger()
 	sampler.disconnect_unmet()
 	if GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
