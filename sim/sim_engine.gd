@@ -137,20 +137,30 @@ func _run_one_job(
 	if not GoodsLedger.conservation_violated.is_connected(sampler.on_conservation):
 		GoodsLedger.conservation_violated.connect(sampler.on_conservation)
 
-	var relocate_on: bool = bool(
-		(scenario.get("layers", {}) as Dictionary).get("RELOCATE", false)
-	)
+	var layers: Dictionary = scenario.get("layers", {}) as Dictionary
+	var relocate_on: bool = bool(layers.get("RELOCATE", false))
 	var f_ppm: int = 0
 	## D-97(b): layers.RELOCATE is the only switch; no GoodsLedger enable API.
 
-	# D-60f／D-63b: sim expects successful boot → inject deny-all fixtures（not formal always-allow）.
+	## F1／D-120(b)①: TRADERS／QUAL_OPEN before SimLoop.boot (TraderRegistry.load gates on is_enabled).
+	var traders_on: bool = bool(layers.get(SimScenarioValidator.KEY_TRADERS, false))
+	var qual_open: bool = bool(layers.get(SimScenarioValidator.KEY_QUAL_OPEN, false))
+	TraderRegistry.set_layers(traders_on, qual_open)
+	## F3／FRM-SYS23-03／FRM-SYS17-04: explore seed = scenario seed (no module-fixed seed).
+	TraderRegistry.set_rng_seed(seed)
+
+	# D-60f／D-63b: sim expects successful boot → inject fixtures（not formal always-allow）.
+	# D-120(f): QUAL_OPEN＝1 → SimQualificationOpenFixture (sim/ only); else deny-all.
 	if not IntelLedger.has_broker_provider():
 		IntelLedger.set_broker_provider(SimBrokerFixture.new())
 	# Allow re-inject after a prior boot left TradeDesk._loaded true without providers.
 	if not TradeDesk.has_qualification_provider() or not TradeDesk.has_trade_observers():
 		TradeDesk.mark_unloaded()
 	if not TradeDesk.has_qualification_provider():
-		TradeDesk.set_qualification_provider(SimQualificationFixture.new())
+		if qual_open:
+			TradeDesk.set_qualification_provider(SimQualificationOpenFixture.new())
+		else:
+			TradeDesk.set_qualification_provider(SimQualificationFixture.new())
 	if not TradeDesk.has_trade_observers():
 		TradeDesk.set_trade_observers([SimTradeObserverFixture.new()])
 	var boot_errors: Array = SimLoop.boot(
@@ -173,7 +183,6 @@ func _run_one_job(
 		}
 
 	## D-115(a)／WP-68: layers.CITY_HOUSING → BuildingEconomy（default off）.
-	var layers: Dictionary = scenario.get("layers", {}) as Dictionary
 	var city_housing: bool = bool(layers.get(SimScenarioValidator.KEY_CITY_HOUSING, false))
 	if BuildingEconomy.has_method("set_city_housing_layer"):
 		BuildingEconomy.set_city_housing_layer(city_housing)

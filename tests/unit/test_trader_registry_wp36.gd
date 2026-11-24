@@ -47,18 +47,16 @@ func test_EX_17_02_01_daily_marginal_profit_picks_B() -> void:
 
 
 func test_EX_17_02_02_depth_sell_brick() -> void:
-	## EX-17-02-02: base 600, w0=0, weekly=250, q=250 → 255000.
-	var weeks := PackedFloat64Array([0.0, 1.0, 3.0, 6.0, 10.0])
-	var mults := PackedFloat64Array([2.0, 1.4, 1.0, 1.0, 0.6])
-	var rev := TradeEvaluator.estimate_sell_revenue_li(600, 250.0, 0.0, 250, weeks, mults)
+	## EX-17-02-02: base 600, w0=0, weekly=250, q=250 → 255000 via MarketPricer.batch_area (F4③).
+	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
+	var rev := TradeEvaluator.estimate_sell_revenue_li(600, 250.0, 0.0, 250)
 	assert_eq(rev, 255000)
 
 
 func test_EX_17_02_03_depth_sell_silk() -> void:
-	## EX-17-02-03: base 60000, w0=4, weekly=5, q=50 → 2280000.
-	var weeks := PackedFloat64Array([0.0, 1.0, 3.0, 6.0, 10.0])
-	var mults := PackedFloat64Array([2.0, 1.4, 1.0, 1.0, 0.6])
-	var rev := TradeEvaluator.estimate_sell_revenue_li(60000, 5.0, 4.0, 50, weeks, mults)
+	## EX-17-02-03: base 60000, w0=4, weekly=5, q=50 → 2280000 via MarketPricer.batch_area (F4③).
+	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
+	var rev := TradeEvaluator.estimate_sell_revenue_li(60000, 5.0, 4.0, 50)
 	assert_eq(rev, 2280000)
 
 
@@ -207,13 +205,17 @@ func test_TST_SYS17_02_decision_uses_override_not_foreign_stock() -> void:
 	## Changing remote MARKET stock without intel override must not change decision inputs.
 	_boot_mini(true)
 	TraderRegistry.set_intel_override(StringName(PORT_B), StringName(GOOD), 1500, 0.0)
-	var a: Dictionary = TraderRegistry._dest_intel(&"ACT-TR-001", StringName(PORT_B), StringName(GOOD))
+	var a: Dictionary = TraderRegistry._dest_intel(
+		&"ACT-TR-001", StringName(PORT_A), StringName(PORT_B), StringName(GOOD)
+	)
 	## Inflate foreign stock.
 	GoodsLedger.transfer(
 		GoodsLedger.make_external(), GoodsLedger.make_market(PORT_B),
 		StringName(GOOD), 500, GoodsLedger.REASON_GENESIS, &"TEST"
 	)
-	var b: Dictionary = TraderRegistry._dest_intel(&"ACT-TR-001", StringName(PORT_B), StringName(GOOD))
+	var b: Dictionary = TraderRegistry._dest_intel(
+		&"ACT-TR-001", StringName(PORT_A), StringName(PORT_B), StringName(GOOD)
+	)
 	assert_eq(int(a.get("mid_li", 0)), int(b.get("mid_li", -1)))
 
 

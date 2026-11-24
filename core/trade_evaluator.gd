@@ -1,16 +1,11 @@
 class_name TradeEvaluator
 extends RefCounted
 ## D-44g／FRM-SYS17-02／FRM-SYS18-02: pure trade evaluation core (SYS-17／18 shared).
-## No Autoload; no module state. Callers pass all inputs (N-04／C-07).
-## D-110(g): sell revenue via batch-area along FRM-SYS04 curve (same trapezoid as MarketPricer).
-## Gap C-05: MarketPricer.batch_area is private — this file owns the shared pure copy until
-## MarketPricer exposes a public batch_area (then both must call one site).
+## No Autoload module state except F4③ sell-revenue → MarketPricer.batch_area (N-04／D-120(b)④).
 
 const PHASE_NONE := &"NONE"
 const PHASE_OUTBOUND := &"OUTBOUND"
 const PHASE_SELL := &"SELL"
-
-const TRAPEZOID_DENOM := 2.0
 
 
 ## FRM-SYS17-02／EX-17-02-01: daily marginal profit (li／day), floori.
@@ -24,45 +19,24 @@ static func daily_marginal_profit(
 	return floori((sell_revenue_li - buy_cost_li - tax_li) / float(voyage_days))
 
 
-## D-110(g)／EX-17-02-02／03: estimated sell revenue from weeks path.
+## D-110(g)／EX-17-02-02／03／F4③: estimated sell revenue via MarketPricer.batch_area.
 ## w0 = destination board consensus weeks; weekly_potential > 0; q > 0.
-## Area = anchor × weekly × |G(w0+Δw) − G(w0)| with Δw = q／weekly (FRM-SYS04-04).
+## stock_before = roundi(w0 × weekly); stock_after = stock_before + qty (sell into market).
 static func estimate_sell_revenue_li(
 	anchor_li: int,
 	weekly_potential: float,
 	w0: float,
-	qty: int,
-	weeks: PackedFloat64Array,
-	mults: PackedFloat64Array
+	qty: int
 ) -> int:
 	if qty <= 0 or weekly_potential <= 0.0 or anchor_li <= 0:
 		return 0
-	var delta_w: float = float(qty) / weekly_potential
-	var w1: float = w0 + delta_w
-	var area: float = float(anchor_li) * weekly_potential * absf(_G(w1, weeks, mults) - _G(w0, weeks, mults))
-	return floori(area)
-
-
-## Equivalent stock-path form (N-04 mirror of MarketPricer._batch_area).
-static func batch_area_li(
-	anchor_li: int,
-	weekly_basis: float,
-	stock_before: int,
-	stock_after: int,
-	weeks: PackedFloat64Array,
-	mults: PackedFloat64Array
-) -> int:
-	var q: int = stock_after - stock_before
-	if q < 0:
-		q = 0 - q
-	var w_before: Variant = _stock_weeks_raw(stock_before, weekly_basis)
-	var w_after: Variant = _stock_weeks_raw(stock_after, weekly_basis)
-	if w_before == null or w_after == null:
-		return floori(float(anchor_li) * _floor_mult(mults) * float(q))
-	var delta_g: float = _G(float(w_after), weeks, mults) - _G(float(w_before), weeks, mults)
-	if delta_g < 0.0:
-		delta_g = 0.0 - delta_g
-	return floori(float(anchor_li) * weekly_basis * delta_g)
+	if not MarketPricer.is_loaded():
+		return 0
+	var stock_before: int = roundi(w0 * weekly_potential)
+	if stock_before < 0:
+		stock_before = 0
+	var stock_after: int = stock_before + qty
+	return floori(MarketPricer.batch_area(anchor_li, weekly_potential, stock_before, stock_after))
 
 
 ## FRM-SYS17-03／EX-17-03-*: decide sail vs idle given best candidate profit and idle streak.
@@ -84,7 +58,10 @@ static func decide_sail_or_idle(
 		var expected_loss: int = best_buy_cost_li - best_sell_revenue_li
 		if expected_loss < 0:
 			expected_loss = 0
-		var tol: int = floori(float(best_buy_cost_li) * float(loss_tol_ppm) / float(ppm_scale))
+		## F4① (ppm path): integer multiply then floori divide (no float(n)*rate+1e-9).
+		var tol: int = 0
+		if ppm_scale > 0:
+			tol = floori(float(best_buy_cost_li * loss_tol_ppm) / float(ppm_scale))
 		if expected_loss <= tol:
 			sail = true
 	var idle_after: int = 0 if sail else idle_days + 1
@@ -136,44 +113,3 @@ static func empty_plan() -> Dictionary:
 		"qty": 0,
 		"expected_profit_li": 0,
 	}
-
-
-static func _stock_weeks_raw(stock: int, weekly: float) -> Variant:
-	if stock == 0:
-		return 0.0
-	if weekly <= 0.0:
-		return null
-	return float(stock) / weekly
-
-
-static func _floor_mult(mults: PackedFloat64Array) -> float:
-	if mults.is_empty():
-		return 0.0
-	return float(mults[mults.size() - 1])
-
-
-static func _G(x: float, weeks: PackedFloat64Array, mults: PackedFloat64Array) -> float:
-	## FRM-SYS04-04 trapezoid integral of m(w) — mirror MarketPricer._G.
-	if x <= 0.0 or weeks.is_empty() or mults.is_empty():
-		return 0.0
-	var n: int = mini(weeks.size(), mults.size())
-	var last_i: int = n - 1
-	var total: float = 0.0
-	var i: int = 0
-	while i < last_i:
-		var w_a: float = weeks[i]
-		var w_b: float = weeks[i + 1]
-		var m_a: float = mults[i]
-		var m_b: float = mults[i + 1]
-		var e: float = x
-		if e < w_a:
-			e = w_a
-		if e > w_b:
-			e = w_b
-		var m_e: float = m_a + (m_b - m_a) * (e - w_a) / (w_b - w_a)
-		total = total + (e - w_a) * (m_a + m_e) / TRAPEZOID_DENOM
-		i = i + 1
-	var w_n: float = weeks[last_i]
-	if x > w_n:
-		total = total + (x - w_n) * mults[last_i]
-	return total

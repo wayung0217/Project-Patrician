@@ -43,8 +43,8 @@ const SHIP_TYPE := &"SH-03" ## D-104(c)／D-94 third type (250 擔)
 const TRADER_ID_FMT := "TR-%03d"
 const ACCOUNT_TOKEN_FMT := "TR-%03d"
 const PURPOSE_EXPLORE := "EXPLORE"
-const TOP_N_PRECISE := 3
 const TAX_LI := 0 ## D-109(b) until WP-39
+const PRM_TOP_N := "PRM-SYS17-TOP_N_PRECISE"
 
 ## CashLedger second genesis exception (D-23c); AUTHORIZED_REQUESTERS unchanged.
 
@@ -60,9 +60,9 @@ var _curve_weeks: PackedFloat64Array = PackedFloat64Array()
 var _curve_mults: PackedFloat64Array = PackedFloat64Array()
 var _pending_signals: Array = []
 var _day_errors: Array = []
-## Test／sim seed for explore (FRM-SYS23-10). Default 1.
-var _rng_seed: int = 1
-## Injected destination intel for evaluation when board_for requires presence (C-05 gap).
+## Explore seed from scenario (FRM-SYS23-03／FRM-SYS17-04). No module-fixed default (F3).
+var _rng_seed: int = 0
+## Test-only destination intel inject (F2: product／sim must not depend on this; default empty).
 ## Key "port|good" → {mid_li:int, weeks:float}；null mid → no candidate.
 var _intel_override: Dictionary = {}
 
@@ -82,7 +82,7 @@ func set_rng_seed(seed: int) -> void:
 
 
 func set_intel_override(port_id: StringName, good_id: StringName, mid_li: Variant, weeks: Variant = null) -> void:
-	## Test／fixture only: seed known destination board without presence (gap: IntelLedger.board_for).
+	## Test／fixture only (F2): product／sim paths use IntelLedger.board_for(actor, P, O, g).
 	var key := "%s|%s" % [String(port_id), String(good_id)]
 	if mid_li == null:
 		_intel_override.erase(key)
@@ -140,7 +140,7 @@ func load_and_validate() -> Array:
 		return errors
 	for key in [
 		PRM_COUNT, PRM_START_CASH, PRM_SHIP_MIX, PRM_TIER_MIX, PRM_EXPLORE_RATE,
-		PRM_EXPLORE_QTY, PRM_PROFIT_MIN, PRM_IDLE_MAX, PRM_LOSS_TOL, PRM_PPM
+		PRM_EXPLORE_QTY, PRM_PROFIT_MIN, PRM_IDLE_MAX, PRM_LOSS_TOL, PRM_PPM, PRM_TOP_N
 	]:
 		if not Params.has_prm(StringName(key)):
 			errors.append(_err(ERR_SYS17_01, key, null, "missing PRM (ERR-SYS17-01)"))
@@ -150,6 +150,9 @@ func load_and_validate() -> Array:
 	var n: int = Params.get_int(StringName(PRM_COUNT))
 	if n < 1:
 		errors.append(_err(ERR_SYS17_01, PRM_COUNT, n, "MERCHANT_COUNT_MAX must be ≥ 1"))
+	var top_n: int = Params.get_int(StringName(PRM_TOP_N))
+	if top_n < 1:
+		errors.append(_err(ERR_SYS17_01, PRM_TOP_N, top_n, "TOP_N_PRECISE must be ≥ 1"))
 	var mix: Variant = Params.get_value(StringName(PRM_SHIP_MIX))
 	if typeof(mix) != TYPE_ARRAY and not (mix is PackedInt32Array) and not (mix is PackedInt64Array):
 		errors.append(_err(ERR_SYS17_01, PRM_SHIP_MIX, mix, "SHIP_MIX must be int array"))
@@ -520,8 +523,7 @@ func _refresh_freeze_from_arrears() -> void:
 
 
 func _build_board_cache_day() -> void:
-	## D-104(c)⑤ shared cache — filled from intel overrides + own presence boards.
-	## Remote board without presence is C-05 gap (IntelLedger.board_for).
+	## D-104(c)⑤ shared mid cache reserved; per-candidate board_for is authoritative (F2).
 	pass
 
 
@@ -531,6 +533,8 @@ func _pick_explore_traders(day: int) -> Dictionary:
 	if rate <= 0.0:
 		return out
 	var ids: PackedStringArray = all_trader_ids()
+	## F4① GAP: EXPLORE_RATE is 定點數 0..1 (not ppm); FRM-SYS17-04 writes no integer
+	## precision for n×rate — do not invent ppm conversion (dispatch: 列缺口停該項).
 	var n_pick: int = int(floor(float(ids.size()) * rate + 1e-9))
 	if n_pick < 1 and rate > 0.0 and not ids.is_empty():
 		n_pick = 1
@@ -657,9 +661,9 @@ func _evaluate_and_maybe_sail(
 			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
 			if afford < 1:
 				continue
-			var intel: Dictionary = _dest_intel(acct, dest, good)
+			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
 			if intel.is_empty() or intel.get("mid_li", null) == null:
-				continue ## D-109(c): no board → not a candidate
+				continue ## D-109(c)／F2: n＝0 or empty board → not a candidate
 			var weekly: int = 0
 			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
 				weekly = DemandModel.weekly_potential_demand(dest, good)
@@ -696,7 +700,8 @@ func _evaluate_and_maybe_sail(
 			return ap < bp
 		return String(a["good_id"]) < String(b["good_id"])
 	)
-	var top: Array = coarse.slice(0, mini(TOP_N_PRECISE, coarse.size()))
+	var top_n: int = Params.get_int(StringName(PRM_TOP_N))
+	var top: Array = coarse.slice(0, mini(top_n, coarse.size()))
 	for c in top:
 		var dest2: StringName = c["port_id"]
 		var good2: StringName = c["good_id"]
@@ -803,8 +808,8 @@ func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Arr
 func _estimate_sell_revenue(
 	dest: StringName, good: StringName, qty: int, mid_li: int, weeks_v: Variant, weekly: int
 ) -> int:
-	## D-110(g) depth area; fallback mid×q if curve missing.
-	if _curve_weeks.is_empty() or weekly < 1:
+	## D-110(g)／F4③: MarketPricer.batch_area is the single trapezoid site (N-04).
+	if weekly < 1 or not MarketPricer.is_loaded():
 		return mid_li * qty
 	var anchor: int = 0
 	if GoodCatalog.is_loaded():
@@ -816,32 +821,34 @@ func _estimate_sell_revenue(
 	var w0: float = 0.0
 	if weeks_v != null and typeof(weeks_v) in [TYPE_FLOAT, TYPE_INT]:
 		w0 = float(weeks_v)
-	elif mid_li > 0 and anchor > 0:
-		## Infer weeks from mid／anchor via inverse not available — use 0 if unknown.
-		w0 = 0.0
-	return TradeEvaluator.estimate_sell_revenue_li(
-		anchor, float(weekly), w0, qty, _curve_weeks, _curve_mults
-	)
+	return TradeEvaluator.estimate_sell_revenue_li(anchor, float(weekly), w0, qty)
 
 
-func _dest_intel(actor: StringName, dest: StringName, good: StringName) -> Dictionary:
+func _dest_intel(
+	actor: StringName, present_port: StringName, dest: StringName, good: StringName
+) -> Dictionary:
+	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
 	var key := "%s|%s" % [String(dest), String(good)]
 	if _intel_override.has(key):
 		return (_intel_override[key] as Dictionary).duplicate(true)
-	## Try board_for when present at dest.
 	if IntelLedger.is_loaded():
-		var board: Dictionary = IntelLedger.board_for(actor, dest, dest, good)
-		if not board.is_empty() and board.get(IntelLedger.KEY_CONSENSUS_MID, null) != null:
-			var weeks_x = board.get(IntelLedger.KEY_CONSENSUS_WEEKS, null)
-			var weeks_f: Variant = null
-			if weeks_x != null and typeof(weeks_x) == TYPE_INT and Params.has_prm("PRM-SYS15-WEEKS_SCALE"):
-				var scale: int = Params.get_int("PRM-SYS15-WEEKS_SCALE")
-				if scale > 0:
-					weeks_f = float(int(weeks_x)) / float(scale)
-			return {
-				"mid_li": int(board[IntelLedger.KEY_CONSENSUS_MID]),
-				"weeks": weeks_f if weeks_f != null else 0.0,
-			}
+		var board: Dictionary = IntelLedger.board_for(actor, present_port, dest, good)
+		if board.is_empty():
+			return {}
+		if int(board.get(IntelLedger.KEY_N, 0)) == 0:
+			return {}
+		if board.get(IntelLedger.KEY_CONSENSUS_MID, null) == null:
+			return {}
+		var weeks_x = board.get(IntelLedger.KEY_CONSENSUS_WEEKS, null)
+		var weeks_f: Variant = null
+		if weeks_x != null and typeof(weeks_x) == TYPE_INT and Params.has_prm("PRM-SYS15-WEEKS_SCALE"):
+			var scale: int = Params.get_int("PRM-SYS15-WEEKS_SCALE")
+			if scale > 0:
+				weeks_f = float(int(weeks_x)) / float(scale)
+		return {
+			"mid_li": int(board[IntelLedger.KEY_CONSENSUS_MID]),
+			"weeks": weeks_f if weeks_f != null else 0.0,
+		}
 	return {}
 
 
@@ -866,7 +873,15 @@ func _draft_ok(ship_id: StringName, dest: StringName) -> bool:
 	var info: Dictionary = ShipRegistry.ship_info(ship_id)
 	if info.is_empty():
 		return false
-	var ship_draft: int = int(ShipRegistry.SHIP_DRAFT.get(String(info.get("type", "")), 2))
+	var type_s: String = String(info.get("type", ""))
+	## F4②／C-06: unknown ship type → error, no silent default draft.
+	if not ShipRegistry.SHIP_DRAFT.has(type_s):
+		_day_errors.append(
+			_err(ERR_SYS17_04, "ship_type", type_s, "SHIP_DRAFT missing type (C-06; no default)")
+		)
+		push_error("TraderRegistry: SHIP_DRAFT missing type %s (C-06)" % type_s)
+		return false
+	var ship_draft: int = int(ShipRegistry.SHIP_DRAFT[type_s])
 	return ship_draft <= ShipRegistry.port_draft(dest)
 
 
