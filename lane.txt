@@ -1,0 +1,8 @@
+lane: 2
+parent: PP-172 / PP-188
+timeline: 17-69
+branch: cursor/ci-hang-1767-866d
+pr: https://github.com/wayung0217/Project-Patrician/pull/84
+base: main
+tip: 2e845b9fbbfc05ee7688c04c0aa852bd9260bb8b
+ownership: .github/workflows/ci.yml, autoload/cash_ledger.gd, tests/unit/ (new only)

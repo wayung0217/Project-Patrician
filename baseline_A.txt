@@ -1,0 +1,7 @@
+branch: cursor/ci-hang-1767-866d
+tip: 6a731ff051874c767be52c1904df898e294c180f
+base origin/main: 191a7ee6aaa0f03c0cb32d6a803105fca7f95ee9
+PR: #84 → main
+unit+property baseline names: 555 (.github/ci/gut_unit_property_baseline_names.txt)
+Lane2 adds: 3 EX tests → expected Passing ≥ 558
+WP27 unload (1a3e5f1) also on tip (tests/unit; not a new R972 count)

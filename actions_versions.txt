@@ -1,0 +1,18 @@
+17-69 2.6 / R9-73 L2-4 — pins on tip 6a731ff051874c767be52c1904df898e294c180f:
+  actions/checkout@v5
+  actions/cache@v5
+  actions/upload-artifact@v5
+  actions/download-artifact@v5
+
+Tip gate job 138628815928 (run 45440174473):
+  Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+  Download action repository 'actions/download-artifact@v5' (SHA:634f93cb2916e3fdff6788551b99b062d0335ce0)
+
+Tip golden job 138608786507 (same run; checkout/cache/upload):
+  See golden_base_missing_excerpt_6a731ff.txt + prior bb1b50d resolve SHAs:
+  checkout@v5 fbc6f399… / cache@v5 caa296… / upload-artifact@v5 330a01…
+
+Links:
+  tip run: https://github.com/wayung0217/Project-Patrician/actions/runs/45440174473
+  tip gate: https://github.com/wayung0217/Project-Patrician/actions/runs/45440174473/job/138628815928
+  tip golden: https://github.com/wayung0217/Project-Patrician/actions/runs/45440174473/job/138608786507

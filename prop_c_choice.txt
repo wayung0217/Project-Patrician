@@ -1,0 +1,3 @@
+(丙) choice: DELETE gut_unit_property_baseline_paths.txt
+Reason: not read by ci.yml; Owner forbade dead “protection” file.
+Wired alternative rejected — gate uses bare names from gut logs; paths would need extra emit path without adding protection.

@@ -1,0 +1,9 @@
+TOTAL_PASSING=558
+BASELINE_COUNT=555
+SEEN_NAMES=558
+REMOVED_NAMES:
+無
+ADDED_NAMES:
+test_R972_EX_05_09_01_stock_bottleneck_q_300
+test_R972_EX_05_09_02_cash_bottleneck_q_120
+test_R972_EX_05_09_03_zero_stock_no_quote

@@ -1,0 +1,21 @@
+## 2.9 Behavior-change evidence (S9h) — tip 6a731ff
+
+Observable change: on real MarketPricer path, max_affordable_qty never probes
+qty>stock (exclusive hi = s+1; s=0 → 0), so affordability search must not emit
+ERR-SYS04-06.
+
+Directed probe = three EX tests in tests/unit/test_r972_cash_stock_cap_1769.gd
+(CI gut-unit):
+  test_R972_EX_05_09_01_stock_bottleneck_q_300
+    — q==300; ERR-SYS04-06 delta == 0 (stock bottleneck)
+  test_R972_EX_05_09_02_cash_bottleneck_q_120
+    — q==120; ERR-SYS04-06 delta == 0 (cash bottleneck)
+  test_R972_EX_05_09_03_zero_stock_no_quote
+    — q==0; ERR-SYS04-06 delta == 0 ⇒ quote() never called
+
+Golden cells: stock-cap only suppresses failed overstock quotes; successful
+trade totals / mid prices unchanged → expect DIFF_CELLS=0 vs main baseline when
+baseline exists. Tip golden fails loudly with GOLDEN_BASE_MISSING (2.5) until
+main produces a green golden-30d artifact — see ci_evidence/. Zero golden cell
+diff without the EX probes would be insufficient; the three EX tests are the
+required probe.

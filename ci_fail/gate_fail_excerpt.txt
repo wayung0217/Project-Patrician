@@ -1,0 +1,40 @@
+166:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	﻿2026-11-24T15:19:29.0683358Z ##[group]Run set -euo pipefail
+167:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0683879Z ^[[36;1mset -euo pipefail^[[0m
+168:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0684210Z ^[[36;1mecho "Shard artifacts:"^[[0m
+169:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0684535Z ^[[36;1mfind shard_logs -type f -print^[[0m
+170:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0684860Z ^[[36;1mtotal=0^[[0m
+171:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0685138Z ^[[36;1mwhile IFS= read -r f; do^[[0m
+172:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0685446Z ^[[36;1m  n=$(tr -d '[:space:]' < "$f")^[[0m
+173:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0685760Z ^[[36;1m  echo "file=$f passing=$n"^[[0m
+174:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0686092Z ^[[36;1m  total=$((total + n))^[[0m
+175:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0686462Z ^[[36;1mdone < <(find shard_logs -name gut_unit_passing.txt | sort)^[[0m
+176:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0686871Z ^[[36;1mecho "TOTAL_PASSING=${total}"^[[0m
+177:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0687318Z ^[[36;1mBASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"^[[0m
+178:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0687792Z ^[[36;1mBASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)^[[0m
+179:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0688190Z ^[[36;1mecho "BASELINE_COUNT=${BASELINE_COUNT}"^[[0m
+180:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0688553Z ^[[36;1mif [[ "$total" -lt "$BASELINE_COUNT" ]]; then^[[0m
+181:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0689032Z ^[[36;1m  echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"^[[0m
+182:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0689676Z ^[[36;1m  exit 1^[[0m
+183:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0689920Z ^[[36;1mfi^[[0m
+184:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0690177Z ^[[36;1mpython3 - <<'PY'^[[0m
+185:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0690481Z ^[[36;1mfrom pathlib import Path^[[0m
+186:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0690786Z ^[[36;1mbaseline = {^[[0m
+187:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0691045Z ^[[36;1m    ln.strip()^[[0m
+188:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0691485Z ^[[36;1m    for ln in Path(".github/ci/gut_unit_property_baseline_names.txt").read_text().splitlines()^[[0m
+189:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0691936Z ^[[36;1m    if ln.strip()^[[0m
+190:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0692194Z ^[[36;1m}^[[0m
+191:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0692474Z ^[[36;1mseen = set()^[[0m
+192:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0692821Z ^[[36;1mfor f in Path("shard_logs").rglob("gut_unit_names.txt"):^[[0m
+193:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0693244Z ^[[36;1m    for ln in f.read_text(errors="replace").splitlines():^[[0m
+194:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0693611Z ^[[36;1m        n = ln.strip()^[[0m
+195:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0693899Z ^[[36;1m        if n:^[[0m
+196:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0694157Z ^[[36;1m            seen.add(n)^[[0m
+197:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0694462Z ^[[36;1mremoved = sorted(baseline - seen)^[[0m
+198:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0694785Z ^[[36;1madded = sorted(seen - baseline)^[[0m
+199:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0695165Z ^[[36;1mprint(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)}")^[[0m
+200:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0695556Z ^[[36;1mprint("REMOVED_NAMES:")^[[0m
+201:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696023Z ^[[36;1mif removed:^[[0m
+202:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696289Z ^[[36;1m    for n in removed:^[[0m
+203:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696571Z ^[[36;1m        print(n)^[[0m
+204:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696835Z ^[[36;1melse:^[[0m
+205:gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0697076Z ^[[36;1m    print("無")^[[0m

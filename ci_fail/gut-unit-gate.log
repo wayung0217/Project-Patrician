@@ -1,0 +1,310 @@
+gut-unit-gate	Set up job	﻿2026-11-24T15:19:26.2465328Z Current runner version: '2.338.2'
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2494622Z ##[group]Runner Image Provisioner
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2495610Z Hosted Compute Agent
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2496287Z Version: 20261111.635
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2496995Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2497908Z Build Date: 2026-11-11T01:49:01Z
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2498726Z Worker ID: {7c805004-0a28-476e-b709-8f6c588dc63d}
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2499719Z Region: centralus
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2500393Z Cloud: Azure
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2501081Z ##[endgroup]
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2502857Z ##[group]Operating System
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2503622Z Ubuntu
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2504246Z 26.04.1
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2504882Z LTS
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2505507Z ##[endgroup]
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2506351Z ##[group]Runner Image
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2507144Z Image: ubuntu-26.04
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2507818Z Version: 20261116.202.1
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2509422Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2511779Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2512989Z ##[endgroup]
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2514547Z ##[group]GITHUB_TOKEN Permissions
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2516823Z Contents: read
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2517540Z Metadata: read
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2518415Z Packages: read
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2519089Z ##[endgroup]
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2521861Z Secret source: Actions
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2522953Z Cache mode: write
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2524135Z Prepare workflow directory
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2845655Z Prepare all required actions
+gut-unit-gate	Set up job	2026-11-24T15:19:26.2886918Z Getting action download info
+gut-unit-gate	Set up job	2026-11-24T15:19:26.5314522Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+gut-unit-gate	Set up job	2026-11-24T15:19:26.6483833Z Download action repository 'actions/download-artifact@v5' (SHA:634f93cb2916e3fdff6788551b99b062d0335ce0)
+gut-unit-gate	Set up job	2026-11-24T15:19:27.0905982Z Complete job name: gut-unit-gate
+gut-unit-gate	Checkout (baseline name list)	﻿2026-11-24T15:19:27.1562705Z ##[group]Run actions/checkout@v5
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1563407Z with:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1563791Z   repository: wayung0217/Project-Patrician
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1566922Z   token: ***
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1567278Z   ssh-strict: true
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1567634Z   ssh-user: git
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1567997Z   persist-credentials: true
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1568387Z   clean: true
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1568747Z   sparse-checkout-cone-mode: true
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1569304Z   fetch-depth: 1
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1569658Z   fetch-tags: false
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1570015Z   show-progress: true
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1570383Z   lfs: false
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1570720Z   submodules: false
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1571092Z   set-safe-directory: true
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1571495Z   allow-unsafe-pr-checkout: false
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1572047Z env:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1572383Z   GODOT_VERSION: 4.7.2-stable
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1572810Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.1573257Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3431541Z Syncing repository: wayung0217/Project-Patrician
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3433604Z ##[group]Getting Git version info
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3434496Z Working directory is '/home/runner/work/Project-Patrician/Project-Patrician'
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3435705Z [command]/usr/bin/git version
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3436180Z git version 2.56.1
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3482857Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3488839Z Temporarily overriding HOME='/home/runner/work/_temp/e1ff9e3d-9810-45a8-8b46-2e1ed981b1a2' before making global git config changes
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3491120Z Adding repository directory to the temporary git global config as a safe directory
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3493020Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3513160Z Deleting the contents of '/home/runner/work/Project-Patrician/Project-Patrician'
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3516794Z ##[group]Initializing the repository
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3534043Z [command]/usr/bin/git init /home/runner/work/Project-Patrician/Project-Patrician
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3594209Z hint: Using 'master' as the name for the initial branch. This default branch name
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3595719Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3606515Z hint: to use in all of your new repositories, which will suppress this warning,
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3607904Z hint: call:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3608987Z hint:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3609855Z hint: 	git config --global init.defaultBranch <name>
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3610674Z hint:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3611429Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3612607Z hint: 'development'. The just-created branch can be renamed via this command:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3613314Z hint:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3613699Z hint: 	git branch -m <name>
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3614124Z hint:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3614667Z hint: Disable this message with "git config set advice.defaultBranchName false"
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3615601Z Initialized empty Git repository in /home/runner/work/Project-Patrician/Project-Patrician/.git/
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3617827Z [command]/usr/bin/git remote add origin https://github.com/wayung0217/Project-Patrician
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3652842Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3653687Z ##[group]Disabling automatic garbage collection
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3656564Z [command]/usr/bin/git config --local gc.auto 0
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3688427Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3723739Z ##[group]Setting up auth
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3724780Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.3759720Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4151766Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4182423Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4418277Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4449812Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4692758Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4727392Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4734726Z ##[group]Fetching the repository
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:27.4735970Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9a8687093cd28fe28273d597b922ffc8938484f7:refs/remotes/pull/84/merge
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1804690Z From https://github.com/wayung0217/Project-Patrician
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1806703Z  * [new ref]         9a8687093cd28fe28273d597b922ffc8938484f7 -> pull/84/merge
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1810531Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1812095Z ##[group]Determining the checkout info
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1813816Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1823707Z [command]/usr/bin/git sparse-checkout disable
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1872644Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1900349Z ##[group]Checking out the ref
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.1902561Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/84/merge
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2663248Z Note: switching to 'refs/remotes/pull/84/merge'.
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2664572Z 
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2665628Z You are in 'detached HEAD' state. You can look around, make experimental
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2667882Z changes and commit them, and you can discard any commits you make in this
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2670037Z state without impacting any branches by switching back to a branch.
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2671320Z 
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2672234Z If you want to create a new branch to retain commits you create, you may
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2673965Z do so (now or later) by using -c with the switch command. Example:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2674816Z 
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2675333Z   git switch -c <new-branch-name>
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2676075Z 
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2676839Z Or undo this operation with:
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2677693Z 
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2678423Z   git switch -
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2679286Z 
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2680427Z Turn off this advice by setting config variable advice.detachedHead to false
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2681817Z 
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2683634Z HEAD is now at 9a86870 Merge b998cea319a880f81647288666e0b143a01f5991 into 191a7ee6aaa0f03c0cb32d6a803105fca7f95ee9
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2689048Z ##[endgroup]
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2716138Z [command]/usr/bin/git log -1 --format=%H
+gut-unit-gate	Checkout (baseline name list)	2026-11-24T15:19:28.2738825Z 9a8687093cd28fe28273d597b922ffc8938484f7
+gut-unit-gate	Download shard passing counts	﻿2026-11-24T15:19:28.3016470Z ##[group]Run actions/download-artifact@v5
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3017633Z with:
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3018393Z   pattern: gut-unit-logs-*
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3019551Z   merge-multiple: false
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3020405Z   path: shard_logs
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3021270Z   repository: wayung0217/Project-Patrician
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3022328Z   run-id: 45418446352
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3023142Z env:
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3023889Z   GODOT_VERSION: 4.7.2-stable
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3024879Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.3025936Z ##[endgroup]
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.4434126Z (node:2211) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.4436873Z (Use `node --trace-deprecation ...` to show where the warning was created)
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.6049344Z Found 6 artifact(s)
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.6050920Z Filtering artifacts by pattern 'gut-unit-logs-*'
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.6067842Z Preparing to download the following artifacts:
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.6069352Z - gut-unit-logs-0 (ID: 14934177861, Size: 33209, Expected Digest: sha256:a25e04b8f8412d8777face3877c296e5d0556925970ce82a69324014d9563995)
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.6070889Z - gut-unit-logs-2 (ID: 14933995329, Size: 11873, Expected Digest: sha256:b682d8e4980114cf2846ae2d604bc83dbcf3605c75a643f79e25dae56cefc9ae)
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.6072393Z - gut-unit-logs-3 (ID: 14932954430, Size: 11901, Expected Digest: sha256:5a53200950fb99dd3919076f6eaaa995de787d16c078c780e62a917ef7210d33)
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.6073977Z - gut-unit-logs-1 (ID: 14932558742, Size: 13884, Expected Digest: sha256:71a9d0ae2f5c44fb8d00d08c72728fd1c571488b14fafeed8227d71184bd0359)
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.7943452Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/732c7ca0-b3c0-8df1-b24f-4bec7146386b/workflow-job-run-0d1643fa-7985-5110-81f3-e611dee78f5c/artifacts/83f7f5b09d05e43692d5344c866ac04e42862d9ebc1f315c8c1d173f8e9dac7b.zip
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.7944697Z Starting download of artifact to: /home/runner/work/Project-Patrician/Project-Patrician/shard_logs/gut-unit-logs-0
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.8222590Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/732c7ca0-b3c0-8df1-b24f-4bec7146386b/workflow-job-run-87897718-c1c5-5fa3-901b-221e65658048/artifacts/9c90abe3831cc2194a33e757f53e3eecab7c5eb0d68cc1db37af83520414c5ad.zip
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.8223815Z Starting download of artifact to: /home/runner/work/Project-Patrician/Project-Patrician/shard_logs/gut-unit-logs-2
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.8453933Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/732c7ca0-b3c0-8df1-b24f-4bec7146386b/workflow-job-run-c6e23cb8-b995-5f4d-8728-019d4212efba/artifacts/ec9b8062d93bc40e864d228571041322fdf68e7a7b6bdd6d4eb5b1f1a6f39875.zip
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.8455142Z Starting download of artifact to: /home/runner/work/Project-Patrician/Project-Patrician/shard_logs/gut-unit-logs-3
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.9019986Z Redirecting to blob download url: https://productionresultssa12.blob.core.windows.net/actions-results/732c7ca0-b3c0-8df1-b24f-4bec7146386b/workflow-job-run-c648f180-514b-5afa-8b3f-9f6c4d13f85d/artifacts/b38249658ddc67478db20fe609bb2fac8ac03a452c50180ce75a992cf57c2d3d.zip
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.9021488Z Starting download of artifact to: /home/runner/work/Project-Patrician/Project-Patrician/shard_logs/gut-unit-logs-1
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.9432065Z (node:2211) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.9569373Z SHA256 digest of downloaded artifact is b682d8e4980114cf2846ae2d604bc83dbcf3605c75a643f79e25dae56cefc9ae
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.9570066Z Artifact download completed successfully.
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.9719324Z SHA256 digest of downloaded artifact is a25e04b8f8412d8777face3877c296e5d0556925970ce82a69324014d9563995
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:28.9719922Z Artifact download completed successfully.
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:29.0000560Z SHA256 digest of downloaded artifact is 5a53200950fb99dd3919076f6eaaa995de787d16c078c780e62a917ef7210d33
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:29.0001528Z Artifact download completed successfully.
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:29.0532228Z SHA256 digest of downloaded artifact is 71a9d0ae2f5c44fb8d00d08c72728fd1c571488b14fafeed8227d71184bd0359
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:29.0537923Z Artifact download completed successfully.
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:29.0538374Z Total of 4 artifact(s) downloaded
+gut-unit-gate	Download shard passing counts	2026-11-24T15:19:29.0538893Z Download artifact has finished successfully
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	﻿2026-11-24T15:19:29.0683358Z ##[group]Run set -euo pipefail
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0683879Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0684210Z ^[[36;1mecho "Shard artifacts:"^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0684535Z ^[[36;1mfind shard_logs -type f -print^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0684860Z ^[[36;1mtotal=0^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0685138Z ^[[36;1mwhile IFS= read -r f; do^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0685446Z ^[[36;1m  n=$(tr -d '[:space:]' < "$f")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0685760Z ^[[36;1m  echo "file=$f passing=$n"^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0686092Z ^[[36;1m  total=$((total + n))^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0686462Z ^[[36;1mdone < <(find shard_logs -name gut_unit_passing.txt | sort)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0686871Z ^[[36;1mecho "TOTAL_PASSING=${total}"^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0687318Z ^[[36;1mBASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0687792Z ^[[36;1mBASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0688190Z ^[[36;1mecho "BASELINE_COUNT=${BASELINE_COUNT}"^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0688553Z ^[[36;1mif [[ "$total" -lt "$BASELINE_COUNT" ]]; then^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0689032Z ^[[36;1m  echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0689676Z ^[[36;1m  exit 1^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0689920Z ^[[36;1mfi^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0690177Z ^[[36;1mpython3 - <<'PY'^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0690481Z ^[[36;1mfrom pathlib import Path^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0690786Z ^[[36;1mbaseline = {^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0691045Z ^[[36;1m    ln.strip()^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0691485Z ^[[36;1m    for ln in Path(".github/ci/gut_unit_property_baseline_names.txt").read_text().splitlines()^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0691936Z ^[[36;1m    if ln.strip()^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0692194Z ^[[36;1m}^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0692474Z ^[[36;1mseen = set()^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0692821Z ^[[36;1mfor f in Path("shard_logs").rglob("gut_unit_names.txt"):^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0693244Z ^[[36;1m    for ln in f.read_text(errors="replace").splitlines():^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0693611Z ^[[36;1m        n = ln.strip()^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0693899Z ^[[36;1m        if n:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0694157Z ^[[36;1m            seen.add(n)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0694462Z ^[[36;1mremoved = sorted(baseline - seen)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0694785Z ^[[36;1madded = sorted(seen - baseline)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0695165Z ^[[36;1mprint(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)}")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0695556Z ^[[36;1mprint("REMOVED_NAMES:")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696023Z ^[[36;1mif removed:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696289Z ^[[36;1m    for n in removed:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696571Z ^[[36;1m        print(n)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0696835Z ^[[36;1melse:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0697076Z ^[[36;1m    print("無")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0697359Z ^[[36;1mprint("ADDED_NAMES:")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0697638Z ^[[36;1mif added:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0697886Z ^[[36;1m    for n in added:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0698164Z ^[[36;1m        print(n)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0698423Z ^[[36;1melse:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0698658Z ^[[36;1m    print("無")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0698936Z ^[[36;1mif removed:^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0699675Z ^[[36;1m    print("::error::REMOVED_NAMES non-empty — baseline test deleted/renamed without Owner pre-approval (set diff)")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0700231Z ^[[36;1m    raise SystemExit(1)^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0700588Z ^[[36;1mprint("GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1")^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0700926Z ^[[36;1mPY^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0701271Z ^[[36;1mecho "GUT_UNIT_PROPERTY_COUNT_OK>=${BASELINE_COUNT} actual=${total}"^[[0m
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0735804Z shell: /usr/bin/bash -e {0}
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0736138Z env:
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0736411Z   GODOT_VERSION: 4.7.2-stable
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0736734Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0737054Z ##[endgroup]
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0810598Z Shard artifacts:
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0823163Z shard_logs/gut-unit-logs-0/gut_unit_names.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0823815Z shard_logs/gut-unit-logs-0/gut_unit_passing.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0824525Z shard_logs/gut-unit-logs-0/gut_unit.log
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0824952Z shard_logs/gut-unit-logs-2/gut_unit_names.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0825401Z shard_logs/gut-unit-logs-2/gut_unit_passing.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0825827Z shard_logs/gut-unit-logs-2/gut_unit.log
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0826233Z shard_logs/gut-unit-logs-3/gut_unit_names.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0826656Z shard_logs/gut-unit-logs-3/gut_unit_passing.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0827085Z shard_logs/gut-unit-logs-3/gut_unit.log
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0827540Z shard_logs/gut-unit-logs-1/gut_unit_names.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0827992Z shard_logs/gut-unit-logs-1/gut_unit_passing.txt
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0828417Z shard_logs/gut-unit-logs-1/gut_unit.log
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0892560Z file=shard_logs/gut-unit-logs-0/gut_unit_passing.txt passing=122
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0924239Z file=shard_logs/gut-unit-logs-1/gut_unit_passing.txt passing=151
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0953582Z file=shard_logs/gut-unit-logs-2/gut_unit_passing.txt passing=147
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0981609Z file=shard_logs/gut-unit-logs-3/gut_unit_passing.txt passing=138
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0982353Z TOTAL_PASSING=558
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.0998279Z BASELINE_COUNT=555
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1162103Z SEEN_NAMES=511 BASELINE_NAMES=555
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1162798Z REMOVED_NAMES:
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1163251Z test_D110b_unknown_port_empty_plus_last_error
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1163656Z test_E2_fnv_empty_offset_basis
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1164044Z test_ERR_SYS06_01_negative_rate_rejects_boot
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1164590Z test_EX_08_14_01_garrison_fraction_carry_three_days
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1165088Z test_EX_08_21_01_wanggang_rice_opening_stock
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1165533Z test_EX_08_21_04_opening_plus_new_exceeds_slots
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1165969Z test_EX_08_25_01_queue_upgrade_two_materials
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1166378Z test_EX_23_04_01_plan_three_ports
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1166780Z test_PROP_C08_same_seed_state_hashes_match
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1167247Z test_PROP_FRM_SYS03_01_conservation_after_mixed_transfers
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1167786Z test_PROP_FRM_SYS03_02_failed_transfer_leaves_both_sides_unchanged
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1168335Z test_PROP_SYS04_quote_within_curve_hard_bounds_and_non_negative
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1168881Z test_PROP_SYS05_sum_balances_zero_after_post_and_charge
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1169444Z test_TST_SYS01_01_duplicate_good_id_rejects
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1169863Z test_TST_SYS02_01_port_count_13_rejects
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1170272Z test_TST_SYS08_01_land_price_calibration
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1170996Z test_TST_SYS08_03_kontor_duplicate_err04
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1171430Z test_TST_SYS08_06_seven_day_floor_week_output
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1171857Z test_TST_SYS08_10_season_wage_mandatory
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1172274Z test_TST_SYS08_18_opening_workshops_city_active
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1172699Z test_TST_SYS15_01_missing_prm
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1173101Z test_TST_SYS23_03_unknown_scenario_key
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1173496Z test_TST_SYS23_08_fnv_empty
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1173907Z test_TST_WP62_D95d_lane_ids_ascending_full_chart
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1174383Z test_TST_WP62_D95d_last_trade_total_li_boot_and_clear
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1174812Z test_WP16_10_07_scalar_loads
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1175187Z test_WP17_zones_ok_import
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1175572Z test_WP18_11_07_9_csv_slots_and_new_csvs_ok
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1176024Z test_WP21_14_04_1_missing_sat_provider_boot_error
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1176464Z test_WP29_D14e_batch_ok_writes_sea_tres
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1176890Z test_WP30_13_08_missing_sailor_pool_boot_error
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1177336Z test_WP34_headers_match_docs_spec_csv
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1177768Z test_WP51_occupants_stable_when_no_movers
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1178208Z test_WP55_A13_derive_seed_draw_seq_changes_hash
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1178677Z test_WP56_A18_max_affordable_respects_market_stock
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1179327Z test_WP59_15_08_01_missing_offtake_window_days_refuses_boot
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1179822Z test_WP59_2_1_04_rule1_port_csv_rejected_as_good_def
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1180289Z test_WP59_all_section4_params_json_keys_readable
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1180988Z test_WP59_autoload_order_cash_after_goods
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1181408Z test_WP59_boot_day_zero_first_advance_to_one
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1181867Z test_WP59_consumption_provider_base_push_error
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1182339Z test_WP59_consumption_provider_base_push_error_2_1_03
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1182795Z test_WP59_next_seq_starts_at_1_and_increments
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1183274Z test_WP59_qualification_provider_base_push_error_2_1_03
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1183769Z test_WP67_garrison_goods_fail_restores_cash_and_stock
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1184200Z test_WP68_switch_off_never_runs
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1184563Z ADDED_NAMES:
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1184924Z test_R972_EX_05_09_02_cash_bottleneck_q_120
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1185364Z test_R972_EX_05_09_03_zero_stock_no_quote
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1203645Z ##[error]REMOVED_NAMES non-empty — baseline test deleted/renamed without Owner pre-approval (set diff)
+gut-unit-gate	Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES	2026-11-24T15:19:29.1213972Z ##[error]Process completed with exit code 1.
+gut-unit-gate	Post Checkout (baseline name list)	﻿2026-11-24T15:19:29.1334092Z Post job cleanup.
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2045771Z [command]/usr/bin/git version
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2093446Z git version 2.56.1
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2128489Z Temporarily overriding HOME='/home/runner/work/_temp/ddd08061-ad72-4624-8cff-1c6dbff9de1b' before making global git config changes
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2129777Z Adding repository directory to the temporary git global config as a safe directory
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2140493Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2176909Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2214134Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2500337Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2527475Z http.https://github.com/.extraheader
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2538364Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2574513Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2837373Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gut-unit-gate	Post Checkout (baseline name list)	2026-11-24T15:19:29.2866633Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gut-unit-gate	Complete job	﻿2026-11-24T15:19:29.3246470Z Cleaning up orphan processes
+gut-unit-gate	Complete job	2026-11-24T15:19:29.3620318Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/download-artifact@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

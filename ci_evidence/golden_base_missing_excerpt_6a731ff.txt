@@ -1,0 +1,6 @@
+2026-11-24T16:43:45.3278569Z [36;1m  echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"[0m
+2026-11-24T16:43:45.3279617Z [36;1m  echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"[0m
+2026-11-24T16:43:45.3282908Z [36;1m  echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"[0m
+2026-11-24T16:43:45.3283934Z [36;1m  echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"[0m
+2026-11-24T16:43:46.9605027Z GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run 45358265237)
+2026-11-24T16:43:46.9625792Z ##[error]GOLDEN_BASE_MISSING — golden-30d artifact absent on main run 45358265237; compare not merge-eligible

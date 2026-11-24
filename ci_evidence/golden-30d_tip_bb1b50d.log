@@ -1,0 +1,737 @@
+2026-11-24T15:22:44.2634932Z Current runner version: '2.338.2'
+2026-11-24T15:22:44.2673458Z ##[group]Runner Image Provisioner
+2026-11-24T15:22:44.2674802Z Hosted Compute Agent
+2026-11-24T15:22:44.2675939Z Version: 20261111.635
+2026-11-24T15:22:44.2677344Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+2026-11-24T15:22:44.2678601Z Build Date: 2026-11-11T01:49:01Z
+2026-11-24T15:22:44.2679912Z Worker ID: {aba36446-6dc0-45c5-a565-95002a77d3c5}
+2026-11-24T15:22:44.2681165Z Region: eastus
+2026-11-24T15:22:44.2682214Z Cloud: Azure
+2026-11-24T15:22:44.2683113Z ##[endgroup]
+2026-11-24T15:22:44.2685537Z ##[group]Operating System
+2026-11-24T15:22:44.2686849Z Ubuntu
+2026-11-24T15:22:44.2687761Z 26.04.1
+2026-11-24T15:22:44.2688748Z LTS
+2026-11-24T15:22:44.2689796Z ##[endgroup]
+2026-11-24T15:22:44.2690832Z ##[group]Runner Image
+2026-11-24T15:22:44.2691894Z Image: ubuntu-26.04
+2026-11-24T15:22:44.2692860Z Version: 20261116.202.1
+2026-11-24T15:22:44.2695122Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+2026-11-24T15:22:44.2698157Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+2026-11-24T15:22:44.2699900Z ##[endgroup]
+2026-11-24T15:22:44.2701997Z ##[group]GITHUB_TOKEN Permissions
+2026-11-24T15:22:44.2705069Z Actions: read
+2026-11-24T15:22:44.2706357Z Contents: read
+2026-11-24T15:22:44.2707346Z Metadata: read
+2026-11-24T15:22:44.2708298Z ##[endgroup]
+2026-11-24T15:22:44.2711426Z Secret source: Actions
+2026-11-24T15:22:44.2713159Z Cache mode: write
+2026-11-24T15:22:44.2714830Z Prepare workflow directory
+2026-11-24T15:22:44.3320560Z Prepare all required actions
+2026-11-24T15:22:44.3396165Z Getting action download info
+2026-11-24T15:22:44.5218496Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+2026-11-24T15:22:44.8718160Z Download action repository 'actions/cache@v5' (SHA:caa296126883cff596d87d8935842f9db880ef25)
+2026-11-24T15:22:45.0136273Z Download action repository 'actions/upload-artifact@v5' (SHA:330a01c490aca151604b8cf639adc76d48f6c5d4)
+2026-11-24T15:22:45.2461218Z Complete job name: golden-30d
+2026-11-24T15:22:45.3498905Z ##[group]Run actions/checkout@v5
+2026-11-24T15:22:45.3499905Z with:
+2026-11-24T15:22:45.3500436Z   repository: wayung0217/Project-Patrician
+2026-11-24T15:22:45.3504664Z   token: ***
+2026-11-24T15:22:45.3505139Z   ssh-strict: true
+2026-11-24T15:22:45.3505611Z   ssh-user: git
+2026-11-24T15:22:45.3506254Z   persist-credentials: true
+2026-11-24T15:22:45.3506801Z   clean: true
+2026-11-24T15:22:45.3507291Z   sparse-checkout-cone-mode: true
+2026-11-24T15:22:45.3507868Z   fetch-depth: 1
+2026-11-24T15:22:45.3508339Z   fetch-tags: false
+2026-11-24T15:22:45.3508840Z   show-progress: true
+2026-11-24T15:22:45.3509337Z   lfs: false
+2026-11-24T15:22:45.3509783Z   submodules: false
+2026-11-24T15:22:45.3510273Z   set-safe-directory: true
+2026-11-24T15:22:45.3510827Z   allow-unsafe-pr-checkout: false
+2026-11-24T15:22:45.3511691Z env:
+2026-11-24T15:22:45.3512150Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:22:45.3512779Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:22:45.3513440Z ##[endgroup]
+2026-11-24T15:22:47.6895026Z Syncing repository: wayung0217/Project-Patrician
+2026-11-24T15:22:47.6896926Z ##[group]Getting Git version info
+2026-11-24T15:22:47.6897514Z Working directory is '/home/runner/work/Project-Patrician/Project-Patrician'
+2026-11-24T15:22:47.6898305Z [command]/usr/bin/git version
+2026-11-24T15:22:47.6983187Z git version 2.56.1
+2026-11-24T15:22:47.7004282Z ##[endgroup]
+2026-11-24T15:22:47.7021795Z Temporarily overriding HOME='/home/runner/work/_temp/a49cda2b-121d-4805-8a48-859af3b94265' before making global git config changes
+2026-11-24T15:22:47.7023491Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-24T15:22:47.7028557Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+2026-11-24T15:22:47.7436709Z Deleting the contents of '/home/runner/work/Project-Patrician/Project-Patrician'
+2026-11-24T15:22:47.7443331Z ##[group]Initializing the repository
+2026-11-24T15:22:47.7449087Z [command]/usr/bin/git init /home/runner/work/Project-Patrician/Project-Patrician
+2026-11-24T15:22:47.7833636Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-24T15:22:47.7835095Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-24T15:22:47.7836514Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-24T15:22:47.7921869Z hint: call:
+2026-11-24T15:22:47.7922733Z hint:
+2026-11-24T15:22:47.7927423Z hint: 	git config --global init.defaultBranch <name>
+2026-11-24T15:22:47.7928085Z hint:
+2026-11-24T15:22:47.7928766Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-24T15:22:47.7929773Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-24T15:22:47.7930592Z hint:
+2026-11-24T15:22:47.7931021Z hint: 	git branch -m <name>
+2026-11-24T15:22:47.7931558Z hint:
+2026-11-24T15:22:47.7932230Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-24T15:22:47.7963070Z Initialized empty Git repository in /home/runner/work/Project-Patrician/Project-Patrician/.git/
+2026-11-24T15:22:47.7977327Z [command]/usr/bin/git remote add origin https://github.com/wayung0217/Project-Patrician
+2026-11-24T15:22:47.8212213Z ##[endgroup]
+2026-11-24T15:22:47.8212879Z ##[group]Disabling automatic garbage collection
+2026-11-24T15:22:47.8217894Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-24T15:22:47.8252585Z ##[endgroup]
+2026-11-24T15:22:47.8253482Z ##[group]Setting up auth
+2026-11-24T15:22:47.8261920Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-24T15:22:47.8297256Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-24T15:22:48.0217502Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-24T15:22:48.0254186Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-24T15:22:48.0528669Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-24T15:22:48.0567094Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-24T15:22:48.0853304Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-24T15:22:48.0895688Z ##[endgroup]
+2026-11-24T15:22:48.0896663Z ##[group]Fetching the repository
+2026-11-24T15:22:48.0905925Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +eec10e967322e2085b500e036aa44edd9318b24b:refs/remotes/pull/84/merge
+2026-11-24T15:22:48.6513506Z From https://github.com/wayung0217/Project-Patrician
+2026-11-24T15:22:48.6514145Z  * [new ref]         eec10e967322e2085b500e036aa44edd9318b24b -> pull/84/merge
+2026-11-24T15:22:48.6532963Z ##[endgroup]
+2026-11-24T15:22:48.6542992Z ##[group]Determining the checkout info
+2026-11-24T15:22:48.6544053Z ##[endgroup]
+2026-11-24T15:22:48.6544846Z [command]/usr/bin/git sparse-checkout disable
+2026-11-24T15:22:48.6802877Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-24T15:22:48.6835384Z ##[group]Checking out the ref
+2026-11-24T15:22:48.6841344Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/84/merge
+2026-11-24T15:22:48.7835064Z Note: switching to 'refs/remotes/pull/84/merge'.
+2026-11-24T15:22:48.7835384Z 
+2026-11-24T15:22:48.7835600Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-11-24T15:22:48.7836446Z changes and commit them, and you can discard any commits you make in this
+2026-11-24T15:22:48.7837281Z state without impacting any branches by switching back to a branch.
+2026-11-24T15:22:48.7837583Z 
+2026-11-24T15:22:48.7837796Z If you want to create a new branch to retain commits you create, you may
+2026-11-24T15:22:48.7838529Z do so (now or later) by using -c with the switch command. Example:
+2026-11-24T15:22:48.7838856Z 
+2026-11-24T15:22:48.7838971Z   git switch -c <new-branch-name>
+2026-11-24T15:22:48.7839158Z 
+2026-11-24T15:22:48.7839267Z Or undo this operation with:
+2026-11-24T15:22:48.7839439Z 
+2026-11-24T15:22:48.7839525Z   git switch -
+2026-11-24T15:22:48.7839685Z 
+2026-11-24T15:22:48.7839918Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-11-24T15:22:48.7840235Z 
+2026-11-24T15:22:48.7840835Z HEAD is now at eec10e9 Merge bb1b50d3bd91ba33df3393babc7c0e5de3147edf into 191a7ee6aaa0f03c0cb32d6a803105fca7f95ee9
+2026-11-24T15:22:48.7889632Z ##[endgroup]
+2026-11-24T15:22:48.7945936Z [command]/usr/bin/git log -1 --format=%H
+2026-11-24T15:22:48.7968956Z eec10e967322e2085b500e036aa44edd9318b24b
+2026-11-24T15:22:48.8294385Z ##[group]Run actions/cache@v5
+2026-11-24T15:22:48.8294782Z with:
+2026-11-24T15:22:48.8294979Z   path: godot
+2026-11-24T15:22:48.8295216Z   key: godot-4.7.2-stable-linux-x86_64
+2026-11-24T15:22:48.8295514Z   enableCrossOsArchive: false
+2026-11-24T15:22:48.8295779Z   fail-on-cache-miss: false
+2026-11-24T15:22:48.8296314Z   lookup-only: false
+2026-11-24T15:22:48.8296572Z   save-always: false
+2026-11-24T15:22:48.8296773Z env:
+2026-11-24T15:22:48.8296968Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:22:48.8297230Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:22:48.8297512Z ##[endgroup]
+2026-11-24T15:22:49.1542995Z Cache hit for: godot-4.7.2-stable-linux-x86_64
+2026-11-24T15:22:49.7207927Z Received 75802056 of 75802056 (100.0%), 153.2 MBs/sec
+2026-11-24T15:22:49.7208848Z Cache Size: ~72 MB (75802056 B)
+2026-11-24T15:22:49.7298465Z [command]/usr/bin/tar -xf /home/runner/work/_temp/60ae90cc-c01e-496b-922a-a7ae7dff52ba/cache.tzst -P -C /home/runner/work/Project-Patrician/Project-Patrician --use-compress-program unzstd
+2026-11-24T15:22:49.9734944Z Cache restored successfully
+2026-11-24T15:22:50.1351717Z Cache restored from key: godot-4.7.2-stable-linux-x86_64
+2026-11-24T15:22:50.1615551Z ##[group]Run set -euo pipefail
+2026-11-24T15:22:50.1615931Z [36;1mset -euo pipefail[0m
+2026-11-24T15:22:50.1616518Z [36;1mchmod +x godot[0m
+2026-11-24T15:22:50.1616759Z [36;1m./godot --version[0m
+2026-11-24T15:22:50.1653943Z shell: /usr/bin/bash -e {0}
+2026-11-24T15:22:50.1654207Z env:
+2026-11-24T15:22:50.1654413Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:22:50.1654703Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:22:50.1655012Z ##[endgroup]
+2026-11-24T15:22:50.3349535Z 4.7.2.stable.official.ed1daf0bf
+2026-11-24T15:22:50.9869312Z ##[group]Run actions/cache@v5
+2026-11-24T15:22:50.9869589Z with:
+2026-11-24T15:22:50.9869797Z   path: .godot/imported
+2026-11-24T15:22:50.9870214Z   key: godot-imported-9e53f143823f6c9ba2e191ef9e4f3238a08315924f3561ed616eaba12c2286d5
+2026-11-24T15:22:50.9870726Z   restore-keys: godot-imported-
+
+2026-11-24T15:22:50.9871024Z   enableCrossOsArchive: false
+2026-11-24T15:22:50.9871290Z   fail-on-cache-miss: false
+2026-11-24T15:22:50.9871538Z   lookup-only: false
+2026-11-24T15:22:50.9871755Z   save-always: false
+2026-11-24T15:22:50.9871956Z env:
+2026-11-24T15:22:50.9872150Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:22:50.9872416Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:22:50.9872707Z ##[endgroup]
+2026-11-24T15:22:51.2037891Z Cache hit for: godot-imported-9e53f143823f6c9ba2e191ef9e4f3238a08315924f3561ed616eaba12c2286d5
+2026-11-24T15:22:51.3019254Z Received 1001879 of 1001879 (100.0%), 22.7 MBs/sec
+2026-11-24T15:22:51.3020106Z Cache Size: ~1 MB (1001879 B)
+2026-11-24T15:22:51.3047985Z [command]/usr/bin/tar -xf /home/runner/work/_temp/72893ceb-4012-4b4e-908c-2382f019d784/cache.tzst -P -C /home/runner/work/Project-Patrician/Project-Patrician --use-compress-program unzstd
+2026-11-24T15:22:51.3155384Z Cache restored successfully
+2026-11-24T15:22:51.3236200Z Cache restored from key: godot-imported-9e53f143823f6c9ba2e191ef9e4f3238a08315924f3561ed616eaba12c2286d5
+2026-11-24T15:22:51.3341758Z ##[group]Run set -euo pipefail
+2026-11-24T15:22:51.3342107Z [36;1mset -euo pipefail[0m
+2026-11-24T15:22:51.3342420Z [36;1m./godot --headless --path . --import[0m
+2026-11-24T15:22:51.3375164Z shell: /usr/bin/bash -e {0}
+2026-11-24T15:22:51.3375434Z env:
+2026-11-24T15:22:51.3375639Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:22:51.3375925Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:22:51.3376485Z ##[endgroup]
+2026-11-24T15:22:51.3621736Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+2026-11-24T15:22:51.4134538Z 
+2026-11-24T15:22:56.6842123Z [   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+2026-11-24T15:22:56.6843311Z [   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+2026-11-24T15:22:56.6906801Z [  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+2026-11-24T15:22:56.7166242Z [  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+2026-11-24T15:22:56.7167379Z [  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+2026-11-24T15:22:57.5242041Z [  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+2026-11-24T15:22:57.9382272Z [  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+2026-11-24T15:22:57.9383184Z [92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+2026-11-24T15:22:57.9383831Z [0m
+2026-11-24T15:22:58.6287671Z [   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (228 steps)[39m[0m
+2026-11-24T15:22:58.6308071Z [   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6308888Z [   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6309546Z [   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6310306Z [   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6310951Z [   1% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6311597Z [   2% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6312221Z [   2% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6312889Z [   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6313545Z [   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6314215Z [   3% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6314640Z [   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6315038Z [   4% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6315410Z [   5% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6315790Z [   5% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6316455Z [   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6316844Z [   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6317228Z [   6% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6317607Z [   7% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6317972Z [   7% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6318358Z [   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6318726Z [   8% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6319106Z [   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6319481Z [   9% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6319851Z [  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6320236Z [  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6320608Z [  10% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6321278Z [  11% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6321654Z [  11% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6322229Z [  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6322616Z [  12% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6322985Z [  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6323352Z [  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6323776Z [  13% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6324179Z [  14% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6324557Z [  14% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6324926Z [  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6325291Z [  15% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6325672Z [  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6326290Z [  16% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6327078Z [  17% ] [90m[1mupdate_scripts_classes[22m | GutErrorTracker[39m[0m
+2026-11-24T15:22:58.6327867Z [  17% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6328251Z [  17% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6328675Z [  18% ] [90m[1mupdate_scripts_classes[22m | GutMain[39m[0m
+2026-11-24T15:22:58.6329084Z [  18% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6329462Z [  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6329829Z [  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6330242Z [  20% ] [90m[1mupdate_scripts_classes[22m | GutConstants[39m[0m
+2026-11-24T15:22:58.6330683Z [  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6331053Z [  20% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6331427Z [  21% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6331801Z [  21% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6332166Z [  22% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6332595Z [  22% ] [90m[1mupdate_scripts_classes[22m | GutTrackedError[39m[0m
+2026-11-24T15:22:58.6333028Z [  23% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6333451Z [  23% ] [90m[1mupdate_scripts_classes[22m | GutHookScript[39m[0m
+2026-11-24T15:22:58.6333874Z [  24% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6334297Z [  24% ] [90m[1mupdate_scripts_classes[22m | GutInputFactory[39m[0m
+2026-11-24T15:22:58.6334784Z [  24% ] [90m[1mupdate_scripts_classes[22m | GutInputSender[39m[0m
+2026-11-24T15:22:58.6335217Z [  25% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6335731Z [  25% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6336563Z [  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6337078Z [  26% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6337455Z [  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6337829Z [  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6338214Z [  27% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6338608Z [  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6338992Z [  28% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6339374Z [  29% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6339754Z [  29% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6340116Z [  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6340488Z [  30% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6340856Z [  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6341473Z [  31% ] [90m[1mupdate_scripts_classes[22m | GutStringUtils[39m[0m
+2026-11-24T15:22:58.6342024Z [  31% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6342879Z [  32% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6343353Z [  32% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6343731Z [  33% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6344141Z [  33% ] [90m[1mupdate_scripts_classes[22m | GutTest[39m[0m
+2026-11-24T15:22:58.6344552Z [  34% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6344930Z [  34% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6345307Z [  34% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6345676Z [  35% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6346285Z [  35% ] [90m[1mupdate_scripts_classes[22m | GutUtils[39m[0m
+2026-11-24T15:22:58.6346702Z [  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6347082Z [  36% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6347635Z [  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6348304Z [  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6348775Z [  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6349142Z [  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6349512Z [  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6349882Z [  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6350251Z [  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6350630Z [  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6350995Z [  40% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6351361Z [  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6351733Z [  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6352120Z [  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6352502Z [  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6353189Z [  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6353790Z [  43% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6354220Z [  43% ] [90m[1mupdate_scripts_classes[22m | BrokerProvider[39m[0m
+2026-11-24T15:22:58.6354721Z [  44% ] [90m[1mupdate_scripts_classes[22m | CapacityProvider[39m[0m
+2026-11-24T15:22:58.6355237Z [  44% ] [90m[1mupdate_scripts_classes[22m | ConsumptionProvider[39m[0m
+2026-11-24T15:22:58.6355757Z [  44% ] [90m[1mupdate_scripts_classes[22m | PopulationProvider[39m[0m
+2026-11-24T15:22:58.6356565Z [  45% ] [90m[1mupdate_scripts_classes[22m | QualificationProvider[39m[0m
+2026-11-24T15:22:58.6357099Z [  45% ] [90m[1mupdate_scripts_classes[22m | SailorPoolProvider[39m[0m
+2026-11-24T15:22:58.6357649Z [  46% ] [90m[1mupdate_scripts_classes[22m | SatisfactionInputProvider[39m[0m
+2026-11-24T15:22:58.6358193Z [  46% ] [90m[1mupdate_scripts_classes[22m | ShipEventObserver[39m[0m
+2026-11-24T15:22:58.6358909Z [  47% ] [90m[1mupdate_scripts_classes[22m | TradeObserver[39m[0m
+2026-11-24T15:22:58.6359738Z [  47% ] [90m[1mupdate_scripts_classes[22m | WorkforceProvider[39m[0m
+2026-11-24T15:22:58.6360217Z [  48% ] [90m[1mupdate_scripts_classes[22m | Account[39m[0m
+2026-11-24T15:22:58.6360674Z [  48% ] [90m[1mupdate_scripts_classes[22m | AmountQuantize[39m[0m
+2026-11-24T15:22:58.6361143Z [  48% ] [90m[1mupdate_scripts_classes[22m | Building[39m[0m
+2026-11-24T15:22:58.6361579Z [  49% ] [90m[1mupdate_scripts_classes[22m | BuildingDef[39m[0m
+2026-11-24T15:22:58.6362020Z [  49% ] [90m[1mupdate_scripts_classes[22m | BuildStep[39m[0m
+2026-11-24T15:22:58.6362482Z [  50% ] [90m[1mupdate_scripts_classes[22m | ChargeSchedule[39m[0m
+2026-11-24T15:22:58.6363476Z [  50% ] [90m[1mupdate_scripts_classes[22m | CityCenterDef[39m[0m
+2026-11-24T15:22:58.6364179Z [  51% ] [90m[1mupdate_scripts_classes[22m | DemandRate[39m[0m
+2026-11-24T15:22:58.6364761Z [  51% ] [90m[1mupdate_scripts_classes[22m | ErrorInfoUtil[39m[0m
+2026-11-24T15:22:58.6365220Z [  51% ] [90m[1mupdate_scripts_classes[22m | GoodDef[39m[0m
+2026-11-24T15:22:58.6365694Z [  52% ] [90m[1mupdate_scripts_classes[22m | OpeningPopulation[39m[0m
+2026-11-24T15:22:58.6366454Z [  52% ] [90m[1mupdate_scripts_classes[22m | OpeningPublic[39m[0m
+2026-11-24T15:22:58.6366943Z [  53% ] [90m[1mupdate_scripts_classes[22m | OpeningWorkshop[39m[0m
+2026-11-24T15:22:58.6367400Z [  53% ] [90m[1mupdate_scripts_classes[22m | PortDef[39m[0m
+2026-11-24T15:22:58.6368002Z [  54% ] [90m[1mupdate_scripts_classes[22m | Posting[39m[0m
+2026-11-24T15:22:58.6368812Z [  54% ] [90m[1mupdate_scripts_classes[22m | PostingEntry[39m[0m
+2026-11-24T15:22:58.6369305Z [  55% ] [90m[1mupdate_scripts_classes[22m | PriceCurve[39m[0m
+2026-11-24T15:22:58.6369751Z [  55% ] [90m[1mupdate_scripts_classes[22m | RoleCell[39m[0m
+2026-11-24T15:22:58.6370227Z [  55% ] [90m[1mupdate_scripts_classes[22m | SatisfactionWeight[39m[0m
+2026-11-24T15:22:58.6370741Z [  56% ] [90m[1mupdate_scripts_classes[22m | SeasonLedgerReport[39m[0m
+2026-11-24T15:22:58.6371247Z [  56% ] [90m[1mupdate_scripts_classes[22m | SeaLane[39m[0m
+2026-11-24T15:22:58.6371665Z [  57% ] [90m[1mupdate_scripts_classes[22m | SeaNode[39m[0m
+2026-11-24T15:22:58.6372095Z [  57% ] [90m[1mupdate_scripts_classes[22m | SeaRegion[39m[0m
+2026-11-24T15:22:58.6372775Z [  58% ] [90m[1mupdate_scripts_classes[22m | Ship[39m[0m
+2026-11-24T15:22:58.6373446Z [  58% ] [90m[1mupdate_scripts_classes[22m | Slot[39m[0m
+2026-11-24T15:22:58.6373904Z [  58% ] [90m[1mupdate_scripts_classes[22m | SubstitutionRule[39m[0m
+2026-11-24T15:22:58.6374381Z [  59% ] [90m[1mupdate_scripts_classes[22m | TransferEvent[39m[0m
+2026-11-24T15:22:58.6374826Z [  59% ] [90m[1mupdate_scripts_classes[22m | ZoneDef[39m[0m
+2026-11-24T15:22:58.6375230Z [  60% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6375629Z [  60% ] [90m[1mupdate_scripts_classes[22m | Rng[39m[0m
+2026-11-24T15:22:58.6376245Z [  61% ] [90m[1mupdate_scripts_classes[22m | SimCsvOut[39m[0m
+2026-11-24T15:22:58.6376710Z [  61% ] [90m[1mupdate_scripts_classes[22m | SimGridExpand[39m[0m
+2026-11-24T15:22:58.6377520Z [  62% ] [90m[1mupdate_scripts_classes[22m | SimJsonInt[39m[0m
+2026-11-24T15:22:58.6378161Z [  62% ] [90m[1mupdate_scripts_classes[22m | SimMetrics[39m[0m
+2026-11-24T15:22:58.6378650Z [  62% ] [90m[1mupdate_scripts_classes[22m | SimParamsMerge[39m[0m
+2026-11-24T15:22:58.6379117Z [  63% ] [90m[1mupdate_scripts_classes[22m | SimRelocator[39m[0m
+2026-11-24T15:22:58.6379573Z [  63% ] [90m[1mupdate_scripts_classes[22m | SimSampler[39m[0m
+2026-11-24T15:22:58.6380059Z [  64% ] [90m[1mupdate_scripts_classes[22m | SimScenarioValidator[39m[0m
+2026-11-24T15:22:58.6380581Z [  64% ] [90m[1mupdate_scripts_classes[22m | SimBrokerFixture[39m[0m
+2026-11-24T15:22:58.6381062Z [  65% ] [90m[1mupdate_scripts_classes[22m | SimEngine[39m[0m
+2026-11-24T15:22:58.6381554Z [  65% ] [90m[1mupdate_scripts_classes[22m | SimQualificationFixture[39m[0m
+2026-11-24T15:22:58.6382027Z [  65% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6382494Z [  66% ] [90m[1mupdate_scripts_classes[22m | SimTradeObserverFixture[39m[0m
+2026-11-24T15:22:58.6383001Z [  66% ] [90m[1mupdate_scripts_classes[22m | SimTransferAcc[39m[0m
+2026-11-24T15:22:58.6383535Z [  67% ] [90m[1mupdate_scripts_classes[22m | FixtureQualificationProvider[39m[0m
+2026-11-24T15:22:58.6384089Z [  67% ] [90m[1mupdate_scripts_classes[22m | FixtureTradeObserver[39m[0m
+2026-11-24T15:22:58.6384593Z [  68% ] [90m[1mupdate_scripts_classes[22m | FixtureBuilders[39m[0m
+2026-11-24T15:22:58.6385188Z [  68% ] [90m[1mupdate_scripts_classes[22m | ParamsFixtures[39m[0m
+2026-11-24T15:22:58.6386339Z [  68% ] [90m[1mupdate_scripts_classes[22m | PropStream[39m[0m
+2026-11-24T15:22:58.6386898Z [  69% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6387288Z [  69% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6387669Z [  70% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6388035Z [  70% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6388401Z [  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6388773Z [  71% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6389142Z [  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6389510Z [  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6389878Z [  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6390244Z [  73% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6390626Z [  73% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6390990Z [  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6391364Z [  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6391737Z [  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6392101Z [  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6392476Z [  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6392843Z [  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6393207Z [  76% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6393924Z [  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6394582Z [  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6394968Z [  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6395343Z [  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6395720Z [  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6396295Z [  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6396684Z [  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6397063Z [  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6397434Z [  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6397804Z [  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6398185Z [  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6398553Z [  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6398928Z [  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6399291Z [  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6399652Z [  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6400020Z [  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6400391Z [  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6400757Z [  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6401124Z [  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6401493Z [  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6401862Z [  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6402374Z [  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6403045Z [  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6403579Z [  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6403950Z [  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6404324Z [  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6404693Z [  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6405057Z [  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6405593Z [  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6406334Z [  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6406764Z [  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6407132Z [  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6407498Z [  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6407869Z [  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6408233Z [  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6408607Z [  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6408975Z [  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6409343Z [  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6409715Z [  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6410080Z [  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6410452Z [  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6410910Z [  95% ] [90m[1mupdate_scripts_classes[22m | DebugBrokerProvider[39m[0m
+2026-11-24T15:22:58.6411950Z [  95% ] [90m[1mupdate_scripts_classes[22m | DebugQualificationProvider[39m[0m
+2026-11-24T15:22:58.6412644Z [  96% ] [90m[1mupdate_scripts_classes[22m | DebugTradeObserver[39m[0m
+2026-11-24T15:22:58.6413126Z [  96% ] [90m[1mupdate_scripts_classes[22m | DebugBoot[39m[0m
+2026-11-24T15:22:58.6413730Z [  96% ] [90m[1mupdate_scripts_classes[22m | DebugConfig[39m[0m
+2026-11-24T15:22:58.6414479Z [  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6414966Z [  97% ] [90m[1mupdate_scripts_classes[22m | FormatTael[39m[0m
+2026-11-24T15:22:58.6415376Z [  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6415751Z [  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6416508Z [  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+2026-11-24T15:22:58.6417162Z [92m[ DONE ][39m [1mupdate_scripts_classes[22m
+2026-11-24T15:22:58.6417497Z [0m
+2026-11-24T15:22:58.6417903Z [   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (171 steps)[39m[0m
+2026-11-24T15:22:58.6418476Z [   0% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Bold.ttf[39m[0m
+2026-11-24T15:22:58.6419370Z [   0% ] [90m[1m_update_scan_actions[22m | AnonymousPro-BoldItalic.ttf[39m[0m
+2026-11-24T15:22:58.6420079Z [   1% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Italic.ttf[39m[0m
+2026-11-24T15:22:58.6420610Z [   1% ] [90m[1m_update_scan_actions[22m | AnonymousPro-Regular.ttf[39m[0m
+2026-11-24T15:22:58.6421240Z [   2% ] [90m[1m_update_scan_actions[22m | CourierPrime-Bold.ttf[39m[0m
+2026-11-24T15:22:58.6422173Z [   2% ] [90m[1m_update_scan_actions[22m | CourierPrime-BoldItalic.ttf[39m[0m
+2026-11-24T15:22:58.6422718Z [   3% ] [90m[1m_update_scan_actions[22m | CourierPrime-Italic.ttf[39m[0m
+2026-11-24T15:22:58.6423245Z [   4% ] [90m[1m_update_scan_actions[22m | CourierPrime-Regular.ttf[39m[0m
+2026-11-24T15:22:58.6424068Z [   4% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Bold.ttf[39m[0m
+2026-11-24T15:22:58.6424804Z [   5% ] [90m[1m_update_scan_actions[22m | LobsterTwo-BoldItalic.ttf[39m[0m
+2026-11-24T15:22:58.6425330Z [   5% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Italic.ttf[39m[0m
+2026-11-24T15:22:58.6425831Z [   6% ] [90m[1m_update_scan_actions[22m | LobsterTwo-Regular.ttf[39m[0m
+2026-11-24T15:22:58.6426536Z [   6% ] [90m[1m_update_scan_actions[22m | arrow.png[39m[0m
+2026-11-24T15:22:58.6426971Z [   7% ] [90m[1m_update_scan_actions[22m | play.png[39m[0m
+2026-11-24T15:22:58.6427390Z [   8% ] [90m[1m_update_scan_actions[22m | eyey.png[39m[0m
+2026-11-24T15:22:58.6427813Z [   8% ] [90m[1m_update_scan_actions[22m | Folder.svg[39m[0m
+2026-11-24T15:22:58.6428237Z [   9% ] [90m[1m_update_scan_actions[22m | green.png[39m[0m
+2026-11-24T15:22:58.6430906Z [   9% ] [90m[1m_update_scan_actions[22m | GutIconV2_base.png[39m[0m
+2026-11-24T15:22:58.6434621Z [  10% ] [90m[1m_update_scan_actions[22m | GutIconV2_no_shine.png[39m[0m
+2026-11-24T15:22:58.6437914Z [  11% ] [90m[1m_update_scan_actions[22m | HSplitContainer.svg[39m[0m
+2026-11-24T15:22:58.6440087Z [  11% ] [90m[1m_update_scan_actions[22m | red.png[39m[0m
+2026-11-24T15:22:58.6442494Z [  12% ] [90m[1m_update_scan_actions[22m | Script.svg[39m[0m
+2026-11-24T15:22:58.6445641Z [  12% ] [90m[1m_update_scan_actions[22m | VSplitContainer.svg[39m[0m
+2026-11-24T15:22:58.6448237Z [  13% ] [90m[1m_update_scan_actions[22m | yellow.png[39m[0m
+2026-11-24T15:22:58.6450489Z [  13% ] [90m[1m_update_scan_actions[22m | icon.png[39m[0m
+2026-11-24T15:22:58.6453627Z [  14% ] [90m[1m_update_scan_actions[22m | source_code_pro.fnt[39m[0m
+2026-11-24T15:22:58.6454726Z [  15% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6455904Z [  15% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6457417Z [  16% ] [90m[1m_update_scan_actions[22m | price_curve.csv[39m[0m
+2026-11-24T15:22:58.6458583Z [  16% ] [90m[1m_update_scan_actions[22m | role_cells.csv[39m[0m
+2026-11-24T15:22:58.6459751Z [  17% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6460917Z [  18% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6462147Z [  18% ] [90m[1m_update_scan_actions[22m | price_curve.csv[39m[0m
+2026-11-24T15:22:58.6463334Z [  19% ] [90m[1m_update_scan_actions[22m | role_cells.csv[39m[0m
+2026-11-24T15:22:58.6465181Z [  19% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6466946Z [  20% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6468491Z [  20% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6470112Z [  21% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6471761Z [  22% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6473275Z [  22% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6474826Z [  23% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6476641Z [  23% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6478250Z [  24% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6479815Z [  25% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6481473Z [  25% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6483014Z [  26% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6484651Z [  26% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6486844Z [  27% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6488287Z [  27% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6489910Z [  28% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6491598Z [  29% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6493477Z [  29% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6494938Z [  30% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6496754Z [  30% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6498283Z [  31% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6499875Z [  31% ] [90m[1m_update_scan_actions[22m | demand_rates.csv[39m[0m
+2026-11-24T15:22:58.6501515Z [  32% ] [90m[1m_update_scan_actions[22m | satisfaction_weights.csv[39m[0m
+2026-11-24T15:22:58.6503039Z [  33% ] [90m[1m_update_scan_actions[22m | substitutions.csv[39m[0m
+2026-11-24T15:22:58.6505108Z [  33% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6506569Z [  34% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6508047Z [  34% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+2026-11-24T15:22:58.6509884Z [  35% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6511396Z [  36% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+2026-11-24T15:22:58.6512792Z [  36% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+2026-11-24T15:22:58.6514248Z [  37% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6516318Z [  37% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6518631Z [  38% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6519495Z [  38% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6520713Z [  39% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6521878Z [  40% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6523139Z [  40% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6524241Z [  41% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6525440Z [  41% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6526906Z [  42% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6528095Z [  43% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6529256Z [  43% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6530503Z [  44% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6531608Z [  44% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6532765Z [  45% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6533957Z [  45% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6535130Z [  46% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6536369Z [  47% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6537762Z [  47% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6538839Z [  48% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6539998Z [  48% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6541239Z [  49% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6542432Z [  50% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6543577Z [  50% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6544815Z [  51% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6545919Z [  51% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6547380Z [  52% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6548556Z [  52% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6549753Z [  53% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6550870Z [  54% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6552135Z [  54% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6553224Z [  55% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6554404Z [  55% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6555617Z [  56% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6557133Z [  56% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6558314Z [  57% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6559711Z [  58% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6560676Z [  58% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6561835Z [  59% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6563030Z [  59% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6564227Z [  60% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6565369Z [  61% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6566791Z [  61% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6567909Z [  62% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6569063Z [  62% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6570266Z [  63% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6571448Z [  63% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6572561Z [  64% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6573851Z [  65% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6574914Z [  65% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6576222Z [  66% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6577561Z [  66% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6578752Z [  67% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6580189Z [  68% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+2026-11-24T15:22:58.6581276Z [  68% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6582767Z [  69% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+2026-11-24T15:22:58.6583945Z [  69% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6585059Z [  70% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6586357Z [  70% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6587815Z [  71% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6589162Z [  72% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6591137Z [  72% ] [90m[1m_update_scan_actions[22m | city_center.csv[39m[0m
+2026-11-24T15:22:58.6592449Z [  73% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6594554Z [  73% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+2026-11-24T15:22:58.6596315Z [  74% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6597823Z [  75% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6599462Z [  75% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6607002Z [  76% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6607515Z [  76% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6608024Z [  77% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6608734Z [  77% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6610409Z [  78% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6612303Z [  79% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6614466Z [  79% ] [90m[1m_update_scan_actions[22m | buildings.csv[39m[0m
+2026-11-24T15:22:58.6616465Z [  80% ] [90m[1m_update_scan_actions[22m | build_queue.csv[39m[0m
+2026-11-24T15:22:58.6618549Z [  80% ] [90m[1m_update_scan_actions[22m | goods.csv[39m[0m
+2026-11-24T15:22:58.6620256Z [  81% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6622141Z [  81% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6624124Z [  82% ] [90m[1m_update_scan_actions[22m | zones.csv[39m[0m
+2026-11-24T15:22:58.6625819Z [  83% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+2026-11-24T15:22:58.6627759Z [  83% ] [90m[1m_update_scan_actions[22m | opening_public.csv[39m[0m
+2026-11-24T15:22:58.6629444Z [  84% ] [90m[1m_update_scan_actions[22m | opening_workshops.csv[39m[0m
+2026-11-24T15:22:58.6631260Z [  84% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+2026-11-24T15:22:58.6633059Z [  85% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+2026-11-24T15:22:58.6634824Z [  86% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+2026-11-24T15:22:58.6636873Z [  86% ] [90m[1m_update_scan_actions[22m | ports.csv[39m[0m
+2026-11-24T15:22:58.6638864Z [  87% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+2026-11-24T15:22:58.6640801Z [  87% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+2026-11-24T15:22:58.6642553Z [  88% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+2026-11-24T15:22:58.6644598Z [  88% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+2026-11-24T15:22:58.6646503Z [  89% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+2026-11-24T15:22:58.6648289Z [  90% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+2026-11-24T15:22:58.6650239Z [  90% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+2026-11-24T15:22:58.6652078Z [  91% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+2026-11-24T15:22:58.6653950Z [  91% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+2026-11-24T15:22:58.6655896Z [  92% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+2026-11-24T15:22:58.6658062Z [  93% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+2026-11-24T15:22:58.6659835Z [  93% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+2026-11-24T15:22:58.6661802Z [  94% ] [90m[1m_update_scan_actions[22m | lanes.csv[39m[0m
+2026-11-24T15:22:58.6663691Z [  94% ] [90m[1m_update_scan_actions[22m | nodes.csv[39m[0m
+2026-11-24T15:22:58.6665353Z [  95% ] [90m[1m_update_scan_actions[22m | regions.csv[39m[0m
+2026-11-24T15:22:58.6667194Z [  95% ] [90m[1m_update_scan_actions[22m | opening_population.csv[39m[0m
+2026-11-24T15:22:58.6668361Z [  96% ] [90m[1m_update_scan_actions[22m | good_def_extra_column.csv[39m[0m
+2026-11-24T15:22:58.6669745Z [  97% ] [90m[1m_update_scan_actions[22m | good_def_missing_column.csv[39m[0m
+2026-11-24T15:22:58.6671096Z [  97% ] [90m[1m_update_scan_actions[22m | good_def_type_mismatch.csv[39m[0m
+2026-11-24T15:22:58.6672418Z [  98% ] [90m[1m_update_scan_actions[22m | good_def_valid.csv[39m[0m
+2026-11-24T15:22:58.6673904Z [  98% ] [90m[1m_update_scan_actions[22m | port_def_valid.csv[39m[0m
+2026-11-24T15:22:58.6674688Z [92m[ DONE ][39m [1m_update_scan_actions[22m
+2026-11-24T15:22:58.6675140Z [0m
+2026-11-24T15:22:58.6826368Z [   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+2026-11-24T15:22:58.6827226Z [   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+2026-11-24T15:22:58.6827958Z [  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+2026-11-24T15:22:58.6828578Z [92m[ DONE ][39m [1mloading_editor_layout[22m
+2026-11-24T15:22:58.6829009Z [0m
+2026-11-24T15:23:00.2155042Z ##[group]Run set -euo pipefail
+2026-11-24T15:23:00.2155569Z [36;1mset -euo pipefail[0m
+2026-11-24T15:23:00.2156518Z [36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"[0m
+2026-11-24T15:23:00.2157347Z [36;1mif [[ -n "${dirty}" ]]; then[0m
+2026-11-24T15:23:00.2157937Z [36;1m  echo "::error::godot --import dirtied the working tree"[0m
+2026-11-24T15:23:00.2158555Z [36;1m  echo "$dirty"[0m
+2026-11-24T15:23:00.2159152Z [36;1m  exit 1[0m
+2026-11-24T15:23:00.2159504Z [36;1mfi[0m
+2026-11-24T15:23:00.2159864Z [36;1mecho "IMPORT_CLEAN_TREE_OK"[0m
+2026-11-24T15:23:00.2202220Z shell: /usr/bin/bash -e {0}
+2026-11-24T15:23:00.2202648Z env:
+2026-11-24T15:23:00.2202982Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:23:00.2203462Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:23:00.2203964Z ##[endgroup]
+2026-11-24T15:23:00.2716896Z IMPORT_CLEAN_TREE_OK
+2026-11-24T15:23:00.2759383Z ##[group]Run set -euo pipefail
+2026-11-24T15:23:00.2759745Z [36;1mset -euo pipefail[0m
+2026-11-24T15:23:00.2760005Z [36;1mmkdir -p out/golden[0m
+2026-11-24T15:23:00.2760492Z [36;1mtools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \[0m
+2026-11-24T15:23:00.2761016Z [36;1m  --log "$(pwd)/out/golden/30d.log"[0m
+2026-11-24T15:23:00.2761326Z [36;1mecho "GOLDEN_30D_DONE"[0m
+2026-11-24T15:23:00.2761591Z [36;1mwc -l out/golden/30d.csv[0m
+2026-11-24T15:23:00.2761963Z [36;1m# Cell summary for evening-17-64 gate (row count + sha256).[0m
+2026-11-24T15:23:00.2762433Z [36;1msha256sum out/golden/30d.csv | tee out/golden/30d.sha256[0m
+2026-11-24T15:23:00.2762789Z [36;1mpython3 - <<'PY'[0m
+2026-11-24T15:23:00.2763034Z [36;1mimport csv[0m
+2026-11-24T15:23:00.2763268Z [36;1mfrom pathlib import Path[0m
+2026-11-24T15:23:00.2763550Z [36;1mp = Path("out/golden/30d.csv")[0m
+2026-11-24T15:23:00.2763972Z [36;1mrows = list(csv.DictReader(p.open(newline="", encoding="utf-8")))[0m
+2026-11-24T15:23:00.2764413Z [36;1mcols = list(rows[0].keys()) if rows else [][0m
+2026-11-24T15:23:00.2764884Z [36;1mprint(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")[0m
+2026-11-24T15:23:00.2765319Z [36;1mPY[0m
+2026-11-24T15:23:00.2798102Z shell: /usr/bin/bash -e {0}
+2026-11-24T15:23:00.2798367Z env:
+2026-11-24T15:23:00.2798573Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:23:00.2798876Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:23:00.2799181Z ##[endgroup]
+2026-11-24T15:23:00.3209455Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+2026-11-24T15:23:00.3506861Z 
+2026-11-24T15:23:01.4888508Z GOLDEN_V2: boot_ok seed=1 days=30 out=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+2026-11-24T15:24:22.0132074Z GOLDEN_V2: wrote /home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+2026-11-24T15:24:22.1087426Z GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.log
+2026-11-24T15:24:22.1088135Z GOLDEN_GATE PASS
+2026-11-24T15:24:22.1089489Z GOLDEN_30D_DONE
+2026-11-24T15:24:22.1120342Z 528 out/golden/30d.csv
+2026-11-24T15:24:22.1165572Z 8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c  out/golden/30d.csv
+2026-11-24T15:24:22.1553849Z GOLDEN_SUMMARY rows=527 cols=19 bytes=2270766
+2026-11-24T15:24:22.1645656Z ##[group]Run set -euo pipefail
+2026-11-24T15:24:22.1646286Z [36;1mset -euo pipefail[0m
+2026-11-24T15:24:22.1646593Z [36;1mmkdir -p out/golden-main[0m
+2026-11-24T15:24:22.1646959Z [36;1m# Prefer artifact from latest successful main CI run.[0m
+2026-11-24T15:24:22.1647434Z [36;1m# 17-69 2.5: missing baseline must fail the job (no silent GREEN skip).[0m
+2026-11-24T15:24:22.1647847Z [36;1mset +e[0m
+2026-11-24T15:24:22.1648284Z [36;1mRUN_ID=$(gh run list --repo "wayung0217/Project-Patrician" --branch main --workflow ci.yml \[0m
+2026-11-24T15:24:22.1648853Z [36;1m  --json databaseId,conclusion,status --limit 30 \[0m
+2026-11-24T15:24:22.1649327Z [36;1m  --jq '.[] | select(.conclusion=="success") | .databaseId' | head -n1)[0m
+2026-11-24T15:24:22.1649726Z [36;1mset -e[0m
+2026-11-24T15:24:22.1649959Z [36;1mif [[ -z "${RUN_ID:-}" ]]; then[0m
+2026-11-24T15:24:22.1650351Z [36;1m  echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"[0m
+2026-11-24T15:24:22.1650809Z [36;1m  echo "missing" > out/golden-main/STATUS.txt[0m
+2026-11-24T15:24:22.1651390Z [36;1m  echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"[0m
+2026-11-24T15:24:22.1652114Z [36;1m  exit 1[0m
+2026-11-24T15:24:22.1652338Z [36;1mfi[0m
+2026-11-24T15:24:22.1652585Z [36;1mecho "GOLDEN_BASE_RUN_ID=$RUN_ID"[0m
+2026-11-24T15:24:22.1652877Z [36;1mset +e[0m
+2026-11-24T15:24:22.1653318Z [36;1mgh run download "$RUN_ID" --repo "wayung0217/Project-Patrician" -n golden-30d -D out/golden-main[0m
+2026-11-24T15:24:22.1653810Z [36;1mRC=$?[0m
+2026-11-24T15:24:22.1654022Z [36;1mset -e[0m
+2026-11-24T15:24:22.1654307Z [36;1mif [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then[0m
+2026-11-24T15:24:22.1654781Z [36;1m  echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"[0m
+2026-11-24T15:24:22.1655223Z [36;1m  echo "missing" > out/golden-main/STATUS.txt[0m
+2026-11-24T15:24:22.1655820Z [36;1m  echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"[0m
+2026-11-24T15:24:22.1656637Z [36;1m  exit 1[0m
+2026-11-24T15:24:22.1656860Z [36;1mfi[0m
+2026-11-24T15:24:22.1657122Z [36;1mecho "present" > out/golden-main/STATUS.txt[0m
+2026-11-24T15:24:22.1657452Z [36;1mls -la out/golden-main/[0m
+2026-11-24T15:24:22.1689342Z shell: /usr/bin/bash -e {0}
+2026-11-24T15:24:22.1689599Z env:
+2026-11-24T15:24:22.1689804Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:24:22.1690091Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:24:22.1692879Z   GH_TOKEN: ***
+2026-11-24T15:24:22.1693110Z ##[endgroup]
+2026-11-24T15:24:24.9634736Z GOLDEN_BASE_RUN_ID=45358265237
+2026-11-24T15:24:25.2408008Z no valid artifacts found to download
+2026-11-24T15:24:25.2439542Z GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run 45358265237)
+2026-11-24T15:24:25.2460269Z ##[error]GOLDEN_BASE_MISSING — golden-30d artifact absent on main run 45358265237; compare not merge-eligible
+2026-11-24T15:24:25.2470373Z ##[error]Process completed with exit code 1.
+2026-11-24T15:24:25.2541266Z ##[group]Run actions/upload-artifact@v5
+2026-11-24T15:24:25.2541589Z with:
+2026-11-24T15:24:25.2541819Z   name: golden-30d
+2026-11-24T15:24:25.2542041Z   path: out/golden/
+2026-11-24T15:24:25.2542257Z   retention-days: 14
+2026-11-24T15:24:25.2542491Z   if-no-files-found: warn
+2026-11-24T15:24:25.2542746Z   compression-level: 6
+2026-11-24T15:24:25.2542978Z   overwrite: false
+2026-11-24T15:24:25.2543212Z   include-hidden-files: false
+2026-11-24T15:24:25.2543452Z env:
+2026-11-24T15:24:25.2543656Z   GODOT_VERSION: 4.7.2-stable
+2026-11-24T15:24:25.2543933Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+2026-11-24T15:24:25.2544227Z ##[endgroup]
+2026-11-24T15:24:25.4296998Z (node:2594) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-24T15:24:25.4297820Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-24T15:24:25.4372029Z With the provided path, there will be 3 files uploaded
+2026-11-24T15:24:25.4389174Z Artifact name is valid!
+2026-11-24T15:24:25.4390165Z Root directory input is valid!
+2026-11-24T15:24:25.7064813Z Beginning upload of artifact content to blob storage
+2026-11-24T15:24:25.7947875Z (node:2594) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-24T15:24:25.8517086Z Uploaded bytes 392499
+2026-11-24T15:24:25.8669452Z Finished uploading artifact content to blob storage!
+2026-11-24T15:24:25.8670724Z SHA256 digest of uploaded artifact zip is 4648a5a31b8d1b2312ef93bfa05365d9064edf57b57f503cfe969fd4a76d66d4
+2026-11-24T15:24:25.8672098Z Finalizing artifact upload
+2026-11-24T15:24:26.1919247Z Artifact golden-30d.zip successfully finalized. Artifact ID 14936521833
+2026-11-24T15:24:26.1920353Z Artifact golden-30d has been successfully uploaded! Final size is 392499 bytes. Artifact ID is 14936521833
+2026-11-24T15:24:26.1928619Z Artifact download URL: https://github.com/wayung0217/Project-Patrician/actions/runs/45424793984/artifacts/14936521833
+2026-11-24T15:24:26.2141601Z Post job cleanup.
+2026-11-24T15:24:26.3059953Z [command]/usr/bin/git version
+2026-11-24T15:24:26.3109044Z git version 2.56.1
+2026-11-24T15:24:26.3150543Z Temporarily overriding HOME='/home/runner/work/_temp/5c14bee6-269f-4763-9fa2-6eb295131b2c' before making global git config changes
+2026-11-24T15:24:26.3152035Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-24T15:24:26.3156610Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+2026-11-24T15:24:26.3198116Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-24T15:24:26.3234510Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-24T15:24:26.3548747Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-24T15:24:26.3589271Z http.https://github.com/.extraheader
+2026-11-24T15:24:26.3603243Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-24T15:24:26.3658231Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-24T15:24:26.4013274Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-24T15:24:26.4052818Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-24T15:24:26.4494676Z Cleaning up orphan processes
+2026-11-24T15:24:26.4887753Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+
+Content-Range: bytes 0-63576/63577

@@ -1,0 +1,5 @@
+pre-change main unit+property baseline: 555
+source: .github/ci/gut_unit_property_baseline_names.txt (unchanged this amend)
+lane2 tests after D-124: 3 (EX-05-09-01/02/03) — was 4 pre-amend names
+expected Passing: ≥558 (555 + 3); gate still ≥555 + baseline name set
+B9 gate: v6.99.220 (origin/main docs/spec; D-124)

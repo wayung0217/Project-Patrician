@@ -1,0 +1,175 @@
+golden-30d	Set up job	﻿2026-11-24T14:50:08.1336708Z Current runner version: '2.338.2'
+golden-30d	Set up job	2026-11-24T14:50:08.1365900Z ##[group]Runner Image Provisioner
+golden-30d	Set up job	2026-11-24T14:50:08.1366828Z Hosted Compute Agent
+golden-30d	Set up job	2026-11-24T14:50:08.1367545Z Version: 20261111.635
+golden-30d	Set up job	2026-11-24T14:50:08.1368245Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+golden-30d	Set up job	2026-11-24T14:50:08.1369018Z Build Date: 2026-11-11T01:49:01Z
+golden-30d	Set up job	2026-11-24T14:50:08.1369920Z Worker ID: {4a9907f8-fd0e-4853-b30a-fc0ca7f31172}
+golden-30d	Set up job	2026-11-24T14:50:08.1370674Z Region: northcentralus
+golden-30d	Set up job	2026-11-24T14:50:08.1371389Z Cloud: Azure
+golden-30d	Set up job	2026-11-24T14:50:08.1372000Z ##[endgroup]
+golden-30d	Set up job	2026-11-24T14:50:08.1373469Z ##[group]Operating System
+golden-30d	Set up job	2026-11-24T14:50:08.1374133Z Ubuntu
+golden-30d	Set up job	2026-11-24T14:50:08.1374688Z 26.04.1
+golden-30d	Set up job	2026-11-24T14:50:08.1375275Z LTS
+golden-30d	Set up job	2026-11-24T14:50:08.1375889Z ##[endgroup]
+golden-30d	Set up job	2026-11-24T14:50:08.1376445Z ##[group]Runner Image
+golden-30d	Set up job	2026-11-24T14:50:08.1377143Z Image: ubuntu-26.04
+golden-30d	Set up job	2026-11-24T14:50:08.1377795Z Version: 20261116.202.1
+golden-30d	Set up job	2026-11-24T14:50:08.1378945Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+golden-30d	Set up job	2026-11-24T14:50:08.1380987Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+golden-30d	Set up job	2026-11-24T14:50:08.1382395Z ##[endgroup]
+golden-30d	Set up job	2026-11-24T14:50:08.1384111Z ##[group]GITHUB_TOKEN Permissions
+golden-30d	Set up job	2026-11-24T14:50:08.1387281Z Actions: read
+golden-30d	Set up job	2026-11-24T14:50:08.1388259Z Contents: read
+golden-30d	Set up job	2026-11-24T14:50:08.1389240Z Metadata: read
+golden-30d	Set up job	2026-11-24T14:50:08.1390312Z ##[endgroup]
+golden-30d	Set up job	2026-11-24T14:50:08.1392987Z Secret source: Actions
+golden-30d	Set up job	2026-11-24T14:50:08.1394756Z Cache mode: write
+golden-30d	Set up job	2026-11-24T14:50:08.1396175Z Prepare workflow directory
+golden-30d	Set up job	2026-11-24T14:50:08.1841248Z Prepare all required actions
+golden-30d	Set up job	2026-11-24T14:50:08.1912175Z Getting action download info
+golden-30d	Set up job	2026-11-24T14:50:08.4265771Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+golden-30d	Set up job	2026-11-24T14:50:08.5128769Z Download action repository 'actions/cache@v5' (SHA:caa296126883cff596d87d8935842f9db880ef25)
+golden-30d	Set up job	2026-11-24T14:50:08.5851980Z Download action repository 'actions/upload-artifact@v5' (SHA:330a01c490aca151604b8cf639adc76d48f6c5d4)
+golden-30d	Set up job	2026-11-24T14:50:08.7711746Z Complete job name: golden-30d
+golden-30d	Checkout	﻿2026-11-24T14:50:08.8655964Z ##[group]Run actions/checkout@v5
+golden-30d	Checkout	2026-11-24T14:50:08.8656803Z with:
+golden-30d	Checkout	2026-11-24T14:50:08.8657296Z   repository: wayung0217/Project-Patrician
+golden-30d	Checkout	2026-11-24T14:50:08.8661555Z   token: ***
+golden-30d	Checkout	2026-11-24T14:50:08.8662021Z   ssh-strict: true
+golden-30d	Checkout	2026-11-24T14:50:08.8662486Z   ssh-user: git
+golden-30d	Checkout	2026-11-24T14:50:08.8662955Z   persist-credentials: true
+golden-30d	Checkout	2026-11-24T14:50:08.8663466Z   clean: true
+golden-30d	Checkout	2026-11-24T14:50:08.8663925Z   sparse-checkout-cone-mode: true
+golden-30d	Checkout	2026-11-24T14:50:08.8664465Z   fetch-depth: 1
+golden-30d	Checkout	2026-11-24T14:50:08.8664906Z   fetch-tags: false
+golden-30d	Checkout	2026-11-24T14:50:08.8665361Z   show-progress: true
+golden-30d	Checkout	2026-11-24T14:50:08.8665814Z   lfs: false
+golden-30d	Checkout	2026-11-24T14:50:08.8666239Z   submodules: false
+golden-30d	Checkout	2026-11-24T14:50:08.8666703Z   set-safe-directory: true
+golden-30d	Checkout	2026-11-24T14:50:08.8667212Z   allow-unsafe-pr-checkout: false
+golden-30d	Checkout	2026-11-24T14:50:08.8668005Z env:
+golden-30d	Checkout	2026-11-24T14:50:08.8668438Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	Checkout	2026-11-24T14:50:08.8669022Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	Checkout	2026-11-24T14:50:08.8670027Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.0884689Z Syncing repository: wayung0217/Project-Patrician
+golden-30d	Checkout	2026-11-24T14:50:09.0887652Z ##[group]Getting Git version info
+golden-30d	Checkout	2026-11-24T14:50:09.0888701Z Working directory is '/home/runner/work/Project-Patrician/Project-Patrician'
+golden-30d	Checkout	2026-11-24T14:50:09.0890808Z [command]/usr/bin/git version
+golden-30d	Checkout	2026-11-24T14:50:09.0891532Z git version 2.56.1
+golden-30d	Checkout	2026-11-24T14:50:09.0913828Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.0932081Z Temporarily overriding HOME='/home/runner/work/_temp/5784f422-bd66-4226-8fcf-730fe84039b8' before making global git config changes
+golden-30d	Checkout	2026-11-24T14:50:09.0934789Z Adding repository directory to the temporary git global config as a safe directory
+golden-30d	Checkout	2026-11-24T14:50:09.0937911Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+golden-30d	Checkout	2026-11-24T14:50:09.1021812Z Deleting the contents of '/home/runner/work/Project-Patrician/Project-Patrician'
+golden-30d	Checkout	2026-11-24T14:50:09.1025253Z ##[group]Initializing the repository
+golden-30d	Checkout	2026-11-24T14:50:09.1033060Z [command]/usr/bin/git init /home/runner/work/Project-Patrician/Project-Patrician
+golden-30d	Checkout	2026-11-24T14:50:09.1159405Z hint: Using 'master' as the name for the initial branch. This default branch name
+golden-30d	Checkout	2026-11-24T14:50:09.1161573Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+golden-30d	Checkout	2026-11-24T14:50:09.1163288Z hint: to use in all of your new repositories, which will suppress this warning,
+golden-30d	Checkout	2026-11-24T14:50:09.1164650Z hint: call:
+golden-30d	Checkout	2026-11-24T14:50:09.1165373Z hint:
+golden-30d	Checkout	2026-11-24T14:50:09.1166275Z hint: 	git config --global init.defaultBranch <name>
+golden-30d	Checkout	2026-11-24T14:50:09.1167338Z hint:
+golden-30d	Checkout	2026-11-24T14:50:09.1168335Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+golden-30d	Checkout	2026-11-24T14:50:09.1170217Z hint: 'development'. The just-created branch can be renamed via this command:
+golden-30d	Checkout	2026-11-24T14:50:09.1171537Z hint:
+golden-30d	Checkout	2026-11-24T14:50:09.1172292Z hint: 	git branch -m <name>
+golden-30d	Checkout	2026-11-24T14:50:09.1173227Z hint:
+golden-30d	Checkout	2026-11-24T14:50:09.1174357Z hint: Disable this message with "git config set advice.defaultBranchName false"
+golden-30d	Checkout	2026-11-24T14:50:09.1176413Z Initialized empty Git repository in /home/runner/work/Project-Patrician/Project-Patrician/.git/
+golden-30d	Checkout	2026-11-24T14:50:09.1289641Z [command]/usr/bin/git remote add origin https://github.com/wayung0217/Project-Patrician
+golden-30d	Checkout	2026-11-24T14:50:09.1294339Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.1295742Z ##[group]Disabling automatic garbage collection
+golden-30d	Checkout	2026-11-24T14:50:09.1297001Z [command]/usr/bin/git config --local gc.auto 0
+golden-30d	Checkout	2026-11-24T14:50:09.1298820Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.1300084Z ##[group]Setting up auth
+golden-30d	Checkout	2026-11-24T14:50:09.1304554Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+golden-30d	Checkout	2026-11-24T14:50:09.1347944Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+golden-30d	Checkout	2026-11-24T14:50:09.1816344Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+golden-30d	Checkout	2026-11-24T14:50:09.1874985Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+golden-30d	Checkout	2026-11-24T14:50:09.2205414Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+golden-30d	Checkout	2026-11-24T14:50:09.2247875Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+golden-30d	Checkout	2026-11-24T14:50:09.2554965Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+golden-30d	Checkout	2026-11-24T14:50:09.2598008Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.2599170Z ##[group]Fetching the repository
+golden-30d	Checkout	2026-11-24T14:50:09.2607855Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +9a8687093cd28fe28273d597b922ffc8938484f7:refs/remotes/pull/84/merge
+golden-30d	Checkout	2026-11-24T14:50:09.7543100Z From https://github.com/wayung0217/Project-Patrician
+golden-30d	Checkout	2026-11-24T14:50:09.7545330Z  * [new ref]         9a8687093cd28fe28273d597b922ffc8938484f7 -> pull/84/merge
+golden-30d	Checkout	2026-11-24T14:50:09.7549995Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.7551747Z ##[group]Determining the checkout info
+golden-30d	Checkout	2026-11-24T14:50:09.7553143Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.7562890Z [command]/usr/bin/git sparse-checkout disable
+golden-30d	Checkout	2026-11-24T14:50:09.7615944Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+golden-30d	Checkout	2026-11-24T14:50:09.7654541Z ##[group]Checking out the ref
+golden-30d	Checkout	2026-11-24T14:50:09.7655933Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/84/merge
+golden-30d	Checkout	2026-11-24T14:50:09.8631235Z Note: switching to 'refs/remotes/pull/84/merge'.
+golden-30d	Checkout	2026-11-24T14:50:09.8632600Z 
+golden-30d	Checkout	2026-11-24T14:50:09.8633584Z You are in 'detached HEAD' state. You can look around, make experimental
+golden-30d	Checkout	2026-11-24T14:50:09.8635989Z changes and commit them, and you can discard any commits you make in this
+golden-30d	Checkout	2026-11-24T14:50:09.8638682Z state without impacting any branches by switching back to a branch.
+golden-30d	Checkout	2026-11-24T14:50:09.8639872Z 
+golden-30d	Checkout	2026-11-24T14:50:09.8640645Z If you want to create a new branch to retain commits you create, you may
+golden-30d	Checkout	2026-11-24T14:50:09.8642601Z do so (now or later) by using -c with the switch command. Example:
+golden-30d	Checkout	2026-11-24T14:50:09.8643561Z 
+golden-30d	Checkout	2026-11-24T14:50:09.8643977Z   git switch -c <new-branch-name>
+golden-30d	Checkout	2026-11-24T14:50:09.8644614Z 
+golden-30d	Checkout	2026-11-24T14:50:09.8645094Z Or undo this operation with:
+golden-30d	Checkout	2026-11-24T14:50:09.8645877Z 
+golden-30d	Checkout	2026-11-24T14:50:09.8646407Z   git switch -
+golden-30d	Checkout	2026-11-24T14:50:09.8647068Z 
+golden-30d	Checkout	2026-11-24T14:50:09.8647996Z Turn off this advice by setting config variable advice.detachedHead to false
+golden-30d	Checkout	2026-11-24T14:50:09.8649353Z 
+golden-30d	Checkout	2026-11-24T14:50:09.8651061Z HEAD is now at 9a86870 Merge b998cea319a880f81647288666e0b143a01f5991 into 191a7ee6aaa0f03c0cb32d6a803105fca7f95ee9
+golden-30d	Checkout	2026-11-24T14:50:09.8656430Z ##[endgroup]
+golden-30d	Checkout	2026-11-24T14:50:09.8695039Z [command]/usr/bin/git log -1 --format=%H
+golden-30d	Checkout	2026-11-24T14:50:09.8723405Z 9a8687093cd28fe28273d597b922ffc8938484f7
+golden-30d	Cache Godot binary	﻿2026-11-24T14:50:09.9113667Z ##[group]Run actions/cache@v5
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9114934Z with:
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9115839Z   path: godot
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9116863Z   key: godot-4.7.2-stable-linux-x86_64
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9118190Z   enableCrossOsArchive: false
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9119382Z   fail-on-cache-miss: false
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9120647Z   lookup-only: false
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9121677Z   save-always: false
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9122652Z env:
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9123545Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9124786Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	Cache Godot binary	2026-11-24T14:50:09.9126092Z ##[endgroup]
+golden-30d	Cache Godot binary	2026-11-24T14:50:10.1823484Z Cache hit for: godot-4.7.2-stable-linux-x86_64
+golden-30d	Cache Godot binary	2026-11-24T14:50:10.9590070Z Received 75802056 of 75802056 (100.0%), 108.7 MBs/sec
+golden-30d	Cache Godot binary	2026-11-24T14:50:10.9590890Z Cache Size: ~72 MB (75802056 B)
+golden-30d	Cache Godot binary	2026-11-24T14:50:10.9618274Z [command]/usr/bin/tar -xf /home/runner/work/_temp/ee26c6e8-9d23-4be7-bc2a-bf8b352c49c1/cache.tzst -P -C /home/runner/work/Project-Patrician/Project-Patrician --use-compress-program unzstd
+golden-30d	Cache Godot binary	2026-11-24T14:50:11.1939564Z Cache restored successfully
+golden-30d	Cache Godot binary	2026-11-24T14:50:11.2119401Z Cache restored from key: godot-4.7.2-stable-linux-x86_64
+golden-30d	Ensure godot executable	﻿2026-11-24T14:50:11.2388911Z ##[group]Run set -euo pipefail
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2389341Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2389636Z ^[[36;1mchmod +x godot^[[0m
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2390070Z ^[[36;1m./godot --version^[[0m
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2430693Z shell: /usr/bin/bash -e {0}
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2431005Z env:
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2431233Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2431552Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2431879Z ##[endgroup]
+golden-30d	Ensure godot executable	2026-11-24T14:50:11.2936632Z 4.7.2.stable.official.ed1daf0bf
+golden-30d	Cache Godot imported assets	﻿2026-11-24T14:50:11.8899459Z ##[group]Run actions/cache@v5
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8900144Z with:
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8900372Z   path: .godot/imported
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8900806Z   key: godot-imported-9e53f143823f6c9ba2e191ef9e4f3238a08315924f3561ed616eaba12c2286d5
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8901334Z   restore-keys: godot-imported-
+golden-30d	Cache Godot imported assets	
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8901634Z   enableCrossOsArchive: false
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8901899Z   fail-on-cache-miss: false
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8902151Z   lookup-only: false
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8902386Z   save-always: false
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8902599Z env:
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8902806Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8903093Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:11.8903389Z ##[endgroup]
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:12.1423376Z Cache hit for: godot-imported-9e53f143823f6c9ba2e191ef9e4f3238a08315924f3561ed616eaba12c2286d5
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:12.5175925Z Received 1001879 of 1001879 (100.0%), 3.7 MBs/sec
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:12.5176946Z Cache Size: ~1 MB (1001879 B)
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:12.5199256Z [command]/usr/bin/tar -xf /home/runner/work/_temp/76e3e465-31ee-4aef-8667-b89999ca7857/cache.tzst -P -C /home/runner/work/Project-Patrician/Project-Patrician --use-compress-program unzstd
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:12.5295177Z Cache restored successfully
+golden-30d	Cache Godot imported assets	2026-11-24T14:50:12.5373684Z Cache restored from key: godot-imported-9e53f143823f6c9ba2e191ef9e4f3238a08315924f3561ed616eaba12c2286d5

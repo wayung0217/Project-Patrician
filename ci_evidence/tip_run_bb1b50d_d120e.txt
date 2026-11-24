@@ -1,0 +1,12 @@
+## D-120(e) — tip run 45424793984 @ bb1b50d (completed failure)
+
+| Job | Conclusion | Notes |
+| --- | --- | --- |
+| gut-ui | success | |
+| gut-unit (1)(2)(3) | success | |
+| gut-unit (0) | cancelled | job timeout-minutes=30; GUT step ~30m wall (started 15:22:59Z, cancelled 15:52:56Z) |
+| golden-30d | failure | GOLDEN_BASE_MISSING (2.5 intentional) — excerpt present |
+| gut-unit-gate | skipped | needs all shards |
+| m1b-* | skipped | |
+
+Follow-up tip e99b495: gut-unit timeout 30→35 so shard0+property can finish; gate can print ADDED/REMOVED.
