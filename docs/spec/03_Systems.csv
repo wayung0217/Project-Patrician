@@ -575,7 +575,7 @@ E 公式,FRM-SYS05-05,按日比例扣費 = CEIL(fee_per_season × days_held ÷ D
 E 公式,FRM-SYS05-06,"強制扣費：paid = MIN(balance, due)；arrears += due − paid；balance 最低到 0",int64,Draft,11c-A,,,,,,,,,,,,,,,
 E 公式,FRM-SYS05-07,欠款優先抵償：帳戶有 arrears 時，任何入帳先轉 SINK 抵欠，餘額才入 balance,int64,Draft,★ 已確認（Q-07，2026-11-17）：使「賣資產自救」自動生效,,,,,,,,,,,,,,,
 E 公式,FRM-SYS05-08,連續欠款：季末 arrears > 0 → arrears_seasons + 1；= 0 → 歸 0；arrears_seasons ≥ PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT → 移交 SYS-22,int,Draft,11c-A,,,,,,,,,,,,,,,
-E 公式,FRM-SYS05-09,可負擔量 q_afford = 最大 q 使 buy_total(q) ≤ balance。buy_total 對 q 單調不減 → 逐段反解面積得連續解，FLOOR 後用整數 quote 校正（二分搜尋保底）,int 擔,Draft,11e-C；示範 5.1 以逐量窮舉驗證,,,,,,,,,,,,,,,
+E 公式,FRM-SYS05-09,"可負擔量 q_afford = 最大 q 使 buy_total(q) ≤ balance。buy_total 對 q 單調不減 → 逐段反解面積得連續解，FLOOR 後用整數 quote 校正（二分搜尋保底）｜★ D-124（Owner 2026-11-24 核准）：定義域上界受市場庫存限制。q_afford ＝ 最大 q 同時滿足 (1) buy_total(q) ≤ balance 且 (2) q ≤ s，s ＝ 該港該貨 MARKET 庫存，即 q_afford ＝ MIN(現金可負擔量, s)；s ＝ 0 時回 0。倍增與二分搜尋不得以 q > s 呼叫 quote()——r451 已明訂買量 q 須 ≤ s，否則 ERR-SYS04-06，故 quote() 的定義域本來就是 q ≤ s；以庫存收斂搜尋上界是回到定義域，不是 C-06／N-05 禁止的 clamp 靜默修正。數值例見 frm_examples EX-05-09-01 至 03。",int 擔,Draft,11e-C；示範 5.1 以逐量窮舉驗證｜★ D-124（2026-11-24）：補上界 q ≤ s（R9-72 第十二點丙；17-67 產品修正的規格依據）,,,,,,,,,,,,,,,
 E 公式,FRM-SYS05-10,"拉桿上限：買 = MIN(q_afford, hold_free, stock)；賣 = cargo_held（賣出不受現金限制）",int 擔,Draft,11e-C,,,,,,,,,,,,,,,
 E 公式,FRM-SYS05-11,提交重驗：放手時以當刻 quote 重算 B′；B′ ≤ balance → 以 B′ 成交；否則整筆拒絕 ERR-SYS05-07、拉桿歸 0，不自動減量,—,Draft,11e-C；★ 已確認（Q-07，2026-11-17）：報價變但仍付得起則照新價成交,,,,,,,,,,,,,,,
 E 公式,FRM-SYS05-12,"最大餘數分攤：base_i = FLOOR(T·w_i ÷ W)；r = T − Σbase；依 MOD(T·w_i, W) 由大到小、同值索引小者先，前 r 名各 +1",Array[int64],Draft,★ 已確認（Q-07，2026-11-17）：同一存檔必同結果；示範 5.1,,,,,,,,,,,,,,,
