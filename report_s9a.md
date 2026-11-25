@@ -1,6 +1,8 @@
 # S9a — evening-17-69-lane2 (#84 / 17-69 補正三 W1+W2)
 
-**Final tip:** `19d1a4e862e0dbe5ef15f9deb36721cc3690df48`  
+**Note:** tip 19d1a4e gut-unit(1) SCRIPT ERROR fixed in  (DemandModel unload). See .
+
+**Final tip:** `1baa133c50c671da0d7111f8e157d5c58cf30697`  
 **Branch:** `cursor/ci-hang-1767-866d` → `main` (PR #84)  
 **Spec:** v6.99.222 · **Merge:** no · **tag / z-1758-3:** no
 
@@ -9,7 +11,7 @@
 
 ## A 基線
 對／有改動。見 `baseline_A.txt`（歷史 555 名基線仍有效）。
-- head **`19d1a4e862e0dbe5ef15f9deb36721cc3690df48`**
+- head **`1baa133c50c671da0d7111f8e157d5c58cf30697`**
 - 期望 gate：`REMOVED_NAMES＝無`；`ADDED_NAMES` 仍僅三個 EX-05-09；Passing ≥558
 
 ## B 變更清單（補正三增量 vs 前 tip `6a731ff`）

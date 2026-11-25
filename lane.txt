@@ -1,8 +1,9 @@
 lane: 2
 parent: PP-172 / PP-188
-timeline: 17-69 補正三 W1+W2
+timeline: 17-69 補正三 W1+W2 + SCRIPT ERROR fix
 branch: cursor/ci-hang-1767-866d
 pr: https://github.com/wayung0217/Project-Patrician/pull/84
 base: main
-tip: 19d1a4e862e0dbe5ef15f9deb36721cc3690df48
+tip: 1baa133c50c671da0d7111f8e157d5c58cf30697
+prev_fail_tip: 19d1a4e862e0dbe5ef15f9deb36721cc3690df48
 ownership: .github/workflows/ci.yml, autoload/cash_ledger.gd, tests/unit/ (本線檔), .github/ci/

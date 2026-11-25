@@ -1,11 +1,10 @@
-# CI evidence — tip `19d1a4e862e0dbe5ef15f9deb36721cc3690df48`（補正三 W1+W2）
+# CI evidence — tip `1baa133c50c671da0d7111f8e157d5c58cf30697`
 
-## Tip run（in progress at pack draft）
-- URL: https://github.com/wayung0217/Project-Patrician/actions/runs/45523259356
-- Head: `19d1a4e862e0dbe5ef15f9deb36721cc3690df48`
-- Gate / golden excerpts: filled when run terminal（見 `gate_tip_19d1a4e.txt` 等，CI 完成後補）
+## Prior tip 19d1a4e (failed gut-unit 1)
+- Run: https://github.com/wayung0217/Project-Patrician/actions/runs/45523259356
+- golden-30d: SUCCESS — see `golden_tip_19d1a4e.txt`
+- gut-unit (1): FAIL SCRIPT ERROR — see `../ci_fail/ANALYSIS_19d1a4e_gut_unit_1.md`
 
-## W1
-- (a) `../w1_golden/a_run_45358265237.md`
-- (b) `w1b_workflow_dispatch_403.txt`
-- (c)/(d) `../w1_golden/cd_fix_summary.md`
+## Current tip `1baa133c50c671da0d7111f8e157d5c58cf30697`
+- Run: https://github.com/wayung0217/Project-Patrician/actions/runs/45525619106
+- Gate / golden excerpts: pending terminal CI
