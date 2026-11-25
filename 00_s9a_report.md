@@ -43,4 +43,4 @@ N/A (report tool; no SimLoop).
 
 ## S9a I Pack
 Store: `/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-69-lane5/`  
-Orphan: `review/evening-17-69-lane5` @ `e48165b9f26a60f261d26f5e3406b1467c912fd5` (no PR) — `orphan_sha.txt` / `orphan_push.log` / `ls-tree.txt`.
+Orphan: `review/evening-17-69-lane5` @ `6dba86b3136bc7ce64350ada3743193fc6f1d0d4` (no PR) — `orphan_sha.txt` / `orphan_push.log` / `ls-tree.txt`.
