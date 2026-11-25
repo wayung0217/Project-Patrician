@@ -29,7 +29,7 @@ See `overlap.md` and `overlap/l4_l5_run_m1b_report.md`: both edit `tools/run_m1b
 
 ## H5 / W6 orphan
 
-`review/evening-17-69-lane5` (no PR) — tip in `orphan_sha.txt`; push log `orphan_push.log`; tree `ls-tree.txt`.
+`review/evening-17-69-lane5` (no PR) tip `e48165b9f26a60f261d26f5e3406b1467c912fd5` — `orphan_sha.txt` / `orphan_push.log` / `ls-tree.txt`.
 
 ## CI
 
