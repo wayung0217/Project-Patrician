@@ -1,9 +1,9 @@
 lane: 2
 parent: PP-172 / PP-188
-timeline: 17-69 補正三 W1+W2 + DemandModel boot fixes
+timeline: 17-69 補正三 W1+W2 FINAL
 branch: cursor/ci-hang-1767-866d
 pr: https://github.com/wayung0217/Project-Patrician/pull/84
 base: main
 tip: b28012ca49407433e229e8cfc698e083e7680e8f
-prev_fail_tips: 19d1a4e (SCRIPT ERROR shard1), 1baa133 (A21 push_error count shard3)
+ci: https://github.com/wayung0217/Project-Patrician/actions/runs/45528301812
 ownership: .github/workflows/ci.yml, autoload/cash_ledger.gd, tests/unit/ (本線檔), .github/ci/

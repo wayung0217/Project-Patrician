@@ -1,0 +1,4 @@
+tip=b28012ca49407433e229e8cfc698e083e7680e8f
+run=https://github.com/wayung0217/Project-Patrician/actions/runs/45528301812
+conclusion=success (9/9)
+jobs: gut-ui / gut-unit(0..3) / golden-30d / gut-unit-gate = success; m1b-* skipped

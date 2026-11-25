@@ -1,33 +1,26 @@
 {
   "lane": 2,
-  "timeline": "17-69-w1w2",
+  "timeline": "17-69-w1w2-final",
   "pr": 84,
   "branch": "cursor/ci-hang-1767-866d",
-  "tip": "19d1a4e862e0dbe5ef15f9deb36721cc3690df48",
-  "prev_tip": "6a731ff051874c767be52c1904df898e294c180f",
+  "tip": "b28012ca49407433e229e8cfc698e083e7680e8f",
   "spec": "v6.99.222",
-  "w1": {
-    "a": "run 45358265237 success but no golden-30d job; no artifact",
-    "b": "workflow_dispatch 403 Resource not accessible by integration",
-    "c": "S9b bootstrap 8b25c951… GOLDEN_BOOTSTRAP=1 + DIFF_CELLS",
-    "d": "download via artifacts API head_branch=main; artifact 14932606115 on cancelled run 45415084221"
+  "ci_run": "https://github.com/wayung0217/Project-Patrician/actions/runs/45528301812",
+  "ci_conclusion": "success",
+  "gate": {
+    "TOTAL_PASSING": 558,
+    "REMOVED_NAMES": "無",
+    "ADDED_NAMES": [
+      "test_R972_EX_05_09_01_stock_bottleneck_q_300",
+      "test_R972_EX_05_09_02_cash_bottleneck_q_120",
+      "test_R972_EX_05_09_03_zero_stock_no_quote"
+    ]
   },
-  "w2": {
-    "decision": "D-125 甲",
-    "product": "unconditional GoodsLedger stock cap",
-    "tests_seeded": [
-      "test_TST_SYS05_08_max_affordable_qty",
-      "test_WP56_demo_q_afford_124_still_holds"
-    ],
-    "gate_expect": {
-      "REMOVED_NAMES": "無",
-      "ADDED_NAMES": [
-        "test_R972_EX_05_09_01_stock_bottleneck_q_100",
-        "test_R972_EX_05_09_02_cash_bottleneck_q_120",
-        "test_R972_EX_05_09_03_zero_stock_no_quote"
-      ]
-    }
+  "golden": {
+    "GOLDEN_BOOTSTRAP": 0,
+    "DIFF_CELLS": 0,
+    "main_artifact_id": 14932606115,
+    "pr_artifact_id": 14983617491
   },
-  "ci_run": "https://github.com/wayung0217/Project-Patrician/actions/runs/45523259356",
   "merge": false
 }

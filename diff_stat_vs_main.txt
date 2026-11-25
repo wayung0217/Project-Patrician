@@ -5,8 +5,8 @@
  .github/workflows/ci.yml                        | 209 ++++++---
  autoload/cash_ledger.gd                         |  38 +-
  tests/unit/test_cash_ledger.gd                  |  12 +
- tests/unit/test_r972_cash_stock_cap_1769.gd     | 292 +++++++++++++
+ tests/unit/test_r972_cash_stock_cap_1769.gd     | 297 +++++++++++++
  tests/unit/test_r972_cash_stock_cap_1769.gd.uid |   1 +
  tests/unit/test_sys23_wp27.gd                   |   9 +-
- tests/unit/test_wp56_cash_market_trade.gd       |  12 +
- 11 files changed, 1624 insertions(+), 54 deletions(-)
+ tests/unit/test_wp56_cash_market_trade.gd       |  18 +
+ 11 files changed, 1635 insertions(+), 54 deletions(-)

@@ -1,3 +1,3 @@
-test_R972_EX_05_09_01_stock_bottleneck_q_100
+test_R972_EX_05_09_01_stock_bottleneck_q_300
 test_R972_EX_05_09_02_cash_bottleneck_q_120
 test_R972_EX_05_09_03_zero_stock_no_quote
