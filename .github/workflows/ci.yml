@@ -517,24 +517,41 @@ jobs:
           python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out
           RC=${PIPESTATUS[0]}
           set -e
-          # DIFF_CELLS = sum of per-column diff_cells（IDENTICAL → 0）
-          DIFF_CELLS=$(python3 - <<'PY'
+          # 17-70 T4／N-13：COMPARED_CELLS／列／欄；DIFF_CELLS；網格完整性閘門。
+          eval "$(python3 - <<'PY'
           from pathlib import Path
           text = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")
+          rows = cols = cells = 0
+          diff = 0
+          for line in text.splitlines():
+              if line.startswith("COMPARED_ROWS="):
+                  rows = int(line.split("=", 1)[1])
+              elif line.startswith("COMPARED_COLS="):
+                  cols = int(line.split("=", 1)[1])
+              elif line.startswith("COMPARED_CELLS="):
+                  cells = int(line.split("=", 1)[1])
+              elif "diff_cells=" in line:
+                  try:
+                      diff += int(line.rsplit("diff_cells=", 1)[1].strip())
+                  except ValueError:
+                      pass
           if "IDENTICAL=1" in text:
-              print(0)
-          else:
-              total = 0
-              for line in text.splitlines():
-                  if "diff_cells=" in line:
-                      try:
-                          total += int(line.rsplit("diff_cells=", 1)[1].strip())
-                      except ValueError:
-                          pass
-              print(total)
+              diff = 0
+          print(f"COMPARED_ROWS={rows}")
+          print(f"COMPARED_COLS={cols}")
+          print(f"COMPARED_CELLS={cells}")
+          print(f"DIFF_CELLS={diff}")
           PY
-          )
+          )"
+          echo "COMPARED_ROWS=${COMPARED_ROWS}"
+          echo "COMPARED_COLS=${COMPARED_COLS}"
+          echo "COMPARED_CELLS=${COMPARED_CELLS}"
           echo "DIFF_CELLS=${DIFF_CELLS}"
+          expect=$((COMPARED_ROWS * COMPARED_COLS))
+          if [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then
+            echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"
+            exit 1
+          fi
           if [[ $RC -ne 0 ]]; then
             exit "$RC"
           fi

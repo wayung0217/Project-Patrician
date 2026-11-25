@@ -40,9 +40,20 @@ const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
 const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
 
 
+## R9-65 A2／D-128 甲：正式注入 weekly_potential_demand（offtake-only → 回 0）；禁止 _clear_state。
+class _ZeroPotentialDemand extends RefCounted:
+	func weekly_potential_demand(_port_id: StringName, _good_id: StringName) -> int:
+		return 0
+
+
 func before_each() -> void:
 	_wipe_dir(GOODS_ROOT)
 	_wipe_dir(PORTS_ROOT)
+
+
+func after_each() -> void:
+	DemandModel.clear_potential_demand_provider()
+	DemandModel.clear_queue_material_shortfall_provider()
 
 
 func test_R972_EX_05_09_01_stock_bottleneck_q_300() -> void:
@@ -165,11 +176,10 @@ func _fund_actor(cash: int) -> void:
 
 func _boot_pricing_stack() -> void:
 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
-	## Offtake-only MarketPricer path：靜默卸 DemandModel（無 push_error），避免 shard 殘態 SCRIPT ERROR。
-	DemandModel.clear_potential_demand_provider()
+	## D-128 甲／R9-65 A2：正式 set_potential_demand_provider（回 0）→ offtake-only；
+	## 不呼叫 DemandModel._clear_state；EX-05-09 期望常數不變。
 	DemandModel.clear_queue_material_shortfall_provider()
-	DemandModel._clear_state()
-	assert_false(DemandModel.is_loaded())
+	DemandModel.set_potential_demand_provider(_ZeroPotentialDemand.new())
 	var goods_dir := _build_goods(GOODS_ROOT)
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)
