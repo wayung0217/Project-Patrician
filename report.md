@@ -49,3 +49,9 @@ Still **待補** when sibling finishes:
 - Store: `/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/1770-evidence2/`
 - Orphan: `review/1770-evidence2`
 - Manifest: `manifest.txt`
+
+
+## Orphan tip
+- Pack: `83e2f19d260c15c2b8416d44debac50629212c6d`
+- Tip (orphan_sha stamp): `55d573a67299bcf3e53a4b2a00021d9385c6f7a9`
+- True orphan (root has no parent). Initial remote tip was mistakenly `e07bb3c` (empty product tip); one-time force replace with this orphan pack so N-12 append history starts clean. Subsequent updates must append only.
