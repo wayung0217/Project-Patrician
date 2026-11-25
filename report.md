@@ -12,6 +12,6 @@ cursor:
 | Diff | **empty** |
 | Root cause | Byte-size shard packing + `test_sys23_wp26.gd` multi-year/cli sims on shard 0 → wall >35m cancel (fix ∈ `ci.yml`/`tests`, not `tools/`) |
 | Corrected CI | **none** (H4 gap) |
-| Orphan | `review/1770-t3` — see `orphan_sha.txt` |
+| Orphan | `review/1770-t3` — tip `0060bb1fe48461e148582f7b8423b5b2fa729dea` — `orphan_sha.txt` |
 
 Details: `root_cause.md`, `job_timings.md`, `00_s9a_report.md`.
