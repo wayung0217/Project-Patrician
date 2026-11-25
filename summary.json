@@ -1,1 +1,18 @@
-{"orphan":"review/1770-d130","pr":87,"tip":"14b436342849d8d6a4dc32eb63703a2133bddfd0","merge":false}
+{
+  "orphan": "review/1770-d130",
+  "pr": 87,
+  "tip": "14b436342849d8d6a4dc32eb63703a2133bddfd0",
+  "ci_run": 45581664915,
+  "ci_url": "https://github.com/wayung0217/Project-Patrician/actions/runs/45581664915",
+  "conclusion": "success",
+  "gate": {"TOTAL_PASSING": 558, "REMOVED": [], "ADDED": 3},
+  "golden": {
+    "GOLDEN_BOOTSTRAP": 0,
+    "COMPARED_ROWS": 527,
+    "COMPARED_COLS": 19,
+    "COMPARED_CELLS": 10013,
+    "DIFF_CELLS": 0,
+    "DIMS_EQUAL": 1
+  },
+  "merge": false
+}

@@ -1,13 +1,11 @@
 # T4 samples (D-130 甲(3))
 
-## Pass
-`t4/compared_pass.out` — identical bootstrap CSV vs itself.
-`COMPARED_ROWS=527` `COMPARED_COLS=19` `COMPARED_CELLS=10013` `IDENTICAL=1` exit 0.
+## CI pass (run 45581664915 golden-30d)
+See `ci_evidence/golden_ci_excerpt.txt`:
+`GOLDEN_BOOTSTRAP=0` · `COMPARED_ROWS=527` · `COMPARED_COLS=19` · `COMPARED_CELLS=10013` · `DIFF_CELLS=0` · `DIMS_EQUAL=1` · `IDENTICAL=1`
 
-## Intentional content mismatch
-`t4/compared_mismatch.out` — mutate one `note` cell.
-`IDENTICAL=0` `diff_cells=1` on COL=note; grid still 527×19=10013; exit 1.
+## Local pass sample
+`t4/compared_pass.out` — bootstrap CSV vs itself → IDENTICAL=1, COMPARED_CELLS=10013, exit 0.
 
-## Intentional dims mismatch (D-130 甲(2))
-`t4/compared_dims_mismatch.out` — drop one data row.
-`DIMS_MISMATCH rows_a=527 rows_b=526` → `COMPARED_*=0` exit 1.
+## Local intentional content mismatch
+`t4/compared_mismatch.out` — mutate one `note` cell → IDENTICAL=0, COL=note diff_cells=1, grid still 527×19=10013, exit 1.
