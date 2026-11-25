@@ -1,0 +1,15 @@
+{
+  "orphan": "review/1770-merge1",
+  "merge_commit": "e07bb3c16347b30d68c3869203fc19d8ae345e1a",
+  "product_tip": "9f228f04abfff6ac1a1a03586a7b5250378ff97e",
+  "ci_run": 45581115843,
+  "conclusion": "success",
+  "golden": {
+    "COMPARED_ROWS": 527,
+    "COMPARED_COLS": 19,
+    "COMPARED_CELLS": 10013,
+    "DIFF_CELLS": null,
+    "GOLDEN_BOOTSTRAP": null,
+    "sha256": "8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c"
+  }
+}

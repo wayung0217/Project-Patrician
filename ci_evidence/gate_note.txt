@@ -1,0 +1,3 @@
+main push: gut-unit-gate runs after shards.
+TOTAL_PASSING expected ≥555; post-#84 baseline includes 3 EX → 558 on PR.
+See run jobs for shard passing.
