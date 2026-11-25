@@ -1,0 +1,6 @@
+cfe489e W4 dry: INT-1 checkout L3 ci.yml (7fa0765)
+86b7b52 docs(17-69): D-126 trial-value note on explore base_price_li (W3)
+930a1c7 fix(17-69): drop #83 make_market stock-cap (R9-73 L4-2 N-04)
+12e7740 test(17-69): drop mark-errors-handled after stock-cap product fix
+8dbdf90 fix(17-67): WP27 unload BuildingEconomy; int GUT gate 600
+169c45e fix(17-67): stock-cap only when quote provider is MarketPricer

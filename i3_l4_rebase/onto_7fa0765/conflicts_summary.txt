@@ -1,0 +1,10 @@
+STEP 1 CONFLICT at d55526f fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI
+.github/workflows/ci.yml
+
+STEP 2 CONFLICT at 04f4891 fix(17-67): WP27 unload BuildingEconomy; int GUT gate 600
+.github/workflows/ci.yml
+
+STEP 3 CONFLICT at 863c936 fix(17-67): #83 GUT gate 608 (int 600 + 8 D-123)
+.github/workflows/ci.yml
+
+conflict_steps=3

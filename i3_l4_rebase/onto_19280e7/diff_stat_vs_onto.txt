@@ -1,0 +1,16 @@
+ .github/workflows/ci.yml                       |  38 +--
+ .github/workflows/m1b-diag-z.yml               |   4 +-
+ .github/workflows/m1b-z.yml                    |  10 +-
+ autoload/cash_ledger.gd                        |  20 +-
+ autoload/intel_ledger.gd                       |  85 ++++++
+ autoload/sim_loop.gd                           |   4 +
+ autoload/trader_registry.gd                    | 118 +++++++-
+ docs/spec/03_Systems.csv                       |   8 +-
+ docs/spec/05_TechSpec.csv                      | 168 ++++++++++-
+ docs/spec/AI_README.csv                        |  32 +-
+ docs/spec/Project Patrician.xlsx               | Bin 1824768 -> 1849856 bytes
+ tests/unit/test_d123_opening_board_1766.gd     | 402 +++++++++++++++++++++++++
+ tests/unit/test_d123_opening_board_1766.gd.uid |   1 +
+ tests/unit/test_sys23_wp27.gd                  |   9 +-
+ tools/run_m1b_report.gd                        |  59 +++-
+ 15 files changed, 910 insertions(+), 48 deletions(-)

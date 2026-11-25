@@ -1,0 +1,10 @@
+【已過期】superseded by dry-run L2=19d1a4e L3=da3d911 L4=4d05f0d
+
+ .github/ci/README.md                            |  13 +
+ .github/ci/gut_unit_property_baseline_names.txt | 555 ++++++++++++++++++++++++
+ .github/workflows/ci.yml                        | 128 ++++--
+ autoload/cash_ledger.gd                         |  37 +-
+ tests/unit/test_r972_cash_stock_cap_1769.gd     | 292 +++++++++++++
+ tests/unit/test_r972_cash_stock_cap_1769.gd.uid |   1 +
+ tests/unit/test_sys23_wp27.gd                   |   9 +-
+ 7 files changed, 995 insertions(+), 40 deletions(-)

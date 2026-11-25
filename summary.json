@@ -1,0 +1,50 @@
+{
+  "lane": "integration",
+  "dispatch": "17-69",
+  "correction": "\u88dc\u6b63\u4e09 W4+W5",
+  "items": [
+    "I1",
+    "I2",
+    "I3",
+    "I4",
+    "W4",
+    "W5"
+  ],
+  "mode": "order_report_only",
+  "merge": false,
+  "tag": false,
+  "orphan_branch": "review/evening-17-69-int",
+  "tips": {
+    "L2": "b28012ca49407433e229e8cfc698e083e7680e8f",
+    "L3": "da3d911a9a6882d85a4d1bee523b78e9af0ad365",
+    "L4": "4d05f0d6c4ab465ac5f6d8f5250ac28c1de7dc70"
+  },
+  "ci_yml_blob_l2_l3": "e96d3a12386a4082d053a3ec80c39cda2144b03d",
+  "baseline_names_blob": "3698f976e59429ef34cd35d65e05d908a485943d",
+  "paths_txt": false,
+  "i3_mandatory": "git checkout da3d911a9a6882d85a4d1bee523b78e9af0ad365 -- .github/workflows/ci.yml",
+  "no_eq_608": true,
+  "l2_tests_added": 3,
+  "l2_tests_names": [
+    "test_R972_EX_05_09_01_stock_bottleneck_q_300",
+    "test_R972_EX_05_09_02_cash_bottleneck_q_120",
+    "test_R972_EX_05_09_03_zero_stock_no_quote"
+  ],
+  "w4": {
+    "I1": "clean @b28012c",
+    "I2": "clean",
+    "I3_conflicts": 3,
+    "I3_evidence": "i3_l4_rebase/onto_da3d911/",
+    "old_dry_runs": "marked \u5df2\u904e\u671f",
+    "note": "L2 A21 test fix; L3 da3d911 unchanged"
+  },
+  "w5": {
+    "c01_pending_stamped": "\u5df2\u88ab Owner \u8ffd\u8a8d\u53d6\u4ee3",
+    "l2_tests_added_updated": true
+  },
+  "ci_green": false,
+  "h5": "orphan review/evening-17-69-int",
+  "orphan_sha": "83d56eea2b98bfeb15519e06fd1c69e5a3987dab",
+  "tip": "a5cbefd30b3f97da86a8a26e579f94c8e10dbddf",
+  "refresh": "L2-b28012c-tests-only"
+}

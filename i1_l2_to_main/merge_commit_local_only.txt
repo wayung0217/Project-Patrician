@@ -1,0 +1,15 @@
+【已過期】pre-W4 dry-run / tip 已非當下
+
+Merge made by the 'ort' strategy.
+ .github/ci/gut_unit_property_baseline_names.txt | 555 ++++++++++++++++++++++++
+ .github/ci/gut_unit_property_baseline_paths.txt | 555 ++++++++++++++++++++++++
+ .github/workflows/ci.yml                        | 111 +++--
+ autoload/cash_ledger.gd                         |  31 +-
+ tests/unit/test_r972_cash_stock_cap_1769.gd     | 273 ++++++++++++
+ tests/unit/test_r972_cash_stock_cap_1769.gd.uid |   1 +
+ tests/unit/test_sys23_wp27.gd                   |   9 +-
+ 7 files changed, 1497 insertions(+), 38 deletions(-)
+ create mode 100644 .github/ci/gut_unit_property_baseline_names.txt
+ create mode 100644 .github/ci/gut_unit_property_baseline_paths.txt
+ create mode 100644 tests/unit/test_r972_cash_stock_cap_1769.gd
+ create mode 100644 tests/unit/test_r972_cash_stock_cap_1769.gd.uid

@@ -1,0 +1,64 @@
+--- /tmp/i4_gate/cash_l2.gd	2026-11-24 14:30:07.378850250 +0000
++++ /tmp/i4_gate/cash_l4.gd	2026-11-24 14:30:07.378850250 +0000
+@@ -60,6 +60,8 @@
+ 
+ ## D-03: sole ERR-SYS05-06 exception for genesis_grant()（裁決 D-03）；不寫入 AUTHORIZED_REQUESTERS。
+ const REQUESTER_GENESIS_GRANT := &"GENESIS_GRANT"
++## D-23c／WP-36: second sole exception for TraderRegistry.grant_genesis_cash()；清單本身不改。
++const REQUESTER_TRADER_GENESIS_GRANT := &"TRADER_GENESIS_GRANT"
+ const REASON_GENESIS_CASH := &"GENESIS_CASH"
+ 
+ ## quote side（TechSpec 3.5 H：BUY=0, SELL=1）
+@@ -657,10 +659,8 @@
+ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
+ 	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
+ 	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
+-	# 17-67／17-69：真實 MarketPricer 路徑先以 GoodsLedger 庫存為 exclusive 上界，
+-	# 避免倍增／二分探測 qty>stock 觸發 ERR-SYS04-06 push_error 風暴（K2/K4／#499）。
+-	# ★ 2.10：03_Systems r574／FRM-SYS05-09 原文未寫「上界受市場庫存限制」；
+-	# Owner 尚未裁決。若裁決改變語意，本上界與 R972 測試須同步調整。
++	# 17-67：真實市場路徑先以 GoodsLedger 庫存為 exclusive 上界，避免倍增／二分
++	# 探測 qty>stock 觸發 MarketPricer push_error 風暴（K2/K4／#499 hung ~3h44m）。
+ 	assert(_loaded, "CashLedger.max_affordable_qty before load")
+ 	var bal: int = balance(actor)
+ 	if bal <= 0:
+@@ -668,22 +668,13 @@
+ 	if _quote_provider == null:
+ 		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
+ 		return 0
+-	## FRM-SYS05-09 exclusive upper: stock+1 only for real MarketPricer
+-	## (not DemoQuoteProvider — Autoload PortRegistry often stays loaded across GUT
+-	## with empty markets; PortRegistry.is_loaded gating broke TST-SYS05-08 / WP56).
+-	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
+-	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；此處以 KIND+PORT
+-	## Dictionary 交給 get_qty，_container_key 內部呼叫 container_id（不用 make_market）。
+-	## 2.8：GoodsLedger.is_loaded／make_market、PortRegistry.is_loaded 未見 03_Systems H
+-	## 可觀察性列 → 缺口見 evening-17-69-lane2 報告（is_loaded 沿用既有 Autoload 慣例）。
++	## Exclusive upper (hi): stock+1 only for real MarketPricer (not DemoQuoteProvider).
++	## Autoload PortRegistry often stays loaded across GUT scripts; gating on it falsely
++	## treated empty markets as stock=0 and broke TST-SYS05-08 / WP56 demo q=124.
+ 	var abs_hi: int = -1
+ 	if _quote_provider == MarketPricer and GoodsLedger.is_loaded():
+ 		var port_s: String = String(port)
+-		var market: Dictionary = {
+-			GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
+-			GoodsLedger.KEY_PORT: port_s,
+-		}
+-		var stock_cap: int = GoodsLedger.get_qty(market, good)
++		var stock_cap: int = GoodsLedger.get_qty(GoodsLedger.make_market(port_s), good)
+ 		if stock_cap < 1:
+ 			return 0
+ 		abs_hi = stock_cap + 1
+@@ -866,9 +857,11 @@
+ 
+ 
+ func _is_authorized(requester: StringName) -> bool:
+-	# AUTHORIZED_REQUESTERS unchanged（D-03）；sole exception = REQUESTER_GENESIS_GRANT.
++	# AUTHORIZED_REQUESTERS unchanged（D-03／D-23c）；exceptions are named constants only.
+ 	if requester == REQUESTER_GENESIS_GRANT:
+ 		return true
++	if requester == REQUESTER_TRADER_GENESIS_GRANT:
++		return true
+ 	for r in AUTHORIZED_REQUESTERS:
+ 		if r == requester:
+ 			return true

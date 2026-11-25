@@ -1,0 +1,36 @@
+--- hunk 1 ---
+<<<<<<< HEAD
+OURS(1 lines) head:
+    # 17-69 2.4: total ≥ recorded baseline AND all baseline names still present (set diff).
+=======
+THEIRS(1 lines) head:
+    # Sum shard passing counts; #83 tip = int-1758 600 + 8 D-123 tests (unit+property).
+>>>>>>> 863c936 (fix(17-67): #83 GUT gate 608 (int 600 + 8 D-123))
+--- hunk 2 ---
+<<<<<<< HEAD
+OURS(1 lines) head:
+        - name: Verify Passing ≥ baseline and old names present
+=======
+THEIRS(1 lines) head:
+        - name: Verify total Passing == 608
+>>>>>>> 863c936 (fix(17-67): #83 GUT gate 608 (int 600 + 8 D-123))
+--- hunk 3 ---
+<<<<<<< HEAD
+OURS(31 lines) head:
+            BASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"
+            BASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)
+            echo "BASELINE_COUNT=${BASELINE_COUNT}"
+            if [[ "$total" -lt "$BASELINE_COUNT" ]]; then
+              echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"
+              exit 1
+            fi
+            python3 - <<'PY'
+=======
+THEIRS(5 lines) head:
+            if [[ "$total" != "608" ]]; then
+              echo "::error::unit+property Passing=${total} expected 608 (int-1758 + D-123)"
+              exit 1
+            fi
+            echo "GUT_UNIT_PROPERTY_COUNT_OK=608"
+>>>>>>> 863c936 (fix(17-67): #83 GUT gate 608 (int 600 + 8 D-123))
+TOTAL_HUNKS=3

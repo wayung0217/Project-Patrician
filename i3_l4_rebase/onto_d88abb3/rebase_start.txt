@@ -1,0 +1,8 @@
+Rebasing (1/13)Rebasing (2/13)Rebasing (3/13)Rebasing (4/13)Rebasing (5/13)Rebasing (6/13)Rebasing (7/13)Auto-merging .github/workflows/ci.yml
+CONFLICT (content): Merge conflict in .github/workflows/ci.yml
+error: could not apply d55526f... fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+hint: You can instead skip this commit: run "git rebase --skip".
+hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
+Could not apply d55526f... fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI

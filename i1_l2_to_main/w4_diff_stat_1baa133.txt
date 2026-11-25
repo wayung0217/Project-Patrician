@@ -1,0 +1,14 @@
+【已過期】L2 tip moved to b28012c (tests-only; ci.yml unchanged)
+
+ .github/ci/README.md                            |  21 +
+ .github/ci/golden_30d_bootstrap_1764.csv        | 528 ++++++++++++++++++++++
+ .github/ci/golden_30d_bootstrap_1764.sha256     |   1 +
+ .github/ci/gut_unit_property_baseline_names.txt | 555 ++++++++++++++++++++++++
+ .github/workflows/ci.yml                        | 209 ++++++---
+ autoload/cash_ledger.gd                         |  38 +-
+ tests/unit/test_cash_ledger.gd                  |  12 +
+ tests/unit/test_r972_cash_stock_cap_1769.gd     | 300 +++++++++++++
+ tests/unit/test_r972_cash_stock_cap_1769.gd.uid |   1 +
+ tests/unit/test_sys23_wp27.gd                   |   9 +-
+ tests/unit/test_wp56_cash_market_trade.gd       |  22 +
+ 11 files changed, 1642 insertions(+), 54 deletions(-)

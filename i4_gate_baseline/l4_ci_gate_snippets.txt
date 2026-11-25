@@ -1,0 +1,8 @@
+200:  # Sum shard passing counts; #83 tip = int-1758 600 + 8 D-123 tests (unit+property).
+213:      - name: Verify total Passing == 608
+225:          if [[ "$total" != "608" ]]; then
+226:            echo "::error::unit+property Passing=${total} expected 608 (int-1758 + D-123)"
+229:          echo "GUT_UNIT_PROPERTY_COUNT_OK=608"
+390:      - name: Download latest main golden baseline (PRs)
+421:      - name: Compare PR golden to main baseline (or recompute note)
+426:            echo "GOLDEN_BASE_RECOMPUTE=1 — no main baseline; PR golden stands alone this run"

@@ -1,0 +1,3 @@
+commit: d55526fd0a45b765c026058c810c9d9f414777d4
+msg: d55526f fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI
+.github/workflows/ci.yml markers=10

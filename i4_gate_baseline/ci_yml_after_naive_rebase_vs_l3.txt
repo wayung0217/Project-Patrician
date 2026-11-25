@@ -1,0 +1,120 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 2abeb9f..db3db5e 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -43,11 +43,11 @@ jobs:
+         shard: [0, 1, 2, 3]
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v5
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v5
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -94,7 +94,7 @@ jobs:
+ 
+       # 17-64 S3: cache .godot/imported (never test/golden outputs).
+       - name: Cache Godot imported assets
+-        uses: actions/cache@v5
++        uses: actions/cache@v6
+         with:
+           path: .godot/imported
+           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+@@ -193,7 +193,7 @@ jobs:
+ 
+       - name: Upload GUT unit shard logs
+         if: always()
+-        uses: actions/upload-artifact@v5
++        uses: actions/upload-artifact@v7
+         with:
+           name: gut-unit-logs-${{ matrix.shard }}
+           path: |
+@@ -214,7 +214,7 @@ jobs:
+         uses: actions/checkout@v5
+ 
+       - name: Download shard passing counts
+-        uses: actions/download-artifact@v5
++        uses: actions/download-artifact@v8
+         with:
+           pattern: gut-unit-logs-*
+           merge-multiple: false
+@@ -271,11 +271,11 @@ jobs:
+     timeout-minutes: 15
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v5
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v5
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -299,7 +299,7 @@ jobs:
+           ./godot --version
+ 
+       - name: Cache Godot imported assets
+-        uses: actions/cache@v5
++        uses: actions/cache@v6
+         with:
+           path: .godot/imported
+           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+@@ -336,7 +336,7 @@ jobs:
+ 
+       - name: Upload GUT UI logs
+         if: always()
+-        uses: actions/upload-artifact@v5
++        uses: actions/upload-artifact@v7
+         with:
+           name: gut-ui-logs
+           path: gut_ui.log
+@@ -355,11 +355,11 @@ jobs:
+       contents: read
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v5
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v5
++        uses: actions/cache@v6
+         with:
+           path: godot
+           key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+@@ -383,7 +383,7 @@ jobs:
+           ./godot --version
+ 
+       - name: Cache Godot imported assets
+-        uses: actions/cache@v5
++        uses: actions/cache@v6
+         with:
+           path: .godot/imported
+           key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+@@ -472,7 +472,7 @@ jobs:
+ 
+       - name: Upload golden artifact
+         if: always()
+-        uses: actions/upload-artifact@v5
++        uses: actions/upload-artifact@v7
+         with:
+           name: golden-30d
+           path: out/golden/
+@@ -487,11 +487,11 @@ jobs:
+     timeout-minutes: 15
+     steps:
+       - name: Checkout
+-        uses: actions/checkout@v5
++        uses: actions/checkout@v7
+ 
+       - name: Cache Godot binary
+         id: cache-godot
+-        uses: actions/cache@v5
++        uses: actions/cache@v6

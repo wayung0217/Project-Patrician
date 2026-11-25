@@ -1,0 +1,15 @@
+4d05f0d docs(17-69): D-126 trial-value note on explore base_price_li (W3)
+3816c23 fix(17-69): drop #83 make_market stock-cap (R9-73 L4-2 N-04)
+ddc2447 test(17-69): drop mark-errors-handled after stock-cap product fix
+863c936 fix(17-67): #83 GUT gate 608 (int 600 + 8 D-123)
+04f4891 fix(17-67): WP27 unload BuildingEconomy; int GUT gate 600
+7276658 fix(17-67): stock-cap only when quote provider is MarketPricer
+cca43ed fix(17-67): bump actions to Node-24 majors (checkout@v7)
+704c7db chore(17-66): commit missing test_d123 .uid for import-clean CI
+d55526f fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI
+c49e015 test(17-66): speed K2/K4 for gut-unit ≤50m (17-67)
+b29e297 test(17-66): register HOLD capacity + deep stock for K2/K4
+e19c853 test(17-66): fix K1e/K2/K4 GUT failures on #83
+51cc942 test(17-66): shrink K4 formal 30d to 2 traders for GUT
+ba1e644 fix(17-66): D-123 opening board, explore sail, season outs
+cb84393 docs(spec): gate B9 v6.99.210 for 17-66 / D-123

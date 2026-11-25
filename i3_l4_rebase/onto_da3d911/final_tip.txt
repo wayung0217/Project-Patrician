@@ -1,0 +1,5 @@
+b33d04e dry: INT-1 checkout L3 ci.yml da3d911
+8d8804a docs(17-69): D-126 trial-value note on explore base_price_li (W3)
+45da5a6 fix(17-69): drop #83 make_market stock-cap (R9-73 L4-2 N-04)
+0928637 test(17-69): drop mark-errors-handled after stock-cap product fix
+756bd68 fix(17-67): WP27 unload BuildingEconomy; int GUT gate 600

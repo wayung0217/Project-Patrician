@@ -1,0 +1,10 @@
+【已過期】pre-W4 dry-run / tip 已非當下
+
+ .github/ci/gut_unit_property_baseline_names.txt | 555 ++++++++++++++++++++++++
+ .github/ci/gut_unit_property_baseline_paths.txt | 555 ++++++++++++++++++++++++
+ .github/workflows/ci.yml                        | 111 +++--
+ autoload/cash_ledger.gd                         |  37 +-
+ tests/unit/test_r972_cash_stock_cap_1769.gd     | 292 +++++++++++++
+ tests/unit/test_r972_cash_stock_cap_1769.gd.uid |   1 +
+ tests/unit/test_sys23_wp27.gd                   |   9 +-
+ 7 files changed, 1520 insertions(+), 40 deletions(-)

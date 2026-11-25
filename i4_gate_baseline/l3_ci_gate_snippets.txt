@@ -1,0 +1,80 @@
+170:            echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
+171-            exit 1
+172-          fi
+173-          grep -E 'Passing Tests|Failing|All tests passed' gut_unit.log | tail -20 || true
+--
+182:          # Bare test names for 17-69 2.4 set-diff gate (unique across suite).
+183-          names = sorted(set(re.findall(r"^\* (test_\w+)", text, flags=re.M)))
+184-          Path("gut_unit_names.txt").write_text("\n".join(names) + ("\n" if names else ""))
+185-          print(f"SHARD_NAMES={len(names)}")
+--
+205:  # 17-69 2.4: total ≥ recorded baseline AND all baseline names still present (set diff).
+206:  gut-unit-gate:
+207-    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+208-    needs: gut-unit
+209-    runs-on: ubuntu-latest
+--
+213:      - name: Checkout (baseline name list)
+214-        uses: actions/checkout@v5
+215-
+216-      - name: Download shard passing counts
+--
+223:      - name: Verify Passing ≥ baseline and old names present
+224-        run: |
+225-          set -euo pipefail
+226-          echo "Shard artifacts:"
+--
+235:          BASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"
+236-          BASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)
+237-          echo "BASELINE_COUNT=${BASELINE_COUNT}"
+238-          if [[ "$total" -lt "$BASELINE_COUNT" ]]; then
+239:            echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"
+240-            exit 1
+241-          fi
+242-          python3 - <<'PY'
+--
+244:          baseline = {
+245-              ln.strip()
+246:              for ln in Path(".github/ci/gut_unit_property_baseline_names.txt").read_text().splitlines()
+247-              if ln.strip()
+248-          }
+249-          seen = set()
+--
+255:          missing = sorted(baseline - seen)
+256:          print(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)} MISSING={len(missing)}")
+257-          if missing:
+258-              print("MISSING_BASELINE_NAMES:")
+259-              for n in missing:
+--
+261:              print("::error::baseline test names missing from this run (set diff)")
+262-              raise SystemExit(1)
+263:          print("GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1")
+264-          PY
+265:          echo "GUT_UNIT_PROPERTY_COUNT_OK>=${BASELINE_COUNT} actual=${total}"
+266-
+267-  gut-ui:
+268-    if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+--
+332:            echo "::error::SCRIPT ERROR detected in GUT UI log (ci-script-error-gate)"
+333-            exit 1
+334-          fi
+335-          grep -E 'Tests:|Passing:|Failing:' gut_ui.log | tail -20 || true
+--
+409:      - name: 30d golden gated
+410-        run: |
+411-          set -euo pipefail
+412-          mkdir -p out/golden
+413:          tools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \
+414-            --log "$(pwd)/out/golden/30d.log"
+415-          echo "GOLDEN_30D_DONE"
+416-          wc -l out/golden/30d.csv
+417:          # Cell summary for evening-17-64 gate (row count + sha256).
+418-          sha256sum out/golden/30d.csv | tee out/golden/30d.sha256
+419-          python3 - <<'PY'
+420-          import csv
+--
+428:      - name: Download latest main golden baseline (PRs)
+429-        if: github.event_name == 'pull_request'
+430-        env:
+431-          GH_TOKEN: ${{ github.token }}
+--

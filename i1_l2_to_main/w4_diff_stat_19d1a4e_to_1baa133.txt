@@ -1,0 +1,5 @@
+【已過期】L2 tip moved to b28012c (tests-only; ci.yml unchanged)
+
+ tests/unit/test_r972_cash_stock_cap_1769.gd |  8 ++++++++
+ tests/unit/test_wp56_cash_market_trade.gd   | 10 ++++++++++
+ 2 files changed, 18 insertions(+)

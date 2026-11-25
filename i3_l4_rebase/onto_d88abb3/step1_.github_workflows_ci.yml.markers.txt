@@ -1,0 +1,36 @@
+182:<<<<<<< HEAD
+187:=======
+188:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+205:<<<<<<< HEAD
+210:=======
+214:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+219:<<<<<<< HEAD
+226:=======
+228:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+236:<<<<<<< HEAD
+238:=======
+240:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+252:<<<<<<< HEAD
+284:=======
+290:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+295:<<<<<<< HEAD
+298:=======
+300:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+380:<<<<<<< HEAD
+383:=======
+385:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+468:<<<<<<< HEAD
+471:=======
+473:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+482:<<<<<<< HEAD
+485:=======
+487:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+497:<<<<<<< HEAD
+500:=======
+502:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+507:<<<<<<< HEAD
+509:=======
+511:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+516:<<<<<<< HEAD
+519:=======
+523:>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)

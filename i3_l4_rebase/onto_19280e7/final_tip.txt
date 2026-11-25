@@ -1,0 +1,5 @@
+193d18a test(17-69): drop mark-errors-handled after stock-cap product fix
+ccd1756 fix(17-67): WP27 unload BuildingEconomy; int GUT gate 600
+a7f40cf fix(17-67): stock-cap only when quote provider is MarketPricer
+cbcaefd fix(17-67): bump actions to Node-24 majors (checkout@v7)
+363d0ba chore(17-66): commit missing test_d123 .uid for import-clean CI

@@ -1,0 +1,15 @@
+commit b998cea319a880f81647288666e0b143a01f5991
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Tue Nov 24 14:49:35 2026 +0000
+
+    fix(17-69): Owner 追認 gate ADDED/REMOVED; drop paths.txt
+    
+    (甲) .github/ci/ in Lane2 2.4 ownership. (乙) gut-unit-gate prints
+    ADDED_NAMES/REMOVED_NAMES (or 無); fail on REMOVED. (丙) delete
+    unused gut_unit_property_baseline_paths.txt; keep names.txt only.
+    README documents baseline control. Not merge evidence for golden.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ .github/ci/gut_unit_property_baseline_paths.txt | 555 ------------------------
+ 1 file changed, 555 deletions(-)

@@ -1,0 +1,10 @@
+[detached HEAD ccd1756] fix(17-67): WP27 unload BuildingEconomy; int GUT gate 600
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+Rebasing (12/13)Auto-merging .github/workflows/ci.yml
+CONFLICT (content): Merge conflict in .github/workflows/ci.yml
+error: could not apply 863c936... fix(17-67): #83 GUT gate 608 (int 600 + 8 D-123)
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+hint: You can instead skip this commit: run "git rebase --skip".
+hint: To abort and get back to the state before "git rebase", run "git rebase --abort".
+Could not apply 863c936... fix(17-67): #83 GUT gate 608 (int 600 + 8 D-123)

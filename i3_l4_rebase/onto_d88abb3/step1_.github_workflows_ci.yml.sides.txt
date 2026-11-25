@@ -1,0 +1,128 @@
+--- hunk 1 ---
+<<<<<<< HEAD
+OURS(4 lines) head:
+            # Bare test names for 17-69 2.4 set-diff gate (unique across suite).
+            names = sorted(set(re.findall(r"^\* (test_\w+)", text, flags=re.M)))
+            Path("gut_unit_names.txt").write_text("\n".join(names) + ("\n" if names else ""))
+            print(f"SHARD_NAMES={len(names)}")
+=======
+THEIRS(0 lines) head:
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 2 ---
+<<<<<<< HEAD
+OURS(4 lines) head:
+              gut_unit_names.txt
+            retention-days: 3
+  
+    # 17-69 2.4: total ≥ recorded baseline AND all baseline names still present (set diff).
+=======
+THEIRS(3 lines) head:
+            retention-days: 3
+  
+    # Sum shard passing counts; must equal pre-change 555 (unit+property).
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 3 ---
+<<<<<<< HEAD
+OURS(6 lines) head:
+      # 17-69 2.3: only job previously missing a wall-clock cap.
+      timeout-minutes: 5
+      steps:
+        - name: Checkout (baseline name list)
+          uses: actions/checkout@v5
+  
+=======
+THEIRS(1 lines) head:
+      steps:
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 4 ---
+<<<<<<< HEAD
+OURS(1 lines) head:
+        - name: Verify Passing ≥ baseline and old names present
+=======
+THEIRS(1 lines) head:
+        - name: Verify total Passing == 555
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 5 ---
+<<<<<<< HEAD
+OURS(31 lines) head:
+            BASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"
+            BASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)
+            echo "BASELINE_COUNT=${BASELINE_COUNT}"
+            if [[ "$total" -lt "$BASELINE_COUNT" ]]; then
+              echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"
+              exit 1
+            fi
+            python3 - <<'PY'
+=======
+THEIRS(5 lines) head:
+            if [[ "$total" != "555" ]]; then
+              echo "::error::unit+property Passing=${total} expected 555 (pre-change main)"
+              exit 1
+            fi
+            echo "GUT_UNIT_PROPERTY_COUNT_OK=555"
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 6 ---
+<<<<<<< HEAD
+OURS(2 lines) head:
+      # 17-69 2.2: restore 15 (measured ~2m09s); whole-CI ≤50m is not a per-job raise.
+      timeout-minutes: 15
+=======
+THEIRS(1 lines) head:
+      timeout-minutes: 30
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 7 ---
+<<<<<<< HEAD
+OURS(2 lines) head:
+      # 17-69 2.2: restore 15 (measured ~1m14s).
+      timeout-minutes: 15
+=======
+THEIRS(1 lines) head:
+      timeout-minutes: 30
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 8 ---
+<<<<<<< HEAD
+OURS(2 lines) head:
+            # Prefer artifact from latest successful main CI run.
+            # 17-69 2.5: missing baseline must fail the job (no silent GREEN skip).
+=======
+THEIRS(1 lines) head:
+            # Prefer artifact from latest successful main CI run; else mark missing.
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 9 ---
+<<<<<<< HEAD
+OURS(2 lines) head:
+              echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"
+              exit 1
+=======
+THEIRS(1 lines) head:
+              exit 0
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 10 ---
+<<<<<<< HEAD
+OURS(2 lines) head:
+              echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"
+              exit 1
+=======
+THEIRS(1 lines) head:
+              exit 0
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 11 ---
+<<<<<<< HEAD
+OURS(1 lines) head:
+        - name: Compare PR golden to main baseline
+=======
+THEIRS(1 lines) head:
+        - name: Compare PR golden to main baseline (or recompute note)
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+--- hunk 12 ---
+<<<<<<< HEAD
+OURS(2 lines) head:
+              echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"
+              exit 1
+=======
+THEIRS(3 lines) head:
+              echo "GOLDEN_BASE_RECOMPUTE=1 — no main baseline; PR golden stands alone this run"
+              echo "GOLDEN_COMPARE_SKIPPED"
+              exit 0
+>>>>>>> d55526f (fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI)
+TOTAL_HUNKS=12

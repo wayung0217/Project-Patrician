@@ -1,0 +1,3 @@
+【已過期】L2 tip moved to b28012c (tests-only; ci.yml unchanged)
+
+CONFLICTS: none (I1: 1baa133 → main; tests-only delta vs 19d1a4e)
