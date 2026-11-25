@@ -1,0 +1,15 @@
+### command
+# E3(c) intentional golden mismatch — manufacturing method
+# 1. From green tip 80d3d68, append commit 0ec5feb that after GOLDEN_30D_DONE mutates
+#    out/golden/30d.csv first data-row last cell → "E3C_INTENTIONAL_MISMATCH".
+# 2. Push to cursor/d130-shard-golden-aeb7 → real Actions run 45626300410.
+# 3. golden-30d job 139247289132 failed (compare vs main artifact).
+# 4. Restore green tree: git revert 0ec5feb && push (append-only; no force-push).
+### output
+e3c_commit=0ec5feb7aab46a9a20aad5749e4b358ec24d3180
+parent_green=80d3d68faaf9498b917e57d77be332c1d073e0a5
+fail_run_id=45626300410
+fail_golden_job=139247289132
+mutation=flip last cell of first data row to E3C_INTENTIONAL_MISMATCH after golden write
+restore=git revert (append-only)
+restore_tip=f86681e672c030298c4660e3ca9a7b229c11661c (git revert of 0ec5feb; tree matches 80d3d68 for ci.yml)

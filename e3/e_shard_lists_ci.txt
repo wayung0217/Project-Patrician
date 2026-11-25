@@ -1,0 +1,54 @@
+### command
+# Select unit+property shard scripts (file-weight balanced 4-way) — run 45620046075 tip 80d3d68
+### output
+SHARD=0 scripts=2 file_weight=1204880 wp26=0 property=2 balance=file_weight_prop_rr
+res://tests/property/test_PROP_cash_sum_zero.gd
+res://tests/property/test_PROP_determinism.gd
+SHARD=1 scripts=14 file_weight=897139 wp26=0 property=1 balance=file_weight_prop_rr
+res://tests/property/test_PROP_market_quote_bounds.gd
+res://tests/unit/test_building_economy_wp63.gd
+res://tests/unit/test_cash_ledger.gd
+res://tests/unit/test_csv_import.gd
+res://tests/unit/test_csv_import_wp29.gd
+res://tests/unit/test_demand_model_wp22.gd
+res://tests/unit/test_goods_ledger.gd
+res://tests/unit/test_opening_wp24.gd
+res://tests/unit/test_r972_cash_stock_cap_1769.gd
+res://tests/unit/test_rng_wp25.gd
+res://tests/unit/test_ship_registry_wp30.gd
+res://tests/unit/test_sys08_wp65_d97a.gd
+res://tests/unit/test_sys23_wp27.gd
+res://tests/unit/test_wp68_city_housing.gd
+SHARD=2 scripts=15 file_weight=897681 wp26=0 property=1 balance=file_weight_prop_rr
+res://tests/property/test_PROP_goods_conservation.gd
+res://tests/unit/test_building_economy_wp19.gd
+res://tests/unit/test_building_economy_wp23.gd
+res://tests/unit/test_clock.gd
+res://tests/unit/test_csv_import_wp34.gd
+res://tests/unit/test_lane_b_pop_demand_1755.gd
+res://tests/unit/test_params_wp16.gd
+res://tests/unit/test_population_model_wp21.gd
+res://tests/unit/test_population_model_wp51.gd
+res://tests/unit/test_population_model_wp55.gd
+res://tests/unit/test_sea_lanes_wp29.gd
+res://tests/unit/test_sim_loop.gd
+res://tests/unit/test_trade_desk_wp33.gd
+res://tests/unit/test_wp62_d95d_apis.gd
+res://tests/unit/test_wp67_garrison_obs05.gd
+SHARD=3 scripts=16 file_weight=897578 wp26=1 property=1 balance=file_weight_prop_rr
+res://tests/property/test_PROP_transfer_all_or_nothing.gd
+res://tests/unit/test_building_economy_wp18.gd
+res://tests/unit/test_building_economy_wp20.gd
+res://tests/unit/test_csv_import_wp17.gd
+res://tests/unit/test_csv_import_wp18.gd
+res://tests/unit/test_d110_lane_c_queue_outputs.gd
+res://tests/unit/test_golden_fnv_e2.gd
+res://tests/unit/test_good_catalog.gd
+res://tests/unit/test_intel_ledger_wp40.gd
+res://tests/unit/test_market_pricer.gd
+res://tests/unit/test_offtake_wp32.gd
+res://tests/unit/test_opening_stock_wp62b.gd
+res://tests/unit/test_params.gd
+res://tests/unit/test_port_registry.gd
+res://tests/unit/test_sys23_wp26.gd
+res://tests/unit/test_wp56_cash_market_trade.gd

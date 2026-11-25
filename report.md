@@ -2,7 +2,7 @@
 
 ## Scope
 - **Done here:** E1, E2, E4, E5 + orphan assemble (`review/1770-evidence2`).
-- **E3/E6:** produced by D-130 agent `bc-660b892c-4e14-554e-9eb0-5de2ce68aeb7`; partial files present under `e3/` `e6/` and listed in `manifest.txt`. Remaining E3(b)(c)(e-post-rebalance) / E6 success-run golden excerpt **待補** (see below).
+- **E3/E6:** completed by D-130 agent `bc-660b892c-4e14-554e-9eb0-5de2ce68aeb7` — see E3/E6 section below.
 - **No PR merges.** H1/S9b hold on 合併③ and #87→main.
 
 ## E1 — main 合併① `e07bb3c`
@@ -30,28 +30,36 @@ All `status=ahead` (see `e4/status_summary.txt` + full API dumps):
 ## E5 — expired annotations
 Annotated copies under `e5/` (originals not deleted). In-place stamps on store `evening-17-69-lane3/lane.txt` and `evening-17-69-integration/{lane.txt,tips.txt}` pointing at e2/e1. Index: `e5/index.md`.
 
-## E3/E6 — 待補 / partial
-Present now (from D-130 sibling):
-- `e3/a_name_status.txt`, `e3/a_full.diff` (vs tip `80d3d68…`)
-- `e3/d_golden_compare.py.txt`
-- `e3/e_baseline_14b4363_walls.txt` (pre-rebalance walls; max_wall_s=2233 on gut-unit(0))
-- `e6/e6_ci_yml.diff.txt` (bootstrap removal + E3e shard weight)
+## E3/E6 — complete (D-130 agent bc-660b892c-4e14-554e-9eb0-5de2ce68aeb7)
 
-Still **待補** when sibling finishes:
-- E3(b) success-run gate+golden 原文段（post-`80d3d68` green run）
-- E3(c) intentional mismatch CI run + golden fail 原文
-- E3(e) post-rebalance shard file lists + started_at/completed_at proving wall drop + wp26 not alone
-- E6 success-run golden 原文段 showing baseline from main artifact run id (no BOOTSTRAP)
+### E3(a) diffs vs tip `80d3d68`
+- `e3/a_name_status.txt`, `e3/a_full.diff`
 
-#87 tip at pack time: `80d3d68faaf9498b917e57d77be332c1d073e0a5` (CI in flight / see sibling). Append-only to this orphan when those land (N-12).
+### E3(b) success run `45620046075` tip `80d3d68`
+- Run JSON: `e3/b_run_45620046075.json` (conclusion=success, 9/9)
+- Gate: `e3/b_gate_excerpt.txt` — TOTAL_PASSING=558; BASELINE_NAMES_OK
+- Golden: `e3/b_golden_excerpt.txt` — GOLDEN_BASE_RUN_ID=45581115843; BOOTSTRAP=0; COMPARED 527×19=10013; DIMS_EQUAL=1; IDENTICAL=1
+
+### E3(c) intentional mismatch (real CI)
+- Method: `e3/c_method.txt` — mutate first data-row last cell → `E3C_INTENTIONAL_MISMATCH` after golden write (commit `0ec5feb`); restore via `git revert` → tip `f86681e` (append-only, no force)
+- Fail run: `45626300410` — `e3/c_run_45626300410.json`
+- Fail golden: `e3/c_golden_fail_excerpt.txt` — E3C_MUTATED=1; IDENTICAL=0; DIFF_CELLS=1; exit 1; still BOOTSTRAP=0 / base run 45581115843
+
+### E3(d) golden_compare.py
+- `e3/d_golden_compare.py.txt` (no `min()`; DIMS_MISMATCH path)
+
+### E3(e) shard rebalance walls
+- Baseline tip `14b4363` run 45581664915: `e3/e_baseline_14b4363_walls.txt` — max_wall_s=2233 (gut-unit 0)
+- After tip `80d3d68` run 45620046075: `e3/e_walls_80d3d68.txt` / `e3/e_walls_compare.txt` — max_wall_s=2078 (gut-unit 3); drop 155s
+- Shard lists (CI): `e3/e_shard_lists_ci.txt` — wp26 only on shard3 with 1 property; shard0 has 2 property (no wp26 monopoly of all props)
+
+### E6 no-bootstrap (N-15)
+- Diff: `e6/e6_ci_yml.diff.txt`
+- Success golden: `e6/e6_success_golden_excerpt.txt` — GOLDEN_BASE_RUN_ID=45581115843; GOLDEN_BOOTSTRAP=0; no bootstrap path taken
+- Run JSON: `e6/e6_run_45620046075.json`
+
+#87 tip after E3(c) restore: `f86681e672c030298c4660e3ca9a7b229c11661c` (revert of e3c; ci.yml tree == `80d3d68`). Success evidence tip remains `80d3d68`. No merge.
 
 ## Paths
 - Store: `/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/1770-evidence2/`
 - Orphan: `review/1770-evidence2`
-- Manifest: `manifest.txt`
-
-
-## Orphan tip
-- Pack: `83e2f19d260c15c2b8416d44debac50629212c6d`
-- Tip (current): `3babae64d4e88ab51f01e8679f14e6f469f8e08a` (stamp of `5fecbcf…`; pack root `83e2f19…`)
-- True orphan (root has no parent). Initial remote tip was mistakenly `e07bb3c` (empty product tip); one-time force replace with this orphan pack so N-12 append history starts clean. Subsequent updates must append only.

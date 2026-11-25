@@ -1,0 +1,34 @@
+### command
+gh run view 45581664915 --json jobs (tip 14b4363 test-count baseline)
+### output
+{"completedAt":"2026-11-25T09:39:59Z","conclusion":"success","name":"gut-unit (0)","startedAt":"2026-11-25T09:02:46Z"}
+{"completedAt":"2026-11-25T09:03:25Z","conclusion":"success","name":"gut-unit (3)","startedAt":"2026-11-25T09:02:47Z"}
+{"completedAt":"2026-11-25T09:03:10Z","conclusion":"success","name":"gut-unit (1)","startedAt":"2026-11-25T09:02:46Z"}
+{"completedAt":"2026-11-25T09:08:15Z","conclusion":"success","name":"gut-unit (2)","startedAt":"2026-11-25T09:02:46Z"}
+### wall_seconds
+gut-unit (0) wall_s=2233
+gut-unit (1) wall_s=24
+gut-unit (2) wall_s=329
+gut-unit (3) wall_s=38
+max_wall_s 2233.0
+
+======== AFTER rebalance tip 80d3d68 run 45620046075 ========
+
+### command
+gh run view 45620046075 --json jobs (tip 80d3d68 file-weight rebalance)
+### output
+{"name":"gut-unit (0)","startedAt":"2026-11-25T13:05:25Z","completedAt":"2026-11-25T13:05:52Z","conclusion":"success","wall_s":27.0}
+{"name":"gut-unit (1)","startedAt":"2026-11-25T13:05:25Z","completedAt":"2026-11-25T13:05:50Z","conclusion":"success","wall_s":25.0}
+{"name":"gut-unit (2)","startedAt":"2026-11-25T13:05:24Z","completedAt":"2026-11-25T13:13:15Z","conclusion":"success","wall_s":471.0}
+{"name":"gut-unit (3)","startedAt":"2026-11-25T13:05:25Z","completedAt":"2026-11-25T13:40:03Z","conclusion":"success","wall_s":2078.0}
+{"name":"gut-unit-gate","startedAt":"2026-11-25T13:40:06Z","completedAt":"2026-11-25T13:40:13Z","conclusion":"success","wall_s":7.0}
+### wall_seconds
+gut-unit (0) wall_s=27.0
+gut-unit (1) wall_s=25.0
+gut-unit (2) wall_s=471.0
+gut-unit (3) wall_s=2078.0
+gut-unit-gate wall_s=7.0
+max_wall_s 2078.0
+baseline_max_wall_s 2233 (tip 14b4363 gut-unit(0))
+wall_drop_s 155.0
+wp26 on shard3 only (property RR: shard0=2prop,1=1,2=1,3=1+wp26); not monopoly

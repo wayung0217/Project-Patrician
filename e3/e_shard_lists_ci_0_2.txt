@@ -1,0 +1,123 @@
+===== CI select shard 0 =====
+2026-11-25T13:05:45.1240233Z SHARD=0 scripts=2 file_weight=1204880 wp26=0 property=2 balance=file_weight_prop_rr
+2026-11-25T13:05:45.1240713Z res://tests/property/test_PROP_cash_sum_zero.gd
+2026-11-25T13:05:45.1241101Z res://tests/property/test_PROP_determinism.gd
+2026-11-25T13:05:45.1320219Z ##[group]Run set -euo pipefail
+2026-11-25T13:05:45.1320636Z set -euo pipefail
+2026-11-25T13:05:45.1320971Z # GUT -gtest takes full res:// paths (keeps original script locations).
+2026-11-25T13:05:45.1321414Z mapfile -t TESTS < /tmp/gut_shard_tests.txt
+2026-11-25T13:05:45.1321718Z if [[ ${#TESTS[@]} -eq 0 ]]; then
+2026-11-25T13:05:45.1322501Z   echo "::error::shard selected zero scripts"
+2026-11-25T13:05:45.1322862Z   exit 1
+2026-11-25T13:05:45.1323087Z fi
+2026-11-25T13:05:45.1323368Z GTEST_ARGS=()
+2026-11-25T13:05:45.1323599Z for t in "${TESTS[@]}"; do
+2026-11-25T13:05:45.1323895Z   GTEST_ARGS+=("-gtest=${t}")
+2026-11-25T13:05:45.1324175Z done
+2026-11-25T13:05:45.1324475Z ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+2026-11-25T13:05:45.1324829Z   -gconfig= \
+2026-11-25T13:05:45.1325075Z   "${GTEST_ARGS[@]}" \
+2026-11-25T13:05:45.1325438Z   -gexit 2>&1 | tee gut_unit.log
+2026-11-25T13:05:45.1325758Z if grep -F "SCRIPT ERROR" gut_unit.log; then
+2026-11-25T13:05:45.1326280Z   echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
+2026-11-25T13:05:45.1326645Z   exit 1
+2026-11-25T13:05:45.1326909Z fi
+2026-11-25T13:05:45.1327232Z grep -E 'Passing Tests|Failing|All tests passed' gut_unit.log | tail -20 || true
+2026-11-25T13:05:45.1327660Z python3 - <<'PY'
+2026-11-25T13:05:45.1327901Z import re
+2026-11-25T13:05:45.1328133Z from pathlib import Path
+2026-11-25T13:05:45.1328483Z text = Path("gut_unit.log").read_text(errors="replace")
+2026-11-25T13:05:45.1328816Z m = re.findall(r"Passing Tests\s+(\d+)", text)
+2026-11-25T13:05:45.1329169Z n = int(m[-1]) if m else -1
+2026-11-25T13:05:45.1329467Z Path("gut_unit_passing.txt").write_text(f"{n}\n")
+2026-11-25T13:05:45.1329838Z print(f"SHARD_PASSING={n}")
+2026-11-25T13:05:45.1330342Z # Bare test names for 17-69 2.4 set-diff gate (unique across suite).
+2026-11-25T13:05:45.1330794Z # Strip ANSI — GUT prefixes the first test of each script with \x1b[0m
+2026-11-25T13:05:45.1331227Z # so ^\* alone under-counts and falsely lists REMOVED_NAMES.
+2026-11-25T13:05:45.1331561Z clean = re.sub(r"\x1b\[[0-9;]*m", "", text)
+2026-11-25T13:05:45.1332127Z names = sorted(set(re.findall(r"^\* (test_\w+)$", clean, flags=re.M)))
+2026-11-25T13:05:45.1332597Z Path("gut_unit_names.txt").write_text("\n".join(names) + ("\n" if names else ""))
+2026-11-25T13:05:45.1333004Z print(f"SHARD_NAMES={len(names)}")
+2026-11-25T13:05:45.1333309Z if n >= 0 and len(names) != n:
+===== CI select shard 1 =====
+2026-11-25T13:05:37.7755095Z SHARD=1 scripts=14 file_weight=897139 wp26=0 property=1 balance=file_weight_prop_rr
+2026-11-25T13:05:37.7755683Z res://tests/property/test_PROP_market_quote_bounds.gd
+2026-11-25T13:05:37.7755897Z res://tests/unit/test_building_economy_wp63.gd
+2026-11-25T13:05:37.7756079Z res://tests/unit/test_cash_ledger.gd
+2026-11-25T13:05:37.7756252Z res://tests/unit/test_csv_import.gd
+2026-11-25T13:05:37.7756420Z res://tests/unit/test_csv_import_wp29.gd
+2026-11-25T13:05:37.7756599Z res://tests/unit/test_demand_model_wp22.gd
+2026-11-25T13:05:37.7756772Z res://tests/unit/test_goods_ledger.gd
+2026-11-25T13:05:37.7757097Z res://tests/unit/test_opening_wp24.gd
+2026-11-25T13:05:37.7757279Z res://tests/unit/test_r972_cash_stock_cap_1769.gd
+2026-11-25T13:05:37.7757463Z res://tests/unit/test_rng_wp25.gd
+2026-11-25T13:05:37.7757628Z res://tests/unit/test_ship_registry_wp30.gd
+2026-11-25T13:05:37.7757811Z res://tests/unit/test_sys08_wp65_d97a.gd
+2026-11-25T13:05:37.7757978Z res://tests/unit/test_sys23_wp27.gd
+2026-11-25T13:05:37.7758144Z res://tests/unit/test_wp68_city_housing.gd
+2026-11-25T13:05:37.7841410Z ##[group]Run set -euo pipefail
+2026-11-25T13:05:37.7841644Z set -euo pipefail
+2026-11-25T13:05:37.7841863Z # GUT -gtest takes full res:// paths (keeps original script locations).
+2026-11-25T13:05:37.7842117Z mapfile -t TESTS < /tmp/gut_shard_tests.txt
+2026-11-25T13:05:37.7842309Z if [[ ${#TESTS[@]} -eq 0 ]]; then
+2026-11-25T13:05:37.7842495Z   echo "::error::shard selected zero scripts"
+2026-11-25T13:05:37.7842676Z   exit 1
+2026-11-25T13:05:37.7842797Z fi
+2026-11-25T13:05:37.7842921Z GTEST_ARGS=()
+2026-11-25T13:05:37.7843067Z for t in "${TESTS[@]}"; do
+2026-11-25T13:05:37.7843228Z   GTEST_ARGS+=("-gtest=${t}")
+2026-11-25T13:05:37.7843387Z done
+2026-11-25T13:05:37.7843560Z ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+2026-11-25T13:05:37.7843760Z   -gconfig= \
+2026-11-25T13:05:37.7843932Z   "${GTEST_ARGS[@]}" \
+2026-11-25T13:05:37.7844113Z   -gexit 2>&1 | tee gut_unit.log
+2026-11-25T13:05:37.7844306Z if grep -F "SCRIPT ERROR" gut_unit.log; then
+2026-11-25T13:05:37.7844583Z   echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
+2026-11-25T13:05:37.7844837Z   exit 1
+2026-11-25T13:05:37.7844959Z fi
+2026-11-25T13:05:37.7845166Z grep -E 'Passing Tests|Failing|All tests passed' gut_unit.log | tail -20 || true
+2026-11-25T13:05:37.7845416Z python3 - <<'PY'
+2026-11-25T13:05:37.7845557Z import re
+2026-11-25T13:05:37.7845700Z from pathlib import Path
+2026-11-25T13:05:37.7845904Z text = Path("gut_unit.log").read_text(errors="replace")
+===== CI select shard 2 =====
+2026-11-25T13:05:36.8132430Z SHARD=2 scripts=15 file_weight=897681 wp26=0 property=1 balance=file_weight_prop_rr
+2026-11-25T13:05:36.8133383Z res://tests/property/test_PROP_goods_conservation.gd
+2026-11-25T13:05:36.8133711Z res://tests/unit/test_building_economy_wp19.gd
+2026-11-25T13:05:36.8133992Z res://tests/unit/test_building_economy_wp23.gd
+2026-11-25T13:05:36.8134237Z res://tests/unit/test_clock.gd
+2026-11-25T13:05:36.8134460Z res://tests/unit/test_csv_import_wp34.gd
+2026-11-25T13:05:36.8134720Z res://tests/unit/test_lane_b_pop_demand_1755.gd
+2026-11-25T13:05:36.8134977Z res://tests/unit/test_params_wp16.gd
+2026-11-25T13:05:36.8135383Z res://tests/unit/test_population_model_wp21.gd
+2026-11-25T13:05:36.8135650Z res://tests/unit/test_population_model_wp51.gd
+2026-11-25T13:05:36.8135922Z res://tests/unit/test_population_model_wp55.gd
+2026-11-25T13:05:36.8136165Z res://tests/unit/test_sea_lanes_wp29.gd
+2026-11-25T13:05:36.8136414Z res://tests/unit/test_sim_loop.gd
+2026-11-25T13:05:36.8136642Z res://tests/unit/test_trade_desk_wp33.gd
+2026-11-25T13:05:36.8136886Z res://tests/unit/test_wp62_d95d_apis.gd
+2026-11-25T13:05:36.8137132Z res://tests/unit/test_wp67_garrison_obs05.gd
+2026-11-25T13:05:36.8603265Z ##[group]Run set -euo pipefail
+2026-11-25T13:05:36.8603561Z set -euo pipefail
+2026-11-25T13:05:36.8603870Z # GUT -gtest takes full res:// paths (keeps original script locations).
+2026-11-25T13:05:36.8604230Z mapfile -t TESTS < /tmp/gut_shard_tests.txt
+2026-11-25T13:05:36.8604496Z if [[ ${#TESTS[@]} -eq 0 ]]; then
+2026-11-25T13:05:36.8604766Z   echo "::error::shard selected zero scripts"
+2026-11-25T13:05:36.8605011Z   exit 1
+2026-11-25T13:05:36.8605183Z fi
+2026-11-25T13:05:36.8605364Z GTEST_ARGS=()
+2026-11-25T13:05:36.8605566Z for t in "${TESTS[@]}"; do
+2026-11-25T13:05:36.8605793Z   GTEST_ARGS+=("-gtest=${t}")
+2026-11-25T13:05:36.8606012Z done
+2026-11-25T13:05:36.8606255Z ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
+2026-11-25T13:05:36.8606540Z   -gconfig= \
+2026-11-25T13:05:36.8606835Z   "${GTEST_ARGS[@]}" \
+2026-11-25T13:05:36.8607094Z   -gexit 2>&1 | tee gut_unit.log
+2026-11-25T13:05:36.8607357Z if grep -F "SCRIPT ERROR" gut_unit.log; then
+2026-11-25T13:05:36.8607743Z   echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
+2026-11-25T13:05:36.8608097Z   exit 1
+2026-11-25T13:05:36.8608273Z fi
+2026-11-25T13:05:36.8608579Z grep -E 'Passing Tests|Failing|All tests passed' gut_unit.log | tail -20 || true
+2026-11-25T13:05:36.8608933Z python3 - <<'PY'
+2026-11-25T13:05:36.8609142Z import re
+2026-11-25T13:05:36.8609340Z from pathlib import Path

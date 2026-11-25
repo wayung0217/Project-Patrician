@@ -1,6 +1,5 @@
-lane=evidence2
-timeline=17-70
-scope=E1,E2,E4,E5 + orphan assemble; E3/E6 from D-130 sibling when present
-orphan=review/1770-evidence2
-no_merge=true
-agent=bc-8d631702-ec5f-5725-9999-b3669901cc6a
+lane: 1770-evidence2
+scope: E1 E2 E3 E4 E5 E6 (補證一)
+#87 tip: f86681e672c030298c4660e3ca9a7b229c11661c (green tree == 80d3d68 after E3c revert)
+success_run: 45620046075 @ 80d3d68
+fail_run_e3c: 45626300410 @ 0ec5feb
