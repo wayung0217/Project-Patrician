@@ -40,9 +40,18 @@ def main() -> int:
         print("COMPARED_COLS=0")
         print("COMPARED_CELLS=0")
         return 1
-    cols = list(rows_a[0].keys())
-    compared_rows = min(len(rows_a), len(rows_b))
-    compared_cols = len(cols)
+    cols_a = list(rows_a[0].keys())
+    cols_b = list(rows_b[0].keys())
+    # D-130 甲(2)：兩邊列數、欄數必須相等；否則失敗（不再用 min 偷過）。
+    if len(rows_a) != len(rows_b) or cols_a != cols_b:
+        print(f"DIMS_MISMATCH rows_a={len(rows_a)} rows_b={len(rows_b)} cols_a={len(cols_a)} cols_b={len(cols_b)}")
+        print("COMPARED_ROWS=0")
+        print("COMPARED_COLS=0")
+        print("COMPARED_CELLS=0")
+        print("IDENTICAL=0")
+        return 1
+    compared_rows = len(rows_a)
+    compared_cols = len(cols_a)
     compared_cells = compared_rows * compared_cols
     # 17-70 T4／N-13：列印比對網格；CI 要求 COMPARED_CELLS == 列×欄 且 > 0。
     print(f"COMPARED_ROWS={compared_rows}")
@@ -57,17 +66,15 @@ def main() -> int:
     for i in range(compared_rows):
         ra, rb = rows_a[i], rows_b[i]
         day = ra.get("day", "?")
-        for c in cols:
+        for c in cols_a:
             va = ra.get(c, "")
             vb = rb.get(c, "")
             if va != vb:
                 counts[c] += 1
                 if c not in first_day:
                     first_day[c] = day
-    if len(rows_a) != len(rows_b):
-        print(f"ROW_COUNT_DIFF a={len(rows_a)} b={len(rows_b)}")
     print("DIFFS_BEGIN")
-    for c in cols:
+    for c in cols_a:
         if c in counts:
             print(f"COL={c} first_diff_day={first_day[c]} diff_cells={counts[c]}")
     print("DIFFS_END")
