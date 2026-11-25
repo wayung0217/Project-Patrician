@@ -669,15 +669,16 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 	if _quote_provider == null:
 		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
 		return 0
-	## FRM-SYS05-09／D-124：exclusive upper = s+1 only for real MarketPricer
-	## (not DemoQuoteProvider — PortRegistry.is_loaded gating broke TST-SYS05-08 / WP56).
+	## FRM-SYS05-09／D-124／D-125 甲（Owner 2026-11-25；v6.99.222）：
+	## 庫存上界無條件適用（不限 MarketPricer／DemoQuoteProvider）；
+	## exclusive upper = s+1；s = MARKET 庫存。舊測 Given 須先種足量庫存。
 	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
 	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；KIND+PORT Dictionary
 	## → get_qty → _container_key → container_id（不用 make_market）。
-	## 2.8：GoodsLedger.is_loaded／make_market、PortRegistry.is_loaded 未見 03_Systems H
-	## → 缺口見 evening-17-69-lane2（is_loaded 沿用既有 Autoload 慣例）。
+	## 2.8：GoodsLedger.is_loaded 未見 03_Systems H → 缺口見 evening-17-69-lane2
+	## （is_loaded 沿用既有 Autoload 慣例）。
 	var abs_hi: int = -1
-	if _quote_provider == MarketPricer and GoodsLedger.is_loaded():
+	if GoodsLedger.is_loaded():
 		var port_s: String = String(port)
 		var market: Dictionary = {
 			GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,

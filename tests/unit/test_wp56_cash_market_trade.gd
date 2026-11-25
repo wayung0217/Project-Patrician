@@ -222,6 +222,18 @@ func test_WP56_demo_q_afford_124_still_holds() -> void:
 		], REASON_OPEN, REQUESTER_SYS04),
 		OK
 	)
+	## D-125 甲：庫存上界無條件；Given 先種足量 MARKET 庫存（期望／測名不變）.
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			GoodsLedger.make_market("PT-01"),
+			&"米",
+			DEMO_Q_AFFORD + DEMO_BUY_Q,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		0
+	)
 	var provider := _Demo124.new()
 	CashLedger.set_quote_provider(provider)
 	var q: int = CashLedger.max_affordable_qty(ACTOR, &"PT-01", &"米")
