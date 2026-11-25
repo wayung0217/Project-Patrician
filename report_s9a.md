@@ -1,6 +1,6 @@
 # S9a — evening-17-69-lane2 (#84 / 17-69 補正三 W1+W2)
 
-**Note:** tip 19d1a4e gut-unit(1) SCRIPT ERROR fixed in  (DemandModel unload). See .
+**Note:** tip 19d1a4e gut-unit(1) SCRIPT ERROR fixed in `_boot_pricing_stack` (DemandModel unload). See `ci_fail/ANALYSIS_19d1a4e_gut_unit_1.md`.
 
 **Final tip:** `1baa133c50c671da0d7111f8e157d5c58cf30697`  
 **Branch:** `cursor/ci-hang-1767-866d` → `main` (PR #84)  
