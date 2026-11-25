@@ -1,14 +1,22 @@
-.github/ci/README.md
-.github/ci/golden_30d_bootstrap_1764.csv
-.github/ci/golden_30d_bootstrap_1764.sha256
-.github/ci/gut_unit_property_baseline_names.txt
-.github/workflows/ci.yml
-autoload/cash_ledger.gd
-autoload/cash_ledger.gd.uid
-tests/unit/test_cash_ledger.gd
-tests/unit/test_cash_ledger.gd.uid
-tests/unit/test_r972_cash_stock_cap_1769.gd
-tests/unit/test_r972_cash_stock_cap_1769.gd.uid
-tests/unit/test_wp56_cash_market_trade.gd
-tests/unit/test_wp56_cash_market_trade.gd.uid
-tools/golden_compare.py
+41	READY.txt
+315	ci_evidence/gate.txt
+183	ci_evidence/golden.txt
+336	ci_evidence/golden_ci_excerpt.txt
+247	ci_evidence/run_summary.txt
+8062	full.diff
+652	git_branch_r.txt
+269	lane.txt
+184	ls-tree.txt
+41	orphan_pack_sha.txt
+41	orphan_sha.txt
+41	product_tip.txt
+1089	report.md
+667	summary.json
+3982	t1/tests.diff
+436	t4/cells0_root_cause.md
+2572	t4/ci.yml.diff
+3791	t4/ci_yml_csv_grid_gate.diff
+234	t4/compared_mismatch.out
+174	t4/compared_pass.out
+1508	t4/golden_compare.py.diff
+565	t4/mismatch_how.md
