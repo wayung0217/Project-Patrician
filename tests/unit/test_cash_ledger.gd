@@ -331,6 +331,18 @@ func test_TST_SYS05_08_max_affordable_qty() -> void:
 	# 改用帶庫存上限的報價（對齊真實 MarketPricer ERR-SYS04-06）；示範 124 點仍保留於 WP56 補強測.
 	assert_eq(CashLedger.create_account(CashLedger.ACCOUNT_PLAYER, Account.Kind.ACTOR), OK)
 	_open_from_source(CashLedger.ACCOUNT_PLAYER, DEMO_C0)
+	## D-125 甲：庫存上界無條件；Given 先種足量 MARKET 庫存（期望／測名不變）.
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			GoodsLedger.make_market("PT-01"),
+			&"米",
+			DEMO_STOCK,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		0
+	)
 	var qp := DemoQuoteProvider.new()
 	## 庫存 100：若仍把 quote 失敗當 0，倍增會回傳遠大於 100 的荒謬值（H7）.
 	qp.stock_cap = DEMO_HOLD_FREE_TIGHT
