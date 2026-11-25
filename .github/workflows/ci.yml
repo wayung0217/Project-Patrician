@@ -449,6 +449,19 @@ jobs:
           tools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \
             --log "$(pwd)/out/golden/30d.log"
           echo "GOLDEN_30D_DONE"
+          # E3(c) INTENTIONAL MISMATCH (temporary evidence commit): mutate one cell so
+          # compare vs main golden-30d artifact fails. Revert after capturing fail run.
+          python3 - <<'MUT'
+          import csv
+          from pathlib import Path
+          p = Path("out/golden/30d.csv")
+          rows = list(csv.reader(p.open(newline="", encoding="utf-8")))
+          if len(rows) > 1 and len(rows[1]) > 0:
+              rows[1][-1] = "E3C_INTENTIONAL_MISMATCH"
+          with p.open("w", newline="", encoding="utf-8") as f:
+              csv.writer(f).writerows(rows)
+          print("E3C_MUTATED=1")
+          MUT
           wc -l out/golden/30d.csv
           # Cell summary for evening-17-64 gate (row count + sha256).
           sha256sum out/golden/30d.csv | tee out/golden/30d.sha256
