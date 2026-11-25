@@ -23,11 +23,16 @@ const EX01_TOTAL := 110
 
 
 func before_each() -> void:
-	pass
+	## 17-67: size-balanced CI shards may run BuildingEconomy WP-18/19 first in the same
+	## process; leftover _loaded=true makes SimMetrics._obs05 call public_upgrade_fee →
+	## ERR-SYS08-08 "season not open" Unexpected Errors (monolithic order often unloaded).
+	if BuildingEconomy.is_loaded():
+		BuildingEconomy._loaded = false
 
 
 func after_each() -> void:
-	pass
+	if BuildingEconomy.is_loaded():
+		BuildingEconomy._loaded = false
 
 
 func _boot_cash() -> void:

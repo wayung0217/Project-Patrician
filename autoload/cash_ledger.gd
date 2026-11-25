@@ -657,8 +657,13 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
 
 
 func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
-	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
-	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
+	# FRM-SYS05-09／D-124（Owner 2026-11-24；docs/spec v6.99.220；03_Systems r574）：
+	# q_afford = 最大 q 同時滿足 buy_total(q) ≤ balance 且 q ≤ s
+	# ＝ MIN(現金可負擔量, s)；s = 該港該貨 MARKET 庫存。
+	# s = 0 → 回 0，不以 q = 1 試探；倍增／二分不得以 q > s 呼叫 quote()
+	# （r451：買量須 ≤ s，否則 ERR-SYS04-06；收斂上界＝回到 quote 定義域，非 C-06 clamp）。
+	# A18：quote 失敗不得當 total＝0；視為該 q 不可買。
+	# 數值例：frm_examples EX-05-09-01 至 03。庫存不再於 FRM-SYS05-10 重做。
 	assert(_loaded, "CashLedger.max_affordable_qty before load")
 	var bal: int = balance(actor)
 	if bal <= 0:
@@ -666,10 +671,33 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 	if _quote_provider == null:
 		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
 		return 0
-	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗
+	## FRM-SYS05-09／D-124／D-125 甲（Owner 2026-11-25；v6.99.222）：
+	## 庫存上界無條件適用（不限 MarketPricer／DemoQuoteProvider）；
+	## exclusive upper = s+1；s = MARKET 庫存。舊測 Given 須先種足量庫存。
+	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
+	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；KIND+PORT Dictionary
+	## → get_qty → _container_key → container_id（不用 make_market）。
+	## 2.8：GoodsLedger.is_loaded 未見 03_Systems H → 缺口見 evening-17-69-lane2
+	## （is_loaded 沿用既有 Autoload 慣例）。
+	var abs_hi: int = -1
+	if GoodsLedger.is_loaded():
+		var port_s: String = String(port)
+		var market: Dictionary = {
+			GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
+			GoodsLedger.KEY_PORT: port_s,
+		}
+		var stock_cap: int = GoodsLedger.get_qty(market, good)
+		## D-124／EX-05-09-03：s = 0 → 0；不得以 q = 1 呼叫 quote()。
+		if stock_cap < 1:
+			return 0
+		abs_hi = stock_cap + 1
+	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到 s+1，永不 quote q>s）
 	var lo: int = 0
 	var hi: int = 1
 	while true:
+		if abs_hi > 0 and hi >= abs_hi:
+			hi = abs_hi
+			break
 		var t_hi: int = _quote_buy_total(port, good, hi)
 		if t_hi < 0 or t_hi > bal:
 			break
@@ -678,6 +706,9 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 		var next_hi: int = hi + hi
 		if next_hi <= hi:
 			# overflow / cap
+			break
+		if abs_hi > 0 and next_hi >= abs_hi:
+			hi = abs_hi
 			break
 		hi = next_hi
 	# 二分
@@ -698,6 +729,7 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 
 func buy_slider_max(q_afford: int, hold_free: int, stock: int) -> int:
 	# FRM-SYS05-10：買 = MIN(q_afford, hold_free, stock)
+	# D-124：庫存上界已在 FRM-SYS05-09 的 q_afford；此處不再重做 stock 語意。
 	# A22／C-06：負數不得靜默夾成 0
 	_clear_last_error()
 	if q_afford < 0 or hold_free < 0 or stock < 0:
