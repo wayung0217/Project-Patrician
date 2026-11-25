@@ -9,6 +9,9 @@ evidence/shard_assignment.txt
 git_branch_r.txt
 job_timings.md
 lane.txt
+ls-tree.txt
+orphan_push.log
+orphan_sha.txt
 report.md
 root_cause.md
 tip_sha.txt
