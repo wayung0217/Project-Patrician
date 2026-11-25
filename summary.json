@@ -1,0 +1,23 @@
+{
+  "orphan": "review/1770-t1",
+  "product_tip": "8f200cf93f96006234e3a865ff0c96b926d8ebad",
+  "ci_run": "https://github.com/wayung0217/Project-Patrician/actions/runs/45565620435",
+  "ci_conclusion": "success",
+  "gate": {
+    "TOTAL_PASSING": 558,
+    "REMOVED_NAMES": "無",
+    "ADDED_NAMES": [
+      "test_R972_EX_05_09_01_stock_bottleneck_q_300",
+      "test_R972_EX_05_09_02_cash_bottleneck_q_120",
+      "test_R972_EX_05_09_03_zero_stock_no_quote"
+    ]
+  },
+  "golden": {
+    "GOLDEN_BOOTSTRAP": 0,
+    "COMPARED_ROWS": 527,
+    "COMPARED_COLS": 19,
+    "COMPARED_CELLS": 10013,
+    "DIFF_CELLS": 0
+  },
+  "merge": false
+}

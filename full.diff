@@ -1,0 +1,185 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index e96d3a1..c2b9616 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -517,24 +517,41 @@ jobs:
+           python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out
+           RC=${PIPESTATUS[0]}
+           set -e
+-          # DIFF_CELLS = sum of per-column diff_cells（IDENTICAL → 0）
+-          DIFF_CELLS=$(python3 - <<'PY'
++          # 17-70 T4／N-13：COMPARED_CELLS／列／欄；DIFF_CELLS；網格完整性閘門。
++          eval "$(python3 - <<'PY'
+           from pathlib import Path
+           text = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")
++          rows = cols = cells = 0
++          diff = 0
++          for line in text.splitlines():
++              if line.startswith("COMPARED_ROWS="):
++                  rows = int(line.split("=", 1)[1])
++              elif line.startswith("COMPARED_COLS="):
++                  cols = int(line.split("=", 1)[1])
++              elif line.startswith("COMPARED_CELLS="):
++                  cells = int(line.split("=", 1)[1])
++              elif "diff_cells=" in line:
++                  try:
++                      diff += int(line.rsplit("diff_cells=", 1)[1].strip())
++                  except ValueError:
++                      pass
+           if "IDENTICAL=1" in text:
+-              print(0)
+-          else:
+-              total = 0
+-              for line in text.splitlines():
+-                  if "diff_cells=" in line:
+-                      try:
+-                          total += int(line.rsplit("diff_cells=", 1)[1].strip())
+-                      except ValueError:
+-                          pass
+-              print(total)
++              diff = 0
++          print(f"COMPARED_ROWS={rows}")
++          print(f"COMPARED_COLS={cols}")
++          print(f"COMPARED_CELLS={cells}")
++          print(f"DIFF_CELLS={diff}")
+           PY
+-          )
++          )"
++          echo "COMPARED_ROWS=${COMPARED_ROWS}"
++          echo "COMPARED_COLS=${COMPARED_COLS}"
++          echo "COMPARED_CELLS=${COMPARED_CELLS}"
+           echo "DIFF_CELLS=${DIFF_CELLS}"
++          expect=$((COMPARED_ROWS * COMPARED_COLS))
++          if [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then
++            echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"
++            exit 1
++          fi
+           if [[ $RC -ne 0 ]]; then
+             exit "$RC"
+           fi
+diff --git a/tests/unit/test_r972_cash_stock_cap_1769.gd b/tests/unit/test_r972_cash_stock_cap_1769.gd
+index 8905550..a9cbfef 100644
+--- a/tests/unit/test_r972_cash_stock_cap_1769.gd
++++ b/tests/unit/test_r972_cash_stock_cap_1769.gd
+@@ -40,11 +40,22 @@ const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
+ const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+ 
+ 
++## R9-65 A2／D-128 甲：正式注入 weekly_potential_demand（offtake-only → 回 0）；禁止 _clear_state。
++class _ZeroPotentialDemand extends RefCounted:
++	func weekly_potential_demand(_port_id: StringName, _good_id: StringName) -> int:
++		return 0
++
++
+ func before_each() -> void:
+ 	_wipe_dir(GOODS_ROOT)
+ 	_wipe_dir(PORTS_ROOT)
+ 
+ 
++func after_each() -> void:
++	DemandModel.clear_potential_demand_provider()
++	DemandModel.clear_queue_material_shortfall_provider()
++
++
+ func test_R972_EX_05_09_01_stock_bottleneck_q_300() -> void:
+ 	## EX-05-09-01／D-124(f)：庫存瓶頸。期望 q＝300（frm_examples），非產品公式。
+ 	## 預先以 s≥500 觀測 quote(500) 設現金（輸入整備），再抽庫存至 s＝300。
+@@ -165,11 +176,10 @@ func _fund_actor(cash: int) -> void:
+ 
+ func _boot_pricing_stack() -> void:
+ 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
+-	## Offtake-only MarketPricer path：靜默卸 DemandModel（無 push_error），避免 shard 殘態 SCRIPT ERROR。
+-	DemandModel.clear_potential_demand_provider()
++	## D-128 甲／R9-65 A2：正式 set_potential_demand_provider（回 0）→ offtake-only；
++	## 不呼叫 DemandModel._clear_state；EX-05-09 期望常數不變。
+ 	DemandModel.clear_queue_material_shortfall_provider()
+-	DemandModel._clear_state()
+-	assert_false(DemandModel.is_loaded())
++	DemandModel.set_potential_demand_provider(_ZeroPotentialDemand.new())
+ 	var goods_dir := _build_goods(GOODS_ROOT)
+ 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
+ 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)
+diff --git a/tests/unit/test_wp56_cash_market_trade.gd b/tests/unit/test_wp56_cash_market_trade.gd
+index 71f221e..be52c24 100644
+--- a/tests/unit/test_wp56_cash_market_trade.gd
++++ b/tests/unit/test_wp56_cash_market_trade.gd
+@@ -45,11 +45,22 @@ const TWO := 2
+ const NEG_ONE := -1
+ 
+ 
++## R9-65 A2／D-128 甲：正式注入 weekly_potential_demand（offtake-only → 回 0）；禁止 _clear_state。
++class _ZeroPotentialDemand extends RefCounted:
++	func weekly_potential_demand(_port_id: StringName, _good_id: StringName) -> int:
++		return 0
++
++
+ func before_each() -> void:
+ 	_wipe_dir(GOODS_ROOT)
+ 	_wipe_dir(PORTS_ROOT)
+ 
+ 
++func after_each() -> void:
++	DemandModel.clear_potential_demand_provider()
++	DemandModel.clear_queue_material_shortfall_provider()
++
++
+ func test_WP56_A18_max_affordable_respects_market_stock() -> void:
+ 	## A18／TST-SYS05-08 真實 MarketPricer：現金充足時 q_afford ≤ 庫存，不得爆到 2^k.
+ 	_boot_pricing_stack()
+@@ -273,12 +284,10 @@ class _Demo124 extends RefCounted:
+ 
+ func _boot_pricing_stack() -> void:
+ 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
+-	## Offtake-only MarketPricer path（對齊 test_market_pricer／trade_desk）：靜默卸 DemandModel，
+-	## 避免 shard 殘態 → PopulationModel SCRIPT ERROR；不得 push_error（否則 A21 assert_push_error_count 破）。
+-	DemandModel.clear_potential_demand_provider()
++	## D-128 甲／R9-65 A2：正式 set_potential_demand_provider（回 0）→ offtake-only；
++	## 不呼叫 DemandModel._clear_state（禁止私有重置）；不新增公開重置介面。
+ 	DemandModel.clear_queue_material_shortfall_provider()
+-	DemandModel._clear_state()
+-	assert_false(DemandModel.is_loaded())
++	DemandModel.set_potential_demand_provider(_ZeroPotentialDemand.new())
+ 	var goods_dir := _build_goods(GOODS_ROOT)
+ 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
+ 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)
+diff --git a/tools/golden_compare.py b/tools/golden_compare.py
+index 811ab0f..4a7f180 100644
+--- a/tools/golden_compare.py
++++ b/tools/golden_compare.py
+@@ -31,21 +31,30 @@ def main() -> int:
+     b_bytes = b_path.read_bytes()
+     print(f"A={a_path} bytes={len(a_bytes)}")
+     print(f"B={b_path} bytes={len(b_bytes)}")
+-    if a_bytes == b_bytes:
+-        print("IDENTICAL=1")
+-        return 0
+-    print("IDENTICAL=0")
+     rows_a = load_rows(a_path)
+     rows_b = load_rows(b_path)
+     print(f"ROWS_A={len(rows_a)} ROWS_B={len(rows_b)}")
+     if not rows_a or not rows_b:
+         print("EMPTY_CSV")
++        print("COMPARED_ROWS=0")
++        print("COMPARED_COLS=0")
++        print("COMPARED_CELLS=0")
+         return 1
+     cols = list(rows_a[0].keys())
++    compared_rows = min(len(rows_a), len(rows_b))
++    compared_cols = len(cols)
++    compared_cells = compared_rows * compared_cols
++    # 17-70 T4／N-13：列印比對網格；CI 要求 COMPARED_CELLS == 列×欄 且 > 0。
++    print(f"COMPARED_ROWS={compared_rows}")
++    print(f"COMPARED_COLS={compared_cols}")
++    print(f"COMPARED_CELLS={compared_cells}")
++    if a_bytes == b_bytes:
++        print("IDENTICAL=1")
++        return 0
++    print("IDENTICAL=0")
+     first_day: dict[str, str] = {}
+     counts: dict[str, int] = defaultdict(int)
+-    n = min(len(rows_a), len(rows_b))
+-    for i in range(n):
++    for i in range(compared_rows):
+         ra, rb = rows_a[i], rows_b[i]
+         day = ra.get("day", "?")
+         for c in cols:

@@ -1,0 +1,7 @@
+A=/tmp/t4_golden/a.csv bytes=2270766
+B=/tmp/t4_golden/b_identical.csv bytes=2270766
+ROWS_A=527 ROWS_B=527
+COMPARED_ROWS=527
+COMPARED_COLS=19
+COMPARED_CELLS=10013
+IDENTICAL=1
