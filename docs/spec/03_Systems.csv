@@ -2196,7 +2196,8 @@ FRM-SYS17-03,SYS-17,"執行：取預期利潤最高者；若最高值 < PRM-SYS1
 ★ 數值例 EX-17-03-01 至 03（frm_examples）。預期虧損 ＝ 貨本（買入報價 q）＋ 稅費 − 目的港行市 × q；只在預期虧損 ≤ floori(貨本 × LOSS_TOL_PPM ÷ PPM_SCALE) 時出航。",候選清單,ST-CASH、ST-GOOD、ST-SHIP,Draft,,,,,,,,,,,,,,,
 FRM-SYS17-04,SYS-17,"探索：每日先以種子派生抽籤（FRM-SYS23-10：UTF-8＋FNV-1a 64，欄位 seed、day、trader_id、用途，0x1F 分隔 → SplitMix64）選出比例 ＝ EXPLORE_RATE 的散商；這些散商改以「無去化歷史的港」為目的地，數量上限 EXPLORE_QTY，不套用利潤門檻。其餘流程與 03 相同。
 ★ 2026-11-24（D-120(b)③）：seed 一律取情境種子（FRM-SYS23-03 帶入的遊戲種子），不得在散商模組內另設固定種子；同情境不同種子，探索抽籤結果應不同。
-★ 2026-11-24（D-123(b)）：探索不依賴行市——被抽中的散商即使所有目的港都無船報也必須出航（目的港、貨、量照本公式）；17-63 診斷「抽中 2、出航 0」須查明原因並修正，修正不得改變本公式語意，若語意不明列缺口。",種子、day、trader_id,探索名單,Draft,,,,,,,,,,,,,,,
+★ 2026-11-24（D-123(b)）：探索不依賴行市——被抽中的散商即使所有目的港都無船報也必須出航（目的港、貨、量照本公式）；17-63 診斷「抽中 2、出航 0」須查明原因並修正，修正不得改變本公式語意，若語意不明列缺口。
+★ 2026-11-25（D-126 甲）：被抽中的探索散商若目的港無行市（board 無資料），以該貨 GoodCatalog.base_price_li 作為候選排序的代用中價 [待審]；只用於排序，不用於任何門檻；非探索路徑維持無行市不列候選。",種子、day、trader_id,探索名單,Draft,,,,,,,,,,,,,,,
 FRM-SYS17-05,SYS-17,抵港賣出：ShipRegistry 回報抵港後的第一個日界，若 plan.phase ＝ OUTBOUND 且已停泊，依當下報價賣出該貨全數（SELL），成交後 plan 清空、mode ＝ IDLE。賣不掉（庫存容量或准入）即留港等下一日，不丟貨、不降價硬塞。｜★ D-26b：買與賣一律經 TradeDesk.execute_trade（03_Systems 20.1），不得自行串接報價、過帳與 transfer。,ST-TRADER、quote,ST-CASH、ST-GOOD,Draft,,,,,,,,,,,,,,,
 FRM-SYS17-06,SYS-17,"起始資金（★ D-23c）：單一入口 grant_genesis_cash()，由 SimLoop.boot() 呼叫一次，分錄 {SOURCE: −START_CASH × N, 各 ACT-TR-nnn: +START_CASH}，reason ＝ GENESIS_CASH。此為 ERR-SYS05-06 授權清單的第二個唯一例外（第一個為 D-03 的 CashLedger.genesis_grant()）；授權清單本身不改。重複呼叫即 ERR-SYS17-02。",PRM-SYS17-START_CASH、MERCHANT_COUNT_MAX,ST-CASH,Draft,,,,,,,,,,,,,,,
 FRM-SYS17-07,SYS-17,開局配船與水手（★ D-23d、D-23e）：依 SHIP_MIX 於開機建立船（經 ShipRegistry，與玩家船共用同一套 FRM／ERR），水手隨船滿編、不扣所在港待聘人口（比照 OQ-16q）。遊戲進行中不造船、不買船、不聘不解僱；工資與維修仍照 FRM-SYS13-07／08 逐日累計與季末扣款。,PRM-SYS17-SHIP_MIX,ST-SHIP,Draft,,,,,,,,,,,,,,,

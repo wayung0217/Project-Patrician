@@ -316,7 +316,7 @@ WP-26,SYS-23 模擬器核心：sim_runner、情境檔驗證（9.6、ERR-SYS23-01
 ★ 2026-11-21（R9-32）：#38 已以 merge commit 合併 dfe2d02，main GUT 379／379，CI success，分支已刪；階段 2 完成，WP-26 完成。
 【原 PR／合併紀錄欄（部分可能已過時，以上方進度紀錄與 R 系列為準）】
 —（需 Phase 1 代碼完成）｜★ 第一層範圍；前置發現：正式 params.json 缺 83 個鍵，需 Owner 審定的情境檔（sim_overrides_draft，D-45b）。",工具批 T-1（模擬器）,2026-11-18
-WP-27,"SYS-23 第二層理想運貨者與判準修訂（D-93）：FRM-SYS23-04 依 D-93 改寫版（產地港納入、用週潛在需求、全程整數）、原因碼 SIM_RELOCATE（FRM-05，非模擬模式即 ERR-SYS03-04）；MET-01 加上限 TH-01b、MET-02 只計 MARKET、MET-05 (b) 改為不判 pass、OBS-02 加「連續為 0 最長季數」；新增 OBS-04 發散成因分類、OBS-05 城市支出結構（輸出為新檔 obs_ext.csv，長表欄位：scenario_id, combo_index, seed, season_index, port_id, good_id, obs_id, key, value）",WP-52 至 WP-59 合併（WP-58 改 sim/，避免衝突）,res://sim/、goods_ledger.gd（原因碼）、測試,TST-SYS23-05、06、07 改以 frm_examples EX-23-04-01 至 03 為期望值；relocate_f 0.05、0.10、0.20 三組十年 L1 各跑一次，回報 MET-01 至 05、OBS-02、04、05 與第一層對照,完成,—｜★ 2026-11-22 優先級 P2（模擬器校準線，M1）：WP-52 至 59 合併後第一個派工｜★ 17-50 線 B｜17-50 已交（R9-65 不合併）；17-51 修正中｜D-97(b)：刪 set_sim_relocate_enabled／is_sim_relocate_enabled，改讀 layers.RELOCATE（17-52）｜R9-66：#57 待補 diff（17-53 步 1）｜R9-67／D-108(a)：#57 授權於 #56、#63 之後合併（17-54）｜R9-68：#57 合併入 main（02cc604，17-54 步 M3）,工具批 T-1（模擬器）,2026-11-23
+WP-27,"SYS-23 第二層理想運貨者與判準修訂（D-93）：FRM-SYS23-04 依 D-93 改寫版（產地港納入、用週潛在需求、全程整數）、原因碼 SIM_RELOCATE（FRM-05，非模擬模式即 ERR-SYS03-04）；MET-01 加上限 TH-01b、MET-02 只計 MARKET、MET-05 (b) 改為不判 pass、OBS-02 加「連續為 0 最長季數」；新增 OBS-04 發散成因分類、OBS-05 城市支出結構（輸出為新檔 obs_ext.csv，長表欄位：scenario_id, combo_index, seed, season_index, port_id, good_id, obs_id, key, value）",WP-52 至 WP-59 合併（WP-58 改 sim/，避免衝突）,res://sim/、goods_ledger.gd（原因碼）、測試,TST-SYS23-05、06、07 改以 frm_examples EX-23-04-01 至 03 為期望值；relocate_f 0.05、0.10、0.20 三組十年 L1 各跑一次，回報 MET-01 至 05、OBS-02、04、05 與第一層對照,完成,—｜★ 2026-11-22 優先級 P2（模擬器校準線，M1）：WP-52 至 59 合併後第一個派工｜★ 17-50 線 B｜17-50 已交（R9-65 不合併）；17-51 修正中｜D-97(b)：刪 set_sim_relocate_enabled／is_sim_relocate_enabled，改讀 layers.RELOCATE（17-52）｜R9-66：#57 待補 diff（17-53 步 1）｜R9-67／D-108(a)：#57 授權於 #56、#63 之後合併（17-54）｜R9-68：#57 合併入 main（02cc604，17-54 步 M3）｜R9-75（2026-11-25）：狀態維持完成；int 上 3 個 WP27 測試以 ERR-SYS08-08 失敗，歸因於 int 未含 #84 的卸貨修正，非 WP-27 本身回歸,工具批 T-1（模擬器）,2026-11-23
 WP-28,SYS-00 時鐘 tick（D-14d）：Clock.advance_one_tick()、唯讀 tick；advance_one_day() 改為連續 TPD 次 tick；SimLoop 每日第 1 步改為逐 tick 推進＋tick 步驟清單（本 WP 為空）,WP-18 合併後（可與 WP-19 平行；合併在 WP-19、WP-29 之後）,clock.gd、sim_loop.gd、測試,見第 13 節 13-03,完成,R7｜PR #24（ddcdfb5）｜merge 5027e72｜main 221｜乾淨 rebase（R8-01）,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
 WP-29,SYS-14 航道圖：SeaLanes Autoload、FRM-SYS14-01 載入驗證、FRM-SYS14-02 尋路；csv_import 新增 nodes／regions／lanes.csv（D-14e）,WP-18 合併後（可與 WP-19 平行；合併在 WP-19 之後）,sea_lanes.gd、sea_node.gd、sea_region.gd、sea_lane.gd、csv_import.gd、fixtures、測試,見第 13 節 13-06,完成,R7｜PR #25（d43c0f5）｜merge c9722d8｜main 216｜乾淨 rebase（R8-01）,Phase 2（SYS-13／14，Batch 2.4）,2026-11-18
 WP-30,SYS-13／14 船與航行：ShipRegistry、開局船、聘解（SailorPoolProvider，D-14b）、出航、改道、位置、抵港、港口吃水、HOLD 容量、工資與維修；Params 登錄 §10 PRM,WP-28、WP-29 合併後；WP-32 合併後（D-20a）,ship_registry.gd、ship.gd、sailor_pool_provider.gd、params.gd、sim_loop.gd、測試,見第 13 節 13-08,完成,"PR #34 已 merge commit 合入 main：2120de0860b982a009c15a4b82c2ea77340b71b5；合併後 main 312／312；R2-11 通過（297 + 15，無刪名）。docs/spec v6.99.3 @ 7320223。缺口：PRM-SYS13-YARD_CONCURRENT 原值被 Excel 轉成 37623，已在工作簿改回 [1,2,3]，待 Owner 重新匯出；§10.7 無值維持，僅 fixture；正式 params.json 未改。",Phase 2（SYS-13／14，Batch 2.4）,2026-11-19
@@ -402,7 +402,7 @@ WP-52,修復包 1／9 規範與資料基線（機械性，不改遊戲行為）�
 WP-53,修復包 2／9 BuildingEconomy 帳務與公式：A6 工坊週收入（D-79、FRM-SYS08-18）；A7 城防採購零頭跨日保留（D-81、FRM-SYS08-14）；A10 已建築土地的持有日數累計（FRM-SYS08-03）；A12 開局商館型別改 CB-17、升級待料用該次升級工期,WP-52 已合併,building_economy.gd、測試（tests/unit）,"每項附 diff 與一個成功路徑測試；補「採購成功」測試（TST-SYS08-13 盲點）；修正後重跑 30 日 L1，回報城防採購總量與城市錢包變化；A12 同步修改釘死 ""KT-01"" 的五個測試檔（building_economy_wp19、wp20、wp23、demand_model_wp22、opening_wp24；R9-47 L14）",完成,設計完成（D-84），暫不派工；會改變遊戲輸出｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）,稽核與品質,2026-11-22
 WP-54,修復包 3／9 BuildingEconomy 建設佇列與開局：A8 城市建設走 FRM-SYS08-05／07（買料、工期、升級現有建築；先交設計，Owner 審後才改碼；含 TD-16 升級期間維持原等級效果）；A9 開局擺放順序（住宅 → 採集帶 → 加工）、採集帶不足報 ERR-SYS08-10、列舉一律排序；A11 載入器不得靜默略過壞資料（C-06）；D-87：開局採全有或全無（BuildingEconomy 與 PopulationModel 的 apply_opening_init 先驗全部再寫入），三個 ERR-SYS08-10 測試改斷言無任何寫入,WP-53 已合併；A8 設計經 Owner 審,building_economy.gd、tools/csv_import.gd 與各載入器、測試,先交 A8 設計文件；補「佇列成功開工」測試（盲點）；開局布局差異回報（預期改變，須 Owner 看）；載入器對壞資料的錯誤清單一次列出,完成,設計完成（D-84），暫不派工；A8 為設計先行｜★ A8 設計提案寫入派工 17-47 夜-4｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）,稽核與品質,2026-11-22
 WP-55,修復包 4／9 PopulationModel：B4 乞丐累積診斷（只回報，可最先做）；A13 抽籤序號（D-83a，先提案介面）；A14 工人離城扣減（FRM-SYS07-10、D-84e）；A15 超額職位路徑（D-83b、D-84d）；A16 取整與最大餘數整數化、靜默夾制、PF-3 無學院倍率為 1（D-84c）；A17 開局載入與擺放的靜默處理,WP-54 已合併（開局擺放改動會影響人口分布）；B4 不受此限,population_model.gd、測試,TST-SYS07-18、19 與新增測試（抽籤分散、工人離城、超額職位）；B4 的逐日診斷表；重跑 30 日 L1，回報乞丐與市民趨勢；補「貧民離城扣工人」測試；TST-SYS07-18 依 D-84d（市民→貧民→乞丐）改寫（R9-47 M23）,完成,設計完成（D-84），暫不派工；B4 可獨立先派（唯讀）｜★ B4 寫入派工 17-47 夜-1；A13 設計提案與 A14 缺口建議寫入夜-4｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）,稽核與品質,2026-11-22
-WP-56,修復包 5／9 帳本與成交：A18 max_affordable_qty 把 quote 失敗當總額 0；A19 bankruptcy_referred 只發一次（TST-SYS05-07）；A20 post() 回滾補 SINK 抵欠與季統計、prorate 與 split 乘法溢位檢查（ERR-SYS05-08）；A21 MarketPricer.quote 驗港口存在；A22 靜默預設與夾制；A23 TradeDesk 反向分錄對有欠款者的處理,WP-52 已合併,cash_ledger.gd、market_pricer.gd、trade_desk.gd、測試,新增測試：報價超過庫存、bankruptcy 只發一次、回滾後 Σ 全帳戶＝0、未知港報價；守恆與屬性測試全綠；TST-SYS05-08 改用真實 MarketPricer 的案例（買量超過庫存）；TST-SYS05-07 補「達門檻後再過一季不重發」（R9-47 M20、M21）,完成,設計完成（D-84），暫不派工｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）,稽核與品質,2026-11-22
+WP-56,修復包 5／9 帳本與成交：A18 max_affordable_qty 把 quote 失敗當總額 0；A19 bankruptcy_referred 只發一次（TST-SYS05-07）；A20 post() 回滾補 SINK 抵欠與季統計、prorate 與 split 乘法溢位檢查（ERR-SYS05-08）；A21 MarketPricer.quote 驗港口存在；A22 靜默預設與夾制；A23 TradeDesk 反向分錄對有欠款者的處理,WP-52 已合併,cash_ledger.gd、market_pricer.gd、trade_desk.gd、測試,新增測試：報價超過庫存、bankruptcy 只發一次、回滾後 Σ 全帳戶＝0、未知港報價；守恆與屬性測試全綠；TST-SYS05-08 改用真實 MarketPricer 的案例（買量超過庫存）；TST-SYS05-07 補「達門檻後再過一季不重發」（R9-47 M20、M21）,完成,設計完成（D-84），暫不派工｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）｜R9-75（2026-11-25）：狀態維持完成；#84 的 test_wp56_cash_market_trade.gd:280 跨模組呼叫 _clear_state()，依 D-128 處理,稽核與品質,2026-11-22
 WP-57,修復包 6／9 船與情報：A24 ship_* 信號改日終統一發出（D-05）；A25 hold_transfer_allowed 不讀私有成員、不解析容器 id（D-08d、FRM-SYS05-14）；A26 工資與維修金額經 quantize_amount（D-01、N-04）；A27 IntelLedger 整數除法（FRM-SYS15-03 至 05）；A28 tick_step 到港比對與缺漏處理；A29 ShipRegistry 靜默預設改為錯誤（C-06）；A30 PortRegistry role payload 驗證；R9-55 Z1：新增以 reroute() 走真實路徑的「改道後在實際抵達港公開船報」測試，並把同 tick 抵達類測試改用正式 API 製造情境，與 A24 至 A30 同批,WP-52 已合併,ship_registry.gd、intel_ledger.gd、port_registry.gd、測試,新增測試：信號只在日終出現、跳 tick 不丟船、缺 PRM 報錯、payload 含 downstream 被拒；TST-SYS13、SYS14、SYS15 全綠；補 ShipRegistry 信號時機測試（watch_signals：離港、到港、聘解僱只在日終出現，R9-47 M22）,完成,設計完成（D-84），暫不派工｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜★ 審查待確認：A24（信號改日終）與 A26（工資經 quantize）照理可能改變輸出，黃金卻零差異；審查時確認是 L1 基線 30 日內沒有船在航行、沒有付薪，還是修改未生效。｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）,稽核與品質,2026-11-22
 WP-58,修復包 7／9 模擬器可靠性：A31 SimLoop.tick_day() 每日錯誤不得丟棄（收集、寫入 summary、依嚴重度中止）；A32 sim_runner 子程序失敗不得回傳 0；A33 SimSampler 停用自算 weeks、改用 MarketPricer.stock_weeks（N-04）；A34 SimCsvOut 寫檔失敗回報；R9-54 Y1：新增 SimEngine 對 SimLoop.tick_day() 回傳錯誤的處理測試（至少一條非守恆錯誤的情境），與 A31 至 A34 同批,WP-52 已合併（WP-56、57 合併後重跑最有意義）,sim/ 目錄、測試,故意注入一個每日錯誤，證明 summary 有記錄且依規則中止；子程序失敗時退出碼非 0,完成,設計完成（D-84），暫不派工｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）,稽核與品質,2026-11-22
 WP-59,修復包 8／9 測試補強（既有測試債）：F10 補齊 TST ID（427 個測試中 255 個沒有）；F11 測試改用公開方法（約 25 檔、516 行用私有成員）；彙整並補齊 R9-44、R9-46 列出的盲點測試；A35 規範掃描（新增 CI 步驟：禁用 API、數字字面量含十六進位與 1 + 1 寫法、私有成員存取、TST 命名；屬新增流程，Owner 2026-11-21 已批准（D-85），R9-47 M24）；刪除 tests/unit/test_blank.gd（L15）；R9-50 補充 T1 至 T7：TST-SYS06-02 改為真正呼叫 DemandModel 的測試（T1）、TST-SYS07-12 與 WP51 加入不同種子有差異與同日多次抽籤互異（T2，配合 WP-55 A13）、conservation-on-tick 測試改為能證明 SimLoop 有呼叫檢查（T3）、TST-SYS08-14 改為步驟成本不同的非對稱情境（T4）、WP29_13_06_5 先斷言路徑非空且 _force_controlled_producer_on_free_port 找不到目標時 fail（T5）、_build_valid_ports 等夾具輔助函數抽成共用檔（T6）、測試碼的算術字面量（T7）；R9-51 補充 U1 至 U4：移除 population_model.gd 的 _wp51_rng_calls 測試計數器（U1）、WP51 增加不關閉流量的端到端搬遷置位測試且不直接呼叫私有 _place_movers（U2，與 WP-55 A13 同批）、測試改以 after_each 還原 Params 或統一重載（U3）、TST-SYS07-02／10／17 補上長期總量與速率上下界斷言（U4）；R9-52 補充 V1、V2：新增 order_upgrade 全路徑（含升級待料與 TD-16 期間狀態）、FRM-SYS08-17 抽調、開局環位與住宅先於工坊順序的測試（V1，與 WP-53／WP-54 同批）；鏡像測試改用規格數值例（V2）；R9-53 補充 W1 至 W3：Autoload 順序測試改為比較 project.godot 內的實際順序（W1）、移除恆真 or 斷言並逐模組驗錯誤收集（W2）、更正名實不符的兩個 SimLoop 測試（W3）；R9-54 補充 Y2 至 Y5：證據型測試改為有斷言的回歸測試並把破產無人處理列為待做（Y2）、移除恆真與過鬆的 or 斷言（Y3）、TST-SYS23-04 驗組合內容與次序（Y4）、before_day 測試後門改為正式注入介面（Y5）；R9-55 補充 Z2 至 Z4：TST-SYS14-06 驗改道後到達 tick 的數值（Z2）、TST-SYS13-08 改用規格數值例並配合 A3 取整（Z3）、測試日數與 tick 改讀 PRM 或 fixture 常數（Z4）；ship_registry 信號項目縮為 reroute 與 apply_opening_init（更正 R9-47）；R9-56 補充 AB2 至 AB5：TST-SYS04-11 改為真正以 window_qty = 0 且 window_days 正常的 fixture（AB2）、TST-SYS04-02 補 mid_price 斷言（AB3）、CashLedger 順序測試改驗實際順序（AB4，併 W1）、正式 params 必敗測試在 PRM 登記時反轉（AB5）；R9-57 補充 AC2 至 AC4：需求測試改讀已載入表的數值（AC2）、TST-SYS06-07 拆成兩個函數（AC3）、刪除或改寫只檢查 fixture 存在的測試（AC4）；AC1 待 Owner 確認開局出錯時是否全無寫入；R9-58 補充 BB1 至 BB4：航線決定性改為重新載入後比較（BB1）、新增「港存在但不可達」小型 fixture 測試（BB2）、4 個鎖定正式 params 必敗的測試在 PRM 登記時一併反轉，並讓「收集全部缺鍵」測試逐鍵驗證（BB3）、更正 rule5 測試名稱（BB4）；R9-60 G2 至 G4：tests/fixtures/sys23 的 7 個探針腳本逐一說明用途後刪除或移到 tools 並申請例外（G2）；4 個參數夾具收斂為一個基準檔、變體在測試內以程式產生，夾具建材改用 GD-003／GD-004（G3）；開局整合測試加一組取自正式資料、有人口的小型夾具（G4）,WP-52 至 WP-58 已合併（避免與各包測試衝突）,tests/unit、tests/property,TST ID 對應表（規格 TST 編號 ↔ 測試函數）；私有成員使用行數降為 0；GUT 全綠,完成,設計完成（D-84），暫不派工｜A35 已批准（D-85）｜★ A35 依 D-88a 提前至派工 17-47 夜-3（只報不擋）｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）,稽核與品質,2026-11-22
@@ -959,6 +959,62 @@ D-124,"FRM-SYS05-09 補寫庫存上界：q_afford ＝ MIN(現金可負擔量, �
 (e) FRM-SYS05-10 的拉桿上限 MIN(q_afford, hold_free, stock) 不受影響——該式本就另取 stock，本條只是讓 q_afford 自身也回到定義域，兩者不衝突、不重複實作。
 (f) 數值例：frm_examples 新增 EX-05-09-01（庫存為瓶頸）、EX-05-09-02（現金為瓶頸，回歸保護）、EX-05-09-03（庫存為 0）。依 S9f，17-69 線 2.1 的測試期望值只能取自此三例，不得與產品碼用同一公式推算。
 (g) 連帶：17-69 線 2.10 的「待裁決依賴」解除，改為「依 D-124 實作」；線 2.1(d) 的期望值改取 EX-05-09-02。發送 docs/spec 時須匯出 03_Systems 與 frm_examples.csv（v6.99.220）。",03_Systems r574（FRM-SYS05-09 C 欄與備註，已回寫）；frm_examples EX-05-09-01 至 03；05_TechSpec 17-69 線 2.1(d)、2.10；R9-72 第十二點丙,R9-72 第十二點乙、丙；03_Systems r451（q 須 ≤ s）；FRM-SYS05-10；C-05；C-06；C-14；N-05；S9f；17-67,,,,
+D-125,FRM-SYS05-09 庫存上界是否無條件生效：provider 判斷與兩個舊測試的衝突（AI 起草，待 Owner 裁決）,"【AI 2026-11-24 起草，待 Owner 裁決】D-124 定 q_afford ＝ MIN(現金可負擔量, s)，未附任何條件；但 17-69 線 2 的實作為 if _quote_provider == MarketPricer and GoodsLedger.is_loaded():，即只在真實市場報價路徑套用庫存上界。
+背景（有證據，非推論）：CI run 45397235504（#83 tip cca43ed）顯示，當守衛設在 PortRegistry.is_loaded() 時兩個既有測試失敗——test_TST_SYS05_08_max_affordable_qty（expected to be > 0，實得 0）與 test_WP56_demo_q_afford_124_still_holds（expected 124，實得 0）。兩者使用 DemoQuoteProvider 且市場為空；依 D-124 字面語意 s ＝ 0 應回 0，與舊測試期望值 124 直接矛盾。Cursor 改以 provider 判斷繞開，使同一條 FRM 在不同 provider 下有兩種語意——R9-72 丁(1) 指出的「產品路徑與測試路徑分歧」並未消失，只是由 PortRegistry 換成 quote provider。
+選項：
+甲【AI 建議】無條件生效：移除 provider 判斷，只保留 GoodsLedger.is_loaded() 守衛；同時修改 TST-SYS05-08 與 test_WP56_demo_q_afford_124_still_holds，於斷言前先種市場庫存，期望值依 frm_examples 重訂。改動舊測試須 Owner 核准（D-60e、TD-05），並於 S9a F 節逐筆列出改動與理由。優點：一條規格、一份實作，無隱形分支；缺點：要動兩個舊測試。
+乙 維持現狀並補規格：於 03_Systems r574 明文寫入「庫存上界僅於真實市場報價提供者路徑套用；注入式測試提供者不套用」。優點：不動舊測試；缺點：規格永久保留一個以依賴注入為條件的行為分支，日後每新增一種 provider 都要再裁決一次，且與 N-03「規則必須對所有 ID 一致」的精神相左。
+丙 兩者皆不採，由 Owner 另定分離方式。
+在裁決前：Cursor 不得自行再改該分支，只在報告列為缺口（17-69 線 2 之 L2-1）。
+★ Owner 裁決 2026-11-25：採甲。(1) CashLedger.max_affordable_qty 的庫存上界改為無條件適用（刪除 _quote_provider == MarketPricer 條件），與 03_Systems r574 FRM-SYS05-09 原文一致，規格不改。(2) Owner 預先核准修改兩個舊測試：test_TST_SYS05_08_max_affordable_qty 與 test_WP56_demo_q_afford_124_still_holds——只在 Given 加入「先在該港 MARKET 放入足量庫存（≥ 期望值）」，期望值（含 124）與測試名稱一律不改，故 gut-unit-gate 的 REMOVED_NAMES 必須仍為「無」。(3) 不得以其他方式（如 is_loaded 判斷、provider 判斷）重新加回條件。執行見 17-69 補正三 W2。","已裁決（甲）：無條件庫存上界＋修兩個舊測試的 Given；規格不改
+★ R9-75（2026-11-25）：W2 驗收通過——provider 判斷已移除，兩舊測只改 Given；測試 558／555，REMOVED_NAMES 為空。",D-124；R9-72 丁(1)；CI run 45397235504；TST-SYS05-08；test_WP56_demo_q_afford_124_still_holds；C-05；N-03；N-04；D-60e；TD-05,已裁決 2026-11-25（甲）,,,
+D-126,FRM-SYS17-04 探索在無行市時的排序依據（base_price_li）是否核准（AI 起草，待 Owner 裁決）,"【AI 2026-11-24 起草，待 Owner 裁決】17-69 線 4 的實作在 explore 且無行市時，以 GoodCatalog.get_good(good).base_price_li 作為排序用 mid 替代值（程式註解原文：use catalog base_price_li as ranking stand-in only，profit gate skipped；commit ba1e644）。
+規格現況：FRM-SYS17-04 只定義「抽籤選出比例 ＝ EXPLORE_RATE 的散商 → 以無去化歷史的港為目的地 → 數量上限 EXPLORE_QTY → 不套用利潤門檻 → 其餘流程與 03 相同」，未定義「沒有 mid 時如何排序候選」。依 D-123(b)「修正不得改變本公式語意，若語意不明列缺口」，此項應列缺口送審；Cursor 逕行實作屬 C-05，且其 trace.csv 將該列標為 implemented，應改標為缺口。
+設計影響：base_price_li 是全域基準價（03A_Goods），不反映目的港缺貨程度。以它排序，探索船會優先前往貨值高的目的地，而非本地缺貨的目的地，並使高價貨的價格發現優先於剛需貨。
+選項：
+甲【AI 建議，務實】核准 base_price_li 為暫定排序替代值並補寫入 FRM-SYS17-04：明訂「無行市時排序僅用於決定前往順序，不得影響是否出航（利潤門檻仍不套用）；替代值取 GoodDef.base_price_li」，標為試驗值，M1b 校準後重審。理由：探索本就不依賴行情，排序只是打破平手；現碼已通過 K2 測試，改動成本最低。
+乙【最貼近原意】不引入任何價值判斷：被抽中的散商改以規格排序鍵（port_id、good_id 字串升序）取第一個合格候選。最符合「探索不依賴行市」與 C-08 決定性要求，但需重寫該段並補測試。
+丙 另定排序依據（例：航程日數最短、或無去化歷史最久），由 Owner 指定。
+在裁決前：實作保留不動，Cursor 須補列 gaps.md 並修正 trace.csv 標記（17-69 線 4 之 L4-1）。
+★ Owner 裁決 2026-11-25：採甲。探索散商在目的港無行市（board 無資料）時，以 GoodCatalog 的 base_price_li 作為候選排序的代用中價，核准為試驗值（[待審]，M1b 校準時可再改）。只用於排序，不得用於利潤門檻（探索本就不套門檻），非探索路徑維持「無行市即不列候選」。已回寫 03_Systems r2148 FRM-SYS17-04。Cursor 須把 gaps.md 與 trace.csv 的此項由「缺口／待裁決」改為「D-126 核准」，並在代碼該分支註解 D-126。執行見 17-69 補正三 W3。","已裁決（甲）：base_price_li 為探索排序試驗值；已回寫 03_Systems r2148
+★ R9-75（2026-11-25）：W3 驗收通過。",D-123(b)；FRM-SYS17-04；C-05；C-08；03A_Goods base_price_li；commit ba1e644；R9-73,已裁決 2026-11-25（甲）,,,
+D-127,M1b ② 根因認定：商人層對全部經濟指標零貢獻；並處理「種子獨立性」與「商人有效性」兩道驗收門失去鑑別力的問題（草案，待 Owner 裁決）,"【事實基礎】z-1758-2 九組 30 日模擬輸出（Actions run 45356709933，tag z-1758-2＝71b094d）經九份 summary.csv 逐欄比對：
+(a) 關閉商人（Zb_G0_notrader）與基準組（Za_G0_A0）的六項 MET 與兩項 OBS 值完全相同，僅執行時間由約 65 分降為 4.4 分。
+(b) 更換種子（Zd_G0_seed2）僅使 MET-05b 變動 1.01e-4，其餘七項完全相同。
+(c) 更換情境（Zc_G0H_A0、Za_G2_A0）與基準組完全相同。
+(d) 九組中 MET-01 至 MET-04 全數不合格。
+→ 結論：現行 M1b 模型中，商人（SYS-17）對產出指標的邊際貢獻為零。此與 17-63 診斷包的機制解釋一致（evaluable_candidates 恆 0 → 零航行），但影響範圍更廣：即使航行恢復，指標是否會動仍屬未知。
+
+【為何這是裁決事項而非實作事項】
+(1) 驗收門失效：17-69 線 5 的「種子獨立性檢查」與 M1b ② 的「商人有效性」在上述數據下恆為真，無法鑑別修好與沒修好。若不處理，#83 的 K2／K4 單元測試綠燈將被誤讀為「②已解」。
+(2) 規格層問題：指標對商人不敏感，可能是 SYS-07／SYS-08 的居民消費與作坊產出量級遠大於商人可搬運量所致（與 BAND-1 的 band4＝87.3% 地板飽和互為表裡），屬模型平衡，非代碼缺陷，須 Owner 定調。
+
+【建議（請 Owner 擇一）】
+甲（建議）：先做「量級對帳」再談修復。此項可直接在工作簿內以現有資料算出，不需跑模擬——取 04_Content 的人口與作坊配置、03_Systems 的 demand_rates 與 opening_workshops，算出每港每貨的「每週產出」與「每週有效去化」，並與商人單次可搬運量（EXPLORE_QTY、船艙容量 SHIP_MIX、TRADER_CASH_CAP_LI）對比，得出商人運力佔去化量的百分比。若該比例為個位數，則②的真正解法是調整產能或去化參數，而非修補商人決策碼。此法最快、零 CI 成本、且結論可直接寫回規格。
+乙：維持現狀，先讓 #83 的 K1／K2／K4 單元測試合併，再以 z-1758-3 全矩陣觀察指標是否變動。缺點是若指標仍不動，已耗掉一輪約 80 分鐘乘九組的 CI 時間。
+丙：暫不處理，將 M1b ② 降級為「觀測中」，優先解黃金基準死結與 #84 合併。
+
+【若採甲，附帶要求】
+(1) 驗收門改寫：種子獨立性檢查須先證明「該指標對種子以外的擾動是敏感的」，否則該檢查不計入驗收（避免恆真門）。商人有效性須以 trader_summary 的 sail_count 總和大於零「且」至少一項 MET 指標隨商人開關而變動，兩者同時成立才算通過。
+(2) 本則不授權任何 clamp、不授權調整現有參數值；只授權「算出並回報量級」。參數調整另案。
+
+【依據】z-1758-2 九組 summary.csv（groups_csv_manifest.tsv 列有各檔 sha256）；evening-17-63 Z2(a) 至 (d)、Z3；lane1 band1_y5_counts.md（band4＝87.3%）；03_Systems r429 至 r438 價格曲線 W／M 定義。
+★ Owner 裁決 2026-11-25：採甲。(1) 量級對帳由規格維護 AI 在工作簿內完成（不派 Cursor、不跑模擬、不耗 CI），結果寫入本列與 00_Overview M1 列，再決定 M1b ② 修產能／去化參數或修商人決策。(2) 附帶要求（驗收門改寫：種子獨立性須先證明指標對其他擾動敏感；商人有效性須 sail_count>0 且至少一項 MET 隨商人開關變動）列為下一個編寫程序 AI 的工作，Cursor 本輪不做（Owner 2026-11-25：Cursor 收尾後暫停，換模型）。(3) 不授權任何 clamp 或參數改值。","已裁決（甲）：先做量級對帳（AI 於工作簿內完成）；驗收門改寫交下一個編寫程序 AI
+★ R9-75（2026-11-25）：量級對帳仍無法進行——Cursor 交付無 season_cells.csv；僅有帶別總計 band0＝385、中段＝126、band4＝3,521（合計 4,032，每組 448 格），商人 sail_count＝0；D-126 後無新矩陣。待新編寫程序 AI 產出逐格季資料後再對帳。",z-1758-2 九組 summary.csv；17-63 診斷包；band1_y5_counts.md；03_Systems r429-r438,已裁決 2026-11-25（甲）,,,
+D-128,測試跨模組呼叫 DemandModel._clear_state()（C-07／N-08）之處置（AI 2026-11-25 起草，待 Owner 裁決）,"【AI 2026-11-25 依 R9-75 起草，待 Owner 裁決】R9-75 N-11：#84（head b28012c）兩個新測試檔直接呼叫他模組私有成員 DemandModel._clear_state()——tests/unit/test_r972_cash_stock_cap_1769.gd 第 171 行、tests/unit/test_wp56_cash_market_trade.gd 第 280 行。C-07 禁止存取他模組 _ 開頭成員；D-91 已裁定 TD-14 不允許測試專用重置介面、改用正式注入介面。C-06 指控經 R9-75 查證不成立，C-07 違反成立。
+選項：
+甲【AI 建議】改用已核准的公開重置／fixture 路徑（正式注入介面或既有 fixture 載入），刪除兩處 _clear_state() 呼叫；不新增任何公開重置函式；期望值不變，CI 須重綠。
+乙：對這兩檔開「僅限測試」例外並登記 TD（與 D-91 矛盾，須同時修 D-91）。
+丙：撤回這兩處測試改動，重寫期望值與 Given。
+影響：#84 合併前必須處理；甲的工作交下一個編寫程序 AI。
+★ Owner 裁決 2026-11-25：採甲。刪除兩處 DemandModel._clear_state() 呼叫，改用已核准的正式注入介面或既有 fixture 載入；不新增任何公開重置函式（與 D-91、TD-14 一致）；期望值不變，CI 須重綠。執行交 17-70 T1。",已裁決（甲）：改用正式注入／fixture 路徑，刪兩處 _clear_state()；不新增公開重置函式,R9-75 N-11、§3 疑點三；C-07；N-08；D-91；TD-14,已裁決 2026-11-25（甲）,,,
+D-129,#83 commit cb84393 夾帶四個 docs/spec 檔之處置（C-14）（AI 2026-11-25 起草，待 Owner 裁決）,"【AI 2026-11-25 依 R9-75 起草，待 Owner 裁決】R9-75：#83（L4，head 4d05f0d）的 cb84393 在 PR 內改動四個 docs/spec 檔，但該 commit 無可核對的 diff 內容，無法證明與工作簿 v6.99.222 匯出一致；C-14 規定 Cursor 不得改規格，docs/spec 只由 Owner 匯出 commit。CI run 45522909540 亦被取消，#83 目前無有效綠燈。
+選項：
+甲【AI 建議】自 #83 移除這四個檔的改動，docs/spec 一律以 Owner 匯出的 v6.99.222 為準；#83 rebase 到 int 後重跑 CI。
+乙：Owner 逐檔核對雜湊與 v6.99.222 匯出一致後追認保留。
+丙：拆成獨立稽核 commit，由 Owner 單獨批准。
+影響：未處理前 #83 不得合併。
+★ Owner 裁決 2026-11-25：採甲。自 #83 移除 cb84393 對四個 docs/spec 檔的改動；docs/spec 一律以 Owner 匯出的 v6.99.222 為準；#83 rebase 到 int 後重跑 CI。執行交 17-70 T2。",已裁決（甲）：#83 移除四個 docs/spec 檔改動，以 v6.99.222 匯出為準，rebase 到 int 後重跑 CI,R9-75 §2 #83、§4.6；C-14；C-15,已裁決 2026-11-25（甲）,,,
 D-62e,PRM-SYS15 七項試驗值審定為試跑起點（Owner 2026-11-21）,WINDOW_DAYS＝28、DECAY_DAYS＝28、DIVERGENCE_LO_PPM＝100000（10%）、DIVERGENCE_HI_PPM＝300000（30%）、DIRECTION_DEADBAND_PPM＝20000（2%）、WEEKS_SCALE＝100、PUBLIC_DELAY_TICKS＝0（牙行資格特權先關，跑無特權基線）。依據與遊戲用途見 sheet sim_overrides_draft 第 85 至 91 列。,仍為試驗值、非正式值：升正式值須日後逐項裁決（D-45b、OQ-15l）；SYS-23 統計牙行牌價空白率與高分歧出現頻率，必要時調整（例：視窗延長至 45 日）。要開「資格提早看」，延遲 tick 數須另請 Owner 審定。BROKER_MIN_TIER_BY_LADDER 仍無值，留待 WP-41。,WP-40；WP-41,Owner 2026-11-21；R9-29；sim_overrides_draft,,,
 D-59b,今晚通宵包：核准唯讀稽核與屬性測試新增（Owner 2026-11-20）,Owner 指示「能開始做的都開始做」，核准：(1) 全倉唯讀稽核四項（規範合規、介面對照、測試覆蓋、GUT 警告）；(2) 屬性測試新增（只新增 tests/property/，不改任何產品碼）；(3) WP-33 補證、WP-40 階段 2 同夜並行。堆疊接力不核准。,屬性測試只驗規格已明文的性質，反證（臨時注入錯誤）不得 commit；稽核結果由 AI 分類後記為技術債（TD）或判定不成立，技術債只記工作簿。,WP-48；WP-49,Owner 2026-11-20；17-41,,,
 9 收件審查與合併紀錄（R 系列）— 每份 Cursor 報告的審查結論集中於此，新紀錄接在表尾,,,,,,,,
@@ -1388,7 +1444,83 @@ R9-72,17-66 開局船報＋探索修正＋z-1758-3 與 17-64 CI 提速的交付�
 　★ 產品碼技術審查（cash_ledger_stock_cap.diff 全讀）：修法數學正確（abs_hi ＝ stock_cap ＋ 1 作 exclusive 上界，二分仍以 hi 為不可買邊界收斂）；但 (i) 修正本身零測試覆蓋，註解親自記載 DemoQuoteProvider 路徑不受影響；(ii) 新增 if stock_cap < 1 → return 0 無規格對應（已由 D-124 補）；(iii) 行為變更（正常詢價路徑不再產生 ERR-SYS04-06）未附黃金差異或定向探針，依 S9h ④ 未證實；(iv) 新增區塊缺 FRM 與 EX 註解（C-12）；(v) GoodsLedger.is_loaded()／make_market()、PortRegistry.is_loaded() 的介面登記依據未說明，且 D-08d 規定容器 id 只由 container_id() 產生；(vi) diff 的 commit 8456c57 與三個 PR tip（#84 e38aea5、#83 cca43ed、#85 4cdb91a）全部對不上；(vii) workflow.diff 的 before 基準是 feature 分支而非 main 的 ci-speed 版，C-01 範圍查核仍無從進行。
 　★ 可採納的部分：S2 修法正確（group 改 head_ref || ref_name，使 push 與 PR 落在同一併發組）；S1 失效根因正確且重要（push 事件讀該分支自己的 workflow 檔，故 main 的 S1 對既有 feature 分支永遠無效），由 s1s2_feature_before.txt 證實。
 五、跨包新發現（已寫入 17-69）：(A) gut-unit-gate 把 555 寫死為失敗條件，與丁(1) 要求新增測試直接衝突（556 即紅燈）→ 17-69 線 2.4 改為「≥ 基線且舊測名全留」；(B) golden-30d 在找不到 main 成功 artifact 時 echo GOLDEN_COMPARE_SKIPPED 後 exit 0，等於綠燈但未比對，而 main 至今無成功 run → 17-69 線 2.5 要求改為明確失敗；(C) gut-unit-gate 是唯一沒有 timeout-minutes 的 job → 17-69 線 2.3。
-處置：#83／#84／#85 維持不得合併；第十、十一點待 17-69 線 1 補齊後結案；第十二點待 17-69 線 2、4 交件後複審。",審查中：第十二點已出結論（甲通過、乙撤回 clamp 保留、丙須補規格、丁五項退件、戊證實第十一點）；第十、十一點待補包（evening-17-64／63／z-1758-2 已交，待逐項核對）,17-66；17-64；17-63；D-123；FRM-SYS15-11；S9a；D-104(f) M1b 達標條件,,,,2026-11-24
+處置：#83／#84／#85 維持不得合併；第十、十一點待 17-69 線 1 補齊後結案；第十二點待 17-69 線 2、4 交件後複審。
+★ 2026-11-25 07:xx 全檔讀畢後結案（R9-74）：第十一點(4) 六項證據已全數實體送達並經逐檔核對——S0 耗時表（s0_timing.md，三個 main run 之 job／step 級）、改後同一 commit 耗時表（after_timing.md，tip 93ddd62 run 45363142979，關鍵路徑約 21 分）、workflow 全文 diff（workflow.diff）、測試數名單與計數（test_names_counts.md：unit+property 555、UI 6，集合相等、only_pre＝0、only_after＝0，並附 CI Passing 證明）、黃金逐格比對（golden_compare.txt：IDENTICAL_BYTES=1、DIFF_CELLS=0、COMPARED_CELLS=10032）、合併前後 CI 連結（ci_links.md）。第十一點(4) 判定「證據已齊」，但條件本身仍「不成立」：S1／S2 經 s1_s2_not_met.md 自承未達（四組同一 SHA 的 push 與 pull_request 雙跑實證），15 分目標未達（21 分），且黃金基準取自 tools-1758 而非 main——s0_timing.md 自承「main CI had no golden-30d job before 17-64」，故 17-64 時期 main 根本不存在黃金基準。第十點（17-63 診斷包）亦經全檔核對送達：Z2(a)(b)(c)(d)、Z3、Z4、z4_matrix、diag_z 與九組 timing 俱全，品質佳。兩點結案，不再追補。",審查中：第十二點已出結論（甲通過、乙撤回 clamp 保留、丙須補規格、丁五項退件、戊證實第十一點）；第十、十一點待補包（evening-17-64／63／z-1758-2 已交，待逐項核對）,17-66；17-64；17-63；D-123；FRM-SYS15-11；S9a；D-104(f) M1b 達標條件,,,,2026-11-24
+R9-73,17-69 通宵包五線與整合步交付審查：甲乙丙三條已落地、R9-72 丁(2)(3) 結案、先前 actions 版本判定撤回；七項發現，兩項另立 D-125／D-126 待裁決；#83／#84／#85 仍不得合併（2026-11-24）,"【收件】Owner 2026-11-24 23:0x 轉存六個 orphan 交付資料夾：lane1 105 檔、lane2 29、lane3 36、lane4 41、lane5 11、int 107，合計 329 檔。交付通道已依 S9d 新條款改為 GitHub orphan 分支（review/evening-17-69-lane1 至 lane5 與 -int），六線皆附 lane.txt、orphan_sha.txt、orphan_push.log、ls-tree。
+【已讀範圍（分母寫明）】直接讀 47 檔；另 11 檔為 lane1 子夾中與先前 1758／evening-17-67 包相同、先前已讀 → 合計 58／329 ＝ 17.6%。產品碼：L2 cash_ledger.gd.diff 全部變更行、L4 product_stock_cap 與 remove_mark_errors 全文、k2_explore 的 explore 段已讀；l4_owned_full.patch（25.8 KB）只讀檔案清單與 explore 段，未逐行。CI 失敗 log 四份讀二份全文。ci.yml.diff 的逾時、gate、golden 三類變更行全讀。黃金 CSV（各 2.2 MB）未讀。z-1758-2 十八份 CSV 讀二份。
+【已達成（有證據）】
+① 2.1 新測試：test_r972_cash_stock_cap_1769.gd 三測確實載入真 stack（Params → GoodCatalog → PortRegistry → GoodsLedger → MarketPricer → CashLedger），期望值寫成 EX_05_09_0x 常數並註明取自 frm_examples，三測皆斷言 ERR-SYS04-06 計數 delta ＝ 0，不走 DemoQuoteProvider。
+② 2.2 逾時：#84 最終 diff 中 gut-ui 與 golden-30d 為 15（context 行未改動），17-67 的 30 已於後續 commit 回復；#85 byte-match 繼承。★ R9-72 第十二點丁(2) 結案。
+③ 2.3：gut-unit-gate 已加 timeout-minutes 5（原為唯一無逾時的 job）。
+④ 2.4：555 硬閘改為 total 小於 BASELINE_COUNT 才失敗，另以 set 差集印 ADDED_NAMES 與 REMOVED_NAMES，REMOVED 非空即 error（Owner 追認乙已落地）。
+⑤ 2.5：GOLDEN_BASE_MISSING 三處全部 exit 1，註解寫明不得靜默通過。
+⑥ 2.7：註解已引 FRM-SYS05-09、D-124、r451、D-08d；abs_hi 等於 -1 註明 EX-02 哨兵；C-03 以 INT_DIV_MID_DENOM 常數與 hi + hi 取代字面量。
+⑦ 4.1：_mark_afford_probe_errors_handled 函式與兩處呼叫點乾淨移除（commit ddc2447，diff 已核）。★ 丁(3) 結案。
+⑧ 甲乙丙三條 Owner 追認全部落地：.github/ci/ 歸線 2、gate 印 ADDED 與 REMOVED、paths.txt 已刪（b998cea 純刪除 555 行；lane3 PATHS_ABSENT_OK）。
+⑨ 線 5：SEED_NO_EFFECT 在 z-1758-2 實資料上真的觸發，逐欄列出 Za_G0_A0 與 Zd_G0_seed2 九個相同指標；5.2 依 T3 顯示 N/A 不判 PASS 或 FAIL。
+⑩ 線 3：ci.yml BYTE_MATCH_OK、names BYTE_MATCH_OK、PATHS_ABSENT_OK，diff 僅三個 CI 檔。
+⑪ int：I1 與 I2 乾淨 0 衝突；I3 三處 ci.yml 衝突並給出解法（取 L3 側、replay 後 checkout L3 tip 鎖 blob 766bccea）；I4 指出 L4 硬計數閘 555／600／608 與 L3 set-diff 不相容，明確要求 rebase 後不得還原 608、不得復活 paths.txt。
+【撤回先前判定】R9-72 第十二點所記「evening-17-67 報告 actions 版本與自身 diff 矛盾，依 C-15 為退件事由」不成立，予以撤回。lane1 的 sha_map.md 證明：8456c57 確為全部 v5，e38aea5（後一 commit）才升為 v7／v6／v7／v8，報告描述 tip 而所附 diff 為首個 commit，兩者皆屬實，僅未標明 commit 歸屬。Cursor 已於線 1 第 1.2 項自行更正並交出 cross-walk。線 2 最終 tip 又收斂回全部 v5。
+【七項發現】
+發現一（N-04）：cash_ledger.gd 的庫存上界在 #84（Dictionary KIND+PORT 經 container_id）與 #83（make_market）各有一份實作，同一條 FRM 兩種寫法。int 的 overlap.md 已自行標示為日後 main 與 int 合併時的衝突。處置：以 #84 為唯一正式實作，#83 於 I3 rebase 時移除自身那份（L4-2）。
+發現二（C-05）：FRM-SYS17-04 以 GoodDef.base_price_li 作排序替代值，規格未定義無 mid 時如何排序，依 D-123(b) 應列缺口而非自行實作；gaps.md 未列、trace.csv 標 implemented。另立 D-126 待裁決。
+發現三（須說明）：線 2 全新測試內使用 _mark_errors_handled()，與線 4 剛移除的產品側抑制同類寫法，報告未提。技術上不影響斷言（計數 delta 在兩次呼叫之間取得），但須於 S9a E 說明測試內用法為何不構成 C-06。
+發現四（★ 須裁決）：max_affordable_qty 的庫存上界以 _quote_provider 等於 MarketPricer 為條件，D-124 未授權。根因已由 CI run 45397235504 證實：PortRegistry 版守衛使 TST-SYS05-08 與 test_WP56_demo_q_afford_124_still_holds 兩個舊測試失敗（後者 expected 124 實得 0）。同一 FRM 因注入的 provider 不同而有兩種語意。另立 D-125 待裁決。
+發現五（文件過期）：pr84_vs_main.diff 取自舊 tip 1a3e5f1，仍含 make_market，與線 2 最終版不一致。範圍本身合規——僅 ci.yml、cash_ledger.gd、test_sys23_wp27.gd 三檔，全在界內——但內容須以最終 tip 重出（L1-1）。
+發現六（數字未收斂）：report_s9a.md F 節寫「新增 4 測 → 559」，實際交付 3 測；test_names_added.txt 與 baseline_new.txt 皆為 3（558）；probe_2_9.txt 仍引用已不存在的測名 D1a、D1b、D1d；int 的 gate_vs_l4.md 沿用「L2 adds 4」。須一次收斂到最終 tip（L2-2）。
+發現七（證據缺口）：線 2 的 CI 仍在跑（run 45411993749 in-progress），2.5 與 2.6 證據標 pending；S9h ② 要求的行為變更黃金差異尚無結果。另：交付的 summary.csv 只有 MET 與 OBS 欄，逐格 band 分佈在未交的 season_cells 中，因此「band 96.7% 是天花板還是地板」無法由本包判定，須另交各組 band0、band4、中間三項計數。
+【衛生】遠端分支 15 至 16 條，超過 S9i ② 的 8 條上限；lane1 與 lane4 皆自承。須提清理清單（review 分支不計入）。
+【處置】#83、#84、#85 維持不得合併。D-125、D-126 裁決後，連同 L1-1、L2-2 至 L2-4、L4-1、L4-2、INT-1、H-1 與 band 計數一併補正；補正交件後複審結案。R9-72 第十、十一點待線 1 補件核對後一併結案（evening-17-64 全 18 檔、evening-17-63 全 64 檔、evening-17-66 三檔本次均已實體送達）。",待補正後複審：七項發現中五項為補正項，兩項（發現二、發現四）已另立 D-126、D-125 送 Owner 裁決,17-69；R9-72；D-123；D-124；D-125；D-126；S9a；S9b；S9c；S9d；S9h；S9i；C-01；C-05；C-06；C-08；N-03；N-04；D-60e,,,,2026-11-24
+R9-74,17-69 全部交付物逐檔讀畢後的完整審查：Review 資料夾 372 檔全類別覆蓋；R9-72 第十、十一點結案；確認四項新缺失與一項重大模型發現（商人層對 M1b 六項指標零貢獻）；#83／#84／#85 仍不得合併（2026-11-25）,"【讀取基數】Owner 轉存之 Review 資料夾經完整盤點＝372 檔（六個子資料夾：int、lane1、lane2、lane3、lane4；lane5 資料夾為 0 檔）。本次逐檔讀取覆蓋全部證據類別；少數大體積重複件以其自身雜湊／清單證明等價後不再逐位元重讀，依據如下：九組 trader_summary.csv 中八組 sha256 相同（groups_csv_manifest.tsv 為證）、golden_pre_30d.csv 與 golden_after_30d.csv 經 golden_compare.txt 證明位元相同、四份 555 行測名清單經 test_names_counts.md 證明集合相等、三份 352 KB 原始 CI 日誌以其官方節錄與索引檔核對、六份 ci.yml .conflict 本體以其 markers／sides／conflicts_summary／resolution_for_continue 核對。除此之外無未讀內容。
+
+【一、R9-72 第十、十一點結案】見 R9-72 列尾補記。第十一點(4) 六項證據已齊，但四項合併條件仍不成立（S1 未達、S2 未達、15 分未達、黃金基準非 main）。第十點 17-63 診斷包已足額送達。
+
+【二、重大模型發現（最高優先）】z-1758-2 九組 30 日 summary.csv 全部讀畢後逐欄比對，結果如下：
+（1）Za_G0_A0、Za_G2_A0、Zb_G0_notrader、Zc_G0H_A0 四組的六項 MET 指標與兩項 OBS 觀測值「完全相同」——MET-01＝0.00988002822865、MET-02＝11、MET-03＝0.64479118861863、MET-04＝213、MET-05b＝5.89014646145466、OBS-01 全港字串相同、OBS-02＝0.14221218961625。
+（2）Zd_G0_seed2（種子由 1 改為 2）僅 MET-05b 相差 1.01e-4（5.89014646145466 對 5.89024744463962），其餘七項完全相同。
+（3）Zb_G0_notrader 的 elapsed_ms＝264733（約 4.4 分），其餘組為 3.36 至 4.95 百萬毫秒（56 至 82 分）——證明商人層確實關閉，耗時相差 15 倍，但指標輸出一字不差。
+（4）只有 ABUND_BONUS_MAX_PPM 參數與 G1 情境會改變輸出；G2 情境對 A0 完全無效（與 G0 同值），對 A250 僅改變 MET-05b。
+（5）MET-01 至 MET-04 四項在九組全數 _pass＝0（不合格）；僅 MET-05a 與 MET-06 通過。
+→ 結論：M1b ②「商人零航行」不是取樣缺陷，而是「商人層對全部經濟指標零貢獻」。關閉商人、改變種子、改用 H 變體、改用 G2 情境，四種擾動都無法移動指標。這同時使「種子獨立性」與「商人有效性」兩道驗收門在現行模型下恆真而失去鑑別力。本點另立 D-127 送裁決。
+
+【三、M1b ② 的機制鏈已由 17-63 診斷包完整證實】(a) 開機接線正確：set_layers(true,true)＋SimQualificationOpenFixture；(b) 名冊正確：48 商人、83 船、全部 DOCKED、16 港皆有船（b_roster_by_port.txt 逐港清單）；(c) 三十天每日恆為 evaluable_candidates＝0、dest_excluded_no_market＝16、explore_hit＝2、sail＝0；(d) 第 1、7、30 日全港 board_for 紀錄數皆為 0。→ 冷啟動循環死結：船不開→無到港→情報板空→無候選→船不開。另有獨立的取樣缺口：TraderRegistry 當時缺 season_sail_count／ships_in_port_count，故 trader_summary 的 sail／ships 欄恆為 0（此缺口已於 #83 以 D-123(c) 補上，見 interfaces.md）。
+
+【四、新發現（R9-73 之外，須補正）】
+N-06 int 包的 <L3 tip> 指標過期：tips.txt 與 i3_mandatory.md 把 I3 強制復原指令的 <L3 tip> 釘在 1182da0，但 lane3/lane.txt 與 retransplant_6a731ff.md 顯示 #85 現行 tip 已是 7fa0765（經 1182da0→c99e31c→7fa0765 三次重移植）。若照 int 包指示執行，會把 ci.yml 復原成兩代之前的版本（逾時 30 分而非 45 分），shard0 必再度被取消。須重釘。
+N-07 int 包內自相矛盾且未標示作廢：resync_b998cea.md 寫「Owner 追認(甲)：.github/ci/ 屬線 2 擁有權，非 C-01 pending」，而同目錄 resync_c13c5bd.md 與 c01_github_ci_pending.md 仍寫「C-01 pending、不得當合併證據」。兩者並存且無「已被取代」標記。另 i4_gate_baseline/l2_tests_added.txt 仍列四個已作廢的 D1a／D1b／D1c／D1d 測名，而同目錄 gate_vs_l4.md 已更正為「線 2 新增 3 個」。
+N-08 lane5 交付缺漏：h1_deletable_branches.md 自身列出 review/evening-17-69-lane5 存在於遠端，但 Review 資料夾內 lane5 子資料夾為 0 檔。另 overlap.md 僅記錄 L2∩L4 與 L3∩L4，未記錄 L4∩L5——#83 修改 tools/run_m1b_report.gd（＋59 行，K3 季度輸出），而線 5（tools-1769）為種子獨立性改寫同一檔案，此碰撞無人記錄。
+N-09 C-14 疑慮：#83 對 onto 基準的差異清單（diff_names_vs_onto.txt）包含 docs/spec/03_Systems.csv、05_TechSpec.csv、AI_README.csv 與 docs/spec/Project Patrician.xlsx（二進位 1824768→1849856 位元組）。C-14 明文禁止 Cursor 修改本工作簿。推測為 Owner 自行匯出 v6.99.210 的提交被帶入分支，但須由 Cursor 指明這四個檔案的提交者與提交雜湊以結案。
+
+【五、已查證為「非缺失」而予以肯定者】
+(1) gut-unit-gate 的 ANSI 偽陽性由 Cursor 自行發現並修正：b998cea 時 SEEN_NAMES＝511 而 TOTAL_PASSING＝558，產生約 46 個假 REMOVED（ANALYSIS.md 自承）；bb1b50d 以 re.sub 去除 ANSI 修正。tip 6a731ff 的 gate 輸出已驗證：TOTAL_PASSING＝558、BASELINE_COUNT＝555、SEEN_NAMES＝558、REMOVED_NAMES＝無、ADDED_NAMES＝三個 EX-05-09 測名。此為「新增測試不被自己的閘擋下」的正解，且主動自承偽陽性，符合 C-06 精神。
+(2) 逾時調整有實證支撐：30 分與 35 分兩次 shard0 被取消，45 分才成功（實耗約 29 分，因 shard0 兼跑 property）。非隨意放寬。
+(3) #85 紅燈非線 3 缺陷：wp27_unload_int_note.md 以 blob 雜湊逐一比對四個 ref，證明 WP27 的 BuildingEconomy unload 修正只在 #84 的 test_sys23_wp27.gd（blob 2883dc5），main／int-1758／#85 三者皆為舊 blob f2fbeaf；而線 3 為純 CI 移植不得帶產品碼。判定正確。
+(4) INT-1 的必要性已被證明：ci_yml_after_naive_rebase_vs_l3.txt 顯示單純逐衝突取 ours 會得到 @v7／@v6／@v7／@v8，與線 3 的 @v5 不符，故 rebase 後強制 git checkout <L3 tip> -- .github/workflows/ci.yml 確有必要。
+(5) D-124 已正確落地：cash_ledger.gd.diff 顯示註解已改引 FRM-SYS05-09／D-124／v6.99.220／r574，2.10 缺口註記移除，s＝0 直接回 0 的分支加註 EX-05-09-03，且 buy_slider_max 加註「庫存上界不再重做」。三個 EX 測試名稱與 frm_examples 編號一致。
+
+【六、黃金基準死結的精確狀態】golden-30d_tip_6a731ff.log 全文核對結果：PR 端的 golden 工作「先比對、後上傳」——比對因 GOLDEN_BASE_RUN_ID＝45358265237 上找不到 golden-30d artifact 而 exit 1，但其後仍成功上傳了自己的 artifact（ID 14941374660，392499 位元組）。亦即 PR 端產出正常，缺的只有 main 端的基準。配合 s0_timing.md 自承「17-64 之前 main 根本沒有 golden-30d 工作」，可確認：main 從未產生過黃金基準，且因 2.5 規定缺基準即失敗，每個 PR 的 golden 必紅，#84 無法合併，main 永遠拿不到 artifact——完全封閉的循環。只有 Owner 能以 workflow_dispatch 在 main 上手動觸發一次來打破。
+
+【七、處置】#83、#84、#85 維持不得合併。待 Owner 裁決 D-125、D-126、D-127 後，連同 N-06 至 N-09 以 17-69 補正三一併發出。",,Review 372 檔全檔讀畢；z-1758-2 九組 summary.csv；17-63 診斷包；17-64 證據包；lane1 至 lane4 與 int 全部報告,待 Owner 覆核,,,
+R9-75,17-69 補正三（W1 至 W10）驗收：M365 Copilot 審查報告回寫；#83／#85 不得合併、#84／#86 須補正；W9 不通過；新缺失 N-10 至 N-14；起草 D-128、D-129（2026-11-25）,"【讀取基數】R9-75 報告（M365 Copilot 撰，2026-11-25）全文 638 行由規格維護 AI 讀畢（100%）。報告自述其對 Review 資料夾覆蓋：已讀 97／4,709 檔（2.1%），未讀 4,612（97.9%）；結論以此覆蓋為限。
+
+【一、PR 判定】
+#83（L4，head 4d05f0d，run 45522909540）：不得合併——run 被取消；cb84393 改 docs/spec 四檔而無 diff 可核，C-14 未結（D-129）。
+#84（L2，head b28012c，run 45528301812）：須補正——9／9 job 成功，但黃金輸出缺 COMPARED_CELLS；兩測試檔跨模組呼叫 DemandModel._clear_state()（test_r972_cash_stock_cap_1769.gd:171、test_wp56_cash_market_trade.gd:280），違反 C-07／N-08（D-128）。
+#85（L3，head da3d911，run 45523639567）：不得合併——153 測 150 過，3 個 WP27 測試以 ERR-SYS08-08 失敗，原因為 int 尚未含 #84 的 WP27 卸貨修正（歸因成立）。
+#86（L5，head 9b333c7，run 45411941948）：須補正——gut-unit(0) 超過 35 分被取消；且未列入合併順序（N-14）。
+
+【二、W1 至 W10】通過：W2、W3、W4、W5、W6、W8。部分：W1（artifact 14932606115，run 45415084221，sha256 8b25c951…，527×19，GOLDEN_BOOTSTRAP=0、DIFF_CELLS=0，但無 COMPARED_CELLS，無法證明真的比過）；W10（HANDOFF 有缺陷）。無法判定：W7。不通過：W9（int-1755-merge-0a6e、int-1756-295f、int-1757-5ae9 三分支仍在）。
+
+【三、七項疑點】(1) 不成立；(2) BYTE_MATCH 成立（8cd5dd4d…）；(3) C-07 違反成立、C-06 不成立；(4) 基準完整性成立，差異為 0 的原因未明；(5) WP27 歸因成立；(6) 合併順序與 W6 矛盾；(7) 無法判定。
+
+【四、新缺失】N-10 HANDOFF 的 W9 聲明不實；N-11 _clear_state() 跨模組呼叫；N-12 orphan 分支 SHA 漂移（lane5：6dba86b／8468b864／8b7df9a9；int：ae816f2／7d8ece439／8b41864eb）；N-13 黃金比較未輸出 COMPARED_CELLS；N-14 #86 不在合併順序內。
+
+【五、D 系列核對】D-125：W2 通過（測試 558／555，REMOVED_NAMES 為空）。D-126：W3 通過。D-127：量級對帳仍無法進行——無 season_cells.csv；現有僅帶別總計 band0＝385、中段＝126、band4＝3,521、合計 4,032（每組 448 格），商人 sail_count＝0（run 45356709933／71b094d），D-126 之後無新矩陣。
+
+【六、建議合併順序（§4.6，待 Owner 批准）】① 修 #84（D-128）後 #84→main；② 核對 main 的 golden artifact（含 COMPARED_CELLS）；③ #84 帶入 int-1758，刷新 #85 後併入 int；④ #83 rebase 到 int 後只併 int（D-129）；⑤ #86 rebase 到 main 先併 main；⑥ int→main，以 L5 報告檔為底、移植 L4 的 duration_s 與每季 sails／cargo，重跑全套 CI 與 golden。
+
+【七、處置】17-69 不通過；四個 PR 一律不合併；z-1758-3 與 M3 不開。待 Owner 裁決 D-128、D-129，並刪除 W9 三個殘留分支（或交新編寫程序 AI 處理）後，再由新編寫程序 AI 依上列順序補正。","17-69 不通過；任何 PR 不合併；待 D-128、D-129 裁決後由新編寫程序 AI 補正
+★ Owner 2026-11-25 14:00 覆核：同意 §4.6 合併順序（每一步執行前仍須 Owner 個別批准）；D-128、D-129 皆採甲。補正與合併交 Cursor 依 17-70 收尾；season_cells.csv 與驗收門改寫（§8.2 其餘項）待 PR 全部合併、repo 乾淨後交下一個編寫程序 AI。",R9-75_17-69補正三審查報告_2026-11-25.md（638 行全讀）；CI run 45522909540、45528301812、45523639567、45411941948、45415084221；artifact 14932606115,Owner 已覆核 2026-11-25（同意合併順序；D-128、D-129 採甲）,,,2026-11-25
 R9-31,WP-48 稽核 tests（wp-audit-tests，main d465db9）：證實並重新分類；其餘三份尚未收到,Cursor 回報（唯讀）：規格 TST 共 356 個：(a) 已實作 120、(b) 缺測 235、(c) 規格停用 1（TST-SYS02-04）；現碼 test_ 函式 354；無 TST ID 的測試 226（逐檔列用途）。前一版 113／242 作廢，以本版為準。Cursor 暫把全部缺測標「乙（違規）」。,AI 重新分類：235 個缺測不是違規。其中 TST-P0-01 至 05 是規格自查（比對工作簿各表），不是程式測試；TST-SYS05-13 至 24 在 #40（WP-33，未合併）；TST-SYS23-01 至 07、09 至 11 在 #38（WP-26，未合併）；TST-SYS13-02 至 05、10 至 12 屬 WP-31（造船與賣船，未派）；SYS-09 至 12、15 至 18、20 至 22、24 的測試屬尚未實作的工作包。已合併到 main 的程式沒有缺測。226 個無 TST ID 名稱記 TD-05（D-60e）。wp-audit-compliance（四份）、wp-audit-interfaces、wp-audit-gut 尚未附上，待 Owner 附檔後審（compliance 摘要提及 BuildingEconomy→CashLedger、PopulationModel→BuildingEconomy、ShipRegistry→GoodsLedger 的跨模組 _ 存取，須先分辨是產品碼違規或 D-32b 重置輔助）。,tests 稽核證實；TD-05 已記；其餘三份待收件,2026-11-21,,,
 R9-26,WP-33 階段 2（PR #40，head 870876b，TradeDesk；wp33-report）：部分證實；須補證，不合併,Cursor 回報：新 PR #40（非 draft），GUT 369／369（354＋15）、CI 2 checks 綠；新增 trade_desk.gd、qualification_provider.gd、trade_observer.gd，GoodsLedger 新增 can_transfer 並與 transfer 共用 _validate_transfer_preconditions、容器唯讀查詢、HOLD meta 存 ship_id，CashLedger 新增 has_account，SimLoop 於 boot 呼叫 TradeDesk.load_and_validate／boot_gate_errors、tick_day 步驟 6 追加 take_day_errors／flush_signals（boot 簽名與每日順序未改），project.godot 於 CashLedger 後登錄 TradeDesk；BuildingEconomy 兩條採購路徑未動；正式開機探測 38 個錯誤。,有證據：閘門原始輸出；354＋15＝369 且改內容不改名只列 test_autoload_order_2_2_01（R2-11 依計數成立）；規格對照表與介面清單；產品碼 reason＝TRADE 的 transfer 只在 trade_desk.gd（掃描結果列出）；TST-SYS05-23 的原始輸出與 can_transfer／transfer 同碼失敗。未證實（17-04 要求完整貼出而只給行號或檔案路徑）：(b) execute_trade 完整函式與七步逐行對照（只給行號範圍，稱「見倉庫」）；(e) sim_loop.gd 與 project.godot 完整 diff（只貼要點與 Cursor 本機路徑）；(c) TST-SYS05-20、24 的測試原始輸出（只有結論）；(f) 觀察者失敗不回滾的測試原始輸出；(h) can_transfer 共用檢查的 diff（只有路徑）；(d) 掃描腳本未貼；E(1)–(6) 為斷言、無指令輸出。問題：(i) 正式開機探測的 28 個 ERR-SYS01-07 疑為探測腳本在 Autoload _ready 之前執行（與 wp26-evidence-2 的 RegEx 發現相同；WP-43 的探測曾為 0 錯），Cursor 只稱「預存／環境」，ERR-SYS06-01／02 稱「資料空／缺」亦無證據；故「只多出缺提供者與缺觀察者兩項」未證實。C-14：新增公開名稱未經裁決（TradeDesk.set_qualification_provider、set_trade_observers、boot_gate_errors、take_day_errors、flush_signals、load_and_validate；GoodsLedger.is_container_registered／get_container_kind／owner_id／port_id／ship_id／container_dict；CashLedger.has_account），規格 20.1 H 只定 execute_trade、last_error 與信號 trade_executed，介面清單把 set_qualification_provider 的依據寫成「20.1 H」不實。,部分證實；須補證（17-41）；待 Owner 追認新增名稱；不合併,2026-11-20,,,
 ,,,,,,,,
@@ -2564,4 +2696,64 @@ I2 逐個列出衝突與解法；rebase 後重跑 GUT 與黃金。
 I3 檢查「整合後差異」與「各線差異聯集」的交互作用，特別是 2.4 的 gate 新基線與線 4 新增或修改測試的交互。
 I4 整合完成只回報，等 Owner 批准；仍不合併、不打 tag。
 
-交付（S9d）：每線一個資料夾 evening-17-69-lane1 至 lane5，各含 lane.txt、完整 diff、修改後函數全文、CI run 連結＋摘要行、黃金輸出與完整差異、規範掃描輸出、規格對照表 trace.csv、介面變更、缺口清單、機器可讀摘要；另加 integration/ 放 I1 至 I4。全部推成 orphan 分支（見 H5），不要求 Cursor 碰 SharePoint。工作報告一律依 AI_README S9a 範本 A 至 I 逐點回覆，缺項視為「不對」。",已發送（Owner 2026-11-24），發送時未匯出、未 commit 任何 docs/spec，依據 v6.99.210。★ 發送後更正一次：交付通道由 SharePoint 改回 orphan 分支（H5、線 1.1、特別證據、交付段共四處），更正文已補發。若之後裁決 r574（D 案）或補 FRM-SYS05-09 數值例，須另行匯出 03_Systems 與 frm_examples.csv 並 commit，且回頭修正 C 欄 2.1(d)、2.10。,S9a；S9b；S9c；S9d；S9f；S9h；S9i；C-01；C-05；C-06；C-07；C-11；C-12；C-15；N-05；D-08d；D-60e；D-120(e)；D-121(f)；R9-72 第十、十一、十二點；D-123,已發送 2026-11-24（Owner 發出）｜★ 更正一（22:1x，已發）：原 H5 誤寫為「Cursor 上傳 SharePoint」，Cursor 無該權限；改為 orphan 分支 review/evening-17-69-lane1 至 lane5（＋int），Owner 下載後轉存（R9-63、R9-67 既有做法）；已回寫 AI_README S9d 為常設條款｜★ 更正二（22:2x，尚未發送）：D-124 已裁決並回寫 03_Systems r574，frm_examples 補 EX-05-09-01 至 03；C 欄 2.10 缺口已解除、2.1 期望值已綁 EX 編號；另擬加線 1 補交 z-1758-2 九組 summary.csv 與 trader_summary.csv。發送前須先匯出並 commit docs/spec v6.99.220（03_Systems、frm_examples.csv）。Owner 2026-11-24 22:2x 評估：五線接近完成，是否併入收件後一次處理待定｜線 2.8（is_loaded／make_market 介面登記）仍預期列缺口｜待收五線交付與 integration/,,,2026-11-24
+交付（S9d）：每線一個資料夾 evening-17-69-lane1 至 lane5，各含 lane.txt、完整 diff、修改後函數全文、CI run 連結＋摘要行、黃金輸出與完整差異、規範掃描輸出、規格對照表 trace.csv、介面變更、缺口清單、機器可讀摘要；另加 integration/ 放 I1 至 I4。全部推成 orphan 分支（見 H5），不要求 Cursor 碰 SharePoint。工作報告一律依 AI_README S9a 範本 A 至 I 逐點回覆，缺項視為「不對」。
+
+════ ★ 補正三（2026-11-25，收尾令：做完現有工作即暫停）════
+Owner 2026-11-25：Cursor 收尾後暫停，之後換編寫程序的 AI 模型。本補正之後不得開任何新功能、新 WP、新 tag、z-1758-3、新模擬矩陣。只做下列 W1 至 W10；未列者一律不做。規格判準：docs/spec v6.99.222。
+
+W1 黃金基準死結（由 Cursor 解決，Owner 不手動觸發）：
+(a) 先查原因：main 的 run 45358265237 為 success 卻無 golden-30d artifact——列出該 run 的 job 清單、golden-30d 是否執行、是否上傳、保留天數；說明 main push 時 golden-30d 為何沒有產出。
+(b) 以 gh workflow run ci.yml --ref main -f job=ci 自行在 main 觸發一次（ci.yml 已有 workflow_dispatch）。成功即交 run 連結與 artifact ID。
+(c) 若 (b) 權限不足：貼原始錯誤訊息，改走 AI_README S9b 一次性例外——#84 的 golden 在 main 無基準時改比 17-64 凍結基準（sha256 8b25c951…），輸出 GOLDEN_BOOTSTRAP=1 與 DIFF_CELLS、逐格差異；不得 exit 0 靜默通過。#84 合併後 main push 會自行產出 artifact，bootstrap 分支須在同一 PR 內設定為「main 有 artifact 即不走」。
+(d) 若 (a) 查出 main push 根本不跑或不上傳 golden-30d，修正放在 #84（線 2 擁有 ci.yml），不另開分支。
+
+W2 D-125 甲（線 2，#84）：刪除 max_affordable_qty 的 provider 條件，庫存上界無條件適用；只改兩個舊測試的 Given（先放足量庫存），期望值與測名不改；交 gate 輸出證明 REMOVED_NAMES＝無、ADDED_NAMES 仍只有三個 EX-05-09；交 diff 與兩測試前後全文。
+W3 D-126 甲（線 4，#83）：代碼不改邏輯，只在 base_price_li 分支加註 D-126；gaps.md、trace.csv 該項改為「D-126 核准（試驗值）」。
+W4 N-06：int 包 tips.txt 與 i3_mandatory.md 的 <L3 tip> 改為 #85 當下實際 tip（目前 7fa0765；若 W1、W2 使線 3 重移植，以重移植後為準）；I1、I2、I3 三個 dry-run 以各線當下 tip 重跑，舊檔標「已過期」。
+W5 N-07：c01_github_ci_pending.md 與 resync_c13c5bd.md 的 C-01 pending 段落標「已被 Owner 追認取代」；i4_gate_baseline/l2_tests_added.txt 改為實際三個測名。
+W6 N-08：把 review/evening-17-69-lane5 的完整包內容重新交付（不寫新碼）；overlap.md 補 L4∩L5：tools/run_m1b_report.gd 雙方各改了什麼、合併時誰先誰後。
+W7 N-09：#83 差異中的 docs/spec/03_Systems.csv、05_TechSpec.csv、AI_README.csv、Project Patrician.xlsx——逐檔列出提交雜湊、作者、訊息；若非 Owner 提交，說明原因（C-14）。
+W8 標籤更正：今後報告 band0＝價格天花板（缺貨，w<1），band4＝價格地板（過剩，w≥10）；BAND-1 摘要中「天花板為主」改為「地板為主（87.3%）」。
+W9 分支清理：Owner 核准刪除 cursor/int-1755-merge-0a6e、cursor/int-1756-295f、cursor/int-1757-5ae9（先關 #69、#70）；其餘分支與 review/* 不動。交刪除前後 git branch -r。
+W10 交接包（換模型用，必交）：在 review/evening-17-69-handoff orphan 分支放 HANDOFF.md，列出：每個開著的 PR（#72、#78、#79、#80、#81、#83、#84、#85、#86）的分支、tip SHA、base、CI 最新結論與連結、未解缺口、依賴關係；建議合併順序（#84→main → main 產出 golden → #85 重移植 → #83 依 INT-1 rebase 到 int-1758）；所有 Cursor 自建的 CI 規則與 .github/ci 基線的用途；已知風險（D-127 指標對商人不敏感、band4 87.3%）。
+
+合併：W1 至 W8 完成且 CI 全綠（含 golden 或 GOLDEN_BOOTSTRAP 明示）後，只交一份總報告（S9a A 至 I），等 Owner 一次批准；未獲批准前任何 PR 不合併。批准後依 W10 順序合併；若到暫停時仍未批准，PR 原樣保留，寫入 HANDOFF.md。
+做完即停：最後一則回報寫明「17-69 收尾完成，Cursor 暫停」，之後不再推任何 commit。",已發送（Owner 2026-11-24）。發送當下未 commit，依據 v6.99.210；其後因 D-124 裁決，Owner 已於 22:3x 匯出 03_Systems 與 frm_examples.csv 並 commit 為 docs/spec v6.99.220，更正二同時發出，本則判準改為 v6.99.220。發送後共更正兩次（更正一：交付通道改 orphan 分支；更正二：D-124 連帶三處）。,S9a；S9b；S9c；S9d；S9f；S9h；S9i；C-01；C-05；C-06；C-07；C-11；C-12；C-15；N-05；D-08d；D-60e；D-120(e)；D-121(f)；R9-72 第十、十一、十二點；D-123,已發送 2026-11-24（Owner 發出）｜★ 更正一（22:1x，已發）：H5 交付通道由 SharePoint 改為 orphan 分支 review/evening-17-69-lane1 至 lane5（＋int），Owner 下載後轉存；已回寫 AI_README S9d 為常設條款｜★ 更正二（22:3x，已發）：D-124 已裁決並回寫 03_Systems r574、frm_examples 補 EX-05-09-01 至 03；C 欄 2.10 缺口解除、2.1 期望值綁 EX 編號、2.7 註解改引 FRM-SYS05-09 與 D-124；線 1 加交 z-1758-2 九組 summary.csv 與 trader_summary.csv｜★ docs/spec v6.99.220 已匯出並 commit（03_Systems、frm_examples.csv），為本則的規格判準｜★ 已向 Cursor 查核線 3 的 ci.yml 移植基準 commit（因線 2 將因新測試連帶調整 gut-unit-gate 555 閘，線 3 可能須同步重做並重交「#84 與 #85 逐字相同」比對），已回覆（2026-11-24 22:3x）：線 3 上次移植基準為線 2 tip 2e845b9，其後另補 .github/ci/* baseline（#85 tip 19280e7）；Cursor 承諾待線 2 因 D-124 產生新 tip 後重新移植，並交 #84 與 #85 的 ci.yml 逐字相同證據——處置正確。★ 新查核點：.github/ci/* 不在 17-69 任何一線的檔案擁有權清單內（線 2、3 只擁有 .github/workflows/ci.yml），須說明檔名、用途、歸屬線與派工依據；若為黃金基準檔入庫，另須說明誰有權更新、如何防止由 Cursor 自行更新（S9h ③ 禁止擅自更新黃金基準；S9b 新條款要求以 main 成功 artifact 為基準）｜★ .github/ci/* 已查明（Cursor 2026-11-24 22:4x）：兩檔皆為 GUT 測名基線，非黃金基準——gut_unit_property_baseline_names.txt（555 個測名，供 gut-unit-gate 做「≥ 基線且舊名仍在」）與 gut_unit_property_baseline_paths.txt（路徑清單，gate 腳本未讀）。黃金仍走 golden-30d artifact 與 main 成功 run（線 2.5），S9h ③／S9b 的黃金基準疑慮解除。Cursor 主動依 C-01 自認屬範圍外新增路徑、並聲明在 Owner 接受前不當合併證據——處置正確，予以肯定。★ AI 建議（待 Owner 核准）：(甲) 追認 .github/ci/ 納入線 2 擁有權（對應 2.4）；(乙) 基線檔須變更控制——任何對 baseline_names.txt 的修改須在 S9a F 節逐筆列出新增與刪除的測名及理由，刪除測名須 Owner 核准，且 gate 須輸出本次新增與刪除名單，否則「舊測名全留」可被自我認證（與黃金基準同類風險）；(丙) baseline_paths.txt 既未被讀取，應接上使用或刪除，不得留為看似有保護的無效檔｜線 2.8（is_loaded／make_market 介面登記）仍預期列缺口｜待收五線 orphan 交付與 integration/｜★ 2026-11-24 23:1x 複審完成（R9-73）：六線 329 檔已收，orphan 交付通道成功。甲乙丙三條落地；R9-72 丁(2)(3) 結案；先前「actions 版本矛盾」判定撤回。七項發現——發現四（provider 條件）與發現二（explore 排序）另立 D-125、D-126 送裁決；其餘為補正：L1-1 重出 #84 對 main diff、L2-2 數字收斂、L2-3 說明測試內 mark-handled、L2-4 補 CI 完成證據、L4-2 移除 #83 重複實作、INT-1 確認、H-1 分支清理、另交 band0／band4 計數。#83／#84／#85 維持不得合併｜★ 2026-11-25 07:xx 全檔讀畢（372 檔 Review 資料夾）後開立 R9-74，並擬 17-69 補正三與 D-127，待 Owner 核准後發出｜★ 2026-11-25 補正三（收尾令）已寫入：D-125／D-126／D-127 皆裁決甲；黃金死結交 Cursor 自解（W1，含一次性 bootstrap 例外）；W1 至 W10 完成後 Cursor 暫停，Owner 將換編寫程序 AI 模型｜待發送（發送前 commit docs/spec v6.99.222）｜★ 2026-11-25 補正三已發；Cursor 回報 W1 至 W10 完成並暫停（交付未核實）｜★ 2026-11-25 12:00 工作簿維護與審查移交 M365 Copilot，由其驗收 W1 至 W10 並開立 R9-75｜★ 2026-11-25 R9-75（M365 Copilot 驗收）：不通過——W9 未刪三分支、W1 缺 COMPARED_CELLS、W10 HANDOFF 有缺陷、W7 無法判定；#83／#85 不得合併、#84／#86 須補正；任何 PR 不合併；待 D-128、D-129 裁決｜★ 2026-11-25 14:00：R9-75 經 Owner 覆核，17-69 不通過部分改由 Cursor 依 17-70 補正並收尾合併；本則結束，不再追加。,,,2026-11-24
+17-70,給 Cursor 收尾：T1 #84 依 D-128 甲｜T2 #83 依 D-129 甲｜T3 #86 逾時根因｜T4 golden 輸出 COMPARED_CELLS → 依 R9-75 §4.6 逐步合併 ①至⑥（每步待 Owner 批准）→ T5 清分支｜T6 HANDOFF.md；完成後才交下一個模型,"【派工 17-70（給 Cursor）：收尾——把手上 4 個 PR（#83、#84、#85、#86）補正到可合併，依序合併，清乾淨分支，再交接（R9-75 §4.6、§8.2；D-128、D-129 採甲；Owner 2026-11-25 核准）】
+
+目標：本則完成時，main 已含 L2 至 L5 全部工作、CI 與 golden 全綠、沒有殘留的工作分支，repo 處於可直接交給下一個編寫程序 AI 的乾淨狀態。season_cells.csv 與驗收門改寫不在本則，留給下一個模型。
+
+━━ 〇、本則依據的 Owner 裁決（2026-11-25，以下即全文，不另附件）
+D-128（處置 #84 測試呼叫 DemandModel._clear_state()）：#84 兩個新測試檔直接呼叫他模組私有成員 DemandModel._clear_state()——tests/unit/test_r972_cash_stock_cap_1769.gd 第 171 行、tests/unit/test_wp56_cash_market_trade.gd 第 280 行，違反 C-07（不得存取他模組 _ 開頭成員）；D-91 已定 TD-14 不允許測試專用重置介面。Owner 採甲：刪除這兩處呼叫，改用已核准的正式注入介面或既有 fixture 載入取得乾淨狀態；不新增任何公開重置函式；期望值不變；CI 須重綠。未採：乙（開僅限測試例外）、丙（撤回測試改動重寫期望值）。
+D-129（處置 #83 commit cb84393 夾帶四個 docs/spec 檔）：#83 的 cb84393 改動了四個 docs/spec 檔，無法證明與工作簿 v6.99.222 匯出一致；C-14 規定 Cursor 不得改規格，docs/spec 只由 Owner 匯出 commit；CI run 45522909540 被取消，#83 目前沒有有效綠燈。Owner 採甲：自 #83 移除這四個檔的改動，docs/spec 一律以 Owner 匯出的 v6.99.222 為準；#83 rebase 到 int-1758 後重跑 CI。未採：乙（逐檔核雜湊後追認）、丙（拆獨立稽核 commit）。
+合併順序（R9-75 §4.6）：Owner 已同意第三節 ①至⑥ 的順序；每一步執行前仍須 Owner 個別批准。
+
+━━ 一、硬條件（全線適用；S9 至 S9i 照舊）
+H1 合併、push 到 main 或 int-1758、打 tag，每一步都要先等 Owner 對「該一步」明文批准（C-15、S9b）；本則同意的只是順序，不是授權。不跑 z-1758-3。
+H2 每一次失敗的執行（測試、golden、CI、rebase、合併）都在報告列出原因與處理（D-120(e)），不得只報成功的那一次。
+H3 diff、函數本體、測試改動完整貼出，不得截斷。測試改動照 S9a F 節逐筆列「檔案：行號、改前、改後、理由、依據」。
+H4 遇到缺口、權限不足或與本則矛盾，停該項回報，不要繞道（不得用 provider 判斷、測試專用分支、私有成員存取或加長逾時來繞過）。
+H5 不新增任何公開重置函式或「僅限測試」介面（D-91、TD-14）；不改 docs/spec/（C-14、D-129）。
+H6 證據一律走 GitHub CI（D-121(f)）；交付放 orphan 分支 review/1770-<步>，推出後不得改寫歷史，要更正就推新 commit 並寫明新 SHA（R9-75 N-12）。
+
+━━ 二、補正（先做，可並行）
+T1 #84（L2，head b28012c）依 D-128 甲：刪除 tests/unit/test_r972_cash_stock_cap_1769.gd 第 171 行、tests/unit/test_wp56_cash_market_trade.gd 第 280 行的 DemandModel._clear_state() 呼叫，改用已核准的正式注入介面或既有 fixture 載入取得乾淨狀態；期望值不變（EX-05-09-01 至 03 常數不得改）。交：兩檔完整 diff、所用注入／fixture 路徑出處、CI 全綠 run、測試總數與 REMOVED_NAMES（須為空）。
+T2 #83（L4，head 4d05f0d）依 D-129 甲：移除 commit cb84393 對四個 docs/spec 檔的改動，使 PR 對 docs/spec/ 的 diff 為空（以 Owner 匯出的 v6.99.222 為準）。交：移除前後 git diff --stat -- docs/spec、四檔路徑、CI run。rebase 到 int 留到第三節 ④。
+T3 #86（L5，head 9b333c7）逾時：run 45411941948 的 gut-unit(0) 超過 35 分被取消。列出各 shard 耗時與最慢 10 個測試，找出根因並修正；不得只加長逾時或跳過測試。交：根因說明、diff、修正後 CI run 與各 job 耗時表。
+T4 golden 步驟輸出 COMPARED_CELLS（R9-75 N-13）：除 GOLDEN_BOOTSTRAP、DIFF_CELLS 外，必須印出 COMPARED_CELLS 與比對的列數、欄數；COMPARED_CELLS＝0 或不等於列×欄時失敗。改在 #84 分支。交：workflow diff、一次通過與一次故意不符的 CI 輸出段。
+
+━━ 三、合併（R9-75 §4.6；Owner 已同意順序，每一步仍須 Owner 個別批准後才執行）
+① T1、T4 完成且 CI 綠 → 申請批准 → #84 併入 main。
+② 核對 main 合併後的 CI 與 golden artifact（須見 COMPARED_CELLS）。
+③ main 帶入 int-1758，刷新 #85（L3，head da3d911；預期 3 個 WP27 ERR-SYS08-08 失敗消失）→ 申請批准 → #85 併入 int-1758。
+④ #83 rebase 到 int-1758（T2 已完成）→ CI 綠 → 申請批准 → 併入 int-1758。
+⑤ #86 rebase 到 main（T3 已完成）→ CI 綠 → 申請批准 → 併入 main。
+⑥ int-1758 → main：報告檔以 L5（#86）版本為底，移植 L4 的 duration_s 與每季 sails／cargo；重跑全套 CI 與 golden → 申請批准 → 合併。
+每一步申請批准時附：待合併 head SHA、CI run、測試總數、ADDED_NAMES／REMOVED_NAMES、golden 的 COMPARED_CELLS／DIFF_CELLS；合併後回報 merge commit 與 main（或 int）CI run。
+
+━━ 四、清理（⑥ 完成且 main CI 綠後）
+T5 刪除已合併或廢棄的遠端分支：W9 殘留 int-1755-merge-0a6e、int-1756-295f、int-1757-5ae9；#83 至 #86 的 head 分支；int-1758（確認已全數進 main 後）。review/ 開頭的 orphan 證據分支保留。刪前列清單申請批准；無權限就回報，由 Owner 自刪。交：git ls-remote --heads 前後輸出。
+T6 交接狀態檔 HANDOFF.md（放 review/1770-handoff）：main 最終 head SHA 與 CI、golden run；測試總數；仍開著的 PR（應為 0）；剩餘分支清單；已知問題與技術債（照實列，含 R9-75 未結項）；z-1758-3 尚未跑。每一條「已完成」都附可查核證據（R9-75 N-10）。
+
+━━ 五、交付順序
+先交 T1、T2、T3、T4（各一個 review/1770-t1 至 t4，含 report.md，依 S9a A 至 I），Owner 審查後依第三節逐步申請合併；全部合併後做 T5、T6。本則全部完成後 Cursor 停工，等 Owner 指示。",發送方式：只貼本列 C 欄全文給 Cursor，不附任何其他內容（D-128、D-129 裁決已寫進 C 欄第〇節）。發送前 Owner 自行確認：main 的 docs/spec/ 為 v6.99.222 匯出（含 03_Systems FRM-SYS17-04 修訂）；若尚未 commit，先匯出 03_Systems 並 commit「docs/spec v6.99.222: FRM-SYS17-04 D-126 explore proxy mid-price」。本則不改規格，不需新匯出。,R9-75 §4.6、§8.2；D-128；D-129；D-120(e)；D-121(f)；D-91；TD-14；C-05；C-07；C-14；C-15；S9a；S9b；S9d；17-69,待發送（Owner 2026-11-25 改為給 Cursor；season_cells.csv 與驗收門改寫移到下一個模型的派工）,,,2026-11-25
