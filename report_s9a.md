@@ -1,8 +1,9 @@
 # S9a — evening-17-69-lane2 (#84 / 17-69 補正三 W1+W2)
 
-**Note:** tip 19d1a4e gut-unit(1) SCRIPT ERROR fixed in `_boot_pricing_stack` (DemandModel unload). See `ci_fail/ANALYSIS_19d1a4e_gut_unit_1.md`.
+**Note:** 19d1a4e SCRIPT ERROR → DemandModel unload; 1baa133 A21 push_error×2 → silent `_clear_state` (tip `b28012ca49407433e229e8cfc698e083e7680e8f`). See `ci_fail/ANALYSIS_1baa133_gut_unit_3.md`.
 
-**Final tip:** `1baa133c50c671da0d7111f8e157d5c58cf30697`  
+
+**Final tip:** `b28012ca49407433e229e8cfc698e083e7680e8f`  
 **Branch:** `cursor/ci-hang-1767-866d` → `main` (PR #84)  
 **Spec:** v6.99.222 · **Merge:** no · **tag / z-1758-3:** no
 
@@ -11,7 +12,7 @@
 
 ## A 基線
 對／有改動。見 `baseline_A.txt`（歷史 555 名基線仍有效）。
-- head **`1baa133c50c671da0d7111f8e157d5c58cf30697`**
+- head **`b28012ca49407433e229e8cfc698e083e7680e8f`**
 - 期望 gate：`REMOVED_NAMES＝無`；`ADDED_NAMES` 仍僅三個 EX-05-09；Passing ≥558
 
 ## B 變更清單（補正三增量 vs 前 tip `6a731ff`）

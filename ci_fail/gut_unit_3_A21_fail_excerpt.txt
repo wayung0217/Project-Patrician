@@ -1,0 +1,25 @@
+* test_WP56_A21_quote_unknown_port
+ERROR: DemandModel: { "code": &"ERR-SYS06-01", "sys": &"SYS-06", "detail": { "file": "res://core/demand_model.gd", "field": "user://wp56_demand_force_unload/", "value": <null>, "message": "demand tables dir missing (D-25b／D-30a)" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _emit (res://core/demand_model.gd:799)
+       [1] load_and_validate (res://core/demand_model.gd:116)
+       [2] _boot_pricing_stack (res://tests/unit/test_wp56_cash_market_trade.gd:281)
+       [3] test_WP56_A21_quote_unknown_port (res://tests/unit/test_wp56_cash_market_trade.gd:146)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+ERROR: MarketPricer: { "code": &"UNKNOWN_PORT", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "port_id", "value": "PT-99", "message": "unknown port_id" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/market_pricer.gd:543)
+       [1] _fail_from_ctx (res://autoload/market_pricer.gd:537)
+       [2] quote (res://autoload/market_pricer.gd:200)
+       [3] test_WP56_A21_quote_unknown_port (res://tests/unit/test_wp56_cash_market_trade.gd:151)
+       [4] _run_test (res://addons/gut/gut.gd:622)
+       [5] _test_the_scripts (res://addons/gut/gut.gd:835)
+    [Failed]:  Expected 1 push_error errors.  Got 2.
+      at line 161
+    [Failed]:  Unexpected Errors:
+    [1] <push_error>MarketPricer: { "code": &"UNKNOWN_PORT", "sys": &"SYS-04", "detail": { "file": "res://autoload/market_pricer.gd", "field": "port_id", "value": "PT-99", "message": "unknown port_id" } }
+      at line -1
+* test_WP56_A22_buy_slider_max_rejects_negative
