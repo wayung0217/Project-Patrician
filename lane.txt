@@ -1,0 +1,9 @@
+lane=handoff
+timeline=17-69
+dispatch=internal/dispatch-17-69-w1w10.md
+orphan=review/evening-17-69-handoff
+agent=bc-6ba787bd-8d3e-5533-834b-09f0ee78d88d
+no_merge=true
+no_tag=true
+no_z1758_3=true
+awaiting=Owner once-approve (do not merge until approved)
