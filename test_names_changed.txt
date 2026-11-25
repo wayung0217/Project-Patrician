@@ -1,1 +1,3 @@
-cash_ledger.gd comments + stock Dictionary path (see cash_ledger.gd.diff); ci.yml gate/timeouts/golden/actions (see ci.yml.diff); prior tip also touched test_sys23_wp27.gd (not Lane2-owned this commit).
+# Given-only seeds (names unchanged):
+test_TST_SYS05_08_max_affordable_qty
+test_WP56_demo_q_afford_124_still_holds

@@ -1,4 +1,3 @@
-  origin/HEAD -> origin/main
   origin/cursor/ci-hang-1767-866d
   origin/cursor/int-1755-merge-0a6e
   origin/cursor/int-1756-295f
@@ -8,6 +7,7 @@
   origin/cursor/m1b-fix-1766-3fe3
   origin/cursor/ui-1755-debug-panels-ff98
   origin/diag-z-1758
+  origin/HEAD -> origin/main
   origin/housing-1758
   origin/int-1758
   origin/main

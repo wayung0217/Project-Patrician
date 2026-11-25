@@ -1,0 +1,21 @@
+--- /tmp/evening-17-69-lane2-orphan/w2_d125/WP56_demo_before.txt	2026-11-25 01:07:30.866162622 +0000
++++ /tmp/evening-17-69-lane2-orphan/w2_d125/WP56_demo_after.txt	2026-11-25 01:07:30.870162692 +0000
+@@ -11,6 +11,18 @@
+ 		], REASON_OPEN, REQUESTER_SYS04),
+ 		OK
+ 	)
++	## D-125 甲：庫存上界無條件；Given 先種足量 MARKET 庫存（期望／測名不變）.
++	assert_gt(
++		GoodsLedger.transfer(
++			GoodsLedger.make_external(),
++			GoodsLedger.make_market("PT-01"),
++			&"米",
++			DEMO_Q_AFFORD + DEMO_BUY_Q,
++			GoodsLedger.REASON_GENESIS,
++			&"TEST"
++		),
++		0
++	)
+ 	var provider := _Demo124.new()
+ 	CashLedger.set_quote_provider(provider)
+ 	var q: int = CashLedger.max_affordable_qty(ACTOR, &"PT-01", &"米")

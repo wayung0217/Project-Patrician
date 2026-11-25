@@ -1,15 +1,11 @@
-# CI evidence (R9-73 L2-4) — tip `bb1b50d`
+# CI evidence — tip `19d1a4e862e0dbe5ef15f9deb36721cc3690df48`（補正三 W1+W2）
 
-## Tip run
-- URL: https://github.com/wayung0217/Project-Patrician/actions/runs/45424793984
-- Head: `bb1b50d3bd91ba33df3393babc7c0e5de3147edf`
-- Summary: see `tip_run_summary.txt` (filled when run terminal)
+## Tip run（in progress at pack draft）
+- URL: https://github.com/wayung0217/Project-Patrician/actions/runs/45523259356
+- Head: `19d1a4e862e0dbe5ef15f9deb36721cc3690df48`
+- Gate / golden excerpts: filled when run terminal（見 `gate_tip_19d1a4e.txt` 等，CI 完成後補）
 
-## GOLDEN_BASE_MISSING
-- Job: golden-30d (failure — intentional 2.5)
-- Link: https://github.com/wayung0217/Project-Patrician/actions/runs/45424793984/job/138553718144
-- Excerpt: `golden_base_missing_excerpt.txt`
-- Full log: `golden-30d_tip_bb1b50d.log`
-
-## actions@v5 resolve
-See `../actions_versions.txt` — checkout/cache/upload from tip golden job; download-artifact from prior gate job on same pins.
+## W1
+- (a) `../w1_golden/a_run_45358265237.md`
+- (b) `w1b_workflow_dispatch_403.txt`
+- (c)/(d) `../w1_golden/cd_fix_summary.md`

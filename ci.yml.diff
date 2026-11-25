@@ -1,5 +1,5 @@
 diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
-index 288cca3..42ebf8e 100644
+index 288cca3..e96d3a1 100644
 --- a/.github/workflows/ci.yml
 +++ b/.github/workflows/ci.yml
 @@ -20,9 +20,10 @@ on:
@@ -219,35 +219,74 @@ index 288cca3..42ebf8e 100644
          with:
            path: .godot/imported
            key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
-@@ -393,7 +449,8 @@ jobs:
+@@ -393,45 +449,100 @@ jobs:
          run: |
            set -euo pipefail
            mkdir -p out/golden-main
 -          # Prefer artifact from latest successful main CI run; else mark missing.
-+          # Prefer artifact from latest successful main CI run.
-+          # 17-69 2.5: missing baseline must fail the job (no silent GREEN skip).
++          # 17-69 W1(d)：依 artifact API 找 main 分支最新未過期 golden-30d
++          # （勿僅看 conclusion==success — cancelled 仍可能已上傳；舊 success 可能無 golden job）。
++          # 17-69 W1(c)：若仍無 main artifact → S9b bootstrap 凍結基準（evening-17-64）。
++          BOOT_CSV=".github/ci/golden_30d_bootstrap_1764.csv"
++          BOOT_SHA_EXPECT="8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c"
            set +e
-           RUN_ID=$(gh run list --repo "${{ github.repository }}" --branch main --workflow ci.yml \
-             --json databaseId,conclusion,status --limit 30 \
-@@ -402,7 +459,8 @@ jobs:
-           if [[ -z "${RUN_ID:-}" ]]; then
-             echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"
+-          RUN_ID=$(gh run list --repo "${{ github.repository }}" --branch main --workflow ci.yml \
+-            --json databaseId,conclusion,status --limit 30 \
+-            --jq '.[] | select(.conclusion=="success") | .databaseId' | head -n1)
++          ART_META=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=golden-30d&per_page=100" \
++            --jq '[.artifacts[] | select(.expired==false and .workflow_run.head_branch=="main")] | .[0] // empty')
+           set -e
+-          if [[ -z "${RUN_ID:-}" ]]; then
+-            echo "GOLDEN_BASE_MISSING=1 (no successful main CI run yet)"
++          RUN_ID=""
++          ART_ID=""
++          if [[ -n "${ART_META}" && "${ART_META}" != "null" ]]; then
++            RUN_ID=$(echo "${ART_META}" | jq -r '.workflow_run.id // empty')
++            ART_ID=$(echo "${ART_META}" | jq -r '.id // empty')
++          fi
++          if [[ -n "${RUN_ID}" ]]; then
++            echo "GOLDEN_BASE_RUN_ID=${RUN_ID}"
++            echo "GOLDEN_BASE_ARTIFACT_ID=${ART_ID}"
++            set +e
++            gh run download "${RUN_ID}" --repo "${{ github.repository }}" -n golden-30d -D out/golden-main
++            RC=$?
++            set -e
++            if [[ $RC -eq 0 ]] && [[ -f out/golden-main/30d.csv ]]; then
++              echo "present" > out/golden-main/STATUS.txt
++              echo "GOLDEN_BOOTSTRAP=0"
++              ls -la out/golden-main/
++              exit 0
++            fi
++            echo "GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} — falling back to bootstrap"
++          else
++            echo "GOLDEN_BASE_MISSING=1 (no non-expired main golden-30d artifact)"
++          fi
++          # S9b bootstrap：17-64 凍結 CSV（sha256 8b25c951…）
++          if [[ ! -f "${BOOT_CSV}" ]]; then
              echo "missing" > out/golden-main/STATUS.txt
 -            exit 0
-+            echo "::error::GOLDEN_BASE_MISSING — no successful main CI run with golden-30d; compare not merge-eligible"
++            echo "::error::GOLDEN_BASE_MISSING — no main artifact and bootstrap CSV absent"
 +            exit 1
            fi
-           echo "GOLDEN_BASE_RUN_ID=$RUN_ID"
-           set +e
-@@ -412,26 +470,26 @@ jobs:
-           if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
-             echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"
+-          echo "GOLDEN_BASE_RUN_ID=$RUN_ID"
+-          set +e
+-          gh run download "$RUN_ID" --repo "${{ github.repository }}" -n golden-30d -D out/golden-main
+-          RC=$?
+-          set -e
+-          if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
+-            echo "GOLDEN_BASE_MISSING=1 (artifact golden-30d not on run $RUN_ID)"
++          cp "${BOOT_CSV}" out/golden-main/30d.csv
++          ACTUAL_SHA=$(sha256sum out/golden-main/30d.csv | awk '{print $1}')
++          if [[ "${ACTUAL_SHA}" != "${BOOT_SHA_EXPECT}" ]]; then
              echo "missing" > out/golden-main/STATUS.txt
 -            exit 0
-+            echo "::error::GOLDEN_BASE_MISSING — golden-30d artifact absent on main run ${RUN_ID}; compare not merge-eligible"
++            echo "::error::GOLDEN_BOOTSTRAP_SHA_MISMATCH expect=${BOOT_SHA_EXPECT} actual=${ACTUAL_SHA}"
 +            exit 1
            fi
-           echo "present" > out/golden-main/STATUS.txt
+-          echo "present" > out/golden-main/STATUS.txt
++          echo "bootstrap" > out/golden-main/STATUS.txt
++          echo "GOLDEN_BOOTSTRAP=1"
++          echo "GOLDEN_BOOTSTRAP_SHA=${ACTUAL_SHA}"
            ls -la out/golden-main/
  
 -      - name: Compare PR golden to main baseline (or recompute note)
@@ -261,8 +300,39 @@ index 288cca3..42ebf8e 100644
 -            exit 0
 +            echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"
 +            exit 1
++          fi
++          STATUS="$(cat out/golden-main/STATUS.txt 2>/dev/null || echo unknown)"
++          if [[ "${STATUS}" == "bootstrap" ]]; then
++            echo "GOLDEN_BOOTSTRAP=1"
++          else
++            echo "GOLDEN_BOOTSTRAP=0"
++          fi
++          set +e
++          python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out
++          RC=${PIPESTATUS[0]}
++          set -e
++          # DIFF_CELLS = sum of per-column diff_cells（IDENTICAL → 0）
++          DIFF_CELLS=$(python3 - <<'PY'
++          from pathlib import Path
++          text = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")
++          if "IDENTICAL=1" in text:
++              print(0)
++          else:
++              total = 0
++              for line in text.splitlines():
++                  if "diff_cells=" in line:
++                      try:
++                          total += int(line.rsplit("diff_cells=", 1)[1].strip())
++                      except ValueError:
++                          pass
++              print(total)
++          PY
++          )
++          echo "DIFF_CELLS=${DIFF_CELLS}"
++          if [[ $RC -ne 0 ]]; then
++            exit "$RC"
            fi
-           python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv
+-          python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv
            echo "GOLDEN_CELLS_IDENTICAL=1"
  
        - name: Upload golden artifact
@@ -272,7 +342,7 @@ index 288cca3..42ebf8e 100644
          with:
            name: golden-30d
            path: out/golden/
-@@ -446,11 +504,11 @@ jobs:
+@@ -446,11 +557,11 @@ jobs:
      timeout-minutes: 15
      steps:
        - name: Checkout
@@ -286,7 +356,7 @@ index 288cca3..42ebf8e 100644
          with:
            path: godot
            key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-@@ -495,7 +553,7 @@ jobs:
+@@ -495,7 +606,7 @@ jobs:
  
        - name: Upload H4 smoke artifact
          if: always()
@@ -295,7 +365,7 @@ index 288cca3..42ebf8e 100644
          with:
            name: m1b-h4-smoke
            path: out/m1b_smoke/
-@@ -510,11 +568,11 @@ jobs:
+@@ -510,11 +621,11 @@ jobs:
      timeout-minutes: 15
      steps:
        - name: Checkout
@@ -309,7 +379,7 @@ index 288cca3..42ebf8e 100644
          with:
            path: godot
            key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
-@@ -575,7 +633,7 @@ jobs:
+@@ -575,7 +686,7 @@ jobs:
  
        - name: Upload W4 cmp artifact
          if: always()

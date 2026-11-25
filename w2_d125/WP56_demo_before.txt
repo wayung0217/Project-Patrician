@@ -1,0 +1,17 @@
+func test_WP56_demo_q_afford_124_still_holds() -> void:
+	## 示範 5.1 q_afford＝124（原 TST-SYS05-08 數值釘）保留為補強.
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
+	assert_eq(GoodsLedger.load_and_validate().size(), 0)
+	assert_eq(CashLedger.load_and_validate().size(), 0)
+	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
+	assert_eq(
+		CashLedger.post([
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - DEMO_C0),
+			CashLedger.make_entry(ACTOR, DEMO_C0),
+		], REASON_OPEN, REQUESTER_SYS04),
+		OK
+	)
+	var provider := _Demo124.new()
+	CashLedger.set_quote_provider(provider)
+	var q: int = CashLedger.max_affordable_qty(ACTOR, &"PT-01", &"米")
+	assert_eq(q, DEMO_Q_AFFORD)

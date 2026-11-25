@@ -1,0 +1,2 @@
+PENDING — tip 19d1a4e run 45523259356 in progress.
+Expect: REMOVED_NAMES＝無；ADDED_NAMES＝三個 EX-05-09 only；golden DIFF_CELLS=0 (main artifact or bootstrap).

@@ -1,26 +1,12 @@
-## Gaps (R9-73) — D-125 only
+# Gaps — evening-17-69-lane2（補正三後）
 
-### D-125 (pending Owner) — MarketPricer provider guard on stock cap
-Location: `CashLedger.max_affordable_qty`
-  `if _quote_provider == MarketPricer and GoodsLedger.is_loaded():`
+## CLOSED by W2（D-125 甲）
+- max_affordable_qty 庫存上界不再限 MarketPricer；GoodsLedger.is_loaded() 即適用。
+- 舊測 TST-SYS05-08／WP56_demo Given 已種足量 MARKET 庫存。
 
-D-124 authorized FRM-SYS05-09 q_afford=MIN(cash,s) but did **not** authorize
-applying the stock upper bound only under a specific quote provider.
+## CLOSED by W1
+- GOLDEN_BASE_MISSING 死結：下載改找 main 分支 golden-30d artifact；無則 S9b bootstrap。
 
-Accepted root cause (keep current code until adjudicated):
-  Earlier PortRegistry-gated stock cap broke DemoQuoteProvider tests on CI
-  run 45397235504:
-    - test_TST_SYS05_08_max_affordable_qty
-    - test_WP56_demo_q_afford_124_still_holds (expected 124, got 0)
-  MarketPricer-only guard restored those tests (commit 76d8a93 lineage on #84).
-
-Two options pending Owner (do not self-fix):
-  甲 Unconditional stock cap + change those two old tests to seed stock first
-     (needs Owner pre-approval to edit old tests)
-  乙 Write the provider condition into 03_Systems r574
-
-**Status:** keep MarketPricer guard as-is; listed as gap only. No product change for R9-73 L2-1.
-
-### Closed (not gaps)
-- D-124 / 2.10: CLOSED (v6.99.220; EX-05-09-01..03)
-- 2.8 is_loaded / make_market H-table notes: informational only; not D-125
+## OPEN（非本線）
+- 整合／HANDOFF／合併順序：#84→main 產出成功 golden → 他線重移植（見 dispatch W10）
+- workflow_dispatch on main：integration token 403（需 Owner／PAT；本線以 bootstrap+artifact 下載繞過）

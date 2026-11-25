@@ -1,17 +1,13 @@
 diff --git a/autoload/cash_ledger.gd b/autoload/cash_ledger.gd
-index aba9417..0ab8b88 100644
+index c9d05f0..6ce0beb 100644
 --- a/autoload/cash_ledger.gd
 +++ b/autoload/cash_ledger.gd
-@@ -655,12 +655,13 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
+@@ -655,8 +655,13 @@ func charge_mandatory(id: StringName, due: int, reason: StringName, requester: S
  
  
  func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
 -	# FRM-SYS05-09：最大 q 使 buy_total(q) ≤ balance；二分搜尋＋整數 quote 校正
 -	# A18：quote 失敗（含買量 > 庫存）不得當 total＝0；視為該 q 不可買，收斂上界.
--	# 17-67／17-69：真實 MarketPricer 路徑先以 GoodsLedger 庫存為 exclusive 上界，
--	# 避免倍增／二分探測 qty>stock 觸發 ERR-SYS04-06 push_error 風暴（K2/K4／#499）。
--	# ★ 2.10：03_Systems r574／FRM-SYS05-09 原文未寫「上界受市場庫存限制」；
--	# Owner 尚未裁決。若裁決改變語意，本上界與 R972 測試須同步調整。
 +	# FRM-SYS05-09／D-124（Owner 2026-11-24；docs/spec v6.99.220；03_Systems r574）：
 +	# q_afford = 最大 q 同時滿足 buy_total(q) ≤ balance 且 q ≤ s
 +	# ＝ MIN(現金可負擔量, s)；s = 該港該貨 MARKET 庫存。
@@ -22,40 +18,52 @@ index aba9417..0ab8b88 100644
  	assert(_loaded, "CashLedger.max_affordable_qty before load")
  	var bal: int = balance(actor)
  	if bal <= 0:
-@@ -668,14 +669,13 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+@@ -664,10 +669,33 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
  	if _quote_provider == null:
  		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
  		return 0
--	## FRM-SYS05-09 exclusive upper: stock+1 only for real MarketPricer
--	## (not DemoQuoteProvider — Autoload PortRegistry often stays loaded across GUT
--	## with empty markets; PortRegistry.is_loaded gating broke TST-SYS05-08 / WP56).
-+	## FRM-SYS05-09／D-124：exclusive upper = s+1 only for real MarketPricer
-+	## (not DemoQuoteProvider — PortRegistry.is_loaded gating broke TST-SYS05-08 / WP56).
- 	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
--	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；此處以 KIND+PORT
--	## Dictionary 交給 get_qty，_container_key 內部呼叫 container_id（不用 make_market）。
+-	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗
++	## FRM-SYS05-09／D-124／D-125 甲（Owner 2026-11-25；v6.99.222）：
++	## 庫存上界無條件適用（不限 MarketPricer／DemoQuoteProvider）；
++	## exclusive upper = s+1；s = MARKET 庫存。舊測 Given 須先種足量庫存。
++	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
 +	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；KIND+PORT Dictionary
 +	## → get_qty → _container_key → container_id（不用 make_market）。
- 	## 2.8：GoodsLedger.is_loaded／make_market、PortRegistry.is_loaded 未見 03_Systems H
--	## 可觀察性列 → 缺口見 evening-17-69-lane2 報告（is_loaded 沿用既有 Autoload 慣例）。
-+	## → 缺口見 evening-17-69-lane2（is_loaded 沿用既有 Autoload 慣例）。
- 	var abs_hi: int = -1
- 	if _quote_provider == MarketPricer and GoodsLedger.is_loaded():
- 		var port_s: String = String(port)
-@@ -684,10 +684,11 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
- 			GoodsLedger.KEY_PORT: port_s,
- 		}
- 		var stock_cap: int = GoodsLedger.get_qty(market, good)
++	## 2.8：GoodsLedger.is_loaded 未見 03_Systems H → 缺口見 evening-17-69-lane2
++	## （is_loaded 沿用既有 Autoload 慣例）。
++	var abs_hi: int = -1
++	if GoodsLedger.is_loaded():
++		var port_s: String = String(port)
++		var market: Dictionary = {
++			GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
++			GoodsLedger.KEY_PORT: port_s,
++		}
++		var stock_cap: int = GoodsLedger.get_qty(market, good)
 +		## D-124／EX-05-09-03：s = 0 → 0；不得以 q = 1 呼叫 quote()。
- 		if stock_cap < 1:
- 			return 0
- 		abs_hi = stock_cap + 1
--	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到庫存上界）
++		if stock_cap < 1:
++			return 0
++		abs_hi = stock_cap + 1
 +	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到 s+1，永不 quote q>s）
  	var lo: int = 0
  	var hi: int = 1
  	while true:
-@@ -725,6 +726,7 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
++		if abs_hi > 0 and hi >= abs_hi:
++			hi = abs_hi
++			break
+ 		var t_hi: int = _quote_buy_total(port, good, hi)
+ 		if t_hi < 0 or t_hi > bal:
+ 			break
+@@ -677,6 +705,9 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
+ 		if next_hi <= hi:
+ 			# overflow / cap
+ 			break
++		if abs_hi > 0 and next_hi >= abs_hi:
++			hi = abs_hi
++			break
+ 		hi = next_hi
+ 	# 二分
+ 	while lo + 1 < hi:
+@@ -696,6 +727,7 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
  
  func buy_slider_max(q_afford: int, hold_free: int, stock: int) -> int:
  	# FRM-SYS05-10：買 = MIN(q_afford, hold_free, stock)

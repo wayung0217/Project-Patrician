@@ -1,64 +1,33 @@
 {
   "lane": 2,
-  "branch": "cursor/ci-hang-1767-866d",
+  "timeline": "17-69-w1w2",
   "pr": 84,
-  "tip": "6a731ff051874c767be52c1904df898e294c180f",
-  "base": "191a7ee6aaa0f03c0cb32d6a803105fca7f95ee9",
-  "items": [
-    "2.1",
-    "2.2",
-    "2.3",
-    "2.4",
-    "2.5",
-    "2.6",
-    "2.7",
-    "2.8",
-    "2.9",
-    "2.10"
-  ],
-  "tests_added": 3,
-  "baseline_old": 555,
-  "baseline_new_expected_min": 558,
-  "actions": [
-    "checkout@v5",
-    "cache@v5",
-    "upload-artifact@v5",
-    "download-artifact@v5"
-  ],
-  "ci_tip_run": "45440174473",
-  "ready_for_lane3": true,
-  "merge": false,
-  "h5": "orphan review/evening-17-69-lane2 (no SharePoint)",
-  "orphan_branch": "review/evening-17-69-lane2",
-  "orphan_sha": "d040f05ff4946d566144474b9c16b27f3b0c2877",
-  "b9": "v6.99.220",
-  "d124": "adjudicated",
-  "product_tip": "6a731ff051874c767be52c1904df898e294c180f",
-  "owner_jia_yi_bing": "\u8ffd\u8a8d",
-  "prop_c": "deleted_paths_txt",
-  "github_ci_owned": true,
-  "ansi_parse_fix": true,
-  "prior_fail_run": "45418446352",
-  "expected_added": 3,
-  "expected_removed": 0,
-  "wp27_unload_on_84": true,
-  "wp27_unload_commit": "1a3e5f144a99fbcb157c14e7766d6da42c121714",
-  "wp27_unload_on_int": false,
-  "wp27_unload_path": "#84\u2192main\u2192int or Owner cherry-pick 1a3e5f1; not L3",
-  "golden_base_missing": "until main green golden (2.5)",
-  "r973": [
-    "L2-1",
-    "L2-2",
-    "L2-3",
-    "L2-4"
-  ],
-  "d125_gap": true,
-  "market_pricer_guard_kept": true,
-  "prior_tip_bb1b50d_d120e": "gut-unit(0) timeout 30m cancelled; gate skipped",
-  "gut_unit_timeout_minutes": 45,
-  "l2_2": "done",
-  "l2_3": "done",
-  "l2_4": "done",
-  "gate": "success_558_added3_removed_none",
-  "golden": "GOLDEN_BASE_MISSING"
+  "branch": "cursor/ci-hang-1767-866d",
+  "tip": "19d1a4e862e0dbe5ef15f9deb36721cc3690df48",
+  "prev_tip": "6a731ff051874c767be52c1904df898e294c180f",
+  "spec": "v6.99.222",
+  "w1": {
+    "a": "run 45358265237 success but no golden-30d job; no artifact",
+    "b": "workflow_dispatch 403 Resource not accessible by integration",
+    "c": "S9b bootstrap 8b25c951… GOLDEN_BOOTSTRAP=1 + DIFF_CELLS",
+    "d": "download via artifacts API head_branch=main; artifact 14932606115 on cancelled run 45415084221"
+  },
+  "w2": {
+    "decision": "D-125 甲",
+    "product": "unconditional GoodsLedger stock cap",
+    "tests_seeded": [
+      "test_TST_SYS05_08_max_affordable_qty",
+      "test_WP56_demo_q_afford_124_still_holds"
+    ],
+    "gate_expect": {
+      "REMOVED_NAMES": "無",
+      "ADDED_NAMES": [
+        "test_R972_EX_05_09_01_stock_bottleneck_q_100",
+        "test_R972_EX_05_09_02_cash_bottleneck_q_120",
+        "test_R972_EX_05_09_03_zero_stock_no_quote"
+      ]
+    }
+  },
+  "ci_run": "https://github.com/wayung0217/Project-Patrician/actions/runs/45523259356",
+  "merge": false
 }
