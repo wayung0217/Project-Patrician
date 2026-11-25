@@ -1,0 +1,233 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 46b3218..07299e5 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -35,8 +35,8 @@ jobs:
+   gut-unit:
+     if: github.event_name != 'workflow_dispatch' || inputs.job == 'ci'
+     runs-on: ubuntu-latest
+-    # 17-67／R9-73: shard0+property wall. bb1b50d hit 30m; e99b495 hit 35m (cancelled).
+-    # Raise to 45 — whole-CI wall still ≤50m under parallel jobs (other shards ≪10m).
++    # 17-67／R9-73 wall raised to 45 (do not raise further — D-130／E3(e)).
++    # E3(e)：file-weight + property round-robin; wp26 not alone with all property.
+     timeout-minutes: 45
+     strategy:
+       fail-fast: false
+@@ -121,29 +121,48 @@ jobs:
+           fi
+           echo "IMPORT_CLEAN_TREE_OK"
+ 
+-      - name: Select unit shard scripts (size-balanced 4-way) + property on shard 0
++      # D-130／E3(e)：測檔權重（property 先 round-robin，再 unit 按 size greedy）；
++      # wp26 不得獨佔一片；timeout 仍 45（不加長）。
++      - name: Select unit+property shard scripts (file-weight balanced 4-way)
+         id: shard
+         run: |
+           set -euo pipefail
+           SHARD="${{ matrix.shard }}"
+           python3 - <<PY
+           from pathlib import Path
++
++          PROP_MULT = 80  # property wall ≫ unit per byte (runtime proxy)
+           shard = int("${SHARD}")
+-          files = sorted(Path("tests/unit").glob("test_*.gd"), key=lambda p: (-p.stat().st_size, p.name))
++          props = sorted(
++              Path("tests/property").glob("test_*.gd"),
++              key=lambda p: (-p.stat().st_size, p.name),
++          )
++          units = sorted(
++              Path("tests/unit").glob("test_*.gd"),
++              key=lambda p: (-p.stat().st_size, p.name),
++          )
+           bins = [[] for _ in range(4)]
+-          sizes = [0] * 4
+-          for f in files:
+-              i = min(range(4), key=lambda k: sizes[k])
++          loads = [0] * 4
++          # Property first, round-robin heaviest→lightest (spread; ≤2 props/shard).
++          for idx, f in enumerate(props):
++              i = idx % 4
++              bins[i].append(f)
++              loads[i] += f.stat().st_size * PROP_MULT
++          # Units by file size → lightest bin.
++          for f in units:
++              i = min(range(4), key=lambda k: loads[k])
+               bins[i].append(f)
+-              sizes[i] += f.stat().st_size
++              loads[i] += f.stat().st_size
+           selected = bins[shard]
+           out = Path("/tmp/gut_shard_tests.txt")
+           lines = [f"res://{p.as_posix()}" for p in sorted(selected, key=lambda p: p.name)]
+-          if shard == 0:
+-              for p in sorted(Path("tests/property").glob("test_*.gd")):
+-                  lines.append(f"res://{p.as_posix()}")
+           out.write_text("\n".join(lines) + "\n")
+-          print(f"SHARD={shard} unit={len(selected)} bytes={sizes[shard]} scripts={len(lines)}")
++          wp26 = any(p.name == "test_sys23_wp26.gd" for p in selected)
++          n_prop = sum(1 for p in selected if p.parent.name == "property")
++          print(
++              f"SHARD={shard} scripts={len(selected)} file_weight={loads[shard]} "
++              f"wp26={int(wp26)} property={n_prop} balance=file_weight_prop_rr"
++          )
+           for ln in lines:
+               print(ln)
+           Path("/tmp/gut_shard_selected_unit.txt").write_text(str(len(selected)))
+@@ -449,11 +468,8 @@ jobs:
+         run: |
+           set -euo pipefail
+           mkdir -p out/golden-main
+-          # 17-69 W1(d)：依 artifact API 找 main 分支最新未過期 golden-30d
+-          # （勿僅看 conclusion==success — cancelled 仍可能已上傳；舊 success 可能無 golden job）。
+-          # 17-69 W1(c)：若仍無 main artifact → S9b bootstrap 凍結基準（evening-17-64）。
+-          BOOT_CSV=".github/ci/golden_30d_bootstrap_1764.csv"
+-          BOOT_SHA_EXPECT="8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c"
++          # 17-69 W1(d)／E6(N-15)：只取 main 分支最新未過期 golden-30d artifact。
++          # 無 artifact 或下載失敗 → ::error:: 失敗；不得 GOLDEN_BOOTSTRAP 回退、不得 exit 0。
+           set +e
+           ART_META=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=golden-30d&per_page=100" \
+             --jq '[.artifacts[] | select(.expired==false and .workflow_run.head_branch=="main")] | .[0] // empty')
+@@ -464,39 +480,24 @@ jobs:
+             RUN_ID=$(echo "${ART_META}" | jq -r '.workflow_run.id // empty')
+             ART_ID=$(echo "${ART_META}" | jq -r '.id // empty')
+           fi
+-          if [[ -n "${RUN_ID}" ]]; then
+-            echo "GOLDEN_BASE_RUN_ID=${RUN_ID}"
+-            echo "GOLDEN_BASE_ARTIFACT_ID=${ART_ID}"
+-            set +e
+-            gh run download "${RUN_ID}" --repo "${{ github.repository }}" -n golden-30d -D out/golden-main
+-            RC=$?
+-            set -e
+-            if [[ $RC -eq 0 ]] && [[ -f out/golden-main/30d.csv ]]; then
+-              echo "present" > out/golden-main/STATUS.txt
+-              echo "GOLDEN_BOOTSTRAP=0"
+-              ls -la out/golden-main/
+-              exit 0
+-            fi
+-            echo "GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} — falling back to bootstrap"
+-          else
+-            echo "GOLDEN_BASE_MISSING=1 (no non-expired main golden-30d artifact)"
+-          fi
+-          # S9b bootstrap：17-64 凍結 CSV（sha256 8b25c951…）
+-          if [[ ! -f "${BOOT_CSV}" ]]; then
++          if [[ -z "${RUN_ID}" ]]; then
+             echo "missing" > out/golden-main/STATUS.txt
+-            echo "::error::GOLDEN_BASE_MISSING — no main artifact and bootstrap CSV absent"
++            echo "::error::GOLDEN_BASE_MISSING — no non-expired main golden-30d artifact (E6/N-15; no bootstrap)"
+             exit 1
+           fi
+-          cp "${BOOT_CSV}" out/golden-main/30d.csv
+-          ACTUAL_SHA=$(sha256sum out/golden-main/30d.csv | awk '{print $1}')
+-          if [[ "${ACTUAL_SHA}" != "${BOOT_SHA_EXPECT}" ]]; then
++          echo "GOLDEN_BASE_RUN_ID=${RUN_ID}"
++          echo "GOLDEN_BASE_ARTIFACT_ID=${ART_ID}"
++          set +e
++          gh run download "${RUN_ID}" --repo "${{ github.repository }}" -n golden-30d -D out/golden-main
++          RC=$?
++          set -e
++          if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
+             echo "missing" > out/golden-main/STATUS.txt
+-            echo "::error::GOLDEN_BOOTSTRAP_SHA_MISMATCH expect=${BOOT_SHA_EXPECT} actual=${ACTUAL_SHA}"
++            echo "::error::GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} (E6/N-15; no bootstrap)"
+             exit 1
+           fi
+-          echo "bootstrap" > out/golden-main/STATUS.txt
+-          echo "GOLDEN_BOOTSTRAP=1"
+-          echo "GOLDEN_BOOTSTRAP_SHA=${ACTUAL_SHA}"
++          echo "present" > out/golden-main/STATUS.txt
++          echo "GOLDEN_BOOTSTRAP=0"
+           ls -la out/golden-main/
+ 
+       - name: Compare PR golden to main baseline
+@@ -517,8 +518,8 @@ jobs:
+           python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out
+           RC=${PIPESTATUS[0]}
+           set -e
+-          # 17-70 T4／N-13：COMPARED_* 以 CSV 網格為準（不依賴 compare.out 是否印 COMPARED_*；
+-          # 舊 golden_compare 在 IDENTICAL=1 時提早 return 會漏印 → 誤判 cells=0）。
++          # 17-70 T4／N-13 + D-130 甲(2)：兩邊列數、欄數必須相等；COMPARED_CELLS＝列×欄且＞0。
++          # COMPARED_* 以 CSV 網格為準（不依賴 compare.out 是否印 COMPARED_*）。
+           eval "$(python3 - <<'PY'
+           import csv
+           from pathlib import Path
+@@ -531,8 +532,9 @@ jobs:
+ 
+           ra, ca = grid("out/golden-main/30d.csv")
+           rb, cb = grid("out/golden/30d.csv")
+-          rows = min(ra, rb)
+-          cols = min(ca, cb) if ca and cb else 0
++          dims_ok = ra == rb and ca == cb and ra > 0 and ca > 0
++          rows = ra if dims_ok else 0
++          cols = ca if dims_ok else 0
+           cells = rows * cols
+           text = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")
+           diff = 0
+@@ -553,6 +555,7 @@ jobs:
+           print(f"CSV_ROWS_B={rb}")
+           print(f"CSV_COLS_A={ca}")
+           print(f"CSV_COLS_B={cb}")
++          print(f"DIMS_EQUAL={1 if dims_ok else 0}")
+           PY
+           )"
+           echo "COMPARED_ROWS=${COMPARED_ROWS}"
+@@ -560,9 +563,14 @@ jobs:
+           echo "COMPARED_CELLS=${COMPARED_CELLS}"
+           echo "DIFF_CELLS=${DIFF_CELLS}"
+           echo "CSV_ROWS_A=${CSV_ROWS_A} CSV_ROWS_B=${CSV_ROWS_B} CSV_COLS_A=${CSV_COLS_A} CSV_COLS_B=${CSV_COLS_B}"
++          echo "DIMS_EQUAL=${DIMS_EQUAL}"
++          if [[ "${DIMS_EQUAL}" != "1" ]]; then
++            echo "::error::GOLDEN_DIMS_MISMATCH rows_a=${CSV_ROWS_A} rows_b=${CSV_ROWS_B} cols_a=${CSV_COLS_A} cols_b=${CSV_COLS_B} (D-130)"
++            exit 1
++          fi
+           expect=$((COMPARED_ROWS * COMPARED_COLS))
+           if [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then
+-            echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"
++            echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13/D-130)"
+             exit 1
+           fi
+           if [[ $RC -ne 0 ]]; then
+diff --git a/tools/golden_compare.py b/tools/golden_compare.py
+index 4a7f180..72e3dc9 100644
+--- a/tools/golden_compare.py
++++ b/tools/golden_compare.py
+@@ -40,9 +40,18 @@ def main() -> int:
+         print("COMPARED_COLS=0")
+         print("COMPARED_CELLS=0")
+         return 1
+-    cols = list(rows_a[0].keys())
+-    compared_rows = min(len(rows_a), len(rows_b))
+-    compared_cols = len(cols)
++    cols_a = list(rows_a[0].keys())
++    cols_b = list(rows_b[0].keys())
++    # D-130 甲(2)：兩邊列數、欄數必須相等；否則失敗（不再用 min 偷過）。
++    if len(rows_a) != len(rows_b) or cols_a != cols_b:
++        print(f"DIMS_MISMATCH rows_a={len(rows_a)} rows_b={len(rows_b)} cols_a={len(cols_a)} cols_b={len(cols_b)}")
++        print("COMPARED_ROWS=0")
++        print("COMPARED_COLS=0")
++        print("COMPARED_CELLS=0")
++        print("IDENTICAL=0")
++        return 1
++    compared_rows = len(rows_a)
++    compared_cols = len(cols_a)
+     compared_cells = compared_rows * compared_cols
+     # 17-70 T4／N-13：列印比對網格；CI 要求 COMPARED_CELLS == 列×欄 且 > 0。
+     print(f"COMPARED_ROWS={compared_rows}")
+@@ -57,17 +66,15 @@ def main() -> int:
+     for i in range(compared_rows):
+         ra, rb = rows_a[i], rows_b[i]
+         day = ra.get("day", "?")
+-        for c in cols:
++        for c in cols_a:
+             va = ra.get(c, "")
+             vb = rb.get(c, "")
+             if va != vb:
+                 counts[c] += 1
+                 if c not in first_day:
+                     first_day[c] = day
+-    if len(rows_a) != len(rows_b):
+-        print(f"ROW_COUNT_DIFF a={len(rows_a)} b={len(rows_b)}")
+     print("DIFFS_BEGIN")
+-    for c in cols:
++    for c in cols_a:
+         if c in counts:
+             print(f"COL={c} first_diff_day={first_day[c]} diff_cells={counts[c]}")
+     print("DIFFS_END")

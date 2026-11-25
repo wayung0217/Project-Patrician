@@ -1,0 +1,11 @@
+$ gh api repos/wayung0217/Project-Patrician/compare/b99d61d...a45dc73 --jq .status
+ahead
+
+$ gh api repos/wayung0217/Project-Patrician/compare/a45dc73...cf4d81c --jq .status
+ahead
+
+$ gh api repos/wayung0217/Project-Patrician/compare/3d90e23...32f0a43 --jq .status
+ahead
+
+$ gh api repos/wayung0217/Project-Patrician/compare/bb830fa...76bacbf --jq .status
+ahead

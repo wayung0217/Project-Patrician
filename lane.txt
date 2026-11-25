@@ -1,0 +1,6 @@
+lane=evidence2
+timeline=17-70
+scope=E1,E2,E4,E5 + orphan assemble; E3/E6 from D-130 sibling when present
+orphan=review/1770-evidence2
+no_merge=true
+agent=bc-8d631702-ec5f-5725-9999-b3669901cc6a

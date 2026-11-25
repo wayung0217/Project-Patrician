@@ -1,0 +1,57 @@
+$ git log --oneline origin/int-1758..0b0e220
+0b0e220 dry-run(17-69): merge³ prep — main e07bb3c into int-1758 (local only)
+e07bb3c Merge pull request #84 from wayung0217/cursor/ci-hang-1767-866d
+9f228f0 fix(17-70 T4): compute COMPARED_* from CSV grids in CI
+8f200cf fix(17-70): T1 D-128 formal potential inject + T4 COMPARED_CELLS
+c7d8392 20261125-15:02-docs
+b28012c fix(17-69): silent DemandModel unload in pricing boot (no push_error)
+1baa133 fix(17-69): isolate offtake MarketPricer from DemandModel shard residue
+19d1a4e fix(17-69): W1 golden bootstrap/download + W2 D-125 stock cap
+6a731ff fix(17-69): gut-unit shard timeout 35→45 after tip wall cancel
+e99b495 fix(17-69): gut-unit shard timeout 30→35 (shard0+property wall)
+bb1b50d fix(17-69): strip ANSI when extracting GUT test names for gate
+b998cea fix(17-69): Owner 追認 gate ADDED/REMOVED; drop paths.txt
+c13c5bd fix(17-69): D-124 FRM-SYS05-09 stock bound + EX-05-09 tests
+191a7ee 	 20261124-22:31-Update-docs-specs
+2e845b9 fix(17-69): R972 stock-cap tests + CI gate/timeouts/golden fail
+1a3e5f1 fix(17-67): WP27 unload BuildingEconomy between tests
+76d8a93 fix(17-67): stock-cap only when quote provider is MarketPricer
+e38aea5 fix(17-67): bump actions to Node-24 majors (checkout@v7)
+8456c57 fix(17-67): cap max_affordable by stock; S2+timeouts+Node24 CI
+9d293ff Merge pull request #82 from wayung0217/ci-speed
+93ddd62 fix(ci-speed): size-balance unit shards; 35m per-shard timeout
+69ef31b fix(ci-speed): 4-way gut-unit matrix after 25m timeout
+a352383 	 20261124-16:40-Update-docs-specs
+11b9765 fix(ci-speed): commit missing test .uid; ignore godot.zip in import assert
+786b0ed ci-speed: S1–S6 parallel/cache CI + tools T1–T5 (17-64)
+
+$ git diff --name-status origin/int-1758...0b0e220
+A	.github/ci/README.md
+A	.github/ci/golden_30d_bootstrap_1764.csv
+A	.github/ci/golden_30d_bootstrap_1764.sha256
+A	.github/ci/gut_unit_property_baseline_names.txt
+M	.github/workflows/ci.yml
+M	autoload/cash_ledger.gd
+M	docs/spec/03_Systems.csv
+M	docs/spec/05_TechSpec.csv
+M	docs/spec/AI_README.csv
+M	docs/spec/Project Patrician.xlsx
+M	docs/spec/frm_examples.csv
+M	tests/unit/test_cash_ledger.gd
+A	tests/unit/test_r972_cash_stock_cap_1769.gd
+A	tests/unit/test_r972_cash_stock_cap_1769.gd.uid
+M	tests/unit/test_sys23_wp27.gd
+M	tests/unit/test_wp56_cash_market_trade.gd
+M	tools/golden_compare.py
+M	tools/run_m1b.ps1
+M	tools/run_m1b_README.md
+M	tools/run_m1b_report.gd
+
+$ git merge-base --is-ancestor e07bb3c 0b0e220; echo $?
+0
+
+$ git rev-parse 0b0e220:.github/workflows/ci.yml e07bb3c:.github/workflows/ci.yml 0b0e220:.github/ci/gut_unit_property_baseline_names.txt e07bb3c:.github/ci/gut_unit_property_baseline_names.txt
+46b3218af404bce972c7780c21cb3c5e0d53c541
+46b3218af404bce972c7780c21cb3c5e0d53c541
+3698f976e59429ef34cd35d65e05d908a485943d
+3698f976e59429ef34cd35d65e05d908a485943d

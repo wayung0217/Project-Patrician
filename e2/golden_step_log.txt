@@ -1,0 +1,207 @@
+$ gh run view 45585429371 --job 139105676085 --log
+# job=golden-30d databaseId=139105676085
+# golden steps: «30d golden gated» + baseline download + «Compare PR golden to main baseline»
+# BEGIN RAW LOG SEGMENT
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3143587Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3143952Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3144386Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3144846Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145188Z ^[[36;1m  echo "::error::godot --import dirtied the working tree"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145539Z ^[[36;1m  echo "$dirty"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145755Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145950Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3146166Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179112Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179441Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179651Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179931Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3180241Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3731840Z IMPORT_CLEAN_TREE_OK
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3765249Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3765595Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3765846Z ^[[36;1mmkdir -p out/golden^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3766313Z ^[[36;1mtools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3766838Z ^[[36;1m  --log "$(pwd)/out/golden/30d.log"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3767411Z ^[[36;1mecho "GOLDEN_30D_DONE"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3767670Z ^[[36;1mwc -l out/golden/30d.csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3768022Z ^[[36;1m# Cell summary for evening-17-64 gate (row count + sha256).^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3768456Z ^[[36;1msha256sum out/golden/30d.csv | tee out/golden/30d.sha256^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3768803Z ^[[36;1mpython3 - <<'PY'^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769037Z ^[[36;1mimport csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769260Z ^[[36;1mfrom pathlib import Path^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769525Z ^[[36;1mp = Path("out/golden/30d.csv")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769934Z ^[[36;1mrows = list(csv.DictReader(p.open(newline="", encoding="utf-8")))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3770362Z ^[[36;1mcols = list(rows[0].keys()) if rows else []^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3770820Z ^[[36;1mprint(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3771240Z ^[[36;1mPY^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3802447Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3802703Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3802898Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3803171Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3803461Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.4194436Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.4489809Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:47.6238597Z GOLDEN_V2: boot_ok seed=1 days=30 out=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:10.9938516Z GOLDEN_V2: wrote /home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0941028Z GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.log
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0942081Z GOLDEN_GATE PASS
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0942876Z GOLDEN_30D_DONE
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0975808Z 528 out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1022683Z 8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c  out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1432333Z GOLDEN_SUMMARY rows=527 cols=19 bytes=2270766
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1533854Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1534242Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1534516Z ^[[36;1mmkdir -p out/golden-main^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1534866Z ^[[36;1m# 17-69 W1(d)：依 artifact API 找 main 分支最新未過期 golden-30d^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1535375Z ^[[36;1m# （勿僅看 conclusion==success — cancelled 仍可能已上傳；舊 success 可能無 golden job）。^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1535891Z ^[[36;1m# 17-69 W1(c)：若仍無 main artifact → S9b bootstrap 凍結基準（evening-17-64）。^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1536634Z ^[[36;1mBOOT_CSV=".github/ci/golden_30d_bootstrap_1764.csv"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1537495Z ^[[36;1mBOOT_SHA_EXPECT="8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1537954Z ^[[36;1mset +e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1538424Z ^[[36;1mART_META=$(gh api "repos/wayung0217/Project-Patrician/actions/artifacts?name=golden-30d&per_page=100" \^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1539205Z ^[[36;1m  --jq '[.artifacts[] | select(.expired==false and .workflow_run.head_branch=="main")] | .[0] // empty')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1539697Z ^[[36;1mset -e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1539904Z ^[[36;1mRUN_ID=""^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1540110Z ^[[36;1mART_ID=""^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1540392Z ^[[36;1mif [[ -n "${ART_META}" && "${ART_META}" != "null" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1540824Z ^[[36;1m  RUN_ID=$(echo "${ART_META}" | jq -r '.workflow_run.id // empty')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1541267Z ^[[36;1m  ART_ID=$(echo "${ART_META}" | jq -r '.id // empty')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1541577Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1541790Z ^[[36;1mif [[ -n "${RUN_ID}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1542086Z ^[[36;1m  echo "GOLDEN_BASE_RUN_ID=${RUN_ID}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1542411Z ^[[36;1m  echo "GOLDEN_BASE_ARTIFACT_ID=${ART_ID}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1542710Z ^[[36;1m  set +e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1543144Z ^[[36;1m  gh run download "${RUN_ID}" --repo "wayung0217/Project-Patrician" -n golden-30d -D out/golden-main^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1543629Z ^[[36;1m  RC=$?^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1543837Z ^[[36;1m  set -e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1544109Z ^[[36;1m  if [[ $RC -eq 0 ]] && [[ -f out/golden-main/30d.csv ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1544498Z ^[[36;1m    echo "present" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1544823Z ^[[36;1m    echo "GOLDEN_BOOTSTRAP=0"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545099Z ^[[36;1m    ls -la out/golden-main/^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545356Z ^[[36;1m    exit 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545558Z ^[[36;1m  fi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545914Z ^[[36;1m  echo "GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} — falling back to bootstrap"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1546356Z ^[[36;1melse^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1546698Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (no non-expired main golden-30d artifact)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1547294Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1547572Z ^[[36;1m# S9b bootstrap：17-64 凍結 CSV（sha256 8b25c951…）^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1547908Z ^[[36;1mif [[ ! -f "${BOOT_CSV}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1548233Z ^[[36;1m  echo "missing" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1548704Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — no main artifact and bootstrap CSV absent"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549129Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549319Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549539Z ^[[36;1mcp "${BOOT_CSV}" out/golden-main/30d.csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549948Z ^[[36;1mACTUAL_SHA=$(sha256sum out/golden-main/30d.csv | awk '{print $1}')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1550386Z ^[[36;1mif [[ "${ACTUAL_SHA}" != "${BOOT_SHA_EXPECT}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1550758Z ^[[36;1m  echo "missing" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1551271Z ^[[36;1m  echo "::error::GOLDEN_BOOTSTRAP_SHA_MISMATCH expect=${BOOT_SHA_EXPECT} actual=${ACTUAL_SHA}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1551742Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1551934Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1552173Z ^[[36;1mecho "bootstrap" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1552497Z ^[[36;1mecho "GOLDEN_BOOTSTRAP=1"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1553002Z ^[[36;1mecho "GOLDEN_BOOTSTRAP_SHA=${ACTUAL_SHA}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1553319Z ^[[36;1mls -la out/golden-main/^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1589204Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1589545Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1589830Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1590120Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1593173Z   GH_TOKEN: ***
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1593415Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.6671890Z GOLDEN_BASE_RUN_ID=45581115843
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.6672609Z GOLDEN_BASE_ARTIFACT_ID=15005963963
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4403616Z GOLDEN_BOOTSTRAP=0
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4444168Z total 2240
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4444602Z drwxr-xr-x 2 runner runner    4096 Nov 25 09:28 .
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4445079Z drwxr-xr-x 4 runner runner    4096 Nov 25 09:28 ..
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4445439Z -rw-r--r-- 1 runner runner 2270766 Nov 25 09:28 30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4445821Z -rw-r--r-- 1 runner runner     274 Nov 25 09:28 30d.log
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4446182Z -rw-r--r-- 1 runner runner      85 Nov 25 09:28 30d.sha256
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4446595Z -rw-r--r-- 1 runner runner       8 Nov 25 09:28 STATUS.txt
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4487806Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4488190Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4488491Z ^[[36;1mif [[ ! -f out/golden-main/30d.csv ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4489013Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4489477Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4489685Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4490041Z ^[[36;1mSTATUS="$(cat out/golden-main/STATUS.txt 2>/dev/null || echo unknown)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4490475Z ^[[36;1mif [[ "${STATUS}" == "bootstrap" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4490781Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=1"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491038Z ^[[36;1melse^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491251Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=0"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491494Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491684Z ^[[36;1mset +e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4492182Z ^[[36;1mpython3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4492723Z ^[[36;1mRC=${PIPESTATUS[0]}^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4492968Z ^[[36;1mset -e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4493337Z ^[[36;1m# 17-70 T4／N-13：COMPARED_* 以 CSV 網格為準（不依賴 compare.out 是否印 COMPARED_*；^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4493834Z ^[[36;1m# 舊 golden_compare 在 IDENTICAL=1 時提早 return 會漏印 → 誤判 cells=0）。^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494207Z ^[[36;1meval "$(python3 - <<'PY'^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494460Z ^[[36;1mimport csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494705Z ^[[36;1mfrom pathlib import Path^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494947Z ^[[36;1m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4495133Z ^[[36;1mdef grid(path):^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4495510Z ^[[36;1m    rows = list(csv.DictReader(Path(path).open(newline="", encoding="utf-8")))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4495920Z ^[[36;1m    if not rows:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4496145Z ^[[36;1m        return 0, 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4496426Z ^[[36;1m    return len(rows), len(list(rows[0].keys()))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4496721Z ^[[36;1m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4497398Z ^[[36;1mra, ca = grid("out/golden-main/30d.csv")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4497756Z ^[[36;1mrb, cb = grid("out/golden/30d.csv")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4498040Z ^[[36;1mrows = min(ra, rb)^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4498307Z ^[[36;1mcols = min(ca, cb) if ca and cb else 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4498599Z ^[[36;1mcells = rows * cols^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499029Z ^[[36;1mtext = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499485Z ^[[36;1mdiff = 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499696Z ^[[36;1mif "IDENTICAL=1" in text:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499954Z ^[[36;1m    diff = 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500159Z ^[[36;1melse:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500379Z ^[[36;1m    for line in text.splitlines():^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500681Z ^[[36;1m        if "diff_cells=" in line:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500952Z ^[[36;1m            try:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4501262Z ^[[36;1m                diff += int(line.rsplit("diff_cells=", 1)[1].strip())^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4501624Z ^[[36;1m            except ValueError:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4501895Z ^[[36;1m                pass^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502149Z ^[[36;1mprint(f"COMPARED_ROWS={rows}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502424Z ^[[36;1mprint(f"COMPARED_COLS={cols}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502710Z ^[[36;1mprint(f"COMPARED_CELLS={cells}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502993Z ^[[36;1mprint(f"DIFF_CELLS={diff}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4503258Z ^[[36;1mprint(f"CSV_ROWS_A={ra}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4503739Z ^[[36;1mprint(f"CSV_ROWS_B={rb}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4503991Z ^[[36;1mprint(f"CSV_COLS_A={ca}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504248Z ^[[36;1mprint(f"CSV_COLS_B={cb}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504511Z ^[[36;1mPY^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504691Z ^[[36;1m)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504911Z ^[[36;1mecho "COMPARED_ROWS=${COMPARED_ROWS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4505229Z ^[[36;1mecho "COMPARED_COLS=${COMPARED_COLS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4505549Z ^[[36;1mecho "COMPARED_CELLS=${COMPARED_CELLS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4505861Z ^[[36;1mecho "DIFF_CELLS=${DIFF_CELLS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4506513Z ^[[36;1mecho "CSV_ROWS_A=${CSV_ROWS_A} CSV_ROWS_B=${CSV_ROWS_B} CSV_COLS_A=${CSV_COLS_A} CSV_COLS_B=${CSV_COLS_B}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4507432Z ^[[36;1mexpect=$((COMPARED_ROWS * COMPARED_COLS))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4507873Z ^[[36;1mif [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4508494Z ^[[36;1m  echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4508977Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509170Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509369Z ^[[36;1mif [[ $RC -ne 0 ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509616Z ^[[36;1m  exit "$RC"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509817Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4510027Z ^[[36;1mecho "GOLDEN_CELLS_IDENTICAL=1"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542195Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542449Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542644Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542927Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4543224Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4629229Z GOLDEN_BOOTSTRAP=0
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5267671Z A=out/golden-main/30d.csv bytes=2270766
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5268230Z B=out/golden/30d.csv bytes=2270766
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5268636Z ROWS_A=527 ROWS_B=527
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5268980Z COMPARED_ROWS=527
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5269294Z COMPARED_COLS=19
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5269603Z COMPARED_CELLS=10013
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5269950Z IDENTICAL=1
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5946093Z COMPARED_ROWS=527
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5946548Z COMPARED_COLS=19
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5947168Z COMPARED_CELLS=10013
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5947535Z DIFF_CELLS=0
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5947993Z CSV_ROWS_A=527 CSV_ROWS_B=527 CSV_COLS_A=19 CSV_COLS_B=19
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5948549Z GOLDEN_CELLS_IDENTICAL=1
+# END RAW LOG SEGMENT

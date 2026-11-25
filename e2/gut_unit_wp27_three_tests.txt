@@ -1,0 +1,87 @@
+$ gh run view 45585429371 --job 139105676043 --log
+# job=gut-unit (2) databaseId=139105676043
+# WP27 三測試（MET01 / MET05b / OBS02）— historically on gut-unit(3); this run shard-balanced to gut-unit(2)
+# BEGIN RAW LOG SEGMENT
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6310781Z        [6] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6311321Z ^[[34m[ExpectedError]^[[0m
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6311794Z TST-SYS23-07 SIM_RELOCATE rejected offline
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6312322Z * test_WP27_MET01_TH01b_upper_bound
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6335595Z WP27 MET-01 TH-01b upper reject ok
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6336435Z * test_WP27_MET05b_no_pass
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6362668Z WP27 MET-05b pass=N/A ok value=1.0
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6363688Z * test_WP27_OBS02_longest_zero_beggar_streak
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6389920Z WP27 OBS-02 streak=3 ok
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6390750Z * test_WP27_relocate_f_C02_float_snap
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6416093Z WP27 relocate_f C-02: 0.1→100000 0.05→50000 0.2→200000 bad_ok=false
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6416846Z * test_WP27_weekly_potential_demand_D96f
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6417432Z WP27 D-96f weekly_potential_demand present
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6418680Z * test_WP27_scenario_list_dir_sorted_R9_64
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6535517Z WP27 R9-64 scenario_L2_f010 validates
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6537020Z * test_R9_65_B2_e_p_overflow_boundary
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6562850Z R9-65 B2 e_p overflow → error ok
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6563385Z * test_R9_65_B6_e_p_exceeds_stock_errors
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6589135Z R9-65 B6 e_p>stock_p → error ok: ERR-SYS23-07: e_p 2 exceeds stock_p 1 at A (no clamp)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6589988Z * test_R9_65_B3_OBS04_unable_to_judge
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6615223Z R9-65 B3 OBS-04 無法判定 ok
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6617048Z ^[[1m14/14 passed.
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6617469Z ^[[0m^[[4m
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6617677Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6617886Z res://tests/unit/test_wp62_d95d_apis.gd
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6620520Z ^[[0m* test_TST_WP62_D95d_last_trade_total_li_boot_and_clear
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6622911Z * test_TST_WP62_D95d_lane_ids_method_and_sort_contract
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6625821Z ^[[1m2/2 passed.
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6627115Z ^[[0m^[[4m
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6627917Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6639055Z res://tests/unit/test_wp68_city_housing.gd
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6639694Z ^[[0m* test_WP68_switch_off_never_runs
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.6823317Z * test_WP68_02_beggars_below_capacity_no_build
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.7001841Z * test_WP68_02_free_beds_blocks
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.7191971Z * test_WP68_03_insufficient_reserve_no_build
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.7371358Z * test_WP68_04_max_per_season
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.7548845Z * test_WP68_05_outermost_unowned_only
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.7727219Z * test_WP68_05_no_empty_slot_no_build
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.7903817Z * test_WP68_07_only_residence
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.8080266Z * test_D100_built_ratio_below_blocks
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.8261771Z * test_D100_built_ratio_exactly_ok
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.8441507Z * test_D100_under_construction_and_paused_count
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.8619548Z * test_D120c_count_switch_off_is_zero
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.8795827Z * test_D120c_count_after_auto_build_is_one
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.8974857Z * test_D120c_count_decrements_after_demolish
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9155130Z * test_D120c_count_unknown_port_returns_minus_one
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9331548Z ERROR: BuildingEconomy: { "code": &"ERR-SYS08-08", "sys": &"SYS-08", "detail": { "file": "res://autoload/building_economy.gd", "field": "port_id", "value": &"PT-NOPE", "message": "unknown port for city_auto_housing_count (D-120c)" } }
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9332958Z    at: push_error (core/variant/variant_utility.cpp:1023)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9333513Z    GDScript backtrace (most recent call first):
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9334096Z        [0] _record_fail (res://autoload/building_economy.gd:3394)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9334646Z        [1] city_auto_housing_count (res://autoload/building_economy.gd:2235)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9335454Z        [2] test_D120c_count_unknown_port_returns_minus_one (res://tests/unit/test_wp68_city_housing.gd:307)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9336371Z        [3] _run_test (res://addons/gut/gut.gd:622)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9336965Z        [4] _test_the_scripts (res://addons/gut/gut.gd:835)
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9337398Z * test_D120c_opening_city_residence_not_counted
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9512086Z * test_WP68_scenario_layer_city_housing_allowed
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:58.9521082Z ^[[1m17/17 passed.
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3323590Z ^[[0m
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3323892Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3323902Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3323909Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3330371Z ^[[33m==============================================
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3331176Z ^[[0m^[[33m= Run Summary
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3331783Z ^[[0m^[[33m==============================================
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3333887Z ^[[0m
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3334239Z Totals
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3334615Z ------
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3334977Z Warnings             11
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3347401Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3347691Z Scripts              11
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3348084Z Tests               156
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3348631Z Passing Tests       156
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3348921Z Asserts            3379
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3349164Z Time              7.247s
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3349326Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3349330Z 
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3349526Z ^[[32m---- All tests passed! ----
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.3349822Z ^[[0m
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.4044790Z Passing Tests       156
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.4045541Z ^[[32m---- All tests passed! ----
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.4264823Z SHARD_PASSING=156
+gut-unit (2)	UNKNOWN STEP	2026-11-25T09:26:59.4265272Z SHARD_NAMES=156
+# END RAW LOG SEGMENT

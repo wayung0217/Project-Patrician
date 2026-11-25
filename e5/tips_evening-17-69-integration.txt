@@ -1,0 +1,17 @@
+【已過期，以 e2/git_cmds.txt + e2/run_45585429371.json （L3 tip=0b0e220；L2 tip 以 merge① e07bb3c／9f228f0 為準） 為準】
+source: /cursor/stores/.../evening-17-69-integration/tips.txt
+annotated_at: 2026-11-25T13:10:00Z (evidence2 E5)
+---- original body below (not deleted) ----
+L2 b28012ca49407433e229e8cfc698e083e7680e8f  cursor/ci-hang-1767-866d  PR#84  (A21 push_error test fix; ci.yml unchanged)
+L3 da3d911a9a6882d85a4d1bee523b78e9af0ad365  cursor/int-ci-1767-866d   PR#85  ← <L3 tip> (no retransplant)
+L4 4d05f0d6c4ab465ac5f6d8f5250ac28c1de7dc70  cursor/m1b-fix-1766-3fe3 PR#83
+main_at_pack 191a7ee6aaa0f03c0cb32d6a803105fca7f95ee9
+int-1758 71b094d773125cc96ee66ff65691d5219a22eedf
+ci_yml_blob e96d3a12386a4082d053a3ec80c39cda2144b03d
+baseline_names_blob 3698f976e59429ef34cd35d65e05d908a485943d
+paths_txt DELETED_NO_REVIVE
+I3_checkout: git checkout da3d911a9a6882d85a4d1bee523b78e9af0ad365 -- .github/workflows/ci.yml
+note: L2 b28012c tests-only → L3 stays da3d911
+lane2_orphan_tip 16bb361e760ebcb9e60876b2353225119533cdfc  body=b28012ca49407433e229e8cfc698e083e7680e8f
+lane3_orphan_tip 0b4b795670ec8ddbf7b2b8fad79c5bf5b02edfc1  body=da1f4b80d09fd556842980cab30f8cc4ad3cb0ab
+lane4_orphan_tip d789f0410feee33d1cd65c3ecd5df2cc919e8fa5  body=2ee8ba7a8ae2ad2724f46b1c9f90eef8b93cf3d5

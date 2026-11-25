@@ -1,0 +1,8 @@
+【已過期，以 e3/ + e6/（#87 tip 前進後以 D-130 新 tip／本 pack e3·e6 為準） 為準】
+source: origin/review/1770-d130:lane.txt @ 32f0a43
+annotated_at: 2026-11-25T13:10:00Z (evidence2 E5)
+---- original body below (not deleted) ----
+lane=d130
+pr=87
+branch=cursor/d130-shard-golden-aeb7
+merge=no

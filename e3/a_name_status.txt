@@ -1,0 +1,5 @@
+### command
+git diff --name-status origin/main...80d3d68faaf9498b917e57d77be332c1d073e0a5
+### output
+M	.github/workflows/ci.yml
+M	tools/golden_compare.py

@@ -1,0 +1,860 @@
+golden-30d	UNKNOWN STEP	﻿2026-11-25T09:26:34.9096104Z Current runner version: '2.338.2'
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9168834Z ##[group]Runner Image Provisioner
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9170251Z Hosted Compute Agent
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9171283Z Version: 20261111.635
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9172381Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9174000Z Build Date: 2026-11-11T01:49:01Z
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9175314Z Worker ID: {1cb2c504-f7a2-46db-9fbf-910e30560db2}
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9176660Z Region: eastus
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9177821Z Cloud: Azure
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9178803Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9181318Z ##[group]Operating System
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9182416Z Ubuntu
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9183430Z 26.04.1
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9184306Z LTS
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9185353Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9186310Z ##[group]Runner Image
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9187766Z Image: ubuntu-26.04
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9188773Z Version: 20261116.202.1
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9191330Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9194096Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9195972Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9198192Z ##[group]GITHUB_TOKEN Permissions
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9201375Z Actions: read
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9202339Z Contents: read
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9203477Z Metadata: read
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9204437Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9207745Z Secret source: Actions
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9209356Z Cache mode: write
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9210655Z Prepare workflow directory
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9834258Z Prepare all required actions
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:34.9909400Z Getting action download info
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.1640375Z Download action repository 'actions/checkout@v5' (SHA:fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09)
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.2844100Z Download action repository 'actions/cache@v5' (SHA:caa296126883cff596d87d8935842f9db880ef25)
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.4153782Z Download action repository 'actions/upload-artifact@v5' (SHA:330a01c490aca151604b8cf639adc76d48f6c5d4)
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.6383775Z Complete job name: golden-30d
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7283573Z ##[group]Run actions/checkout@v5
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7284470Z with:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7284953Z   repository: wayung0217/Project-Patrician
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7288825Z   token: ***
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7289265Z   ssh-strict: true
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7289701Z   ssh-user: git
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7290152Z   persist-credentials: true
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7290635Z   clean: true
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7291072Z   sparse-checkout-cone-mode: true
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7291584Z   fetch-depth: 1
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7292016Z   fetch-tags: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7292468Z   show-progress: true
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7292914Z   lfs: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7293328Z   submodules: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7293784Z   set-safe-directory: true
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7294284Z   allow-unsafe-pr-checkout: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7295039Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7295459Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7296017Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.7296604Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9910213Z Syncing repository: wayung0217/Project-Patrician
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9912280Z ##[group]Getting Git version info
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9913233Z Working directory is '/home/runner/work/Project-Patrician/Project-Patrician'
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9915181Z [command]/usr/bin/git version
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9931824Z git version 2.56.1
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9955324Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9977850Z Temporarily overriding HOME='/home/runner/work/_temp/e0d472b4-c486-4915-a75e-5b5922418efe' before making global git config changes
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9985981Z Adding repository directory to the temporary git global config as a safe directory
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:35.9988116Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0051747Z Deleting the contents of '/home/runner/work/Project-Patrician/Project-Patrician'
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0056423Z ##[group]Initializing the repository
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0063010Z [command]/usr/bin/git init /home/runner/work/Project-Patrician/Project-Patrician
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0167876Z hint: Using 'master' as the name for the initial branch. This default branch name
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0170166Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0171546Z hint: to use in all of your new repositories, which will suppress this warning,
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0172756Z hint: call:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0173503Z hint:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0174264Z hint: 	git config --global init.defaultBranch <name>
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0175221Z hint:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0176085Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0273159Z hint: 'development'. The just-created branch can be renamed via this command:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0275585Z hint:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0276667Z hint: 	git branch -m <name>
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0278234Z hint:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0279667Z hint: Disable this message with "git config set advice.defaultBranchName false"
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0281942Z Initialized empty Git repository in /home/runner/work/Project-Patrician/Project-Patrician/.git/
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0286175Z [command]/usr/bin/git remote add origin https://github.com/wayung0217/Project-Patrician
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0289775Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0291613Z ##[group]Disabling automatic garbage collection
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0293097Z [command]/usr/bin/git config --local gc.auto 0
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0324657Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0326426Z ##[group]Setting up auth
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0334625Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0379055Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0838741Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.0863812Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.1151150Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.1188755Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.1461072Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.1500336Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.1501255Z ##[group]Fetching the repository
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.1510494Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5ba355c49f7a999c83df8516a34bc204827972ae:refs/remotes/pull/85/merge
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7151866Z From https://github.com/wayung0217/Project-Patrician
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7154162Z  * [new ref]         5ba355c49f7a999c83df8516a34bc204827972ae -> pull/85/merge
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7158885Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7160201Z ##[group]Determining the checkout info
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7161544Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7165142Z [command]/usr/bin/git sparse-checkout disable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7222927Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7252096Z ##[group]Checking out the ref
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.7255032Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/85/merge
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8283667Z Note: switching to 'refs/remotes/pull/85/merge'.
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8285031Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8286168Z You are in 'detached HEAD' state. You can look around, make experimental
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8289187Z changes and commit them, and you can discard any commits you make in this
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8292337Z state without impacting any branches by switching back to a branch.
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8293952Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8295057Z If you want to create a new branch to retain commits you create, you may
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8297770Z do so (now or later) by using -c with the switch command. Example:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8298930Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8299446Z   git switch -c <new-branch-name>
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8300073Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8300608Z Or undo this operation with:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8301473Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8302159Z   git switch -
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8302756Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8303806Z Turn off this advice by setting config variable advice.detachedHead to false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8305102Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8306814Z HEAD is now at 5ba355c Merge 0b0e22044b126559e3d5d54173358f81e44a304d into 71b094d773125cc96ee66ff65691d5219a22eedf
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8311642Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8352030Z [command]/usr/bin/git log -1 --format=%H
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8377741Z 5ba355c49f7a999c83df8516a34bc204827972ae
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8807062Z ##[group]Run actions/cache@v5
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8808160Z with:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8808949Z   path: godot
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8809855Z   key: godot-4.7.2-stable-linux-x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8811078Z   enableCrossOsArchive: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8812155Z   fail-on-cache-miss: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8813156Z   lookup-only: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8814076Z   save-always: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8814948Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8815726Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8816852Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:36.8818169Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.0912850Z Cache hit for: godot-4.7.2-stable-linux-x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.6376156Z Received 75802056 of 75802056 (100.0%), 147.2 MBs/sec
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.6379019Z Cache Size: ~72 MB (75802056 B)
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.6410649Z [command]/usr/bin/tar -xf /home/runner/work/_temp/e6634141-b6ae-4215-842e-ebbcb29d57d5/cache.tzst -P -C /home/runner/work/Project-Patrician/Project-Patrician --use-compress-program unzstd
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.8740428Z Cache restored successfully
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.8925893Z Cache restored from key: godot-4.7.2-stable-linux-x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9191953Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9192383Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9192681Z ^[[36;1mchmod +x godot^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9192963Z ^[[36;1m./godot --version^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9230506Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9230820Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9231065Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9231384Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:37.9231734Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.1373840Z 4.7.2.stable.official.ed1daf0bf
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8090841Z ##[group]Run actions/cache@v5
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8091248Z with:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8091448Z   path: .godot/imported
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8091895Z   key: godot-imported-243c0865bc3a260099e1776b5adee3cee1b3cb10ded02e454ab9a91ce912e248
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8092414Z   restore-keys: godot-imported-
+golden-30d	UNKNOWN STEP	
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8092697Z   enableCrossOsArchive: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8092951Z   fail-on-cache-miss: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8093188Z   lookup-only: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8093403Z   save-always: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8093603Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8093795Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8094053Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:38.8094332Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.0198496Z Cache hit for: godot-imported-243c0865bc3a260099e1776b5adee3cee1b3cb10ded02e454ab9a91ce912e248
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1683438Z Received 1001747 of 1001747 (100.0%), 11.8 MBs/sec
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1684302Z Cache Size: ~1 MB (1001747 B)
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1708482Z [command]/usr/bin/tar -xf /home/runner/work/_temp/98b3b82b-8359-469e-873d-3e661ccee916/cache.tzst -P -C /home/runner/work/Project-Patrician/Project-Patrician --use-compress-program unzstd
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1792971Z Cache restored successfully
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1870532Z Cache restored from key: godot-imported-243c0865bc3a260099e1776b5adee3cee1b3cb10ded02e454ab9a91ce912e248
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1972947Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1973302Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.1973612Z ^[[36;1m./godot --headless --path . --import^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.2007317Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.2007587Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.2007789Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.2008079Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.2008366Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.2246096Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:39.2753387Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:42.7906715Z [   0% ] ^[[90m^[[1mfirst_scan_filesystem^[[22m | Started Project initialization (5 steps)^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:42.7908170Z [   0% ] ^[[90m^[[1mfirst_scan_filesystem^[[22m | Scanning file structure...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:42.7971757Z [  16% ] ^[[90m^[[1mfirst_scan_filesystem^[[22m | Loading global class names...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:42.8245266Z [  33% ] ^[[90m^[[1mfirst_scan_filesystem^[[22m | Verifying GDExtensions...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:42.8246368Z [  50% ] ^[[90m^[[1mfirst_scan_filesystem^[[22m | Creating autoload scripts...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:43.7233866Z [  66% ] ^[[90m^[[1mfirst_scan_filesystem^[[22m | Initializing plugins...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.1072700Z [  83% ] ^[[90m^[[1mfirst_scan_filesystem^[[22m | Starting file scan...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.1073587Z ^[[92m[ DONE ]^[[39m ^[[1mfirst_scan_filesystem^[[22m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.1074143Z ^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8044011Z [   0% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | Started Registering global classes... (235 steps)^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8044729Z [   0% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8045147Z [   0% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8045539Z [   0% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8045948Z [   1% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8047956Z [   1% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8048764Z [   2% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8049403Z [   2% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8050043Z [   2% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8050672Z [   3% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8051300Z [   3% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8051938Z [   4% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8052568Z [   4% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8053211Z [   5% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8053842Z [   5% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8054472Z [   5% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8055115Z [   6% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8055751Z [   6% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8056388Z [   7% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8057183Z [   7% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8057831Z [   8% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8058469Z [   8% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8059101Z [   8% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8059765Z [   9% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8060391Z [   9% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8061027Z [  10% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8061672Z [  10% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8062700Z [  11% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8063346Z [  11% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8064252Z [  11% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8064900Z [  12% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8065540Z [  12% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8066170Z [  13% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8066808Z [  13% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8067641Z [  13% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8068272Z [  14% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8068912Z [  14% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8069549Z [  15% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8070189Z [  15% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8070832Z [  16% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8071577Z [  16% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutErrorTracker^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8072321Z [  16% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8072955Z [  17% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8073653Z [  17% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutMain^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8074333Z [  18% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8074967Z [  18% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8075616Z [  19% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8076324Z [  19% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutConstants^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8087345Z [  19% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8088119Z [  20% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8088774Z [  20% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8089444Z [  21% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8090096Z [  21% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8090836Z [  22% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutTrackedError^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8091589Z [  22% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8092314Z [  22% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutHookScript^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8093042Z [  23% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8093776Z [  23% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutInputFactory^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8094594Z [  24% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutInputSender^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8095323Z [  24% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8095967Z [  25% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8096621Z [  25% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8097425Z [  25% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8098063Z [  26% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8098750Z [  26% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8099405Z [  27% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8100113Z [  27% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8100752Z [  27% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8101378Z [  28% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8102083Z [  28% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8102721Z [  29% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8103347Z [  29% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8103984Z [  30% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8104953Z [  30% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutStringUtils^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8105698Z [  30% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8106620Z [  31% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8107426Z [  31% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8108081Z [  32% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8108761Z [  32% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutTest^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8109450Z [  33% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8110106Z [  33% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8110738Z [  33% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8111386Z [  34% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8111820Z [  34% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GutUtils^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8112237Z [  35% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8112615Z [  35% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8112977Z [  36% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8113352Z [  36% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8113720Z [  36% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8114077Z [  37% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8114434Z [  37% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8114790Z [  38% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8115151Z [  38% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8115508Z [  38% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8115866Z [  39% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8116252Z [  39% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8116628Z [  40% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8117514Z [  40% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8118218Z [  41% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8118904Z [  41% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8119578Z [  41% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8120242Z [  42% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8121021Z [  42% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | BrokerProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8122168Z [  43% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | CapacityProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8123107Z [  43% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ConsumptionProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8124074Z [  44% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | PopulationProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8124994Z [  44% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | QualificationProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8125949Z [  44% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SailorPoolProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8127147Z [  45% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SatisfactionInputProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8128187Z [  45% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ShipEventObserver^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8129165Z [  46% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | TradeObserver^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8130121Z [  46% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | WorkforceProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8131050Z [  47% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | Account^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8131828Z [  47% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | AmountQuantize^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8132317Z [  47% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | Building^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8132766Z [  48% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | BuildingDef^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8133205Z [  48% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | BuildStep^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8133660Z [  49% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ChargeSchedule^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8134379Z [  49% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | CityCenterDef^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8134940Z [  50% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | DemandRate^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8135390Z [  50% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ErrorInfoUtil^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8135826Z [  50% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | GoodDef^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8136275Z [  51% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | OpeningPopulation^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8136752Z [  51% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | OpeningPublic^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8137781Z [  52% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | OpeningWorkshop^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8138595Z [  52% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | PortDef^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8139096Z [  52% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | Posting^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8139528Z [  53% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | PostingEntry^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8140161Z [  53% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | PriceCurve^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8140594Z [  54% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | RoleCell^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8141052Z [  54% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SatisfactionWeight^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8141560Z [  55% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SeasonLedgerReport^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8142016Z [  55% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SeaLane^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8142432Z [  55% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SeaNode^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8142847Z [  56% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SeaRegion^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8143261Z [  56% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | Ship^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8143669Z [  57% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | Slot^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8144109Z [  57% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SubstitutionRule^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8144586Z [  58% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | TransferEvent^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8145016Z [  58% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ZoneDef^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8145411Z [  58% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8145983Z [  59% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | Rng^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8146568Z [  59% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | TradeEvaluator^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8147273Z [  60% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimCsvOut^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8147726Z [  60% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimGridExpand^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8148165Z [  61% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimJsonInt^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8148591Z [  61% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | M1bDiagZ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8149005Z [  61% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimMetrics^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8149450Z [  62% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimParamsMerge^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8149909Z [  62% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimRelocator^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8150365Z [  63% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimSampler^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8151162Z [  63% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimScenarioValidator^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8151670Z [  63% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimBrokerFixture^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8152136Z [  64% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimEngine^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8152613Z [  64% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimQualificationFixture^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8153164Z [  65% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimQualificationOpenFixture^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8153646Z [  65% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8154103Z [  66% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimTradeObserverFixture^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8154609Z [  66% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | SimTransferAcc^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8155485Z [  66% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | FixtureQualificationProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8156317Z [  67% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | FixtureTradeObserver^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8156835Z [  67% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | FixtureBuilders^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8157570Z [  68% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ParamsFixtures^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8158029Z [  68% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | PropStream^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8158431Z [  69% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8158813Z [  69% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8159188Z [  69% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8159551Z [  70% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8159917Z [  70% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8160397Z [  71% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8160971Z [  71% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8161357Z [  72% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8161728Z [  72% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8162095Z [  72% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8162452Z [  73% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8162811Z [  73% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8163177Z [  74% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8163531Z [  74% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8163893Z [  75% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8164268Z [  75% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8164630Z [  75% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8165274Z [  76% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8165658Z [  76% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8166028Z [  77% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8166390Z [  77% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8166748Z [  77% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8167404Z [  78% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8167765Z [  78% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8168130Z [  79% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8168487Z [  79% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8168843Z [  80% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8169205Z [  80% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8169562Z [  80% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8169948Z [  81% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8170306Z [  81% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8170700Z [  82% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8171060Z [  82% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8171429Z [  83% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8171784Z [  83% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8172146Z [  83% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8172505Z [  84% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8172863Z [  84% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8173225Z [  85% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8173854Z [  85% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8174357Z [  86% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8174905Z [  86% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8175266Z [  86% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8175746Z [  87% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8176115Z [  87% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8176475Z [  88% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8176836Z [  88% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8177425Z [  88% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8177791Z [  89% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8178152Z [  89% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8178511Z [  90% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8178875Z [  90% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8179232Z [  91% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8179603Z [  91% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8179967Z [  91% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8180458Z [  92% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8180834Z [  92% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8181193Z [  93% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8181554Z [  93% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8181911Z [  94% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8182406Z [  94% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8182963Z [  94% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8183407Z [  95% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | DebugBrokerProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8183956Z [  95% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | DebugQualificationProvider^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8184499Z [  96% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | DebugTradeObserver^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8184967Z [  96% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | DebugBoot^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8185408Z [  97% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | DebugConfig^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8185814Z [  97% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8186218Z [  97% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | FormatTael^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8186611Z [  98% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8187185Z [  98% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8187569Z [  99% ] ^[[90m^[[1mupdate_scripts_classes^[[22m | ^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8187934Z ^[[92m[ DONE ]^[[39m ^[[1mupdate_scripts_classes^[[22m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8188229Z ^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8188628Z [   0% ] ^[[90m^[[1m_update_scan_actions^[[22m | Started Scanning actions... (171 steps)^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8189186Z [   0% ] ^[[90m^[[1m_update_scan_actions^[[22m | AnonymousPro-Bold.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8189714Z [   0% ] ^[[90m^[[1m_update_scan_actions^[[22m | AnonymousPro-BoldItalic.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8190242Z [   1% ] ^[[90m^[[1m_update_scan_actions^[[22m | AnonymousPro-Italic.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8190755Z [   1% ] ^[[90m^[[1m_update_scan_actions^[[22m | AnonymousPro-Regular.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8191519Z [   2% ] ^[[90m^[[1m_update_scan_actions^[[22m | CourierPrime-Bold.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8192101Z [   2% ] ^[[90m^[[1m_update_scan_actions^[[22m | CourierPrime-BoldItalic.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8192622Z [   3% ] ^[[90m^[[1m_update_scan_actions^[[22m | CourierPrime-Italic.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8193126Z [   4% ] ^[[90m^[[1m_update_scan_actions^[[22m | CourierPrime-Regular.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8193630Z [   4% ] ^[[90m^[[1m_update_scan_actions^[[22m | LobsterTwo-Bold.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8194133Z [   5% ] ^[[90m^[[1m_update_scan_actions^[[22m | LobsterTwo-BoldItalic.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8194799Z [   5% ] ^[[90m^[[1m_update_scan_actions^[[22m | LobsterTwo-Italic.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8200873Z [   6% ] ^[[90m^[[1m_update_scan_actions^[[22m | LobsterTwo-Regular.ttf^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8203187Z [   6% ] ^[[90m^[[1m_update_scan_actions^[[22m | arrow.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8205695Z [   7% ] ^[[90m^[[1m_update_scan_actions^[[22m | play.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8208714Z [   8% ] ^[[90m^[[1m_update_scan_actions^[[22m | eyey.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8211292Z [   8% ] ^[[90m^[[1m_update_scan_actions^[[22m | Folder.svg^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8213841Z [   9% ] ^[[90m^[[1m_update_scan_actions^[[22m | green.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8220914Z [   9% ] ^[[90m^[[1m_update_scan_actions^[[22m | GutIconV2_base.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8224789Z [  10% ] ^[[90m^[[1m_update_scan_actions^[[22m | GutIconV2_no_shine.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8228510Z [  11% ] ^[[90m^[[1m_update_scan_actions^[[22m | HSplitContainer.svg^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8231018Z [  11% ] ^[[90m^[[1m_update_scan_actions^[[22m | red.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8233581Z [  12% ] ^[[90m^[[1m_update_scan_actions^[[22m | Script.svg^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8237037Z [  12% ] ^[[90m^[[1m_update_scan_actions^[[22m | VSplitContainer.svg^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8239633Z [  13% ] ^[[90m^[[1m_update_scan_actions^[[22m | yellow.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8242062Z [  13% ] ^[[90m^[[1m_update_scan_actions^[[22m | icon.png^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8245296Z [  14% ] ^[[90m^[[1m_update_scan_actions^[[22m | source_code_pro.fnt^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8246767Z [  15% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8248869Z [  15% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8249989Z [  16% ] ^[[90m^[[1m_update_scan_actions^[[22m | price_curve.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8251491Z [  16% ] ^[[90m^[[1m_update_scan_actions^[[22m | role_cells.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8253091Z [  17% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8254570Z [  18% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8256058Z [  18% ] ^[[90m^[[1m_update_scan_actions^[[22m | price_curve.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8257710Z [  19% ] ^[[90m^[[1m_update_scan_actions^[[22m | role_cells.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8260262Z [  19% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8262672Z [  20% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8264515Z [  20% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8266778Z [  21% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8269361Z [  22% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8271284Z [  22% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8273728Z [  23% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8276075Z [  23% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8278397Z [  24% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8280715Z [  25% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8283067Z [  25% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8285038Z [  26% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8287573Z [  26% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8289713Z [  27% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8291675Z [  27% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8294156Z [  28% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8296249Z [  29% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8298553Z [  29% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8301085Z [  30% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8302947Z [  30% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8305237Z [  31% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8307322Z [  31% ] ^[[90m^[[1m_update_scan_actions^[[22m | demand_rates.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8309804Z [  32% ] ^[[90m^[[1m_update_scan_actions^[[22m | satisfaction_weights.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8311576Z [  33% ] ^[[90m^[[1m_update_scan_actions^[[22m | substitutions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8314176Z [  33% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8316059Z [  34% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8318064Z [  34% ] ^[[90m^[[1m_update_scan_actions^[[22m | city_center.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8320603Z [  35% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8322666Z [  36% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_population.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8324443Z [  36% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_public.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8326373Z [  37% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8329109Z [  37% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8331084Z [  38% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8332507Z [  38% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8334018Z [  39% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8335449Z [  40% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8337177Z [  40% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8338613Z [  41% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8340058Z [  41% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8341550Z [  42% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8343011Z [  43% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8344444Z [  43% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8345983Z [  44% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8347541Z [  44% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8349002Z [  45% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8350508Z [  45% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8351978Z [  46% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8353398Z [  47% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8354949Z [  47% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8356338Z [  48% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8358024Z [  48% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8359472Z [  49% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8360948Z [  50% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8362374Z [  50% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8363901Z [  51% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8365257Z [  51% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8366710Z [  52% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8368432Z [  52% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8369980Z [  53% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8371623Z [  54% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8373040Z [  54% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8374422Z [  55% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8375918Z [  55% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8377536Z [  56% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8379087Z [  56% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8380508Z [  57% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8382083Z [  58% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8383450Z [  58% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8384899Z [  59% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8386395Z [  59% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8388117Z [  60% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8389502Z [  61% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8391059Z [  61% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8392421Z [  62% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8393876Z [  62% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8395350Z [  63% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8396833Z [  63% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8398490Z [  64% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8400010Z [  65% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8401360Z [  65% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8402797Z [  66% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8404295Z [  66% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8405762Z [  67% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8407746Z [  68% ] ^[[90m^[[1m_update_scan_actions^[[22m | city_center.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8409152Z [  68% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8411388Z [  69% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_public.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8412727Z [  69% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8414114Z [  70% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8415632Z [  70% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8417296Z [  71% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8418793Z [  72% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8420537Z [  72% ] ^[[90m^[[1m_update_scan_actions^[[22m | city_center.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8421970Z [  73% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8424047Z [  73% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_public.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8425431Z [  74% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8426790Z [  75% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8428478Z [  75% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8431052Z [  76% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8432795Z [  76% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8435334Z [  77% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8437354Z [  77% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8439903Z [  78% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8441762Z [  79% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8444479Z [  79% ] ^[[90m^[[1m_update_scan_actions^[[22m | buildings.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8446235Z [  80% ] ^[[90m^[[1m_update_scan_actions^[[22m | build_queue.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8449021Z [  80% ] ^[[90m^[[1m_update_scan_actions^[[22m | goods.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8450769Z [  81% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8452999Z [  81% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8455262Z [  82% ] ^[[90m^[[1m_update_scan_actions^[[22m | zones.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8457646Z [  83% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_population.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8459366Z [  83% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_public.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8461267Z [  84% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_workshops.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8463519Z [  84% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_population.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8465367Z [  85% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_population.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8467838Z [  86% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_population.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8469706Z [  86% ] ^[[90m^[[1m_update_scan_actions^[[22m | ports.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8472207Z [  87% ] ^[[90m^[[1m_update_scan_actions^[[22m | lanes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8474447Z [  87% ] ^[[90m^[[1m_update_scan_actions^[[22m | nodes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8476171Z [  88% ] ^[[90m^[[1m_update_scan_actions^[[22m | regions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8478870Z [  88% ] ^[[90m^[[1m_update_scan_actions^[[22m | lanes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8480635Z [  89% ] ^[[90m^[[1m_update_scan_actions^[[22m | nodes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8482751Z [  90% ] ^[[90m^[[1m_update_scan_actions^[[22m | regions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8485139Z [  90% ] ^[[90m^[[1m_update_scan_actions^[[22m | lanes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8487259Z [  91% ] ^[[90m^[[1m_update_scan_actions^[[22m | nodes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8489299Z [  91% ] ^[[90m^[[1m_update_scan_actions^[[22m | regions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8491645Z [  92% ] ^[[90m^[[1m_update_scan_actions^[[22m | lanes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8493775Z [  93% ] ^[[90m^[[1m_update_scan_actions^[[22m | nodes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8495498Z [  93% ] ^[[90m^[[1m_update_scan_actions^[[22m | regions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8498260Z [  94% ] ^[[90m^[[1m_update_scan_actions^[[22m | lanes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8499956Z [  94% ] ^[[90m^[[1m_update_scan_actions^[[22m | nodes.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8501915Z [  95% ] ^[[90m^[[1m_update_scan_actions^[[22m | regions.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8503518Z [  95% ] ^[[90m^[[1m_update_scan_actions^[[22m | opening_population.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8504935Z [  96% ] ^[[90m^[[1m_update_scan_actions^[[22m | good_def_extra_column.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8506339Z [  97% ] ^[[90m^[[1m_update_scan_actions^[[22m | good_def_missing_column.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8507940Z [  97% ] ^[[90m^[[1m_update_scan_actions^[[22m | good_def_type_mismatch.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8509264Z [  98% ] ^[[90m^[[1m_update_scan_actions^[[22m | good_def_valid.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8510617Z [  98% ] ^[[90m^[[1m_update_scan_actions^[[22m | port_def_valid.csv^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8511267Z ^[[92m[ DONE ]^[[39m ^[[1m_update_scan_actions^[[22m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8511721Z ^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8681601Z [   0% ] ^[[90m^[[1mloading_editor_layout^[[22m | Started Loading editor (5 steps)^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8682725Z [   0% ] ^[[90m^[[1mloading_editor_layout^[[22m | Loading editor layout...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8683610Z [  16% ] ^[[90m^[[1mloading_editor_layout^[[22m | Loading docks...^[[39m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8684672Z ^[[92m[ DONE ]^[[39m ^[[1mloading_editor_layout^[[22m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:44.8685203Z ^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3143587Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3143952Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3144386Z ^[[36;1mdirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3144846Z ^[[36;1mif [[ -n "${dirty}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145188Z ^[[36;1m  echo "::error::godot --import dirtied the working tree"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145539Z ^[[36;1m  echo "$dirty"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145755Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3145950Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3146166Z ^[[36;1mecho "IMPORT_CLEAN_TREE_OK"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179112Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179441Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179651Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3179931Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3180241Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3731840Z IMPORT_CLEAN_TREE_OK
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3765249Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3765595Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3765846Z ^[[36;1mmkdir -p out/golden^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3766313Z ^[[36;1mtools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3766838Z ^[[36;1m  --log "$(pwd)/out/golden/30d.log"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3767411Z ^[[36;1mecho "GOLDEN_30D_DONE"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3767670Z ^[[36;1mwc -l out/golden/30d.csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3768022Z ^[[36;1m# Cell summary for evening-17-64 gate (row count + sha256).^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3768456Z ^[[36;1msha256sum out/golden/30d.csv | tee out/golden/30d.sha256^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3768803Z ^[[36;1mpython3 - <<'PY'^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769037Z ^[[36;1mimport csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769260Z ^[[36;1mfrom pathlib import Path^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769525Z ^[[36;1mp = Path("out/golden/30d.csv")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3769934Z ^[[36;1mrows = list(csv.DictReader(p.open(newline="", encoding="utf-8")))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3770362Z ^[[36;1mcols = list(rows[0].keys()) if rows else []^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3770820Z ^[[36;1mprint(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3771240Z ^[[36;1mPY^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3802447Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3802703Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3802898Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3803171Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.3803461Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.4194436Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:46.4489809Z 
+golden-30d	UNKNOWN STEP	2026-11-25T09:26:47.6238597Z GOLDEN_V2: boot_ok seed=1 days=30 out=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:10.9938516Z GOLDEN_V2: wrote /home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0941028Z GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.log
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0942081Z GOLDEN_GATE PASS
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0942876Z GOLDEN_30D_DONE
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.0975808Z 528 out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1022683Z 8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c  out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1432333Z GOLDEN_SUMMARY rows=527 cols=19 bytes=2270766
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1533854Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1534242Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1534516Z ^[[36;1mmkdir -p out/golden-main^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1534866Z ^[[36;1m# 17-69 W1(d)：依 artifact API 找 main 分支最新未過期 golden-30d^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1535375Z ^[[36;1m# （勿僅看 conclusion==success — cancelled 仍可能已上傳；舊 success 可能無 golden job）。^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1535891Z ^[[36;1m# 17-69 W1(c)：若仍無 main artifact → S9b bootstrap 凍結基準（evening-17-64）。^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1536634Z ^[[36;1mBOOT_CSV=".github/ci/golden_30d_bootstrap_1764.csv"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1537495Z ^[[36;1mBOOT_SHA_EXPECT="8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1537954Z ^[[36;1mset +e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1538424Z ^[[36;1mART_META=$(gh api "repos/wayung0217/Project-Patrician/actions/artifacts?name=golden-30d&per_page=100" \^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1539205Z ^[[36;1m  --jq '[.artifacts[] | select(.expired==false and .workflow_run.head_branch=="main")] | .[0] // empty')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1539697Z ^[[36;1mset -e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1539904Z ^[[36;1mRUN_ID=""^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1540110Z ^[[36;1mART_ID=""^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1540392Z ^[[36;1mif [[ -n "${ART_META}" && "${ART_META}" != "null" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1540824Z ^[[36;1m  RUN_ID=$(echo "${ART_META}" | jq -r '.workflow_run.id // empty')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1541267Z ^[[36;1m  ART_ID=$(echo "${ART_META}" | jq -r '.id // empty')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1541577Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1541790Z ^[[36;1mif [[ -n "${RUN_ID}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1542086Z ^[[36;1m  echo "GOLDEN_BASE_RUN_ID=${RUN_ID}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1542411Z ^[[36;1m  echo "GOLDEN_BASE_ARTIFACT_ID=${ART_ID}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1542710Z ^[[36;1m  set +e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1543144Z ^[[36;1m  gh run download "${RUN_ID}" --repo "wayung0217/Project-Patrician" -n golden-30d -D out/golden-main^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1543629Z ^[[36;1m  RC=$?^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1543837Z ^[[36;1m  set -e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1544109Z ^[[36;1m  if [[ $RC -eq 0 ]] && [[ -f out/golden-main/30d.csv ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1544498Z ^[[36;1m    echo "present" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1544823Z ^[[36;1m    echo "GOLDEN_BOOTSTRAP=0"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545099Z ^[[36;1m    ls -la out/golden-main/^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545356Z ^[[36;1m    exit 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545558Z ^[[36;1m  fi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1545914Z ^[[36;1m  echo "GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} — falling back to bootstrap"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1546356Z ^[[36;1melse^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1546698Z ^[[36;1m  echo "GOLDEN_BASE_MISSING=1 (no non-expired main golden-30d artifact)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1547294Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1547572Z ^[[36;1m# S9b bootstrap：17-64 凍結 CSV（sha256 8b25c951…）^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1547908Z ^[[36;1mif [[ ! -f "${BOOT_CSV}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1548233Z ^[[36;1m  echo "missing" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1548704Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — no main artifact and bootstrap CSV absent"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549129Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549319Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549539Z ^[[36;1mcp "${BOOT_CSV}" out/golden-main/30d.csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1549948Z ^[[36;1mACTUAL_SHA=$(sha256sum out/golden-main/30d.csv | awk '{print $1}')^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1550386Z ^[[36;1mif [[ "${ACTUAL_SHA}" != "${BOOT_SHA_EXPECT}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1550758Z ^[[36;1m  echo "missing" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1551271Z ^[[36;1m  echo "::error::GOLDEN_BOOTSTRAP_SHA_MISMATCH expect=${BOOT_SHA_EXPECT} actual=${ACTUAL_SHA}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1551742Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1551934Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1552173Z ^[[36;1mecho "bootstrap" > out/golden-main/STATUS.txt^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1552497Z ^[[36;1mecho "GOLDEN_BOOTSTRAP=1"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1553002Z ^[[36;1mecho "GOLDEN_BOOTSTRAP_SHA=${ACTUAL_SHA}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1553319Z ^[[36;1mls -la out/golden-main/^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1589204Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1589545Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1589830Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1590120Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1593173Z   GH_TOKEN: ***
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.1593415Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.6671890Z GOLDEN_BASE_RUN_ID=45581115843
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:11.6672609Z GOLDEN_BASE_ARTIFACT_ID=15005963963
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4403616Z GOLDEN_BOOTSTRAP=0
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4444168Z total 2240
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4444602Z drwxr-xr-x 2 runner runner    4096 Nov 25 09:28 .
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4445079Z drwxr-xr-x 4 runner runner    4096 Nov 25 09:28 ..
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4445439Z -rw-r--r-- 1 runner runner 2270766 Nov 25 09:28 30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4445821Z -rw-r--r-- 1 runner runner     274 Nov 25 09:28 30d.log
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4446182Z -rw-r--r-- 1 runner runner      85 Nov 25 09:28 30d.sha256
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4446595Z -rw-r--r-- 1 runner runner       8 Nov 25 09:28 STATUS.txt
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4487806Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4488190Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4488491Z ^[[36;1mif [[ ! -f out/golden-main/30d.csv ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4489013Z ^[[36;1m  echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4489477Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4489685Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4490041Z ^[[36;1mSTATUS="$(cat out/golden-main/STATUS.txt 2>/dev/null || echo unknown)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4490475Z ^[[36;1mif [[ "${STATUS}" == "bootstrap" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4490781Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=1"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491038Z ^[[36;1melse^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491251Z ^[[36;1m  echo "GOLDEN_BOOTSTRAP=0"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491494Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4491684Z ^[[36;1mset +e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4492182Z ^[[36;1mpython3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4492723Z ^[[36;1mRC=${PIPESTATUS[0]}^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4492968Z ^[[36;1mset -e^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4493337Z ^[[36;1m# 17-70 T4／N-13：COMPARED_* 以 CSV 網格為準（不依賴 compare.out 是否印 COMPARED_*；^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4493834Z ^[[36;1m# 舊 golden_compare 在 IDENTICAL=1 時提早 return 會漏印 → 誤判 cells=0）。^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494207Z ^[[36;1meval "$(python3 - <<'PY'^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494460Z ^[[36;1mimport csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494705Z ^[[36;1mfrom pathlib import Path^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4494947Z ^[[36;1m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4495133Z ^[[36;1mdef grid(path):^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4495510Z ^[[36;1m    rows = list(csv.DictReader(Path(path).open(newline="", encoding="utf-8")))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4495920Z ^[[36;1m    if not rows:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4496145Z ^[[36;1m        return 0, 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4496426Z ^[[36;1m    return len(rows), len(list(rows[0].keys()))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4496721Z ^[[36;1m^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4497398Z ^[[36;1mra, ca = grid("out/golden-main/30d.csv")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4497756Z ^[[36;1mrb, cb = grid("out/golden/30d.csv")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4498040Z ^[[36;1mrows = min(ra, rb)^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4498307Z ^[[36;1mcols = min(ca, cb) if ca and cb else 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4498599Z ^[[36;1mcells = rows * cols^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499029Z ^[[36;1mtext = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499485Z ^[[36;1mdiff = 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499696Z ^[[36;1mif "IDENTICAL=1" in text:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4499954Z ^[[36;1m    diff = 0^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500159Z ^[[36;1melse:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500379Z ^[[36;1m    for line in text.splitlines():^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500681Z ^[[36;1m        if "diff_cells=" in line:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4500952Z ^[[36;1m            try:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4501262Z ^[[36;1m                diff += int(line.rsplit("diff_cells=", 1)[1].strip())^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4501624Z ^[[36;1m            except ValueError:^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4501895Z ^[[36;1m                pass^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502149Z ^[[36;1mprint(f"COMPARED_ROWS={rows}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502424Z ^[[36;1mprint(f"COMPARED_COLS={cols}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502710Z ^[[36;1mprint(f"COMPARED_CELLS={cells}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4502993Z ^[[36;1mprint(f"DIFF_CELLS={diff}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4503258Z ^[[36;1mprint(f"CSV_ROWS_A={ra}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4503739Z ^[[36;1mprint(f"CSV_ROWS_B={rb}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4503991Z ^[[36;1mprint(f"CSV_COLS_A={ca}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504248Z ^[[36;1mprint(f"CSV_COLS_B={cb}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504511Z ^[[36;1mPY^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504691Z ^[[36;1m)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4504911Z ^[[36;1mecho "COMPARED_ROWS=${COMPARED_ROWS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4505229Z ^[[36;1mecho "COMPARED_COLS=${COMPARED_COLS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4505549Z ^[[36;1mecho "COMPARED_CELLS=${COMPARED_CELLS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4505861Z ^[[36;1mecho "DIFF_CELLS=${DIFF_CELLS}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4506513Z ^[[36;1mecho "CSV_ROWS_A=${CSV_ROWS_A} CSV_ROWS_B=${CSV_ROWS_B} CSV_COLS_A=${CSV_COLS_A} CSV_COLS_B=${CSV_COLS_B}"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4507432Z ^[[36;1mexpect=$((COMPARED_ROWS * COMPARED_COLS))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4507873Z ^[[36;1mif [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4508494Z ^[[36;1m  echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4508977Z ^[[36;1m  exit 1^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509170Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509369Z ^[[36;1mif [[ $RC -ne 0 ]]; then^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509616Z ^[[36;1m  exit "$RC"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4509817Z ^[[36;1mfi^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4510027Z ^[[36;1mecho "GOLDEN_CELLS_IDENTICAL=1"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542195Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542449Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542644Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4542927Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4543224Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.4629229Z GOLDEN_BOOTSTRAP=0
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5267671Z A=out/golden-main/30d.csv bytes=2270766
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5268230Z B=out/golden/30d.csv bytes=2270766
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5268636Z ROWS_A=527 ROWS_B=527
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5268980Z COMPARED_ROWS=527
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5269294Z COMPARED_COLS=19
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5269603Z COMPARED_CELLS=10013
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5269950Z IDENTICAL=1
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5946093Z COMPARED_ROWS=527
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5946548Z COMPARED_COLS=19
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5947168Z COMPARED_CELLS=10013
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5947535Z DIFF_CELLS=0
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5947993Z CSV_ROWS_A=527 CSV_ROWS_B=527 CSV_COLS_A=19 CSV_COLS_B=19
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.5948549Z GOLDEN_CELLS_IDENTICAL=1
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6005720Z ##[group]Run actions/upload-artifact@v5
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6006047Z with:
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6006253Z   name: golden-30d
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6006469Z   path: out/golden/
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6006687Z   retention-days: 14
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6007389Z   if-no-files-found: warn
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6007635Z   compression-level: 6
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6007857Z   overwrite: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6008070Z   include-hidden-files: false
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6008302Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6008500Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6008767Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.6009052Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.7697033Z (node:2599) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.7697869Z (Use `node --trace-deprecation ...` to show where the warning was created)
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.7798131Z With the provided path, there will be 3 files uploaded
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.7799447Z Artifact name is valid!
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.7799820Z Root directory input is valid!
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:12.9589895Z Beginning upload of artifact content to blob storage
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.0431081Z (node:2599) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.1248104Z Uploaded bytes 392499
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.1451694Z Finished uploading artifact content to blob storage!
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.1453310Z SHA256 digest of uploaded artifact zip is 427ff5c3e2d9a571d6d806fe9cfb93a2cf5bee5f6ddbae754bd8c8b7ab4b9a6c
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.1455206Z Finalizing artifact upload
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.4581976Z Artifact golden-30d.zip successfully finalized. Artifact ID 15007744404
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.4583663Z Artifact golden-30d has been successfully uploaded! Final size is 392499 bytes. Artifact ID is 15007744404
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:13.4590227Z Artifact download URL: https://github.com/wayung0217/Project-Patrician/actions/runs/45585429371/artifacts/15007744404
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.1256725Z Post job cleanup.
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.2718965Z Cache hit occurred on the primary key godot-imported-243c0865bc3a260099e1776b5adee3cee1b3cb10ded02e454ab9a91ce912e248, not saving cache.
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.2841959Z Post job cleanup.
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.4228293Z Cache hit occurred on the primary key godot-4.7.2-stable-linux-x86_64, not saving cache.
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.4375047Z Post job cleanup.
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5317953Z [command]/usr/bin/git version
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5365737Z git version 2.56.1
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5410197Z Temporarily overriding HOME='/home/runner/work/_temp/7f8f2863-ed48-44d0-87ea-f2d435c2af3c' before making global git config changes
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5411620Z Adding repository directory to the temporary git global config as a safe directory
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5417871Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5476371Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5522651Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5868709Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5915158Z http.https://github.com/.extraheader
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5930048Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.5985586Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.6404263Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.6447787Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.6935332Z Cleaning up orphan processes
+golden-30d	UNKNOWN STEP	2026-11-25T09:28:14.7350546Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

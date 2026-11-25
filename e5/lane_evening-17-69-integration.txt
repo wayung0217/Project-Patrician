@@ -1,0 +1,11 @@
+【已過期，以 e2/ （#85 tip 0b0e220；合併①後 main e07bb3c 見 e1/） 為準】
+source: /cursor/stores/.../evening-17-69-integration/lane.txt
+annotated_at: 2026-11-25T13:10:00Z (evidence2 E5)
+---- original body below (not deleted) ----
+lane: integration I1–I4
+L2: b28012ca49407433e229e8cfc698e083e7680e8f (tests-only A21)
+L3: da3d911a9a6882d85a4d1bee523b78e9af0ad365
+L4: 4d05f0d6c4ab465ac5f6d8f5250ac28c1de7dc70
+orphan: review/evening-17-69-int
+no_merge: true
+agent: bc-c0f6b1d2-a57a-59ea-8852-0101795f5813

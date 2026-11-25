@@ -1,0 +1,13 @@
+### command
+gh run view 45581664915 --json jobs (tip 14b4363 test-count baseline)
+### output
+{"completedAt":"2026-11-25T09:39:59Z","conclusion":"success","name":"gut-unit (0)","startedAt":"2026-11-25T09:02:46Z"}
+{"completedAt":"2026-11-25T09:03:25Z","conclusion":"success","name":"gut-unit (3)","startedAt":"2026-11-25T09:02:47Z"}
+{"completedAt":"2026-11-25T09:03:10Z","conclusion":"success","name":"gut-unit (1)","startedAt":"2026-11-25T09:02:46Z"}
+{"completedAt":"2026-11-25T09:08:15Z","conclusion":"success","name":"gut-unit (2)","startedAt":"2026-11-25T09:02:46Z"}
+### wall_seconds
+gut-unit (0) wall_s=2233
+gut-unit (1) wall_s=24
+gut-unit (2) wall_s=329
+gut-unit (3) wall_s=38
+max_wall_s 2233.0

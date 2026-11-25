@@ -1,0 +1,37 @@
+$ gh run view 45581115843 --job 139091124596 --log
+# job=golden-30d databaseId=139091124596
+# golden step «30d golden gated» — raw ##[group] segment containing GOLDEN_GATE / GOLDEN_SUMMARY
+# BEGIN RAW LOG SEGMENT
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2648359Z ##[group]Run set -euo pipefail
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2648634Z ^[[36;1mset -euo pipefail^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2648843Z ^[[36;1mmkdir -p out/golden^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2649241Z ^[[36;1mtools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2649638Z ^[[36;1m  --log "$(pwd)/out/golden/30d.log"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2649881Z ^[[36;1mecho "GOLDEN_30D_DONE"^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2650098Z ^[[36;1mwc -l out/golden/30d.csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2650792Z ^[[36;1m# Cell summary for evening-17-64 gate (row count + sha256).^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2651137Z ^[[36;1msha256sum out/golden/30d.csv | tee out/golden/30d.sha256^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2651415Z ^[[36;1mpython3 - <<'PY'^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2651617Z ^[[36;1mimport csv^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2651812Z ^[[36;1mfrom pathlib import Path^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2652031Z ^[[36;1mp = Path("out/golden/30d.csv")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2652363Z ^[[36;1mrows = list(csv.DictReader(p.open(newline="", encoding="utf-8")))^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2652704Z ^[[36;1mcols = list(rows[0].keys()) if rows else []^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2653068Z ^[[36;1mprint(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2653403Z ^[[36;1mPY^[[0m
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2679858Z shell: /usr/bin/bash -e {0}
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2680072Z env:
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2680251Z   GODOT_VERSION: 4.7.2-stable
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2680617Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.2680953Z ##[endgroup]
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.3024957Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:39.3279814Z 
+golden-30d	UNKNOWN STEP	2026-11-25T08:59:40.1747256Z GOLDEN_V2: boot_ok seed=1 days=30 out=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:00:40.9330803Z GOLDEN_V2: wrote /home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:00:40.9973119Z GOLDEN_GATE ERROR=0 SCRIPT_ERROR=0 godot_rc=0 log=/home/runner/work/Project-Patrician/Project-Patrician/out/golden/30d.log
+golden-30d	UNKNOWN STEP	2026-11-25T09:00:40.9973687Z GOLDEN_GATE PASS
+golden-30d	UNKNOWN STEP	2026-11-25T09:00:40.9974733Z GOLDEN_30D_DONE
+golden-30d	UNKNOWN STEP	2026-11-25T09:00:41.0002616Z 528 out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:00:41.0042165Z 8b25c951a90e36bd38269089b9d21e51b260914f8768624ac0efd0dab29be55c  out/golden/30d.csv
+golden-30d	UNKNOWN STEP	2026-11-25T09:00:41.0366383Z GOLDEN_SUMMARY rows=527 cols=19 bytes=2270766
+# END RAW LOG SEGMENT

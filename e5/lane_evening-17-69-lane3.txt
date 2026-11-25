@@ -1,0 +1,13 @@
+【已過期，以 e2/ （#85 tip 0b0e22044b126559e3d5d54173358f81e44a304d / run 45585429371） 為準】
+source: /cursor/stores/.../evening-17-69-lane3/lane.txt
+annotated_at: 2026-11-25T13:10:00Z (evidence2 E5)
+---- original body below (not deleted) ----
+lane: 3
+parent: PP-172 / PP-190
+timeline: 17-69
+branch: cursor/int-ci-1767-866d
+pr: https://github.com/wayung0217/Project-Patrician/pull/85
+base: int-1758
+tip: da3d911a9a6882d85a4d1bee523b78e9af0ad365
+lane2_tip: 19d1a4e862e0dbe5ef15f9deb36721cc3690df48
+ownership: ci.yml + names + README + golden bootstrap csv/sha256 (NO paths.txt)

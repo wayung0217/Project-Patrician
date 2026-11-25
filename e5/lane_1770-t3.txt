@@ -1,0 +1,9 @@
+【已過期，以 本 pack 不覆蓋 T3；仍以 origin/review/1770-t3 為準（此複本僅索引） 為準】
+source: origin/review/1770-t3:lane.txt @ 40670fc
+annotated_at: 2026-11-25T13:10:00Z (evidence2 E5)
+---- original body below (not deleted) ----
+17-70 T3 / #86
+product: tools-1769 @ 9b333c704c62fe00fe59ce1b67684de9b7e88948
+action: H4 gap stop — no tools/ or ci.yml edit
+orphan: review/1770-t3
+no merge

@@ -1,0 +1,106 @@
+$ gh run view 45581115843 --job 139102939161 --log
+# job=gut-unit-gate databaseId=139102939161
+# gate step «Verify Passing ≥ baseline; print ADDED_NAMES / REMOVED_NAMES» — raw ##[group]Run set -euo pipefail segment
+# BEGIN RAW LOG SEGMENT
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9488837Z ##[group]Run set -euo pipefail
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9489489Z ^[[36;1mset -euo pipefail^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9489984Z ^[[36;1mecho "Shard artifacts:"^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9490486Z ^[[36;1mfind shard_logs -type f -print^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9490989Z ^[[36;1mtotal=0^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9491429Z ^[[36;1mwhile IFS= read -r f; do^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9491916Z ^[[36;1m  n=$(tr -d '[:space:]' < "$f")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9492583Z ^[[36;1m  echo "file=$f passing=$n"^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9493080Z ^[[36;1m  total=$((total + n))^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9493697Z ^[[36;1mdone < <(find shard_logs -name gut_unit_passing.txt | sort)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9494298Z ^[[36;1mecho "TOTAL_PASSING=${total}"^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9494956Z ^[[36;1mBASELINE_FILE=".github/ci/gut_unit_property_baseline_names.txt"^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9495638Z ^[[36;1mBASELINE_COUNT=$(grep -c . "$BASELINE_FILE" || true)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9496241Z ^[[36;1mecho "BASELINE_COUNT=${BASELINE_COUNT}"^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9496864Z ^[[36;1mif [[ "$total" -lt "$BASELINE_COUNT" ]]; then^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9497747Z ^[[36;1m  echo "::error::unit+property Passing=${total} < baseline ${BASELINE_COUNT}"^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9498495Z ^[[36;1m  exit 1^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9499016Z ^[[36;1mfi^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9499432Z ^[[36;1mpython3 - <<'PY'^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9499892Z ^[[36;1mfrom pathlib import Path^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9500359Z ^[[36;1mbaseline = {^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9500783Z ^[[36;1m    ln.strip()^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9501451Z ^[[36;1m    for ln in Path(".github/ci/gut_unit_property_baseline_names.txt").read_text().splitlines()^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9502237Z ^[[36;1m    if ln.strip()^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9502674Z ^[[36;1m}^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9503060Z ^[[36;1mseen = set()^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9503574Z ^[[36;1mfor f in Path("shard_logs").rglob("gut_unit_names.txt"):^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9504212Z ^[[36;1m    for ln in f.read_text(errors="replace").splitlines():^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9504776Z ^[[36;1m        n = ln.strip()^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9505227Z ^[[36;1m        if n:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9505660Z ^[[36;1m            seen.add(n)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9506142Z ^[[36;1mremoved = sorted(baseline - seen)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9506655Z ^[[36;1madded = sorted(seen - baseline)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9507247Z ^[[36;1mprint(f"SEEN_NAMES={len(seen)} BASELINE_NAMES={len(baseline)}")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9507839Z ^[[36;1mprint("REMOVED_NAMES:")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9508317Z ^[[36;1mif removed:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9508757Z ^[[36;1m    for n in removed:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9509205Z ^[[36;1m        print(n)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9509639Z ^[[36;1melse:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9510047Z ^[[36;1m    print("無")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9510486Z ^[[36;1mprint("ADDED_NAMES:")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9510936Z ^[[36;1mif added:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9511353Z ^[[36;1m    for n in added:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9511793Z ^[[36;1m        print(n)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9512479Z ^[[36;1melse:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9512928Z ^[[36;1m    print("無")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9513379Z ^[[36;1mif removed:^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9514150Z ^[[36;1m    print("::error::REMOVED_NAMES non-empty — baseline test deleted/renamed without Owner pre-approval (set diff)")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9514931Z ^[[36;1m    raise SystemExit(1)^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9515459Z ^[[36;1mprint("GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1")^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9515970Z ^[[36;1mPY^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9516490Z ^[[36;1mecho "GUT_UNIT_PROPERTY_COUNT_OK>=${BASELINE_COUNT} actual=${total}"^[[0m
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9554494Z shell: /usr/bin/bash -e {0}
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9554961Z env:
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9555348Z   GODOT_VERSION: 4.7.2-stable
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9555846Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9556326Z ##[endgroup]
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9638583Z Shard artifacts:
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9652283Z shard_logs/gut-unit-logs-0/gut_unit_names.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9653164Z shard_logs/gut-unit-logs-0/gut_unit_passing.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9653722Z shard_logs/gut-unit-logs-0/gut_unit.log
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9654236Z shard_logs/gut-unit-logs-2/gut_unit_names.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9654766Z shard_logs/gut-unit-logs-2/gut_unit_passing.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9655284Z shard_logs/gut-unit-logs-2/gut_unit.log
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9655792Z shard_logs/gut-unit-logs-3/gut_unit_names.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9656320Z shard_logs/gut-unit-logs-3/gut_unit_passing.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9656842Z shard_logs/gut-unit-logs-3/gut_unit.log
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9657363Z shard_logs/gut-unit-logs-1/gut_unit_names.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9657912Z shard_logs/gut-unit-logs-1/gut_unit_passing.txt
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9658430Z shard_logs/gut-unit-logs-1/gut_unit.log
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9727960Z file=shard_logs/gut-unit-logs-0/gut_unit_passing.txt passing=122
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9762761Z file=shard_logs/gut-unit-logs-1/gut_unit_passing.txt passing=144
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9795099Z file=shard_logs/gut-unit-logs-2/gut_unit_passing.txt passing=148
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9827057Z file=shard_logs/gut-unit-logs-3/gut_unit_passing.txt passing=144
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9828014Z TOTAL_PASSING=558
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:35.9846580Z BASELINE_COUNT=555
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0046996Z SEEN_NAMES=558 BASELINE_NAMES=555
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0047868Z REMOVED_NAMES:
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0048515Z 無
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0048960Z ADDED_NAMES:
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0049455Z test_R972_EX_05_09_01_stock_bottleneck_q_300
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0050199Z test_R972_EX_05_09_02_cash_bottleneck_q_120
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0050788Z test_R972_EX_05_09_03_zero_stock_no_quote
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0051401Z GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0082006Z GUT_UNIT_PROPERTY_COUNT_OK>=555 actual=558
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.0245467Z Post job cleanup.
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1118299Z [command]/usr/bin/git version
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1164521Z git version 2.56.1
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1205579Z Temporarily overriding HOME='/home/runner/work/_temp/7cb5f239-2017-40d3-bccd-e847d575b35e' before making global git config changes
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1207363Z Adding repository directory to the temporary git global config as a safe directory
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1211841Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Project-Patrician/Project-Patrician
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1254801Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1295308Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1606041Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1643097Z http.https://github.com/.extraheader
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1655538Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1695281Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.1995463Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.2031041Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.2507235Z Cleaning up orphan processes
+gut-unit-gate	UNKNOWN STEP	2026-11-25T09:21:36.2918086Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/download-artifact@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+# END RAW LOG SEGMENT

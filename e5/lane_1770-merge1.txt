@@ -1,0 +1,7 @@
+【已過期，以 report.md + e1/（本 orphan review/1770-evidence2） 為準】
+source: origin/review/1770-merge1:lane.txt @ 76bacbf
+annotated_at: 2026-11-25T13:10:00Z (evidence2 E5)
+---- original body below (not deleted) ----
+lane=merge1
+merge_commit=e07bb3c16347b30d68c3869203fc19d8ae345e1a
+pr=84
