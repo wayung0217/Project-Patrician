@@ -53,5 +53,5 @@ Still **待補** when sibling finishes:
 
 ## Orphan tip
 - Pack: `83e2f19d260c15c2b8416d44debac50629212c6d`
-- Tip (orphan_sha stamp): `55d573a67299bcf3e53a4b2a00021d9385c6f7a9`
+- Tip (current): `3babae64d4e88ab51f01e8679f14e6f469f8e08a` (stamp of `5fecbcf…`; pack root `83e2f19…`)
 - True orphan (root has no parent). Initial remote tip was mistakenly `e07bb3c` (empty product tip); one-time force replace with this orphan pack so N-12 append history starts clean. Subsequent updates must append only.
