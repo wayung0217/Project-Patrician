@@ -1,0 +1,5 @@
+Re-ran tools/run_m1b_report.gd on z-1758-2 Actions artifact CSVs
+(run https://github.com/wayung0217/Project-Patrician/actions/runs/45356709933).
+Slim input: season_ports/cells + summary + trader_summary + timing per group
+(under /tmp/z1758-2-rerun; not committed — size).
+Store mirror of thin artifacts: evening-17-63/z-1758-2/groups (no season_*).

@@ -1,0 +1,16 @@
+commit 9b333c704c62fe00fe59ce1b67684de9b7e88948
+Author: Cursor Agent <cursoragent@cursor.com>
+Date:   Tue Nov 24 14:13:59 2026 +0000
+
+    tools: SEED_NO_EFFECT + season/trader totals in m1b report (17-69 L5)
+    
+    Compare seed-only pairs (Za_G0_A0 vs Zd_G0_seed2); warn SEED_NO_EFFECT
+    when ①②③④ metrics match without flipping PASS/FAIL. Present
+    season_sail_count/season_cargo_dan as N/A when columns missing (T3).
+    Add per-group trader sails + cargo_dan totals.
+    
+    Co-authored-by: wayung0217 <wayung0217@users.noreply.github.com>
+
+ tools/run_m1b_README.md |  15 ++++
+ tools/run_m1b_report.gd | 194 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 204 insertions(+), 5 deletions(-)

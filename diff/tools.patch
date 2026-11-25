@@ -1,0 +1,259 @@
+diff --git a/tools/run_m1b_README.md b/tools/run_m1b_README.md
+index 2a69600..895f1ae 100644
+--- a/tools/run_m1b_README.md
++++ b/tools/run_m1b_README.md
+@@ -98,3 +98,18 @@ After a full pack, zip `out\m1b\` (keep under 150 MB; if over, keep per group `s
+ 
+ 3. Confirm CSVs under `out\m1b_smoke\Za_G0_A0\` and `progress.log` season lines (read with `Get-Content -Encoding UTF8`).
+ 4. Optional subprocess cmp (Linux CI `m1b-w4-inline-cmp` job) — Owner: status **待 Owner 驗證** until you confirm Guild T5.
++
++## 17-69 SEED_NO_EFFECT / trader totals
++
++`tools/run_m1b_report.gd` (Lane 5):
++
++1. **SEED_NO_EFFECT** — compares seed-only pairs (`Za_G0_A0` vs `Zd_G0_seed2`). If ①②③④ metrics are identical, emits a **WARNING: SEED_NO_EFFECT** plus the identical column list. Warning only; does not change PASS/FAIL.
++2. **season_sail_count / season_cargo_dan** — shown when those exact CSV columns exist; otherwise **N/A** (T3; never PASS/FAIL). Does not require Lane 4 output changes.
++3. **Trader totals** — per-group `trader_sails_total` + `trader_cargo_dan_total` from `trader_summary.csv`.
++
++Rebuild report only:
++
++```powershell
++.\tools\run_m1b.ps1 -GodotPath "...console.exe" -ReportOnly
++```
++
+diff --git a/tools/run_m1b_report.gd b/tools/run_m1b_report.gd
+index b6334be..862d296 100644
+--- a/tools/run_m1b_report.gd
++++ b/tools/run_m1b_report.gd
+@@ -1,5 +1,5 @@
+ extends SceneTree
+-## 17-59 H3: read out/m1b (or --in) → report.md tables ①–⑤. Missing group = 未跑.
++## 17-59 H3: read out/m1b (or --in) → report.md tables ①–⑤ + 17-69 SEED_NO_EFFECT / K3 cols.
+ ## Usage: godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b
+ 
+ 
+@@ -16,6 +16,24 @@ var _GROUPS: Array = [
+ 	"Zd_G0_seed2",
+ ]
+ 
++## 17-69 5.1: seed-only pairs (same scenario; seed differs). Warning only — never flip PASS/FAIL.
++var _SEED_PAIRS: Array = [
++	["Za_G0_A0", "Zd_G0_seed2"],
++]
++
++## Metric keys compared for SEED_NO_EFFECT (①②③④ display values only).
++var _SEED_METRIC_KEYS: Array = [
++	"pop",
++	"rich_pct",
++	"cit_pct",
++	"poor_pct",
++	"beg_pct",
++	"band04_pct",
++	"tier_order",
++	"cash_mono",
++	"cash_ports",
++]
++
+ const RICH_LO := 0.03
+ const RICH_HI := 0.08
+ const CIT_LO := 0.20
+@@ -128,6 +146,40 @@ func _main() -> void:
+ 			]
+ 		)
+ 	lines.append("")
++	## 17-69 5.2: season_sail_count / season_cargo_dan columns — N/A if missing (T3; never PASS/FAIL).
++	lines.append("## ⑥ season_sail_count / season_cargo_dan (column present?)")
++	lines.append("")
++	lines.append("| Group | status | season_sail_count | season_cargo_dan |")
++	lines.append("|-------|--------|-------------------|------------------|")
++	for st_v6 in rows1:
++		var st6: Dictionary = st_v6
++		lines.append(
++			"| %s | %s | %s | %s |" % [
++				st6["group"],
++				st6["status"],
++				st6["season_sail_count"],
++				st6["season_cargo_dan"],
++			]
++		)
++	lines.append("")
++	## 17-69 5.3: per-group trader total sails + total cargo (from trader_summary).
++	lines.append("## ⑦ Trader totals (sails + cargo_dan)")
++	lines.append("")
++	lines.append("| Group | status | trader_sails_total | trader_cargo_dan_total |")
++	lines.append("|-------|--------|--------------------|------------------------|")
++	for st_v7 in rows1:
++		var st7: Dictionary = st_v7
++		lines.append(
++			"| %s | %s | %s | %s |" % [
++				st7["group"],
++				st7["status"],
++				st7["trader_sails_total"],
++				st7["trader_cargo_dan_total"],
++			]
++		)
++	lines.append("")
++	## 17-69 5.1: seed-independence check — warning only.
++	_append_seed_no_effect(lines, rows1)
+ 	var body: String = "\n".join(lines) + "\n"
+ 	DirAccess.make_dir_recursive_absolute(abs_in)
+ 	var f := FileAccess.open(report_path, FileAccess.WRITE)
+@@ -164,6 +216,11 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
+ 		"aborted": "N/A",
+ 		"abort_reason": "N/A",
+ 		"sail_sum": "N/A",
++		## 17-69 5.2 / 5.3
++		"season_sail_count": "N/A",
++		"season_cargo_dan": "N/A",
++		"trader_sails_total": "N/A",
++		"trader_cargo_dan_total": "N/A",
+ 	}
+ 	if not DirAccess.dir_exists_absolute(gdir):
+ 		return out
+@@ -320,15 +377,142 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
+ 			out["abort_reason"] = String(s0.get("abort_reason", "")).replace("|", "/")
+ 	if FileAccess.file_exists(trader_path):
+ 		var sails := 0
+-		for t_v in _read_csv(trader_path):
+-			sails += _as_int((t_v as Dictionary).get("sail_count", 0))
++		var cargo_total := 0
++		var traders: Array = _read_csv(trader_path)
++		for t_v in traders:
++			var td: Dictionary = t_v
++			sails += _as_int(td.get("sail_count", 0))
++			cargo_total += _cargo_dan_sum(td.get("cargo_dan_json", "{}"))
+ 		out["sail_sum"] = str(sails)
++		out["trader_sails_total"] = str(sails)
++		out["trader_cargo_dan_total"] = str(cargo_total)
++		## 5.2: only exact column names season_sail_count / season_cargo_dan (not sail_count).
++		out["season_sail_count"] = _column_sum_or_na(traders, "season_sail_count")
++		out["season_cargo_dan"] = _column_cargo_or_na(traders, "season_cargo_dan")
+ 	else:
+-		if out["sail_sum"] == "":
+-			out["sail_sum"] = "N/A"
++		out["sail_sum"] = "N/A"
++		out["trader_sails_total"] = "N/A"
++		out["trader_cargo_dan_total"] = "N/A"
++	## Also accept season_* columns on season_ports (Lane4 may place them there).
++	if out["season_sail_count"] == "N/A":
++		out["season_sail_count"] = _column_sum_or_na(ports, "season_sail_count")
++	if out["season_cargo_dan"] == "N/A":
++		out["season_cargo_dan"] = _column_cargo_or_na(ports, "season_cargo_dan")
+ 	return out
+ 
+ 
++## 17-69 5.1: emit SEED_NO_EFFECT when seed-only pair shares all ①②③④ metrics.
++func _append_seed_no_effect(lines: PackedStringArray, rows: Array) -> void:
++	lines.append("## SEED_NO_EFFECT check (seed-only pairs)")
++	lines.append("")
++	var by_name: Dictionary = {}
++	for st_v in rows:
++		var st: Dictionary = st_v
++		by_name[String(st["group"])] = st
++	var any_warn := false
++	for pair_v in _SEED_PAIRS:
++		var pair: Array = pair_v
++		if pair.size() < 2:
++			continue
++		var a_name: String = String(pair[0])
++		var b_name: String = String(pair[1])
++		if not by_name.has(a_name) or not by_name.has(b_name):
++			lines.append("- pair `%s` vs `%s`: skipped (group missing)" % [a_name, b_name])
++			continue
++		var a: Dictionary = by_name[a_name]
++		var b: Dictionary = by_name[b_name]
++		if String(a.get("status", "")) != "ok" or String(b.get("status", "")) != "ok":
++			lines.append(
++				"- pair `%s` vs `%s`: skipped (status %s / %s)" % [
++					a_name, b_name, a.get("status", ""), b.get("status", "")
++				]
++			)
++			continue
++		var identical: PackedStringArray = PackedStringArray()
++		var differ: PackedStringArray = PackedStringArray()
++		for key_v in _SEED_METRIC_KEYS:
++			var key: String = String(key_v)
++			var av: String = String(a.get(key, "N/A"))
++			var bv: String = String(b.get(key, "N/A"))
++			if av == bv and av != "N/A":
++				identical.append("%s=%s" % [key, av])
++			elif av == bv and av == "N/A":
++				## Both missing — not a positive identity proof; treat as not comparable.
++				differ.append("%s=N/A" % key)
++			else:
++				differ.append("%s:%s≠%s" % [key, av, bv])
++		if differ.is_empty() and not identical.is_empty():
++			any_warn = true
++			lines.append(
++				"**WARNING: SEED_NO_EFFECT** — `%s` vs `%s` (seed-only): all ①②③④ metrics identical."
++				% [a_name, b_name]
++			)
++			lines.append("")
++			lines.append("Identical columns: %s" % ", ".join(identical))
++			lines.append("")
++		else:
++			lines.append(
++				"- pair `%s` vs `%s`: metrics differ or incomplete (no SEED_NO_EFFECT)."
++				% [a_name, b_name]
++			)
++			if not identical.is_empty():
++				lines.append("  - identical: %s" % ", ".join(identical))
++			if not differ.is_empty():
++				lines.append("  - differ/N/A: %s" % ", ".join(differ))
++	if not any_warn:
++		lines.append("")
++		lines.append("_No SEED_NO_EFFECT warning emitted._")
++	lines.append("")
++
++
++## Sum numeric column if header present in any row; else N/A (T3 — never PASS/FAIL).
++func _column_sum_or_na(rows: Array, col: String) -> String:
++	if rows.is_empty():
++		return "N/A"
++	var has := false
++	var total := 0
++	for r_v in rows:
++		var r: Dictionary = r_v
++		if r.has(col):
++			has = true
++			total += _as_int(r.get(col, 0))
++	return str(total) if has else "N/A"
++
++
++## Sum cargo column: Dictionary JSON or numeric; missing → N/A.
++func _column_cargo_or_na(rows: Array, col: String) -> String:
++	if rows.is_empty():
++		return "N/A"
++	var has := false
++	var total := 0
++	for r_v in rows:
++		var r: Dictionary = r_v
++		if not r.has(col):
++			continue
++		has = true
++		var raw: Variant = r.get(col, "")
++		var s: String = String(raw).strip_edges()
++		if s.begins_with("{") or s.begins_with("["):
++			total += _cargo_dan_sum(s)
++		else:
++			total += _as_int(raw)
++	return str(total) if has else "N/A"
++
++
++func _cargo_dan_sum(raw: Variant) -> int:
++	var s: String = String(raw).strip_edges()
++	if s.is_empty() or s == "{}":
++		return 0
++	var parsed: Variant = JSON.parse_string(s)
++	if typeof(parsed) != TYPE_DICTIONARY:
++		return 0
++	var total := 0
++	var d: Dictionary = parsed
++	for k in d.keys():
++		total += _as_int(d[k])
++	return total
++
++
+ ## 17-64 T4: read last PROGRESS pop= from group or pack progress.log (live at emit).
+ func _live_pop_from_progress(gdir: String) -> int:
+ 	var candidates: PackedStringArray = PackedStringArray([

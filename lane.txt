@@ -1,0 +1,8 @@
+tools-1769
+base: main
+tip: 9b333c704c62fe00fe59ce1b67684de9b7e88948
+PR: #86
+W6: pack redelivery only (no product code)
+scope: tools/run_m1b_report.gd + tools/run_m1b_README.md
+forbidden: sim/ autoloads ci.yml
+no merge

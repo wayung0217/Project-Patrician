@@ -1,0 +1,40 @@
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+TST09_SUMMARY_CSV_BEGIN
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS05-MIN_CASH_UNIT"":1}",0,,0.01030927835052,N/A,0,N/A,0.57575757575758,N/A,96,N/A,0,N/A,135.037109375,N/A,0,1,PT-01:;PT-02:4;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.14606741573034,,151977
+1,1,1,"{""PRM-SYS05-MIN_CASH_UNIT"":1}",1,ERR-SYS23-07: conservation violated,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,1,0,,,,70921
+TST09_SUMMARY_CSV_END
+TST09_ERR07_STATE_NOTE: ERR-SYS23-07 abort_reason lands in summary.abort_reason; season/daily rows sampled before abort remain in CSVs; MET-01..05b blank on aborted row; MET-06=conservation hits
+[34m[ExpectedError][0m
+* test_WP26_evidence_cli_twice_cmp
+CLI_ARGV: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician -s res://sim/sim_runner.gd -- --scenario /home/runner/.local/share/godot/app_userdata/Project Patrician/sys23_cli_scenario.json
+CLI_RUN_A rc=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=sys23_cli_cmp jobs=1
+sim_runner_child_argv: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.json
+sim_runner: wrote outputs under user://sim_out/sys23_cli_cmp/
+
+CLI_RUN_B rc=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=sys23_cli_cmp jobs=1
+sim_runner_child_argv: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.json
+sim_runner: wrote outputs under user://sim_out/sys23_cli_cmp/
+
+CLI_CMP season_cells.csv equal=true bytes_a=81832 bytes_b=81832
+CLI_CMP season_ports.csv equal=true bytes_a=17861 bytes_b=17861
+CLI_CMP summary: stripping elapsed_ms column before cmp
+CLI_CMP summary_stripped_a:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},0,,0.01355166572558,N/A,0,N/A,0.2,N/A,319,N/A,0,N/A,138.159673547768,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.16313559322034,
+CLI_CMP summary_stripped_b:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},0,,0.01355166572558,N/A,0,N/A,0.2,N/A,319,N/A,0,N/A,138.159673547768,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.16313559322034,
+CLI_CMP summary.csv equal=true bytes_a=435 bytes_b=435
+CLI_CMP combos.csv equal=true bytes_a=419 bytes_b=419
+CLI_CMP daily_PT-01.csv equal=true bytes_a=390556 bytes_b=390556
+CLI_CMP all five outputs match (elapsed stripped on summary)
+* test_WP26_layer1_two_years_headers_and_counts
+sim_engine: combos=1 seeds=1 jobs=1
