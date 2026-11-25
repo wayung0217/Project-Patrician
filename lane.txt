@@ -1,8 +1,8 @@
 lane1
 agent: bc-2b43a7ba-52fb-5f67-a87d-e5144aa0313c
 task: PP-187
-dispatch: 17-69 L1 + R9-73 L1-1/BAND-1/H-1
+dispatch: 17-69 L1 + R9-73 + W8
 ownership: no repo product edits; orphan deliverable only
 branch: review/evening-17-69-lane1
 h5: orphan (no SharePoint)
-r973_hkt: 2026-11-24 23:34 Asia/Hong_Kong
+w8_hkt: 2026-11-25 09:02 Asia/Hong_Kong

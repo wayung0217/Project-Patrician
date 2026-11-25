@@ -1,10 +1,10 @@
-group,band0,mid,band4,y5_cells,other_band,band0_plus_4_pct,source,note
-Za_G0_A0,42,15,391,448,0,96.7,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Za_G0_A250,44,13,391,448,0,97.1,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Za_G1_A0,44,12,392,448,0,97.3,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Za_G1_A250,43,13,392,448,0,97.1,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Za_G2_A0,42,15,391,448,0,96.7,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Za_G2_A250,44,13,391,448,0,97.1,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Zb_G0_notrader,42,15,391,448,0,96.7,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Zc_G0H_A0,42,15,391,448,0,96.7,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
-Zd_G0_seed2,42,15,391,448,0,96.7,actions/45356709933 artifact season_cells Y5 season_index=19,mid=bands 1+2+3; no season_cells dumped
+group,band0,mid,band4,y5_cells,other_band,band0_plus_4_pct,band4_pct,source,note
+Za_G0_A0,42,15,391,448,0,96.7,87.3,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Za_G0_A250,44,13,391,448,0,97.1,87.3,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Za_G1_A0,44,12,392,448,0,97.3,87.5,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Za_G1_A250,43,13,392,448,0,97.1,87.5,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Za_G2_A0,42,15,391,448,0,96.7,87.3,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Za_G2_A250,44,13,391,448,0,97.1,87.3,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Zb_G0_notrader,42,15,391,448,0,96.7,87.3,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Zc_G0H_A0,42,15,391,448,0,96.7,87.3,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
+Zd_G0_seed2,42,15,391,448,0,96.7,87.3,actions/45356709933 artifact season_cells Y5 season_index=19,W8: band0=price ceiling (shortage w<1); band4=price floor (surplus w>=10); mid=1..3; dominance=地板為主(87.3%); no season_cells dump
