@@ -1,8 +1,8 @@
 # 17-69 補正三 W10 — HANDOFF
 
-**Orphan:** `review/evening-17-69-handoff`  
-**Tip SHA:** `07cc97a38941eccdff671e7ab55ebad8072e6a67`  
-**Pack body (`orphan_sha.txt`):** 見該檔  
+**Orphan:** `review/evening-17-69-handoff`
+**Tip SHA:** 見 `tip_sha.txt`（與 `git rev-parse origin/review/evening-17-69-handoff` 一致）
+**Pack body:** 見 `orphan_sha.txt`
 **Queried:** 2026-11-25 ~10:15 Asia/Hong_Kong（`gh` 即時；勿抄過期數字）  
 **Hard rules:** 不合併、不打 tag、不跑 `z-1758-3`；未獲 Owner **一次批准**前 PR 原樣保留。  
 **Spec gate:** docs/spec v6.99.222
@@ -121,7 +121,7 @@ tip `4d05f0d`＝`3816c23`＋W3 docs/comment only。`gh` 上 tip 唯 run `4552290
 | `review/evening-17-69-lane4` | `d789f0410feee33d1cd65c3ecd5df2cc919e8fa5` |
 | `review/evening-17-69-lane5` | `8468b864149604e8e6b2cb8acf060ced8b559e4e` |
 | `review/evening-17-69-int` | `7d8ece439134c109e5f8a112771f3c32029a91e4` |
-| `review/evening-17-69-handoff` | `07cc97a38941eccdff671e7ab55ebad8072e6a67` |
+| `review/evening-17-69-handoff` | （見 `tip_sha.txt`） |
 
 W9 已刪：`cursor/int-1755-merge-0a6e`／`int-1756-295f`／`int-1757-5ae9`；關 #69／#70。
 
