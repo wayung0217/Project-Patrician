@@ -517,36 +517,49 @@ jobs:
           python3 tools/golden_compare.py out/golden-main/30d.csv out/golden/30d.csv | tee out/golden-main/compare.out
           RC=${PIPESTATUS[0]}
           set -e
-          # 17-70 T4／N-13：COMPARED_CELLS／列／欄；DIFF_CELLS；網格完整性閘門。
+          # 17-70 T4／N-13：COMPARED_* 以 CSV 網格為準（不依賴 compare.out 是否印 COMPARED_*；
+          # 舊 golden_compare 在 IDENTICAL=1 時提早 return 會漏印 → 誤判 cells=0）。
           eval "$(python3 - <<'PY'
+          import csv
           from pathlib import Path
+
+          def grid(path):
+              rows = list(csv.DictReader(Path(path).open(newline="", encoding="utf-8")))
+              if not rows:
+                  return 0, 0
+              return len(rows), len(list(rows[0].keys()))
+
+          ra, ca = grid("out/golden-main/30d.csv")
+          rb, cb = grid("out/golden/30d.csv")
+          rows = min(ra, rb)
+          cols = min(ca, cb) if ca and cb else 0
+          cells = rows * cols
           text = Path("out/golden-main/compare.out").read_text(encoding="utf-8", errors="replace")
-          rows = cols = cells = 0
           diff = 0
-          for line in text.splitlines():
-              if line.startswith("COMPARED_ROWS="):
-                  rows = int(line.split("=", 1)[1])
-              elif line.startswith("COMPARED_COLS="):
-                  cols = int(line.split("=", 1)[1])
-              elif line.startswith("COMPARED_CELLS="):
-                  cells = int(line.split("=", 1)[1])
-              elif "diff_cells=" in line:
-                  try:
-                      diff += int(line.rsplit("diff_cells=", 1)[1].strip())
-                  except ValueError:
-                      pass
           if "IDENTICAL=1" in text:
               diff = 0
+          else:
+              for line in text.splitlines():
+                  if "diff_cells=" in line:
+                      try:
+                          diff += int(line.rsplit("diff_cells=", 1)[1].strip())
+                      except ValueError:
+                          pass
           print(f"COMPARED_ROWS={rows}")
           print(f"COMPARED_COLS={cols}")
           print(f"COMPARED_CELLS={cells}")
           print(f"DIFF_CELLS={diff}")
+          print(f"CSV_ROWS_A={ra}")
+          print(f"CSV_ROWS_B={rb}")
+          print(f"CSV_COLS_A={ca}")
+          print(f"CSV_COLS_B={cb}")
           PY
           )"
           echo "COMPARED_ROWS=${COMPARED_ROWS}"
           echo "COMPARED_COLS=${COMPARED_COLS}"
           echo "COMPARED_CELLS=${COMPARED_CELLS}"
           echo "DIFF_CELLS=${DIFF_CELLS}"
+          echo "CSV_ROWS_A=${CSV_ROWS_A} CSV_ROWS_B=${CSV_ROWS_B} CSV_COLS_A=${CSV_COLS_A} CSV_COLS_B=${CSV_COLS_B}"
           expect=$((COMPARED_ROWS * COMPARED_COLS))
           if [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then
             echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13)"
