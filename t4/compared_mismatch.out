@@ -1,0 +1,10 @@
+A=/tmp/d130-t4/a.csv bytes=2270766
+B=/tmp/d130-t4/b_mismatch.csv bytes=2268332
+ROWS_A=527 ROWS_B=527
+COMPARED_ROWS=527
+COMPARED_COLS=19
+COMPARED_CELLS=10013
+IDENTICAL=0
+DIFFS_BEGIN
+COL=note first_diff_day=30 diff_cells=1
+DIFFS_END

@@ -1,0 +1,8 @@
+A=/tmp/d130-t4/a.csv bytes=2270766
+B=/tmp/d130-t4/b_dims.csv bytes=2267782
+ROWS_A=527 ROWS_B=526
+DIMS_MISMATCH rows_a=527 rows_b=526 cols_a=19 cols_b=19
+COMPARED_ROWS=0
+COMPARED_COLS=0
+COMPARED_CELLS=0
+IDENTICAL=0
