@@ -273,16 +273,12 @@ class _Demo124 extends RefCounted:
 
 func _boot_pricing_stack() -> void:
 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
-	## Offtake-only MarketPricer path（對齊 test_market_pricer）：先卸 DemandModel／provider，
-	## 避免同 shard 前序腳本留下 DemandModel.loaded 而 PopulationModel 未載入 →
-	## quote → weekly_potential_demand → PopulationModel.population SCRIPT ERROR（ci-script-error-gate）。
+	## Offtake-only MarketPricer path（對齊 test_market_pricer／trade_desk）：靜默卸 DemandModel，
+	## 避免 shard 殘態 → PopulationModel SCRIPT ERROR；不得 push_error（否則 A21 assert_push_error_count 破）。
 	DemandModel.clear_potential_demand_provider()
 	DemandModel.clear_queue_material_shortfall_provider()
-	var _dm_unload: Array = DemandModel.load_and_validate("user://wp56_demand_force_unload/")
-	assert_gt(_dm_unload.size(), 0)
+	DemandModel._clear_state()
 	assert_false(DemandModel.is_loaded())
-	for e in get_errors():
-		e.handled = true
 	var goods_dir := _build_goods(GOODS_ROOT)
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)
