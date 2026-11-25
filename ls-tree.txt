@@ -8,6 +8,9 @@ evidence/report.md
 evidence/report_stdout.txt
 git_branch_r.txt
 lane.txt
+ls-tree.txt
+orphan_push.log
+orphan_sha.txt
 overlap.md
 overlap/l4_l5_run_m1b_report.md
 overlap/l4_vs_int_run_m1b_report.diff
