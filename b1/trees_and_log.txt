@@ -1,0 +1,8 @@
+### command
+git rev-parse 'f86681e^{tree}'
+git rev-parse '80d3d68^{tree}'
+git log --format='%h %T %s' -1 f86681e
+### output
+539c8b18839136f9e7f08854548d5eadf8b8a2e3
+539c8b18839136f9e7f08854548d5eadf8b8a2e3
+f86681e 539c8b18839136f9e7f08854548d5eadf8b8a2e3 Revert "ci(e3c): temporary intentional golden cell mismatch for evidence"

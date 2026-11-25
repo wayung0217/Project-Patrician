@@ -1,0 +1,8 @@
+### command
+# summarize jobs of run 45626685721
+### output
+headSha=f86681e672c030298c4660e3ca9a7b229c11661c
+conclusion=success
+success_count=7 skipped_count=2
+success: golden-30d, gut-ui, gut-unit (0), gut-unit (1), gut-unit (2), gut-unit (3), gut-unit-gate
+skipped: m1b-h4-smoke, m1b-w4-inline-cmp
