@@ -165,6 +165,14 @@ func _fund_actor(cash: int) -> void:
 
 func _boot_pricing_stack() -> void:
 	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
+	## Offtake-only MarketPricer path：卸 DemandModel，避免 shard 殘態觸發 PopulationModel SCRIPT ERROR。
+	DemandModel.clear_potential_demand_provider()
+	DemandModel.clear_queue_material_shortfall_provider()
+	var _dm_unload: Array = DemandModel.load_and_validate("user://r972_demand_force_unload/")
+	assert_gt(_dm_unload.size(), 0)
+	assert_false(DemandModel.is_loaded())
+	for e in get_errors():
+		e.handled = true
 	var goods_dir := _build_goods(GOODS_ROOT)
 	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
 	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)
