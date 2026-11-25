@@ -1,0 +1,50 @@
+SHARD=0 unit=10 bytes=194744
+    49063 tests/unit/test_sys23_wp26.gd
+    32172 tests/unit/test_intel_ledger_wp40.gd
+    28186 tests/unit/test_ship_registry_wp30.gd
+    21450 tests/unit/test_building_economy_wp20.gd
+    17296 tests/unit/test_population_model_wp51.gd
+    14459 tests/unit/test_good_catalog.gd
+    12694 tests/unit/test_wp67_garrison_obs05.gd
+    11112 tests/unit/test_csv_import_wp17.gd
+     6765 tests/unit/test_params_wp16.gd
+     1547 tests/unit/test_rng_wp25.gd
+     5680 tests/property/test_PROP_cash_sum_zero.gd [PROPERTY]
+     9381 tests/property/test_PROP_determinism.gd [PROPERTY]
+     7816 tests/property/test_PROP_goods_conservation.gd [PROPERTY]
+     8175 tests/property/test_PROP_market_quote_bounds.gd [PROPERTY]
+     7768 tests/property/test_PROP_transfer_all_or_nothing.gd [PROPERTY]
+SHARD=1 unit=10 bytes=195147
+    40283 tests/unit/test_building_economy_wp23.gd
+    32325 tests/unit/test_population_model_wp21.gd
+    28992 tests/unit/test_port_registry.gd
+    22742 tests/unit/test_cash_ledger.gd
+    20857 tests/unit/test_sea_lanes_wp29.gd
+    15851 tests/unit/test_lane_b_pop_demand_1755.gd
+    14428 tests/unit/test_wp68_city_housing.gd
+    10225 tests/unit/test_csv_import_wp34.gd
+     6832 tests/unit/test_clock.gd
+     2612 tests/unit/test_csv_import_wp18.gd
+SHARD=2 unit=10 bytes=194484
+    37674 tests/unit/test_demand_model_wp22.gd
+    32379 tests/unit/test_goods_ledger.gd
+    30175 tests/unit/test_opening_wp24.gd
+    24118 tests/unit/test_offtake_wp32.gd
+    20598 tests/unit/test_building_economy_wp63.gd
+    16002 tests/unit/test_csv_import.gd
+    14438 tests/unit/test_sys23_wp27.gd
+    10268 tests/unit/test_params.gd
+     7675 tests/unit/test_d110_lane_c_queue_outputs.gd
+     1157 tests/unit/test_wp62_d95d_apis.gd
+SHARD=3 unit=11 bytes=194986
+    35940 tests/unit/test_sim_loop.gd
+    34353 tests/unit/test_market_pricer.gd
+    29491 tests/unit/test_building_economy_wp19.gd
+    28036 tests/unit/test_trade_desk_wp33.gd
+    19735 tests/unit/test_building_economy_wp18.gd
+    14649 tests/unit/test_population_model_wp55.gd
+    14267 tests/unit/test_wp56_cash_market_trade.gd
+    10152 tests/unit/test_sys08_wp65_d97a.gd
+     3904 tests/unit/test_opening_stock_wp62b.gd
+     3508 tests/unit/test_csv_import_wp29.gd
+      951 tests/unit/test_golden_fnv_e2.gd

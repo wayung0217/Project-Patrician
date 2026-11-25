@@ -1,0 +1,80 @@
+Y10_SEASON_END season=14 balance=0 arrears=244686 arrears_seasons=10 bankrupt_lim=2
+Y10_SEASON_END season=15 balance=0 arrears=270991 arrears_seasons=11 bankrupt_lim=2
+Y10_SEASON_END season=16 balance=0 arrears=297296 arrears_seasons=12 bankrupt_lim=2
+Y10_SEASON_END season=17 balance=0 arrears=323601 arrears_seasons=13 bankrupt_lim=2
+Y10_SEASON_END season=18 balance=0 arrears=349906 arrears_seasons=14 bankrupt_lim=2
+Y10_SEASON_END season=19 balance=0 arrears=376211 arrears_seasons=15 bankrupt_lim=2
+Y10_SEASON_END season=20 balance=0 arrears=402516 arrears_seasons=16 bankrupt_lim=2
+Y10_SEASON_END season=21 balance=0 arrears=428821 arrears_seasons=17 bankrupt_lim=2
+Y10_SEASON_END season=22 balance=0 arrears=455126 arrears_seasons=18 bankrupt_lim=2
+Y10_SEASON_END season=23 balance=0 arrears=481431 arrears_seasons=19 bankrupt_lim=2
+Y10_SEASON_END season=24 balance=0 arrears=507736 arrears_seasons=20 bankrupt_lim=2
+Y10_SEASON_END season=25 balance=0 arrears=534041 arrears_seasons=21 bankrupt_lim=2
+Y10_SEASON_END season=26 balance=0 arrears=560346 arrears_seasons=22 bankrupt_lim=2
+Y10_SEASON_END season=27 balance=0 arrears=586651 arrears_seasons=23 bankrupt_lim=2
+Y10_SEASON_END season=28 balance=0 arrears=612956 arrears_seasons=24 bankrupt_lim=2
+Y10_SEASON_END season=29 balance=0 arrears=639261 arrears_seasons=25 bankrupt_lim=2
+Y10_SEASON_END season=30 balance=0 arrears=665566 arrears_seasons=26 bankrupt_lim=2
+Y10_SEASON_END season=31 balance=0 arrears=691871 arrears_seasons=27 bankrupt_lim=2
+Y10_SEASON_END season=32 balance=0 arrears=718176 arrears_seasons=28 bankrupt_lim=2
+Y10_SEASON_END season=33 balance=0 arrears=744481 arrears_seasons=29 bankrupt_lim=2
+Y10_SEASON_END season=34 balance=0 arrears=770786 arrears_seasons=30 bankrupt_lim=2
+Y10_SEASON_END season=35 balance=0 arrears=797091 arrears_seasons=31 bankrupt_lim=2
+Y10_SEASON_END season=36 balance=0 arrears=823396 arrears_seasons=32 bankrupt_lim=2
+Y10_SEASON_END season=37 balance=0 arrears=849701 arrears_seasons=33 bankrupt_lim=2
+Y10_SEASON_END season=38 balance=0 arrears=876006 arrears_seasons=34 bankrupt_lim=2
+Y10_SEASON_END season=39 balance=0 arrears=902311 arrears_seasons=35 bankrupt_lim=2
+Y10_DONE seasons_logged=40 expect=40 hit_zero=true hit_bankrupt=true aborted=0 reason= MET-06=0.0
+Y10_BANKRUPTCY_CODE cash_ledger.gd close_season: arrears_seasons >= bankrupt_lim → bankruptcy_referred.emit — no sim abort/ERR-SYS23 (GAP: bankruptcy-unhandled)
+* test_TST_SYS23_09_print_summary_csv
+sim_engine: combos=2 seeds=1 jobs=2
+ERROR: GoodsLedger: { "code": &"ERR-SYS03-05", "sys": &"SYS-03", "detail": { "file": "res://autoload/goods_ledger.gd", "field": "good_id", "value": { "good": "GD-001", "actual": 16756, "expected": 16755 }, "message": "conservation violated" } }
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _record_error (res://autoload/goods_ledger.gd:1160)
+       [1] check_conservation (res://autoload/goods_ledger.gd:409)
+       [2] maybe_check_conservation_on_tick (res://autoload/goods_ledger.gd:423)
+       [3] tick_day (res://autoload/sim_loop.gd:263)
+       [4] _run_one_job (res://sim/sim_engine.gd:221)
+       [5] run_scenario_dict (res://sim/sim_engine.gd:69)
+       [6] test_TST_SYS23_09_print_summary_csv (res://tests/unit/test_sys23_wp26.gd:754)
+       [7] _run_test (res://addons/gut/gut.gd:622)
+       [8] _test_the_scripts (res://addons/gut/gut.gd:835)
+TST09_SUMMARY_CSV_BEGIN
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS05-MIN_CASH_UNIT"":1}",0,,0.01030927835052,N/A,0,N/A,0.57575757575758,N/A,96,N/A,0,N/A,135.037109375,N/A,0,1,PT-01:;PT-02:4;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.14606741573034,,151977
+1,1,1,"{""PRM-SYS05-MIN_CASH_UNIT"":1}",1,ERR-SYS23-07: conservation violated,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,1,0,,,,70921
+TST09_SUMMARY_CSV_END
+TST09_ERR07_STATE_NOTE: ERR-SYS23-07 abort_reason lands in summary.abort_reason; season/daily rows sampled before abort remain in CSVs; MET-01..05b blank on aborted row; MET-06=conservation hits
+[34m[ExpectedError][0m
+* test_WP26_evidence_cli_twice_cmp
+CLI_ARGV: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician -s res://sim/sim_runner.gd -- --scenario /home/runner/.local/share/godot/app_userdata/Project Patrician/sys23_cli_scenario.json
+CLI_RUN_A rc=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=sys23_cli_cmp jobs=1
+sim_runner_child_argv: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.json
+sim_runner: wrote outputs under user://sim_out/sys23_cli_cmp/
+
+CLI_RUN_B rc=0
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=sys23_cli_cmp jobs=1
+sim_runner_child_argv: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician -s res://sim/sim_runner.gd -- --job /home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.json
+sim_runner: wrote outputs under user://sim_out/sys23_cli_cmp/
+
+CLI_CMP season_cells.csv equal=true bytes_a=81832 bytes_b=81832
+CLI_CMP season_ports.csv equal=true bytes_a=17861 bytes_b=17861
+CLI_CMP summary: stripping elapsed_ms column before cmp
+CLI_CMP summary_stripped_a:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},0,,0.01355166572558,N/A,0,N/A,0.2,N/A,319,N/A,0,N/A,138.159673547768,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.16313559322034,
+CLI_CMP summary_stripped_b:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,{},0,,0.01355166572558,N/A,0,N/A,0.2,N/A,319,N/A,0,N/A,138.159673547768,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.16313559322034,
+CLI_CMP summary.csv equal=true bytes_a=435 bytes_b=435
+CLI_CMP combos.csv equal=true bytes_a=419 bytes_b=419
+CLI_CMP daily_PT-01.csv equal=true bytes_a=390556 bytes_b=390556
+CLI_CMP all five outputs match (elapsed stripped on summary)
+* test_WP26_layer1_two_years_headers_and_counts
+sim_engine: combos=1 seeds=1 jobs=1
