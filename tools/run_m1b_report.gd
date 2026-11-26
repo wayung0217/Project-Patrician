@@ -96,13 +96,23 @@ func _main() -> void:
 	lines.append("")
 	lines.append("## ② Floor/ceiling band cells ≤30% (Y5)")
 	lines.append("")
-	lines.append("| Group | status | band0+4%% | pass |")
-	lines.append("|-------|--------|----------|------|")
+	## 17-72 C／band 方向（MarketPricer.Band；數字越大越貴）：
+	## band0＝VERY_LOW＝價格過低＝過剩／地板；band4＝VERY_HIGH＝價格過高＝缺貨／天花板.
+	lines.append(
+		"_Band direction (code): **band0** = price floor / oversupply (VERY_LOW); "
+		+ "**band4** = price ceiling / shortage (VERY_HIGH). "
+		+ "Edge% = (band0+band4)/n ≤ 30%._"
+	)
+	lines.append("")
+	lines.append("| Group | status | band0 | band4 | band0+4%% | pass |")
+	lines.append("|-------|--------|------:|------:|----------|------|")
 	for st_v in rows1:
 		var st2: Dictionary = st_v
 		lines.append(
-			"| %s | %s | %s | %s |" % [
-				st2["group"], st2["status"], st2["band04_pct"], st2["band_ok"]
+			"| %s | %s | %s | %s | %s | %s |" % [
+				st2["group"], st2["status"],
+				st2.get("band0_n", "N/A"), st2.get("band4_n", "N/A"),
+				st2["band04_pct"], st2["band_ok"]
 			]
 		)
 	lines.append("")
@@ -197,7 +207,32 @@ func _main() -> void:
 			]
 		)
 	lines.append("")
-	## 17-69 5.1: seed-independence check — warning only.
+	## 17-72 C-v：season_ports 待聘／空職／空床（有欄才計；缺欄＝N/A）.
+	lines.append("## ⑧ C-v diagnostics (beggar_gt_10 / vacant)")
+	lines.append("")
+	lines.append(
+		"| Group | status | ports_rows | beggar_gt_10_n | vacant_jobs_sum | vacant_beds_sum |"
+	)
+	lines.append(
+		"|-------|--------|----------:|---------------:|----------------:|----------------:|"
+	)
+	for st_v8 in rows1:
+		var st8: Dictionary = st_v8
+		lines.append(
+			"| %s | %s | %s | %s | %s | %s |" % [
+				st8["group"],
+				st8["status"],
+				st8.get("cv_ports_rows", "N/A"),
+				st8.get("cv_beggar_gt_10_n", "N/A"),
+				st8.get("cv_vacant_jobs_sum", "N/A"),
+				st8.get("cv_vacant_beds_sum", "N/A"),
+			]
+		)
+	lines.append("")
+	## 17-72 D1／D2（D-127 甲驗收門改寫）— 資料路徑；不調參.
+	_append_d1_seed_gate(lines, rows1)
+	_append_d2_trader_gate(lines, rows1)
+	## 17-69 5.1 legacy SEED_NO_EFFECT warning kept for continuity.
 	_append_seed_no_effect(lines, rows1)
 	var body: String = "\n".join(lines) + "\n"
 	DirAccess.make_dir_recursive_absolute(abs_in)
@@ -225,7 +260,13 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		"pop": "N/A",
 		"class_ok": "N/A",
 		"band04_pct": "N/A",
+		"band0_n": "N/A",
+		"band4_n": "N/A",
 		"band_ok": "N/A",
+		"cv_ports_rows": "N/A",
+		"cv_beggar_gt_10_n": "N/A",
+		"cv_vacant_jobs_sum": "N/A",
+		"cv_vacant_beds_sum": "N/A",
 		"tier_order": "N/A",
 		"tier_ok": "N/A",
 		"cash_mono": "N/A",
@@ -378,19 +419,45 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 		var n: int = y5c.size()
 		if n <= 0:
 			out["band04_pct"] = "N/A"
+			out["band0_n"] = "N/A"
+			out["band4_n"] = "N/A"
 			out["band_ok"] = "N/A"
 		else:
 			var edge := 0
+			var b0 := 0
+			var b4 := 0
 			for c3_v in y5c:
 				var bi2: int = _as_int((c3_v as Dictionary).get("band", -1))
-				if bi2 == 0 or bi2 == 4:
+				if bi2 == 0:
+					b0 += 1
+					edge += 1
+				elif bi2 == 4:
+					b4 += 1
 					edge += 1
 			var pct: float = 100.0 * float(edge) / float(maxi(n, 1))
 			out["band04_pct"] = "%.1f" % pct
+			out["band0_n"] = str(b0)
+			out["band4_n"] = str(b4)
 			out["band_ok"] = "PASS" if pct <= 30.0 else "FAIL"
 	else:
 		out["band04_pct"] = "N/A"
+		out["band0_n"] = "N/A"
+		out["band4_n"] = "N/A"
 		out["band_ok"] = "N/A"
+	## 17-72 C-v: aggregate new season_ports columns when present.
+	if not ports.is_empty() and (ports[0] as Dictionary).has("beggar_gt_10"):
+		var gt10 := 0
+		var vj := 0
+		var vb := 0
+		for p_cv in ports:
+			var pd: Dictionary = p_cv
+			gt10 += _as_int(pd.get("beggar_gt_10", 0))
+			vj += _as_int(pd.get("vacant_jobs", 0))
+			vb += _as_int(pd.get("vacant_beds", 0))
+		out["cv_ports_rows"] = str(ports.size())
+		out["cv_beggar_gt_10_n"] = str(gt10)
+		out["cv_vacant_jobs_sum"] = str(vj)
+		out["cv_vacant_beds_sum"] = str(vb)
 	if FileAccess.file_exists(summary_path):
 		var sums: Array = _read_csv(summary_path)
 		if not sums.is_empty():
@@ -434,6 +501,129 @@ func _analyze_group(group: String, gdir: String) -> Dictionary:
 	if out["season_cargo_dan"] == "N/A":
 		out["season_cargo_dan"] = _column_cargo_or_na(ports, "season_cargo_dan")
 	return out
+
+
+## 17-72 D1（D-127 甲）：種子獨立性須先證明指標對「非種子」擾動敏感，否則該檢查不計入驗收.
+## 非種子擾動對照：Za_G0_A0 vs Zb_G0_notrader（商人開關）. 敏感＝至少一項 _SEED_METRIC_KEYS 不同.
+func _append_d1_seed_gate(lines: PackedStringArray, rows: Array) -> void:
+	lines.append("## D1 Seed-independence gate (D-127 rewrite)")
+	lines.append("")
+	var by_name: Dictionary = {}
+	for st_v in rows:
+		var st: Dictionary = st_v
+		by_name[String(st["group"])] = st
+	var sens_a := "Za_G0_A0"
+	var sens_b := "Zb_G0_notrader"
+	if not by_name.has(sens_a) or not by_name.has(sens_b):
+		lines.append("- sensitivity probe `%s` vs `%s`: **N/A** (group missing)" % [sens_a, sens_b])
+		lines.append("- D1 seed check: **not scored** (no sensitivity proof)")
+		lines.append("")
+		return
+	var a0: Dictionary = by_name[sens_a]
+	var b0: Dictionary = by_name[sens_b]
+	if String(a0.get("status", "")) != "ok" or String(b0.get("status", "")) != "ok":
+		lines.append(
+			"- sensitivity probe: **N/A** (status %s / %s)" % [
+				a0.get("status", ""), b0.get("status", "")
+			]
+		)
+		lines.append("- D1 seed check: **not scored**")
+		lines.append("")
+		return
+	var sens_differ: PackedStringArray = PackedStringArray()
+	for key_v in _SEED_METRIC_KEYS:
+		var key: String = String(key_v)
+		var av: String = String(a0.get(key, "N/A"))
+		var bv: String = String(b0.get(key, "N/A"))
+		if av != bv and av != "N/A" and bv != "N/A":
+			sens_differ.append("%s:%s≠%s" % [key, av, bv])
+	if sens_differ.is_empty():
+		lines.append(
+			"- sensitivity probe `%s` vs `%s`: **INSENSITIVE** — metrics unchanged under traders on/off."
+			% [sens_a, sens_b]
+		)
+		lines.append("- D1 seed check: **not scored** (D-127: constant metrics do not count)")
+		lines.append("")
+		return
+	lines.append(
+		"- sensitivity probe `%s` vs `%s`: **SENSITIVE** (%s)"
+		% [sens_a, sens_b, ", ".join(sens_differ)]
+	)
+	## Seed pair only scored when sensitive.
+	for pair_v in _SEED_PAIRS:
+		var pair: Array = pair_v
+		if pair.size() < 2:
+			continue
+		var a_name: String = String(pair[0])
+		var b_name: String = String(pair[1])
+		if not by_name.has(a_name) or not by_name.has(b_name):
+			lines.append("- seed pair `%s` vs `%s`: skipped (missing)" % [a_name, b_name])
+			continue
+		var a: Dictionary = by_name[a_name]
+		var b: Dictionary = by_name[b_name]
+		var identical: PackedStringArray = PackedStringArray()
+		var differ: PackedStringArray = PackedStringArray()
+		for key2_v in _SEED_METRIC_KEYS:
+			var key2: String = String(key2_v)
+			var av2: String = String(a.get(key2, "N/A"))
+			var bv2: String = String(b.get(key2, "N/A"))
+			if av2 == bv2 and av2 != "N/A":
+				identical.append("%s=%s" % [key2, av2])
+			else:
+				differ.append("%s:%s≠%s" % [key2, av2, bv2])
+		if differ.is_empty() and not identical.is_empty():
+			lines.append(
+				"- seed pair `%s` vs `%s`: **FAIL** SEED_NO_EFFECT (all scored metrics identical)"
+				% [a_name, b_name]
+			)
+		else:
+			lines.append(
+				"- seed pair `%s` vs `%s`: **PASS** (metrics differ or incomplete)"
+				% [a_name, b_name]
+			)
+	lines.append("")
+
+
+## 17-72 D2（D-127 甲）：商人有效性＝sail_count 總和 > 0「且」至少一項 MET／報告指標隨商人開關而變.
+func _append_d2_trader_gate(lines: PackedStringArray, rows: Array) -> void:
+	lines.append("## D2 Trader-effectiveness gate (D-127 rewrite)")
+	lines.append("")
+	var by_name: Dictionary = {}
+	for st_v in rows:
+		var st: Dictionary = st_v
+		by_name[String(st["group"])] = st
+	var with_t := "Za_G0_A0"
+	var no_t := "Zb_G0_notrader"
+	if not by_name.has(with_t) or not by_name.has(no_t):
+		lines.append("- D2: **N/A** (need `%s` and `%s`)" % [with_t, no_t])
+		lines.append("")
+		return
+	var a: Dictionary = by_name[with_t]
+	var b: Dictionary = by_name[no_t]
+	var sail_s: String = String(a.get("sail_sum", "N/A"))
+	var sail_ok := false
+	if sail_s != "N/A":
+		sail_ok = _as_int(sail_s) > 0
+	var met_moved: PackedStringArray = PackedStringArray()
+	for key_v in _SEED_METRIC_KEYS:
+		var key: String = String(key_v)
+		var av: String = String(a.get(key, "N/A"))
+		var bv: String = String(b.get(key, "N/A"))
+		if av != bv and av != "N/A" and bv != "N/A":
+			met_moved.append("%s:%s≠%s" % [key, av, bv])
+	var moved_ok: bool = not met_moved.is_empty()
+	lines.append("- `%s` sail_sum=%s → sail>0: **%s**" % [with_t, sail_s, "yes" if sail_ok else "no"])
+	if moved_ok:
+		lines.append("- traders on/off metric move: **yes** (%s)" % ", ".join(met_moved))
+	else:
+		lines.append("- traders on/off metric move: **no**")
+	if sail_ok and moved_ok:
+		lines.append("- D2: **PASS**")
+	elif sail_s == "N/A" or String(a.get("status", "")) != "ok":
+		lines.append("- D2: **N/A** (missing run data)")
+	else:
+		lines.append("- D2: **FAIL** (need sail_sum>0 AND ≥1 metric moves)")
+	lines.append("")
 
 
 ## 17-69 5.1: emit SEED_NO_EFFECT when seed-only pair shares all ①②③④ metrics.
