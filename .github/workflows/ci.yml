@@ -633,7 +633,7 @@ jobs:
       - name: Import project
         run: ./godot --headless --path . --import
 
-      - name: H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)
+      - name: H4 smoke Za_G0_A0 + Zb_G0_notrader (90d inline)
         run: |
           set -euo pipefail
           mkdir -p out/m1b_smoke/_scenarios
@@ -643,7 +643,7 @@ jobs:
             export M1B_GROUP_NAME="$g" M1B_GROUP_I=1 M1B_GROUP_N=2
             ./godot --headless --path . -s res://sim/sim_runner.gd -- \
               --scenario "$(pwd)/out/m1b_smoke/_scenarios/${g}.json" \
-              --inline --season-progress --days 30 \
+              --inline --season-progress --days 90 \
               --out-dir "$(pwd)/out/m1b_smoke/${g}" \
               2>&1 | tee "out/m1b_smoke/${g}/sim_runner.log"
             test -f "out/m1b_smoke/${g}/summary.csv"
@@ -697,17 +697,17 @@ jobs:
       - name: Import project
         run: ./godot --headless --path . --import
 
-      - name: W4 30d subprocess vs --inline CSV cmp
+      - name: W4 90d subprocess vs --inline CSV cmp
         run: |
           set -euo pipefail
           mkdir -p out/w4_cmp/_scenarios out/w4_cmp/sub out/w4_cmp/inline
           python3 tools/m1b_prepare_scenario.py --group Za_G0_A0 --out out/w4_cmp/_scenarios/Za_G0_A0.json
           SCEN="$(pwd)/out/w4_cmp/_scenarios/Za_G0_A0.json"
           ./godot --headless --path . -s res://sim/sim_runner.gd -- \
-            --scenario "$SCEN" --days 30 --out-dir "$(pwd)/out/w4_cmp/sub" \
+            --scenario "$SCEN" --days 90 --out-dir "$(pwd)/out/w4_cmp/sub" \
             2>&1 | tee out/w4_cmp/sub.log
           ./godot --headless --path . -s res://sim/sim_runner.gd -- \
-            --scenario "$SCEN" --days 30 --inline --out-dir "$(pwd)/out/w4_cmp/inline" \
+            --scenario "$SCEN" --days 90 --inline --out-dir "$(pwd)/out/w4_cmp/inline" \
             2>&1 | tee out/w4_cmp/inline.log
           python3 - <<'PY'
           from pathlib import Path
