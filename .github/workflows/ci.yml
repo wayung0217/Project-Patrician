@@ -494,7 +494,8 @@ jobs:
           fi
           if [[ -z "${RUN_ID}" ]]; then
             echo "missing" > out/golden-main/STATUS.txt
-            echo "::error::GOLDEN_BASE_MISSING — no non-expired main golden-30d artifact (E6/N-15; no bootstrap)"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::GOLDEN_BASE_MISSING — no non-expired main golden-30d artifact (E6/N-15; S9b; no bootstrap)"
             exit 1
           fi
           echo "GOLDEN_BASE_RUN_ID=${RUN_ID}"
@@ -505,7 +506,8 @@ jobs:
           set -e
           if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
             echo "missing" > out/golden-main/STATUS.txt
-            echo "::error::GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} (E6/N-15; no bootstrap)"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} (E6/N-15; S9b; no bootstrap)"
             exit 1
           fi
           echo "present" > out/golden-main/STATUS.txt
@@ -517,7 +519,8 @@ jobs:
         run: |
           set -euo pipefail
           if [[ ! -f out/golden-main/30d.csv ]]; then
-            echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step (S9b)"
             exit 1
           fi
           STATUS="$(cat out/golden-main/STATUS.txt 2>/dev/null || echo unknown)"
@@ -589,6 +592,16 @@ jobs:
             exit "$RC"
           fi
           echo "GOLDEN_CELLS_IDENTICAL=1"
+
+      # S9b／PP-230：push／dispatch 無 PR compare → 不得靜默 success。
+      # 仍產 CSV 並由下一歩 always() 上傳 artifact；本步印 GOLDEN_NOT_COMPARED=1 並 failure。
+      - name: Mark golden not compared (non-PR)
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          echo "GOLDEN_NOT_COMPARED=1"
+          echo "::error::GOLDEN_NOT_COMPARED — ${{ github.event_name }} path has no PR baseline compare (S9b); not a green pass"
+          exit 1
 
       - name: Upload golden artifact
         if: always()
