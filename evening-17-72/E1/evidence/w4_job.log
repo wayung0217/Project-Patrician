@@ -1,0 +1,68 @@
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	﻿2026-11-26T14:10:02.9108250Z ##[group]Run set -euo pipefail
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9108567Z ^[[36;1mset -euo pipefail^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9108847Z ^[[36;1mmkdir -p out/w4_cmp/_scenarios out/w4_cmp/sub out/w4_cmp/inline^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9109312Z ^[[36;1mpython3 tools/m1b_prepare_scenario.py --group Za_G0_A0 --out out/w4_cmp/_scenarios/Za_G0_A0.json^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9109721Z ^[[36;1mSCEN="$(pwd)/out/w4_cmp/_scenarios/Za_G0_A0.json"^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9110066Z ^[[36;1m./godot --headless --path . -s res://sim/sim_runner.gd -- \^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9110439Z ^[[36;1m  --scenario "$SCEN" --days 30 --out-dir "$(pwd)/out/w4_cmp/sub" \^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9110943Z ^[[36;1m  2>&1 | tee out/w4_cmp/sub.log^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9111244Z ^[[36;1m./godot --headless --path . -s res://sim/sim_runner.gd -- \^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9111609Z ^[[36;1m  --scenario "$SCEN" --days 30 --inline --out-dir "$(pwd)/out/w4_cmp/inline" \^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9111949Z ^[[36;1m  2>&1 | tee out/w4_cmp/inline.log^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9112175Z ^[[36;1mpython3 - <<'PY'^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9112410Z ^[[36;1mfrom pathlib import Path^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9112621Z ^[[36;1mimport sys^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9112805Z ^[[36;1mroot = Path("out/w4_cmp")^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9113015Z ^[[36;1mok = True^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9113351Z ^[[36;1mfor name in ["summary.csv", "season_cells.csv", "season_ports.csv", "combos.csv", "trader_summary.csv"]:^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9113755Z ^[[36;1m    a = (root / "sub" / name).read_bytes()^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9114019Z ^[[36;1m    b = (root / "inline" / name).read_bytes()^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9114269Z ^[[36;1m    if name == "summary.csv":^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9114488Z ^[[36;1m        def strip(b):^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9114717Z ^[[36;1m            lines = b.decode().splitlines()^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9114955Z ^[[36;1m            out = [lines[0]]^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9115179Z ^[[36;1m            for ln in lines[1:]:^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9115412Z ^[[36;1m                parts = ln.split(",")^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9115692Z ^[[36;1m                out.append(",".join(parts[:-1]) if parts else ln)^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9115978Z ^[[36;1m            return "\n".join(out).encode()^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9116228Z ^[[36;1m        a, b = strip(a), strip(b)^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9116441Z ^[[36;1m    same = a == b^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9116708Z ^[[36;1m    print(f"CMP {name} equal={same} bytes_a={len(a)} bytes_b={len(b)}")^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9117003Z ^[[36;1m    ok = ok and same^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9117195Z ^[[36;1mif not ok:^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9117372Z ^[[36;1m    sys.exit(1)^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9117572Z ^[[36;1mprint("W4_INLINE_CMP_PASS")^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9117790Z ^[[36;1mPY^[[0m
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9148705Z shell: /usr/bin/bash -e {0}
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9148923Z env:
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9149089Z   GODOT_VERSION: 4.7.2-stable
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9149314Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9149559Z ##[endgroup]
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9544188Z wrote out/w4_cmp/_scenarios/Za_G0_A0.json
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:02.9765554Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:03.0021869Z 
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:03.7659155Z sim_runner: scenario_id=Za_G0_A0 jobs=1 inline=false
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:03.7666745Z sim_runner_child_argv: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician --log-file /home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.log -s res://sim/sim_runner.gd -- --job user://sim_jobs/job_0.json
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:10:03.7667977Z sim_runner_job_argv_elem: user://sim_jobs/job_0.json
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1984448Z sim_runner_log_tail begin path=/home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.log lines=3
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1985402Z log: Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1985837Z log: 
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1986045Z log: 
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1986261Z sim_runner_log_tail end
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1986830Z ERROR: sim_runner: job run_id=0 exit=1
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1987220Z    at: push_error (core/variant/variant_utility.cpp:1023)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1991559Z    GDScript backtrace (most recent call first):
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1991947Z        [0] _run_scenario_orchestrator (res://sim/sim_runner.gd:196)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1992258Z        [1] _main (res://sim/sim_runner.gd:75)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1992498Z        [2] _process (res://sim/sim_runner.gd:41)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1992872Z SCRIPT ERROR: Invalid access to property or key 'MET-01' on a base object of type 'Dictionary'.
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1993278Z           at: _write_summary (res://sim/csv_out.gd:196)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1993577Z           GDScript backtrace (most recent call first):
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1993848Z               [0] _write_summary (res://sim/csv_out.gd:196)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1994166Z               [1] write_all (res://sim/csv_out.gd:69)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1994572Z               [2] _run_scenario_orchestrator (res://sim/sim_runner.gd:211)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1994873Z               [3] _main (res://sim/sim_runner.gd:75)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1995124Z               [4] _process (res://sim/sim_runner.gd:41)
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.1995519Z sim_runner: copied outputs to /home/runner/work/Project-Patrician/Project-Patrician/out/w4_cmp/sub
+m1b-w4-inline-cmp	W4 30d subprocess vs --inline CSV cmp	2026-11-26T14:11:21.3072143Z ##[error]Process completed with exit code 1.
+m1b-w4-inline-cmp	Upload W4 cmp artifact	﻿2026-11-26T14:11:21.3143650Z ##[group]Run actions/upload-artifact@v5

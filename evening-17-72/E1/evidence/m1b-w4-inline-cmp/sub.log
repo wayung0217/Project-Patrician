@@ -1,0 +1,25 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=Za_G0_A0 jobs=1 inline=false
+sim_runner_child_argv: /home/runner/work/Project-Patrician/Project-Patrician/godot --headless --path /home/runner/work/Project-Patrician/Project-Patrician --log-file /home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.log -s res://sim/sim_runner.gd -- --job user://sim_jobs/job_0.json
+sim_runner_job_argv_elem: user://sim_jobs/job_0.json
+sim_runner_log_tail begin path=/home/runner/.local/share/godot/app_userdata/Project Patrician/sim_jobs/job_0.log lines=3
+log: Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+log: 
+log: 
+sim_runner_log_tail end
+ERROR: sim_runner: job run_id=0 exit=1
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _run_scenario_orchestrator (res://sim/sim_runner.gd:196)
+       [1] _main (res://sim/sim_runner.gd:75)
+       [2] _process (res://sim/sim_runner.gd:41)
+SCRIPT ERROR: Invalid access to property or key 'MET-01' on a base object of type 'Dictionary'.
+          at: _write_summary (res://sim/csv_out.gd:196)
+          GDScript backtrace (most recent call first):
+              [0] _write_summary (res://sim/csv_out.gd:196)
+              [1] write_all (res://sim/csv_out.gd:69)
+              [2] _run_scenario_orchestrator (res://sim/sim_runner.gd:211)
+              [3] _main (res://sim/sim_runner.gd:75)
+              [4] _process (res://sim/sim_runner.gd:41)
+sim_runner: copied outputs to /home/runner/work/Project-Patrician/Project-Patrician/out/w4_cmp/sub

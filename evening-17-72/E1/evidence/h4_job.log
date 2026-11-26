@@ -1,0 +1,32 @@
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	﻿2026-11-26T14:10:06.7765854Z ##[group]Run set -euo pipefail
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7766460Z ^[[36;1mset -euo pipefail^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7766992Z ^[[36;1mmkdir -p out/m1b_smoke/_scenarios^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7767610Z ^[[36;1mfor g in Za_G0_A0 Zb_G0_notrader; do^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7768298Z ^[[36;1m  python3 tools/m1b_prepare_scenario.py --group "$g" --out "out/m1b_smoke/_scenarios/${g}.json"^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7769039Z ^[[36;1m  mkdir -p "out/m1b_smoke/${g}"^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7769519Z ^[[36;1m  export M1B_GROUP_NAME="$g" M1B_GROUP_I=1 M1B_GROUP_N=2^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7770129Z ^[[36;1m  ./godot --headless --path . -s res://sim/sim_runner.gd -- \^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7770903Z ^[[36;1m    --scenario "$(pwd)/out/m1b_smoke/_scenarios/${g}.json" \^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7771583Z ^[[36;1m    --inline --season-progress --days 30 \^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7772217Z ^[[36;1m    --out-dir "$(pwd)/out/m1b_smoke/${g}" \^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7772730Z ^[[36;1m    2>&1 | tee "out/m1b_smoke/${g}/sim_runner.log"^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7773285Z ^[[36;1m  test -f "out/m1b_smoke/${g}/summary.csv"^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7773857Z ^[[36;1m  test -f "out/m1b_smoke/${g}/trader_summary.csv"^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7774250Z ^[[36;1mdone^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7774751Z ^[[36;1mgrep -h "PROGRESS pct=" out/m1b_smoke/*/sim_runner.log > out/m1b_smoke/progress.log || true^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7775438Z ^[[36;1m./godot --headless --path . -s res://tools/run_m1b_report.gd -- --in out/m1b_smoke^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7775936Z ^[[36;1mecho "H4_SMOKE_DONE"^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7776290Z ^[[36;1mtest -s out/m1b_smoke/progress.log^[[0m
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7797639Z shell: /usr/bin/bash -e {0}
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7797996Z env:
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7798376Z   GODOT_VERSION: 4.7.2-stable
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7798772Z   GODOT_BIN: Godot_v4.7.2-stable_linux.x86_64
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.7799153Z ##[endgroup]
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.8258368Z wrote out/m1b_smoke/_scenarios/Za_G0_A0.json
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.8546430Z Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:06.8814625Z 
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:07.8451766Z sim_runner: scenario_id=Za_G0_A0 jobs=1 inline=true
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:10:07.8457252Z sim_runner_inline_job: user://sim_jobs/job_0.json
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:11:38.8349870Z PROGRESS pct=100 all_pct=100 group=1/2 Za_G0_A0 y=1 q=1 elapsed=0:01 eta=0:00 pop=0 sails_cum=0
+m1b-h4-smoke	H4 smoke Za_G0_A0 + Zb_G0_notrader (30d inline)	2026-11-26T14:11:38.9567330Z ##[error]Process completed with exit code 1.
+m1b-h4-smoke	Upload H4 smoke artifact	﻿2026-11-26T14:11:38.9661060Z ##[group]Run actions/upload-artifact@v5
