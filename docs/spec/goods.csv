@@ -22,7 +22,7 @@ GD-020,臘肉,2,false,false,false,7000,15
 GD-021,鐵器,2,false,true,false,10500,15
 GD-022,衣物,2,false,false,false,12000,15
 GD-023,火藥,2,false,false,false,15000,15
-GD-024,瓷器,2,false,true,false,20000,15
+GD-024,瓷器,2,false,false,false,20000,15
 GD-025,絲織品,2,false,false,false,120000,15
 GD-026,武器,3,false,false,false,30000,15
 GD-027,彩瓷,3,false,false,false,45000,15
