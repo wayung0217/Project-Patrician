@@ -19,6 +19,8 @@ const ERR_SYS07_06 := &"ERR-SYS07-06"
 const ERR_SYS07_07 := &"ERR-SYS07-07"
 const ERR_SYS07_08 := &"ERR-SYS07-08"
 const ERR_SYS07_09 := &"ERR-SYS07-09"
+## FRM-SYS07-18／D-110(c): RICH＋CITIZEN bed-share ppm sum > PPM_SCALE → refuse boot.
+const ERR_SYS07_10 := &"ERR-SYS07-10"
 
 const CODE_SAT_PROVIDER_MISSING := &"SATISFACTION_INPUT_PROVIDER_MISSING"
 
@@ -69,6 +71,9 @@ const PRM_ABUND_FULL := "PRM-SYS07-ABUND_FULL_WEEKS"
 const PRM_EXCESS_RATE := "PRM-SYS07-EXCESS_RATE_PPM"
 const PRM_ABUND_BONUS := "PRM-SYS07-ABUND_BONUS_MAX_PPM"
 const PRM_SCARCE_START := "PRM-SYS07-SCARCE_START_WEEKS"
+## FRM-SYS07-18／D-109(g): bed-share caps（only when layers.CLASS_CAP on）.
+const PRM_RICH_BED_SHARE := "PRM-SYS07-RICH_BED_SHARE_PPM"
+const PRM_CITIZEN_BED_SHARE := "PRM-SYS07-CITIZEN_BED_SHARE_PPM"
 
 const FLOW_KEY_PF1 := "PF-1"
 const FLOW_KEY_PF2 := "PF-2"
@@ -106,6 +111,8 @@ var _draw_seq_by_purpose: Dictionary = {}
 var _season_flow_acc: Dictionary = {} ## "season|port" → Dictionary
 var _season_flow_settled: Dictionary = {} ## season_index:int → true
 var _last_flow_season: int = -1
+## FRM-SYS07-18／D-109(g): layers.CLASS_CAP（sim only; default off）.
+var _class_cap_on: bool = false
 
 
 func _ready() -> void:
@@ -117,6 +124,43 @@ func reset_runtime_state() -> void:
 	_clear_state()
 	_sat_input = null
 	_seed = 0
+
+
+## D-109(g)／FRM-SYS07-18: layers.CLASS_CAP only（default off＝現行逐格）.
+## Enabling with missing／invalid share PRMs records last_error and leaves the gate off.
+func set_class_cap_layer(enabled: bool) -> void:
+	_class_cap_on = false
+	if not enabled:
+		return
+	if (
+		not Params.is_loaded()
+		or not Params.has_prm(StringName(PRM_RICH_BED_SHARE))
+		or not Params.has_prm(StringName(PRM_CITIZEN_BED_SHARE))
+		or not Params.has_prm(StringName(PRM_PPM_SCALE))
+	):
+		_record(
+			ERR_SYS07_06,
+			"CLASS_CAP",
+			null,
+			"RICH／CITIZEN_BED_SHARE_PPM required when layers.CLASS_CAP on"
+		)
+		return
+	var rich_ppm: int = Params.get_int(PRM_RICH_BED_SHARE)
+	var cit_ppm: int = Params.get_int(PRM_CITIZEN_BED_SHARE)
+	var ppm: int = Params.get_int(PRM_PPM_SCALE)
+	if rich_ppm + cit_ppm > ppm:
+		_record(
+			ERR_SYS07_10,
+			"CLASS_SHARE_SUM",
+			[rich_ppm, cit_ppm, ppm],
+			"RICH＋CITIZEN bed-share ppm sum > PPM_SCALE"
+		)
+		return
+	_class_cap_on = true
+
+
+func is_class_cap_on() -> bool:
+	return _class_cap_on
 
 
 ## Test／WP-59 F11: set PF-2／PF-3 streak day counters for a port.
@@ -230,6 +274,8 @@ func get_sailor_pool_provider() -> SailorPoolProvider:
 func load_and_validate() -> Array:
 	var errors: Array = []
 	_clear_state()
+	## Fresh load; SimEngine re-applies layers.CLASS_CAP after boot.
+	_class_cap_on = false
 	if not Params.is_loaded():
 		errors.append(_err(ERR_SYS07_06, "Params", null, "Params must load first"))
 		_emit(errors)
@@ -769,6 +815,14 @@ func _compute_flows(
 		var rate3: int = (Params.get_int(PRM_PF3) * mult) / ACADEMY_MULT_UNIT
 		rate3 = _rate_with_bonus(rate3, a_rich)
 		flow_up2 = _moved(p, "acc_up2", s0_cit, rate3, denom)
+	# FRM-SYS07-18: CLASS_CAP clamps upward inflows only（rates untouched; default off）.
+	if _class_cap_on:
+		var share_ppm: int = Params.get_int(PRM_PPM_SCALE)
+		## floori(B × share ÷ PPM_SCALE) via non-negative integer ÷ (C-09).
+		var cap_rich: int = (beds * Params.get_int(PRM_RICH_BED_SHARE)) / share_ppm
+		var cap_cit: int = (beds * Params.get_int(PRM_CITIZEN_BED_SHARE)) / share_ppm
+		flow_up2 = mini(flow_up2, maxi(0, cap_rich - s0_rich))
+		flow_up1 = mini(flow_up1, maxi(0, cap_cit - s0_cit))
 	# PF-4 / PF-5 — scarcity multiplies only when already triggered (FRM-SYS07-17).
 	var flow_dn2 := 0
 	if s0_sat_r < Params.get_int(PRM_SAT_DOWN_MAX):
@@ -1449,6 +1503,24 @@ func _validate_params() -> Array:
 		)
 	if Params.has_prm(StringName(PRM_LAMBDA)) and Params.get_float(PRM_LAMBDA) <= 0.0:
 		errors.append(_err(ERR_SYS07_05, PRM_LAMBDA, Params.get_float(PRM_LAMBDA), "lambda <= 0"))
+	## FRM-SYS07-18／ERR-SYS07-10: when both share keys present, sum must ≤ PPM_SCALE.
+	if (
+		Params.has_prm(StringName(PRM_RICH_BED_SHARE))
+		and Params.has_prm(StringName(PRM_CITIZEN_BED_SHARE))
+		and Params.has_prm(StringName(PRM_PPM_SCALE))
+	):
+		var rich_ppm: int = Params.get_int(PRM_RICH_BED_SHARE)
+		var cit_ppm: int = Params.get_int(PRM_CITIZEN_BED_SHARE)
+		var ppm_v: int = Params.get_int(PRM_PPM_SCALE)
+		if rich_ppm + cit_ppm > ppm_v:
+			errors.append(
+				_err(
+					ERR_SYS07_10,
+					"CLASS_SHARE_SUM",
+					[rich_ppm, cit_ppm, ppm_v],
+					"RICH＋CITIZEN bed-share ppm sum > PPM_SCALE"
+				)
+			)
 	return errors
 
 
@@ -1468,6 +1540,7 @@ func _clear_state() -> void:
 	_season_flow_acc = {}
 	_season_flow_settled = {}
 	_last_flow_season = -1
+	_class_cap_on = false
 	_loaded = false
 	_pending_pop_ports = []
 	_pending_sat_ports = []

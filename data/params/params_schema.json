@@ -599,6 +599,16 @@
     "type": "int",
     "min": 0
   },
+  "PRM-SYS07-RICH_BED_SHARE_PPM": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
+  "PRM-SYS07-CITIZEN_BED_SHARE_PPM": {
+    "type": "int",
+    "min": 0,
+    "max": 1000000
+  },
   "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS": {
     "type": "int",
     "min": 1

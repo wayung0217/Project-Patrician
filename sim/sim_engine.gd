@@ -206,6 +206,26 @@ func _run_one_job(
 	if BuildingEconomy.has_method("set_city_housing_layer"):
 		BuildingEconomy.set_city_housing_layer(city_housing)
 
+	## FRM-SYS07-18／D-109(g): layers.CLASS_CAP → PopulationModel（default off）.
+	var class_cap: bool = bool(layers.get(SimScenarioValidator.KEY_CLASS_CAP, false))
+	if PopulationModel.has_method("set_class_cap_layer"):
+		PopulationModel.set_class_cap_layer(class_cap)
+		if class_cap and not PopulationModel.is_class_cap_on():
+			diag_z.finish()
+			TraderRegistry.set_diag_z(null)
+			acc.disconnect_ledger()
+			sampler.disconnect_unmet()
+			var cap_err: Dictionary = PopulationModel.last_error()
+			var cap_detail: Dictionary = cap_err.get("detail", {}) as Dictionary
+			var cap_reason: String = "%s: %s" % [
+				String(cap_err.get("code", "ERR-SYS07-10")),
+				str(cap_detail.get("message", "CLASS_CAP enable failed")),
+			]
+			return {
+				"summary": _abort_summary(run_id, combo_index, seed, combo, cap_reason, t0),
+				"sampler": sampler,
+			}
+
 	if relocate_on:
 		var conv: Dictionary = SimRelocator.f_to_ppm(
 			float(scenario[SimScenarioValidator.KEY_RELOCATE_F]),
