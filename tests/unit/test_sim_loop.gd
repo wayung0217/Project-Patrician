@@ -131,9 +131,9 @@ func test_WP59_consumption_provider_base_push_error_2_1_03() -> void:
 
 
 func test_WP59_autoload_order_2_2_01() -> void:
-	# W1／2.2-01／D-14c／D-26b／D-09a／D-34d:
+	# W1／2.2-01／D-14c／D-26b／D-09a／D-34d／D-23g:
 	# Compare actual Autoload order in project.godot (not merely has_setting).
-	# … → CashLedger → TradeDesk → BuildingEconomy → … → ShipRegistry → IntelLedger → SimLoop
+	# … → ShipRegistry → IntelLedger → TraderRegistry → SimLoop
 	var expected: Array = [
 		"Params",
 		"Clock",
@@ -149,6 +149,7 @@ func test_WP59_autoload_order_2_2_01() -> void:
 		"DemandModel",
 		"ShipRegistry",
 		"IntelLedger",
+		"TraderRegistry",
 		"SimLoop",
 	]
 	var text: String = FileAccess.get_file_as_string("res://project.godot")
