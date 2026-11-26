@@ -46,6 +46,14 @@ func record_boot(traders_on: bool, qual_open: bool, fixture_class: String) -> vo
 	)
 
 
+## FRM-SYS07-18／Owner 2026-11-26: record 生效 CLASS_CAP（not request bit）.
+func record_class_cap_effective(effective_on: bool) -> void:
+	if not _active:
+		return
+	_boot["class_cap_effective"] = effective_on
+	print("DIAG_Z_A: class_cap_effective=%s" % str(effective_on))
+
+
 func record_roster_after_boot() -> void:
 	if not _active:
 		return

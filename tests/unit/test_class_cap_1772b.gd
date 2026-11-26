@@ -186,6 +186,48 @@ func test_1772_B_EX_07_18_04_關_layer_off_zero_diff() -> void:
 	)
 
 
+## ——— Owner PP-225: executor assert effective == requested；diag 記生效 ———
+
+
+func test_1772_B_scenario_layer_class_cap_allowed() -> void:
+	## layers.CLASS_CAP 為合法閘門鍵（同 WP-68 CITY_HOUSING）.
+	var sc := {
+		"scenario_id": "class_cap_1772b_layer",
+		"years": 2,
+		"warmup_years": 0,
+		"seeds": [1],
+		"layers": {"RELOCATE": false, "CLASS_CAP": true},
+	}
+	var path := ParamsFixtures.write_user_dict(sc, "scenario_class_cap_1772b.json")
+	var r: Dictionary = SimScenarioValidator.validate_file(path)
+	assert_true(bool(r.get("ok", false)), str(r.get("errors", [])))
+	var out: Dictionary = r["scenario"]
+	assert_true(bool((out["layers"] as Dictionary).get("CLASS_CAP", false)))
+
+
+func test_1772_B_executor_assert_effective_eq_requested() -> void:
+	## Owner: set_class_cap_layer(req) 後 is_class_cap_on() 必須 == req；不符拒跑.
+	## 證明 enable-fail：成功 load 後注入壞份額 → effective false ≠ requested true.
+	var sat := TestSat.new()
+	_boot_pop(sat)
+	_apply_share_prms()
+	Params._values["PRM-SYS07-RICH_BED_SHARE_PPM"] = 600000
+	Params._values["PRM-SYS07-CITIZEN_BED_SHARE_PPM"] = 500000
+	var requested := true
+	PopulationModel.set_class_cap_layer(requested)
+	var effective: bool = PopulationModel.is_class_cap_on()
+	assert_false(effective)
+	assert_ne(effective, requested)
+	assert_eq(String(PopulationModel.last_error().get("code", "")), String(PopulationModel.ERR_SYS07_10))
+	## 診斷記「生效」非「請求」.
+	var diag := M1bDiagZ.new()
+	diag._active = true
+	diag._boot = {}
+	diag.record_class_cap_effective(effective)
+	assert_false(bool(diag._boot.get("class_cap_effective", true)))
+	assert_push_error_count(1)
+
+
 ## ——— ERR-SYS07-10 CLASS_SHARE_SUM ———
 
 
