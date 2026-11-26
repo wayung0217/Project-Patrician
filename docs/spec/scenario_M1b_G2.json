@@ -15,6 +15,7 @@
     "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
     "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 4,
     "PRM-SYS05-START_CASH": 150000,
+    "PRM-SYS07-ABUND_BONUS_MAX_PPM": 0,
     "PRM-SYS07-ABUND_FULL_WEEKS": 12,
     "PRM-SYS07-ABUND_START_WEEKS": 8,
     "PRM-SYS07-ACADEMY_MULT": [
@@ -372,12 +373,7 @@
       1
     ]
   },
-  "grid": {
-    "PRM-SYS07-ABUND_BONUS_MAX_PPM": [
-      0,
-      250000
-    ]
-  },
+  "grid": {},
   "daily_detail_ports": [],
   "thresholds": {
     "TH-01": 0.4,
