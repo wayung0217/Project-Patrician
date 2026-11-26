@@ -7,7 +7,7 @@
 script = ExtResource("1_cwkns")
 role = 1
 downstream_terminals = PackedStringArray()
-base_output_per_season = 3831
+base_output_per_season = 1913
 
 [sub_resource type="Resource" id="Resource_vcki1"]
 script = ExtResource("1_cwkns")
@@ -18,7 +18,7 @@ downstream_terminals = PackedStringArray()
 script = ExtResource("1_cwkns")
 role = 1
 downstream_terminals = PackedStringArray()
-base_output_per_season = 4788
+base_output_per_season = 2391
 
 [sub_resource type="Resource" id="Resource_hw7w1"]
 script = ExtResource("1_cwkns")
@@ -47,9 +47,8 @@ downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_pg07d"]
 script = ExtResource("1_cwkns")
-role = 1
+role = 3
 downstream_terminals = PackedStringArray()
-base_output_per_season = 919
 
 [sub_resource type="Resource" id="Resource_cq70y"]
 script = ExtResource("1_cwkns")
@@ -118,9 +117,8 @@ downstream_terminals = PackedStringArray()
 
 [sub_resource type="Resource" id="Resource_nl281"]
 script = ExtResource("1_cwkns")
-role = 1
+role = 3
 downstream_terminals = PackedStringArray()
-base_output_per_season = 749
 
 [sub_resource type="Resource" id="Resource_3eybr"]
 script = ExtResource("1_cwkns")

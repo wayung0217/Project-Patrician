@@ -7,6 +7,5 @@ script = ExtResource("1_xq87l")
 good_id = "GD-024"
 name_zh = "瓷器"
 tier = 2
-is_build_material = true
 base_price_li = 20000
 season_mask = 15
