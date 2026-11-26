@@ -196,12 +196,13 @@ func test_F5_m1b_scenarios_validate_zero_err_and_abund_grid_only() -> void:
 		var ov: Dictionary = sc.get("overrides", {})
 		var grid: Dictionary = sc.get("grid", {})
 		assert_false(
-			ov.has("PRM-SYS07-ABUND_BONUS_MAX_PPM"),
-			"%s still has ABUND in overrides" % path
-		)
-		assert_true(
 			grid.has("PRM-SYS07-ABUND_BONUS_MAX_PPM"),
-			"%s missing ABUND in grid" % path
+			"%s still has ABUND in grid" % path
+		)
+		assert_eq(
+			int(ov.get("PRM-SYS07-ABUND_BONUS_MAX_PPM", -1)),
+			0,
+			"%s ABUND overrides != 0" % path
 		)
 		assert_eq(int(ov.get("PRM-SYS17-TOP_N_PRECISE", -1)), 3, path)
 		var r: Dictionary = SimScenarioValidator.validate_file(path)
