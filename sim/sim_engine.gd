@@ -32,6 +32,8 @@ var session_reset: Callable = Callable()
 var _before_day: Callable = Callable()
 ## 17-59／17-60 W5: print-only season progress (no state change; golden identical).
 var print_season_progress: bool = false
+## 17-85 B: print-only per-day progress (default off; no Time.*／sampler／ledger).
+var print_day_progress: bool = false
 ## Wall-clock start for ETA lines (set at job start).
 var _progress_t0_msec: int = 0
 
@@ -281,6 +283,9 @@ func _run_one_job(
 		## Daily detail after day's writes／signals／relocate.
 		for pid_v in daily_ports:
 			sampler.sample_daily(run_id, seed, Clock.day, String(pid_v))
+		## 17-85 B: after day's writes／signals／relocate／sample_daily — day+total only.
+		if print_day_progress and not bool(run_state["aborted"]):
+			_emit_day_progress(int(Clock.day), total_days)
 
 	if Clock.season_cutoff.is_connected(on_cutoff):
 		Clock.season_cutoff.disconnect(on_cutoff)
@@ -394,6 +399,12 @@ static func _format_day_errors(fatal: Array) -> String:
 		else:
 			parts.append("%s (%s)" % [code, msg])
 	return "; ".join(parts)
+
+
+func _emit_day_progress(day: int, total_days: int) -> void:
+	## Print-only (17-85 B). ASCII for PS 5.1. day + total only — no Time.*／pop／ledger.
+	## Format: DAY_PROGRESS day=<n> total=<N>
+	print("DAY_PROGRESS day=%d total=%d" % [day, total_days])
 
 
 func _emit_season_progress(
