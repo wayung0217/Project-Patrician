@@ -484,7 +484,8 @@ jobs:
           # 17-69 W1(d)／E6(N-15)：只取 main 分支最新未過期 golden-30d artifact。
           # 無 artifact 或下載失敗 → GOLDEN_NOT_COMPARED=1 + exit 1；不得靜默 exit 0。
           set +e
-          ART_META=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=golden-30d&per_page=100" \
+          # 17-78 V3 probe (temporary): force missing baseline → GOLDEN_NOT_COMPARED=1.
+          ART_META=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=golden-30d-V3-FORCE-MISSING&per_page=100" \
             --jq '[.artifacts[] | select(.expired==false and .workflow_run.head_branch=="main")] | .[0] // empty')
           set -e
           RUN_ID=""
