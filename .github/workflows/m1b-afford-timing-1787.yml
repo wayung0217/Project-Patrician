@@ -1,5 +1,6 @@
 # 17-87 Lane A A5：Za_G0_A0 甲＝main／乙＝PR tip 同 job 序列計時（B-6 Actions）。
 # 不改模擬語意；只產 ELAPSED_MS。觸發：push 本檔或 workflow_dispatch。
+# Retarget after gut-unit test fix so A5 runs on frozen tip.
 name: M1b-Afford-Timing-1787
 
 on:

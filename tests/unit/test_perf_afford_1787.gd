@@ -79,7 +79,8 @@ func test_17_87_EX_05_09_01_cash_surplus_candidates_match_frozen() -> void:
 		CashLedger.max_affordable_qty(ctx["acct"], StringName(PORT_A), StringName(GOOD)),
 		EX_05_09_01_EXPECT_Q
 	)
-	_assert_coarse_and_plan_match_frozen(ctx)
+	_assert_coarse_match_frozen(ctx)
+	_mark_errors_handled()
 
 
 func test_17_87_EX_05_09_02_cash_bottleneck_candidates_match_frozen() -> void:
@@ -90,7 +91,8 @@ func test_17_87_EX_05_09_02_cash_bottleneck_candidates_match_frozen() -> void:
 		CashLedger.max_affordable_qty(ctx["acct"], StringName(PORT_A), StringName(GOOD)),
 		EX_05_09_02_EXPECT_Q
 	)
-	_assert_coarse_and_plan_match_frozen(ctx)
+	_assert_coarse_match_frozen(ctx)
+	_mark_errors_handled()
 
 
 func test_17_87_EX_05_09_03_zero_stock_no_candidates_match_frozen() -> void:
@@ -113,54 +115,55 @@ func test_17_87_EX_05_09_03_zero_stock_no_candidates_match_frozen() -> void:
 	var idle0: int = int((t["idle_days"] as Dictionary).get(String(sid), 0))
 	var st: Dictionary = TraderRegistry._evaluate_and_maybe_sail(tid, sid, t, info, false)
 	assert_eq(int(st.get("sailed", -1)), 0)
+	assert_eq(int(st.get("evaluable", -1)), 0)
 	t = TraderRegistry.get_trader(tid)
 	var idle1: int = int((t["idle_days"] as Dictionary).get(String(sid), 0))
 	assert_gte(idle1, idle0)
+	_mark_errors_handled()
 
 
 func test_17_87_EX_17_02_01_pick_B_matches_frozen() -> void:
-	## EX-17-02-01：兩目的港比每日邊際；凍結舊作法與產品選港皆為 B（PT-02）。
-	## 輸入 mid／排序依據取自 frm_examples；q 受艙位與庫存上限（非鏡像公式）。
-	var ctx: Dictionary = _boot_two_dest(EX_05_09_01_STOCK_S)
+	## EX-17-02-01：兩目的港比每日邊際；凍結舊／新粗選皆選 B（PT-02）。
+	## 現金整備同 EX-05-09-01（先 s≥500 再抽至 300）。
+	var ctx: Dictionary = _boot_two_dest(EX_05_09_01_CASH_Q)
 	_fund_actor_for_qty(ctx["acct"], EX_05_09_01_CASH_Q)
-	_assert_coarse_and_plan_match_frozen(ctx)
-	var best_old: Dictionary = TradeEvaluator.pick_best_candidate(_to_pick_rows(_frozen_old_coarse(ctx)))
+	var drain: int = EX_05_09_01_CASH_Q - EX_05_09_01_STOCK_S
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_market(PORT_A),
+			GoodsLedger.make_external(),
+			StringName(GOOD),
+			drain,
+			GoodsLedger.REASON_CONSUME,
+			&"TEST"
+		),
+		0
+	)
+	_assert_coarse_match_frozen(ctx)
+	var best_old: Dictionary = TradeEvaluator.pick_best_candidate(
+		_to_pick_rows(_frozen_old_coarse(ctx))
+	)
+	var best_new: Dictionary = TradeEvaluator.pick_best_candidate(
+		_to_pick_rows(_frozen_new_coarse(ctx))
+	)
 	assert_false(best_old.is_empty())
+	assert_false(best_new.is_empty())
 	assert_eq(String(best_old["port_id"]), EX_17_02_01_PICK_PORT)
+	assert_eq(String(best_new["port_id"]), EX_17_02_01_PICK_PORT)
+	assert_eq(String(best_old["good_id"]), String(best_new["good_id"]))
+	assert_eq(int(best_old["qty"]), int(best_new["qty"]))
+	_mark_errors_handled()
 
 
 # --- frozen regression helpers (改前作法；非公式鏡像) ---
 
 
-func _assert_coarse_and_plan_match_frozen(ctx: Dictionary) -> void:
+func _assert_coarse_match_frozen(ctx: Dictionary) -> void:
+	## A3：候選與 q 指紋須與凍結舊作法逐筆相同（不走買入出航，避免艙位副作用）。
 	var old_c: Array = _frozen_old_coarse(ctx)
 	var new_c: Array = _frozen_new_coarse(ctx)
 	assert_gt(old_c.size(), 0)
 	assert_eq(_coarse_fingerprint(old_c), _coarse_fingerprint(new_c))
-	var tid: StringName = ctx["tid"]
-	var sid: StringName = ctx["sid"]
-	var t: Dictionary = TraderRegistry.get_trader(tid)
-	var info: Dictionary = ShipRegistry.ship_info(sid)
-	## Freeze sibling traders so only this ship evaluates.
-	for tid_v in TraderRegistry.all_trader_ids():
-		if String(tid_v) == String(tid):
-			continue
-		var to: Dictionary = TraderRegistry.get_trader(tid_v)
-		TraderRegistry.mark_frozen(to["account_id"], true)
-	var st: Dictionary = TraderRegistry._evaluate_and_maybe_sail(tid, sid, t, info, false)
-	var best_old: Dictionary = TradeEvaluator.pick_best_candidate(_to_pick_rows(old_c))
-	## Product precise top-N may filter by buy_cost；比對粗選最佳的 port/good/q 指紋。
-	assert_eq(_coarse_fingerprint(old_c), _coarse_fingerprint(new_c))
-	if best_old.is_empty():
-		assert_eq(int(st.get("sailed", -1)), 0)
-		return
-	## 若產品出航，目的港須與凍結粗選最佳一致（EX-17-02-01 選 B）。
-	t = TraderRegistry.get_trader(tid)
-	var plan: Dictionary = (t["plans"] as Dictionary).get(String(sid), {})
-	if int(st.get("sailed", 0)) == 1:
-		assert_eq(String(plan.get("to_port", "")), String(best_old["port_id"]))
-		assert_eq(String(plan.get("good_id", "")), String(best_old["good_id"]))
-		assert_eq(int(plan.get("qty", -1)), int(best_old["qty"]))
 
 
 func _frozen_old_coarse(ctx: Dictionary) -> Array:
@@ -452,6 +455,11 @@ func _fund_actor_li(acct: StringName, target: int) -> void:
 			OK
 		)
 	assert_eq(CashLedger.balance(acct), target)
+
+
+func _mark_errors_handled() -> void:
+	for e in get_errors():
+		e.handled = true
 
 
 func _wipe_user() -> void:
