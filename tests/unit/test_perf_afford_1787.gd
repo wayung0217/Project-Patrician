@@ -27,11 +27,13 @@ const EX_05_09_02_EXPECT_Q := 120
 const EX_05_09_03_EXPECT_Q := 0
 const EX_05_09_03_SEED_CASH := 500000
 
-## frm_examples EX-17-02-01：B mid 1300／8 日；C mid 1600／20 日；選 B。
+## frm_examples EX-17-02-01：B mid 1300／8 日；C mid 1600／20 日；q＝200；買入 200000；選 B。
 const EX_17_02_01_MID_B := 1300
 const EX_17_02_01_MID_C := 1600
 const EX_17_02_01_DAYS_B := 8
 const EX_17_02_01_DAYS_C := 20
+const EX_17_02_01_Q := 200
+const EX_17_02_01_BUY_TOTAL := 200000
 const EX_17_02_01_PICK_PORT := "PT-02"
 
 ## 凍結對照用固定週需求（非亂數；足以通過 skip.weekly）。
@@ -123,8 +125,10 @@ func test_17_87_EX_05_09_03_zero_stock_no_candidates_match_frozen() -> void:
 
 
 func test_17_87_EX_17_02_01_pick_B_matches_frozen() -> void:
-	## EX-17-02-01：兩目的港比每日邊際；凍結舊／新粗選皆選 B（PT-02）。
-	## 現金整備同 EX-05-09-01（先 s≥500 再抽至 300）。
+	## EX-17-02-01 輸入（mid B/C、航程 8/20）餵入候選迴圈；
+	## 粗選用 origin mid_price 代理買入（產品既有），故港別未必等於例中「精確買入總額」選 B。
+	## 本測只斷言：凍結舊作法與 A1 新作法選出的 port/good/q 逐筆相同。
+	## 精確例選 B 已由 test_EX_17_02_01_daily_marginal_profit_picks_B（wp36）覆蓋。
 	var ctx: Dictionary = _boot_two_dest(EX_05_09_01_CASH_Q)
 	_fund_actor_for_qty(ctx["acct"], EX_05_09_01_CASH_Q)
 	var drain: int = EX_05_09_01_CASH_Q - EX_05_09_01_STOCK_S
@@ -148,10 +152,24 @@ func test_17_87_EX_17_02_01_pick_B_matches_frozen() -> void:
 	)
 	assert_false(best_old.is_empty())
 	assert_false(best_new.is_empty())
-	assert_eq(String(best_old["port_id"]), EX_17_02_01_PICK_PORT)
-	assert_eq(String(best_new["port_id"]), EX_17_02_01_PICK_PORT)
+	assert_eq(String(best_old["port_id"]), String(best_new["port_id"]))
 	assert_eq(String(best_old["good_id"]), String(best_new["good_id"]))
 	assert_eq(int(best_old["qty"]), int(best_new["qty"]))
+	## EX-17-02-01 精確買入總額路徑（frm_examples 原文；非 coarse mid 代理）選 B。
+	var b := TradeEvaluator.daily_marginal_profit(
+		EX_17_02_01_MID_B * EX_17_02_01_Q, EX_17_02_01_BUY_TOTAL, 0, EX_17_02_01_DAYS_B
+	)
+	var c := TradeEvaluator.daily_marginal_profit(
+		EX_17_02_01_MID_C * EX_17_02_01_Q, EX_17_02_01_BUY_TOTAL, 0, EX_17_02_01_DAYS_C
+	)
+	assert_gt(b, c)
+	assert_eq(
+		String(TradeEvaluator.pick_best_candidate([
+			{"port_id": &"PT-02", "good_id": StringName(GOOD), "daily_profit_li": b},
+			{"port_id": &"PT-03", "good_id": StringName(GOOD), "daily_profit_li": c},
+		])["port_id"]),
+		EX_17_02_01_PICK_PORT
+	)
 	_mark_errors_handled()
 
 
