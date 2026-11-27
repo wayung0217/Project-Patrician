@@ -1,0 +1,11 @@
+commit_sha=ceedbeffea8cb63a6d7ef0f0816a02eaade49759
+product_base_sha=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+verify_side=v0
+start=2026-11-27T16:16:21Z
+end=2026-11-27T18:50:22Z
+duration_s=9241
+status=ok
+exit_code=0
+days=720
+seed=1
+group=Za_G0_A0

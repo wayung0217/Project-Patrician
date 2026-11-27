@@ -1,0 +1,10 @@
+dispatch-v0.txt
+METHOD=push perf-verify-1787 (workflow_dispatch 403; same workaround as 17-83 met-lengths-*)
+WORKFLOW=.github/workflows/m1b-verify-1787.yml (temp; delete branch when pack done)
+REF=perf-verify-1787 @ ceedbeffea8cb63a6d7ef0f0816a02eaade49759
+PRODUCT_BASE_SHA=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+RUN_ID=46032156698
+RUN_URL=https://github.com/wayung0217/Project-Patrician/actions/runs/46032156698
+MATRIX=450/s1 720/s1 720/s2
+VERIFY_SIDE=v0
+DISPATCHED_UTC=2026-11-27T16:16:10Z

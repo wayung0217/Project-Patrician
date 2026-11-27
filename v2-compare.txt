@@ -1,0 +1,45 @@
+v2-compare.txt
+LANE=V VERIFY-LONG
+COMPARE=main baseline (v0) vs Lane A tip (v1)
+V0_PRODUCT=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+V1_PRODUCT=107c17fea29da54363713e5896805a2ebd630a0e tree=7b533dd0b03b885aefcc357465dea8be06892a52
+RULE=byte-compare summary.csv (sans elapsed_ms), season_ports.csv, season_cells.csv, trader_summary.csv, obs_ext.csv
+JUDGEMENT=none (facts only)
+
+RESULT=ALL_REQUIRED_FILES_IDENTICAL (3 lines × 5 files; summary compared sans elapsed_ms)
+CONTENT_DIFFS=0
+NOTE=raw summary.csv sha differs solely due to elapsed_ms column (expected; not a content failure)
+
+================================================================================
+SHA256 / bytes table
+
+| line | file | v0_bytes | v0_sha256 | v1_bytes | v1_sha256 | result |
+|---|---|---|---|---|---|---|
+| d450_s1 | summary.csv(sans elapsed_ms) | 435 | 0764175cf7341727d1a36ed323691c7aa84c51a35cdd76feb2b627c14bf9830d | 435 | 0764175cf7341727d1a36ed323691c7aa84c51a35cdd76feb2b627c14bf9830d | IDENTICAL |
+| d450_s1 | summary.csv(raw) | 454 | 3d15545e72cd48e7e5fe3eb4f4b23de2c771e63513ddf3fb9774a15dc052e5a7 | 454 | 5a64233f0b37a26d276c2f630c5f1b50157b9d93881b32e09683def9fd6a9104 | DIFFER(elapsed_ms only) |
+| d450_s1 | season_ports.csv | 22387 | f8cca4f52e6932a25ccda10958fa349f861e896c5549c132cde114b10eaad31a | 22387 | f8cca4f52e6932a25ccda10958fa349f861e896c5549c132cde114b10eaad31a | IDENTICAL |
+| d450_s1 | season_cells.csv | 109925 | 818d3e855cc815c33dfa8562eeb8bf06c6f24a26a2983e2b5d2a9ee9157bca70 | 109925 | 818d3e855cc815c33dfa8562eeb8bf06c6f24a26a2983e2b5d2a9ee9157bca70 | IDENTICAL |
+| d450_s1 | trader_summary.csv | 14361 | 9a9003b37cb9fc98f36c321329e0f29fd17d65673af20e66f1f49f57369b4764 | 14361 | 9a9003b37cb9fc98f36c321329e0f29fd17d65673af20e66f1f49f57369b4764 | IDENTICAL |
+| d450_s1 | obs_ext.csv | 5228 | 8fa6514cf6426af508fcce85e930cc9be908612ec0d5afd9f5183e348e1f0cba | 5228 | 8fa6514cf6426af508fcce85e930cc9be908612ec0d5afd9f5183e348e1f0cba | IDENTICAL |
+| d720_s1 | summary.csv(sans elapsed_ms) | 468 | d78255f472097199a8aeb471e9c38154d425447fdd21a75f7a1856aec3cfb515 | 468 | d78255f472097199a8aeb471e9c38154d425447fdd21a75f7a1856aec3cfb515 | IDENTICAL |
+| d720_s1 | summary.csv(raw) | 487 | c787f126942dae19df87292b21a135861c81eef9859e8ce0348ae6281bb738fe | 487 | 07953a0395a832ce8284570f19f926f534195b12a2e9e0445734656b577bdc04 | DIFFER(elapsed_ms only) |
+| d720_s1 | season_ports.csv | 35671 | 49fc5c4f275ddf57996cb3c06b66cb4971a1b67fbd6c9617b1a262319e063a42 | 35671 | 49fc5c4f275ddf57996cb3c06b66cb4971a1b67fbd6c9617b1a262319e063a42 | IDENTICAL |
+| d720_s1 | season_cells.csv | 174641 | e7e0b21a10908993991bcd27dd8676d39e472e7d7138f8b497f0c725d3f6919d | 174641 | e7e0b21a10908993991bcd27dd8676d39e472e7d7138f8b497f0c725d3f6919d | IDENTICAL |
+| d720_s1 | trader_summary.csv | 21973 | e762c6e77dd40a90bcf5ab0728d9afe655fbe52e459231f752f53a6a247246a7 | 21973 | e762c6e77dd40a90bcf5ab0728d9afe655fbe52e459231f752f53a6a247246a7 | IDENTICAL |
+| d720_s1 | obs_ext.csv | 17907 | 00c636b0a2c94600347017bbccc4fc19aa8438b35b64bac9140d4f948d864903 | 17907 | 00c636b0a2c94600347017bbccc4fc19aa8438b35b64bac9140d4f948d864903 | IDENTICAL |
+| d720_s2 | summary.csv(sans elapsed_ms) | 468 | 485306f583fb2fae3880b842f523b42f90df4b2a2a8044b6dd760ae47e2125ad | 468 | 485306f583fb2fae3880b842f523b42f90df4b2a2a8044b6dd760ae47e2125ad | IDENTICAL |
+| d720_s2 | summary.csv(raw) | 487 | 343c88d52f83e2553fa028145e5fc447389edac924835fd38600e8c38779505c | 487 | 71516b613d299d879716640b4a2802a7bf4f68f1d69aa4c035456bebe5eaf00a | DIFFER(elapsed_ms only) |
+| d720_s2 | season_ports.csv | 35707 | cb9c9b2fde2718f79ba802ecc61682f816799a93eac1aadb5f70bc15ff1ef9fb | 35707 | cb9c9b2fde2718f79ba802ecc61682f816799a93eac1aadb5f70bc15ff1ef9fb | IDENTICAL |
+| d720_s2 | season_cells.csv | 174807 | 9e7e20a4721cc58a7ddae557944f8181cb738014442159b8edef57733a291b37 | 174807 | 9e7e20a4721cc58a7ddae557944f8181cb738014442159b8edef57733a291b37 | IDENTICAL |
+| d720_s2 | trader_summary.csv | 22854 | e23f1de650b9c7419bb14c2066a128f7e9a76f739df29189eb2e5adea6b95836 | 22854 | e23f1de650b9c7419bb14c2066a128f7e9a76f739df29189eb2e5adea6b95836 | IDENTICAL |
+| d720_s2 | obs_ext.csv | 17906 | abee29ba4723f6a646c9f93b4ac081cc89bb4aa831155baa78899704d0fe0264 | 17906 | abee29ba4723f6a646c9f93b4ac081cc89bb4aa831155baa78899704d0fe0264 | IDENTICAL |
+
+================================================================================
+Diff excerpts
+
+No content differences in required compare set. Diff excerpt N/A.
+
+Raw summary.csv elapsed_ms values (not compared):
+d450_s1: v0_elapsed_ms=8929486  v1_elapsed_ms=1668792
+d720_s1: v0_elapsed_ms=9240194  v1_elapsed_ms=1919185
+d720_s2: v0_elapsed_ms=9292568  v1_elapsed_ms=1862438

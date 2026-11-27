@@ -1,0 +1,158 @@
+v3-met.txt
+LANE=V VERIFY-LONG
+PURPOSE=season counts + MET-01..MET-06 raw (for side-by-side with 17-83 / R9-94)
+JUDGEMENT=none
+
+================================================================================
+SIDE=v0 (main baseline)
+
+--- LINE days=450 seed=1 ---
+season_ports row_count=80 season_index_set=[0, 1, 2, 3, 4] season_count=5
+summary.csv MET columns (raw):
+MET-01=0.06741573033708
+MET-01_pass=0
+MET-02=0
+MET-02_pass=1
+MET-03=0
+MET-03_pass=1
+MET-04=0
+MET-04_pass=1
+MET-05a=0
+MET-05a_pass=1
+MET-05b=1
+MET-05b_pass=N/A
+MET-06=0
+MET-06_pass=1
+summary.csv full:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06741573033708,0,0,1,0,1,0,1,0,1,1,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,8929486
+
+--- LINE days=720 seed=1 ---
+season_ports row_count=128 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7] season_count=8
+summary.csv MET columns (raw):
+MET-01=0.06369785794814
+MET-01_pass=0
+MET-02=0
+MET-02_pass=1
+MET-03=0.07042253521127
+MET-03_pass=0
+MET-04=218
+MET-04_pass=0
+MET-05a=0
+MET-05a_pass=1
+MET-05b=2.05151648022107
+MET-05b_pass=N/A
+MET-06=0
+MET-06_pass=1
+summary.csv full:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06369785794814,0,0,1,0.07042253521127,0,218,0,0,1,2.05151648022107,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,9240194
+
+--- LINE days=720 seed=2 ---
+season_ports row_count=128 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7] season_count=8
+summary.csv MET columns (raw):
+MET-01=0.06937394247039
+MET-01_pass=0
+MET-02=0
+MET-02_pass=1
+MET-03=0.07042253521127
+MET-03_pass=0
+MET-04=321
+MET-04_pass=0
+MET-05a=0
+MET-05a_pass=1
+MET-05b=1.92736172213601
+MET-05b_pass=N/A
+MET-06=0
+MET-06_pass=1
+summary.csv full:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,2,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06937394247039,0,0,1,0.07042253521127,0,321,0,0,1,1.92736172213601,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,9292568
+
+================================================================================
+SIDE=v1 (Lane A tip)
+
+--- LINE days=450 seed=1 ---
+season_ports row_count=80 season_index_set=[0, 1, 2, 3, 4] season_count=5
+summary.csv MET columns (raw):
+MET-01=0.06741573033708
+MET-01_pass=0
+MET-02=0
+MET-02_pass=1
+MET-03=0
+MET-03_pass=1
+MET-04=0
+MET-04_pass=1
+MET-05a=0
+MET-05a_pass=1
+MET-05b=1
+MET-05b_pass=N/A
+MET-06=0
+MET-06_pass=1
+summary.csv full:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06741573033708,0,0,1,0,1,0,1,0,1,1,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1668792
+
+--- LINE days=720 seed=1 ---
+season_ports row_count=128 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7] season_count=8
+summary.csv MET columns (raw):
+MET-01=0.06369785794814
+MET-01_pass=0
+MET-02=0
+MET-02_pass=1
+MET-03=0.07042253521127
+MET-03_pass=0
+MET-04=218
+MET-04_pass=0
+MET-05a=0
+MET-05a_pass=1
+MET-05b=2.05151648022107
+MET-05b_pass=N/A
+MET-06=0
+MET-06_pass=1
+summary.csv full:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06369785794814,0,0,1,0.07042253521127,0,218,0,0,1,2.05151648022107,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1919185
+
+--- LINE days=720 seed=2 ---
+season_ports row_count=128 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7] season_count=8
+summary.csv MET columns (raw):
+MET-01=0.06937394247039
+MET-01_pass=0
+MET-02=0
+MET-02_pass=1
+MET-03=0.07042253521127
+MET-03_pass=0
+MET-04=321
+MET-04_pass=0
+MET-05a=0
+MET-05a_pass=1
+MET-05b=1.92736172213601
+MET-05b_pass=N/A
+MET-06=0
+MET-06_pass=1
+summary.csv full:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,2,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06937394247039,0,0,1,0.07042253521127,0,321,0,0,1,1.92736172213601,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1862438
+
+================================================================================
+17-83 first-batch reference (evening-17-83; for parallel listing only; no judgement)
+Source: evening-17-83/line-d450-s1.txt + line-d720-s1.txt + line-d720-s2.txt (commit 33bd59d / run 45971759650)
+d450/s1 MET-01=0.06741573033708 MET-02=0 MET-03=0 MET-04=0 MET-05a=0 MET-05b=1 MET-06=0 seasons=5
+d720/s1 MET-01=0.06369785794814 MET-02=0 MET-03=0.07042253521127 MET-04=218 MET-05a=0 MET-05b=2.05151648022107 MET-06=0 seasons=8
+(d720/s2 17-83 values: see evening-17-83/line-d720-s2.txt)
+d720/s2 17-83 MET block:
+MET-01=0.06937394247039
+MET-01_pass=0
+MET-02=0
+MET-02_pass=1
+MET-03=0.07042253521127
+MET-03_pass=0
+MET-04=321
+MET-04_pass=0
+MET-05a=0
+MET-05a_pass=1
+MET-05b=1.92736172213601
+MET-05b_pass=N/A
+MET-06=0
+MET-06_pass=1

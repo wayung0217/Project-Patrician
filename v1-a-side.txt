@@ -1,0 +1,144 @@
+v1-a-side.txt
+LANE=V VERIFY-LONG
+SIDE=v1 (Lane A tip)
+A_PR=https://github.com/wayung0217/Project-Patrician/pull/105
+FROZEN_TIP_SHA=107c17fea29da54363713e5896805a2ebd630a0e
+FROZEN_TREE_SHA=7b533dd0b03b885aefcc357465dea8be06892a52
+TIP_AT_V1_START=107c17fea29da54363713e5896805a2ebd630a0e
+TIP_AT_V1_END=107c17fea29da54363713e5896805a2ebd630a0e
+TIP_CHANGED_DURING_V1=no
+INVALIDATIONS=none
+RETRIES=0
+RUN_ID=46057243679
+RUN_URL=https://github.com/wayung0217/Project-Patrician/actions/runs/46057243679
+CONCLUSION=success (3/3)
+METHOD=push perf-verify-1787 (A tip + workflow-only)
+VERIFY_BRANCH=perf-verify-1787
+VERIFY_BRANCH_SHA=8a5391b3f2e8ee78eba4cecc5729aad7aa16a866
+PRODUCT_BASE_SHA=107c17fea29da54363713e5896805a2ebd630a0e
+MATRIX=450×s1, 720×s1, 720×s2
+ARTIFACTS=overnight-17-87-V/artifacts/v1/Za_G0_A0_d{450,720}_s{1,2}/
+FAILED_RUNS=none
+
+================================================================================
+LINE=days=450 seed=1
+JOB=za-g0-a0-verify (450, 1)
+ARTIFACT=m1b-verify-v1-d450-s1
+CPU=INTEL(R) XEON(R) PLATINUM 8573C
+nproc=4
+
+=== timing.txt ===
+commit_sha=8a5391b3f2e8ee78eba4cecc5729aad7aa16a866
+product_base_sha=107c17fea29da54363713e5896805a2ebd630a0e
+product_tree_sha=7b533dd0b03b885aefcc357465dea8be06892a52
+a_pr=105
+verify_side=v1
+start=2026-11-27T19:31:18Z
+end=2026-11-27T19:59:08Z
+duration_s=1670
+status=ok
+exit_code=0
+days=450
+seed=1
+group=Za_G0_A0
+ELAPSED_MS(summary)=1668792
+aborted=0
+
+=== season_ports ===
+row_count=80 season_index_set=[0, 1, 2, 3, 4] season_count=5
+
+=== summary.csv full ===
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06741573033708,0,0,1,0,1,0,1,0,1,1,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1668792
+
+=== file bytes + sha256 ===
+summary.csv  bytes=454  sha256=5a64233f0b37a26d276c2f630c5f1b50157b9d93881b32e09683def9fd6a9104
+season_ports.csv  bytes=22387  sha256=f8cca4f52e6932a25ccda10958fa349f861e896c5549c132cde114b10eaad31a
+season_cells.csv  bytes=109925  sha256=818d3e855cc815c33dfa8562eeb8bf06c6f24a26a2983e2b5d2a9ee9157bca70
+trader_summary.csv  bytes=14361  sha256=9a9003b37cb9fc98f36c321329e0f29fd17d65673af20e66f1f49f57369b4764
+obs_ext.csv  bytes=5228  sha256=8fa6514cf6426af508fcce85e930cc9be908612ec0d5afd9f5183e348e1f0cba
+
+================================================================================
+LINE=days=720 seed=1
+JOB=za-g0-a0-verify (720, 1)
+ARTIFACT=m1b-verify-v1-d720-s1
+CPU=Intel(R) Xeon(R) 6975P-C
+nproc=4
+
+=== timing.txt ===
+commit_sha=8a5391b3f2e8ee78eba4cecc5729aad7aa16a866
+product_base_sha=107c17fea29da54363713e5896805a2ebd630a0e
+product_tree_sha=7b533dd0b03b885aefcc357465dea8be06892a52
+a_pr=105
+verify_side=v1
+start=2026-11-27T19:31:25Z
+end=2026-11-27T20:03:26Z
+duration_s=1921
+status=ok
+exit_code=0
+days=720
+seed=1
+group=Za_G0_A0
+ELAPSED_MS(summary)=1919185
+aborted=0
+
+=== season_ports ===
+row_count=128 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7] season_count=8
+
+=== summary.csv full ===
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06369785794814,0,0,1,0.07042253521127,0,218,0,0,1,2.05151648022107,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1919185
+
+=== file bytes + sha256 ===
+summary.csv  bytes=487  sha256=07953a0395a832ce8284570f19f926f534195b12a2e9e0445734656b577bdc04
+season_ports.csv  bytes=35671  sha256=49fc5c4f275ddf57996cb3c06b66cb4971a1b67fbd6c9617b1a262319e063a42
+season_cells.csv  bytes=174641  sha256=e7e0b21a10908993991bcd27dd8676d39e472e7d7138f8b497f0c725d3f6919d
+trader_summary.csv  bytes=21973  sha256=e762c6e77dd40a90bcf5ab0728d9afe655fbe52e459231f752f53a6a247246a7
+obs_ext.csv  bytes=17907  sha256=00c636b0a2c94600347017bbccc4fc19aa8438b35b64bac9140d4f948d864903
+
+================================================================================
+LINE=days=720 seed=2
+JOB=za-g0-a0-verify (720, 2)
+ARTIFACT=m1b-verify-v1-d720-s2
+CPU=AMD EPYC 9V74 80-Core Processor
+nproc=4
+
+=== timing.txt ===
+commit_sha=8a5391b3f2e8ee78eba4cecc5729aad7aa16a866
+product_base_sha=107c17fea29da54363713e5896805a2ebd630a0e
+product_tree_sha=7b533dd0b03b885aefcc357465dea8be06892a52
+a_pr=105
+verify_side=v1
+start=2026-11-27T19:31:19Z
+end=2026-11-27T20:02:22Z
+duration_s=1863
+status=ok
+exit_code=0
+days=720
+seed=2
+group=Za_G0_A0
+ELAPSED_MS(summary)=1862438
+aborted=0
+
+=== season_ports ===
+row_count=128 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7] season_count=8
+
+=== summary.csv full ===
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,2,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06937394247039,0,0,1,0.07042253521127,0,321,0,0,1,1.92736172213601,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1862438
+
+=== file bytes + sha256 ===
+summary.csv  bytes=487  sha256=71516b613d299d879716640b4a2802a7bf4f68f1d69aa4c035456bebe5eaf00a
+season_ports.csv  bytes=35707  sha256=cb9c9b2fde2718f79ba802ecc61682f816799a93eac1aadb5f70bc15ff1ef9fb
+season_cells.csv  bytes=174807  sha256=9e7e20a4721cc58a7ddae557944f8181cb738014442159b8edef57733a291b37
+trader_summary.csv  bytes=22854  sha256=e23f1de650b9c7419bb14c2066a128f7e9a76f739df29189eb2e5adea6b95836
+obs_ext.csv  bytes=17906  sha256=abee29ba4723f6a646c9f93b4ac081cc89bb4aa831155baa78899704d0fe0264
+
+================================================================================
+ELAPSED_MS table (raw; ★ do not cross-CPU compare)
+
+| line | ELAPSED_MS | CPU |
+|---|---|---|
+| 450×s1 | 1668792 | INTEL(R) XEON(R) PLATINUM 8573C |
+| 720×s1 | 1919185 | Intel(R) Xeon(R) 6975P-C |
+| 720×s2 | 1862438 | AMD EPYC 9V74 80-Core Processor |
