@@ -134,7 +134,7 @@ label=yi_tip	days=10	round=1	elapsed_ms=86610	commit=107c17fea29da54363713e58968
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-87-A`
-- Full SHA: `0e05e1b47caecc5253ab6f48b1dce96a4a66d3be` _(content tip; align push updates store orphan_sha to final HEAD)_
+- Full SHA: `b0e04dbdf1d82c67d172fe94389f14873b14218f`
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-87-A
 
 ### git ls-tree -r -l
@@ -150,10 +150,11 @@ label=yi_tip	days=10	round=1	elapsed_ms=86610	commit=107c17fea29da54363713e58968
 100644 blob 7e1bf4e73f77c2a0bf7fd88f124af8731e29b996    8587	evidence-special.txt
 100644 blob e128046157ad9d6a8844f3144ea3faa75773fa9c    1183	failed-runs.txt
 100644 blob 284a7efe5e38577e6d23f38307e785640d4a982f     376	lane.txt
-100644 blob 6caa9b0aa00e8d2720e640cc9f5d360a67407d4e    5896	report.md
+100644 blob df36f9fff9679a284677986232704cb814650220    1435	manifest.txt
+100644 blob 1c8614c33413a8d5057b84cd59578a427e63ffeb    1053	orphan_push.log
+100644 blob 0575bb98e7f7b559e4d8022e1d3cede938e16446      41	orphan_sha.txt
+100644 blob 80a2d4f661954098070551df0e8ca69a244994f6    7948	report.md
 ```
-
-_(ls-tree of content tip before meta; final tip below)_
 
 ## B-10 ls + FILES_TOTAL
 
@@ -173,9 +174,9 @@ drwxrwxrwt. 16 root   root    4096 Nov 27 19:36 ..
 drwxr-xr-x   8 ubuntu ubuntu  4096 Nov 27 19:36 .git
 -rw-r--r--   1 ubuntu ubuntu   376 Nov 27 19:35 lane.txt
 -rw-r--r--   1 ubuntu ubuntu  1435 Nov 27 19:36 manifest.txt
--rw-r--r--   1 ubuntu ubuntu   816 Nov 27 19:36 orphan_push.log
+-rw-r--r--   1 ubuntu ubuntu  1182 Nov 27 19:36 orphan_push.log
 -rw-r--r--   1 ubuntu ubuntu    41 Nov 27 19:36 orphan_sha.txt
--rw-r--r--   1 ubuntu ubuntu  7858 Nov 27 19:36 report.md
+-rw-r--r--   1 ubuntu ubuntu  7948 Nov 27 19:36 report.md
 ```
 
 FILES_TOTAL=14
