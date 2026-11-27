@@ -3,6 +3,7 @@
 # No secrets. No product/autoload/sim/test changes.
 # Agent tokens lack actions:write → workflow_dispatch 403; push met-lengths-* is the
 # same H4/E1 workaround used elsewhere (17-61/17-72).
+# PR #103 tip distinct from met-lengths-1783 matrix SHA.
 name: M1b-MET-Lengths
 
 on:
