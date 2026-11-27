@@ -1,0 +1,135 @@
+# 17-83 DIAG-METRICS-2 / R9-93: Za_G0_A0 length matrix (manual only).
+# P1-A: days 450+720; P1-C: 720×seeds 2..5 (scenario seeds-only). Pack ≤6 lines.
+# No secrets. No product/autoload/sim/test changes.
+name: M1b-MET-Lengths
+
+on:
+  workflow_dispatch:
+
+jobs:
+  za-g0-a0-length:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - days: 450
+            seed: 1
+          - days: 720
+            seed: 1
+          - days: 720
+            seed: 2
+          - days: 720
+            seed: 3
+          - days: 720
+            seed: 4
+          - days: 720
+            seed: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Record runner specs
+        run: |
+          set -euo pipefail
+          {
+            echo "=== runner specs ==="
+            echo "os=$(uname -s) $(uname -r) $(uname -m)"
+            echo "pretty=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || true)"
+            echo "nproc=$(nproc)"
+            echo "cpu_model=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ //')"
+            echo "mem_total_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
+            free -h || true
+            lscpu || true
+          } | tee out_runner_specs.txt
+          mkdir -p "out/m1b_met/Za_G0_A0_d${{ matrix.days }}_s${{ matrix.seed }}"
+          cp out_runner_specs.txt "out/m1b_met/Za_G0_A0_d${{ matrix.days }}_s${{ matrix.seed }}/runner_specs.txt"
+
+      - name: Download Godot 4.7.2-stable
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
+          unzip -q godot.zip
+          chmod +x Godot_v4.7.2-stable_linux.x86_64
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          ./godot --version
+
+      - name: Import project
+        run: ./godot --headless --path . --import
+
+      - name: Run Za_G0_A0 length matrix line
+        timeout-minutes: 340
+        env:
+          M1B_GROUP_NAME: Za_G0_A0
+          M1B_GROUP_I: "1"
+          M1B_GROUP_N: "1"
+          M1B_DAYS: ${{ matrix.days }}
+          M1B_SEED: ${{ matrix.seed }}
+        run: |
+          set -euo pipefail
+          G=Za_G0_A0
+          DAYS="${M1B_DAYS}"
+          SEED="${M1B_SEED}"
+          OUT="out/m1b_met/${G}_d${DAYS}_s${SEED}"
+          mkdir -p "$OUT" "out/m1b_met/_scenarios"
+          python3 tools/m1b_prepare_scenario.py --group "$G" --out "out/m1b_met/_scenarios/${G}_d${DAYS}_s${SEED}.json"
+          # P1-C: scenario diff seeds-only (workflow-local; no tools/ change).
+          python3 - <<PY
+          import json
+          from pathlib import Path
+          p = Path("out/m1b_met/_scenarios/${G}_d${DAYS}_s${SEED}.json")
+          obj = json.loads(p.read_text(encoding="utf-8"))
+          obj["seeds"] = [int("${SEED}")]
+          p.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+          print("scenario_id", obj.get("scenario_id"), "seeds", obj["seeds"], "years", obj.get("years"))
+          PY
+          cp "out/m1b_met/_scenarios/${G}_d${DAYS}_s${SEED}.json" "$OUT/scenario.json"
+          START_EPOCH=$(date -u +%s)
+          START=$(date -u -d "@${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
+          SHA=$(git rev-parse HEAD)
+          echo "$SHA" > "$OUT/commit_sha.txt"
+          set +e
+          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
+            --scenario "$(pwd)/out/m1b_met/_scenarios/${G}_d${DAYS}_s${SEED}.json" \
+            --inline --season-progress --days "$DAYS" \
+            --out-dir "$(pwd)/$OUT" \
+            2>&1 | tee "$OUT/sim_runner.log"
+          RC=${PIPESTATUS[0]}
+          set -e
+          END_EPOCH=$(date -u +%s)
+          END=$(date -u -d "@${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
+          DUR_S=$((END_EPOCH - START_EPOCH))
+          STATUS=ok
+          if [[ "$RC" -ne 0 ]]; then STATUS=fail; fi
+          {
+            echo "commit_sha=$SHA"
+            echo "start=$START"
+            echo "end=$END"
+            echo "duration_s=${DUR_S}"
+            echo "status=$STATUS"
+            echo "exit_code=$RC"
+            echo "days=$DAYS"
+            echo "seed=$SEED"
+            echo "group=$G"
+          } > "$OUT/timing.txt"
+          grep -E '^PROGRESS ' "$OUT/sim_runner.log" | tee "$OUT/progress_snip.log" || true
+          # Keep always() uploadable even on fail/timeout.
+          ls -la "$OUT" || true
+          if [[ "$STATUS" != "ok" ]]; then
+            echo "::error::MET length line days=$DAYS seed=$SEED failed exit=$RC"
+            exit "$RC"
+          fi
+          test -f "$OUT/summary.csv"
+          test -f "$OUT/season_ports.csv"
+          echo "MET_LENGTH_DONE days=$DAYS seed=$SEED duration_s=$DUR_S"
+
+      - name: Upload length-line artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: m1b-met-d${{ matrix.days }}-s${{ matrix.seed }}
+          path: out/m1b_met/
+          retention-days: 14
+          if-no-files-found: warn
