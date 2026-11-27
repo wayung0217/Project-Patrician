@@ -1,0 +1,22 @@
+failed-runs.txt
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+tip_final_frozen=107c17fea29da54363713e5896805a2ebd630a0e
+
+1) tip=9f2a4d11dea2edb9843bc941bb9022482ee6b023
+   CI=https://github.com/wayung0217/Project-Patrician/actions/runs/46032919391
+   conclusion=failure
+   failed_check=gut-unit (3)
+   reason=3 unit asserts: hold-capacity Unexpected Errors on sail path; EX-17-02-01 fund/quote setup at s=300 with quote(500)
+   fix=coarse-only old/new compare; mark errors handled; EX fund seed≥500 then drain; push later tip
+
+2) tip=43b74c4390025e5997cc82bb39ac51375fa03824
+   CI=https://github.com/wayung0217/Project-Patrician/actions/runs/46042157834
+   conclusion=failure
+   failed_check=gut-unit (3) (1 of 11)
+   reason=test_17_87_EX_17_02_01_pick_B_matches_frozen: coarse mid_price proxy picked PT-03 not PT-02 (mid≠EX buy 200000)
+   fix=assert old==new pick parity; keep frm_examples exact buy-total path asserting B; tip 107c17f
+
+3) tip=107c17fea29da54363713e5896805a2ebd630a0e
+   CI=https://github.com/wayung0217/Project-Patrician/actions/runs/46051122126
+   conclusion=success (all 11 checks)
+   A5=https://github.com/wayung0217/Project-Patrician/actions/runs/46051115478 success

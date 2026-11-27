@@ -1,0 +1,266 @@
+evidence-e-scan.txt
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+tip=107c17fea29da54363713e5896805a2ebd630a0e
+Scope: product + new test .gd changed on perf-afford-1787 vs origin/main
+Files: autoload/trader_registry.gd ; tests/unit/test_perf_afford_1787.gd
+
+=== E(1) .gd 非 0／1 數字字面量（註解＋字串已剝；掃描新增／變更檔） ===
+CMD: python strip+#comments+strings then find numeric literals not in {0,1,0.0,1.0}
+--- autoload/trader_registry.gd ---
+autoload/trader_registry.gd:429: 2 | trader_plan_set.emit(args[0], args[1], args[2])
+autoload/trader_registry.gd:651: 9 | var n_pick: int = int(floor(float(ids.size()) * rate + 1e-9))
+--- tests/unit/test_perf_afford_1787.gd ---
+tests/unit/test_perf_afford_1787.gd:17: 500 | const EX_05_09_01_CASH_Q := 500
+tests/unit/test_perf_afford_1787.gd:18: 300 | const EX_05_09_01_STOCK_S := 300
+tests/unit/test_perf_afford_1787.gd:19: 300 | const EX_05_09_01_EXPECT_Q := 300
+tests/unit/test_perf_afford_1787.gd:22: 120 | const EX_05_09_02_CASH_Q := 120
+tests/unit/test_perf_afford_1787.gd:23: 300 | const EX_05_09_02_STOCK_S := 300
+tests/unit/test_perf_afford_1787.gd:24: 120 | const EX_05_09_02_EXPECT_Q := 120
+tests/unit/test_perf_afford_1787.gd:28: 500000 | const EX_05_09_03_SEED_CASH := 500000
+tests/unit/test_perf_afford_1787.gd:31: 1300 | const EX_17_02_01_MID_B := 1300
+tests/unit/test_perf_afford_1787.gd:32: 1600 | const EX_17_02_01_MID_C := 1600
+tests/unit/test_perf_afford_1787.gd:33: 8 | const EX_17_02_01_DAYS_B := 8
+tests/unit/test_perf_afford_1787.gd:34: 20 | const EX_17_02_01_DAYS_C := 20
+tests/unit/test_perf_afford_1787.gd:35: 200 | const EX_17_02_01_Q := 200
+tests/unit/test_perf_afford_1787.gd:36: 200000 | const EX_17_02_01_BUY_TOTAL := 200000
+tests/unit/test_perf_afford_1787.gd:40: 250 | const FIX_WEEKLY := 250
+tests/unit/test_perf_afford_1787.gd:367: 150000 | CashLedger.make_entry(CashLedger.ID_SOURCE, -150000),
+tests/unit/test_perf_afford_1787.gd:368: 150000 | CashLedger.make_entry(&"ACT-PLAYER", 150000),
+tests/unit/test_perf_afford_1787.gd:384: 50 | GoodsLedger.seed_offtake_snapshot(StringName(PORT_A), StringName(GOOD), 50, 50, 7, 0)
+tests/unit/test_perf_afford_1787.gd:384: 50 | GoodsLedger.seed_offtake_snapshot(StringName(PORT_A), StringName(GOOD), 50, 50, 7, 0)
+tests/unit/test_perf_afford_1787.gd:384: 7 | GoodsLedger.seed_offtake_snapshot(StringName(PORT_A), StringName(GOOD), 50, 50, 7, 0)
+tests/unit/test_perf_afford_1787.gd:393: 3 | for i in range(1, 3):
+tests/unit/test_perf_afford_1787.gd:412: 8 | var crew_n: int = int(crew_map.get("SH-03", 8))
+E(1) RESULT: 見上列（測試 fixture 含 frm_examples 常數；產品碼見上）
+
+=== E(2) 跨模組 _ 開頭成員存取（產品碼與測試） ===
+CMD: rg -n '[A-Za-z0-9_]+\._[a-zA-Z]' autoload/trader_registry.gd tests/unit/test_perf_afford_1787.gd
+tests/unit/test_perf_afford_1787.gd:47:	TraderRegistry._clear_runtime()
+tests/unit/test_perf_afford_1787.gd:55:	TraderRegistry._clear_runtime()
+tests/unit/test_perf_afford_1787.gd:118:	var st: Dictionary = TraderRegistry._evaluate_and_maybe_sail(tid, sid, t, info, false)
+tests/unit/test_perf_afford_1787.gd:197:		var days: int = int(TraderRegistry._voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+tests/unit/test_perf_afford_1787.gd:208:			var intel: Dictionary = TraderRegistry._dest_intel(acct, from_port, dest, good)
+tests/unit/test_perf_afford_1787.gd:257:		var days: int = int(TraderRegistry._voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+tests/unit/test_perf_afford_1787.gd:265:			var intel: Dictionary = TraderRegistry._dest_intel(acct, from_port, dest, good)
+tests/unit/test_perf_afford_1787.gd:273:			var afford: int = TraderRegistry._afford_qty_cached(afford_by_good, acct, from_port, good)
+tests/unit/test_perf_afford_1787.gd:387:	TraderRegistry._enabled = true
+tests/unit/test_perf_afford_1787.gd:388:	TraderRegistry._qual_open = true
+tests/unit/test_perf_afford_1787.gd:389:	TraderRegistry._loaded = true
+tests/unit/test_perf_afford_1787.gd:390:	TraderRegistry._genesis_granted = false
+tests/unit/test_perf_afford_1787.gd:391:	TraderRegistry._traders.clear()
+tests/unit/test_perf_afford_1787.gd:392:	TraderRegistry._load_curve()
+tests/unit/test_perf_afford_1787.gd:397:		TraderRegistry._traders[String(tid0)] = {
+tests/unit/test_perf_afford_1787.gd:414:		var t2: Dictionary = TraderRegistry._traders[String(tid2)]
+tests/unit/test_perf_afford_1787.gd:422:	TraderRegistry._build_voyage_matrix()
+tests/unit/test_perf_afford_1787.gd:424:	TraderRegistry._voyage_days["%s|%s" % [PORT_A, PORT_B]] = EX_17_02_01_DAYS_B
+tests/unit/test_perf_afford_1787.gd:425:	TraderRegistry._voyage_days["%s|%s" % [PORT_A, PORT_C]] = EX_17_02_01_DAYS_C
+
+exit 0
+
+=== E(3) int(、round(、roundi( 的位置 ===
+CMD: rg -n '\bint\(|\bround\(|\broundi\(' ...
+tests/unit/test_perf_afford_1787.gd:117:	var idle0: int = int((t["idle_days"] as Dictionary).get(String(sid), 0))
+tests/unit/test_perf_afford_1787.gd:119:	assert_eq(int(st.get("sailed", -1)), 0)
+tests/unit/test_perf_afford_1787.gd:120:	assert_eq(int(st.get("evaluable", -1)), 0)
+tests/unit/test_perf_afford_1787.gd:122:	var idle1: int = int((t["idle_days"] as Dictionary).get(String(sid), 0))
+tests/unit/test_perf_afford_1787.gd:157:	assert_eq(int(best_old["qty"]), int(best_new["qty"]))
+tests/unit/test_perf_afford_1787.gd:192:	var free_cap: int = int(ctx["free_cap"])
+tests/unit/test_perf_afford_1787.gd:197:		var days: int = int(TraderRegistry._voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+tests/unit/test_perf_afford_1787.gd:211:			var mid: int = int(intel["mid_li"])
+tests/unit/test_perf_afford_1787.gd:235:		if int(a["score"]) != int(b["score"]):
+tests/unit/test_perf_afford_1787.gd:236:			return int(a["score"]) > int(b["score"])
+tests/unit/test_perf_afford_1787.gd:251:	var free_cap: int = int(ctx["free_cap"])
+tests/unit/test_perf_afford_1787.gd:257:		var days: int = int(TraderRegistry._voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+tests/unit/test_perf_afford_1787.gd:268:			var mid: int = int(intel["mid_li"])
+tests/unit/test_perf_afford_1787.gd:295:		if int(a["score"]) != int(b["score"]):
+tests/unit/test_perf_afford_1787.gd:296:			return int(a["score"]) > int(b["score"])
+tests/unit/test_perf_afford_1787.gd:315:				int(r["qty"]),
+tests/unit/test_perf_afford_1787.gd:316:				int(r["score"]),
+tests/unit/test_perf_afford_1787.gd:317:				int(r["voyage_days"]),
+tests/unit/test_perf_afford_1787.gd:412:	var crew_n: int = int(crew_map.get("SH-03", 8))
+tests/unit/test_perf_afford_1787.gd:433:	var hold_cap: int = int(cap_map.get("SH-03", 0))
+tests/unit/test_perf_afford_1787.gd:448:	var need: int = int(q[MarketPricer.KEY_TOTAL_LI])
+autoload/trader_registry.gd:84:	return int(_season_sails.get(_season_port_key(season_index, port_id), 0))
+autoload/trader_registry.gd:97:	var n: int = int(_season_margin_n.get(key, 0))
+autoload/trader_registry.gd:100:	return int(_season_margin_sum.get(key, 0)) / n
+autoload/trader_registry.gd:154:	_season_sails[key] = int(_season_sails.get(key, 0)) + 1
+autoload/trader_registry.gd:159:	cargo[g_s] = int(cargo.get(g_s, 0)) + qty
+autoload/trader_registry.gd:160:	_season_margin_sum[key] = int(_season_margin_sum.get(key, 0)) + daily_margin_li
+autoload/trader_registry.gd:161:	_season_margin_n[key] = int(_season_margin_n.get(key, 0)) + 1
+autoload/trader_registry.gd:185:	_intel_override[key] = {"mid_li": int(mid_li), "weeks": weeks}
+autoload/trader_registry.gd:314:			ships_n = int(t.get("ship_count_planned", 1))
+autoload/trader_registry.gd:405:		diag_eval += int(st.get("evaluable", 0))
+autoload/trader_registry.gd:406:		diag_sails += int(st.get("sailed", 0))
+autoload/trader_registry.gd:454:			"ship_count_planned": int(mix[i]),
+autoload/trader_registry.gd:455:			"qualifications": {"tier": int(tiers[i])},
+autoload/trader_registry.gd:477:		total_ships += int((_traders[String(tid)] as Dictionary).get("ship_count_planned", 0))
+autoload/trader_registry.gd:485:		port_slots[String(row["port_id"])] = int(row["ships"])
+autoload/trader_registry.gd:489:	var crew_n: int = int(crew_map.get(String(SHIP_TYPE), 0))
+autoload/trader_registry.gd:495:		var need: int = int(t["ship_count_planned"])
+autoload/trader_registry.gd:498:			if int(port_slots.get(p, 0)) >= need:
+autoload/trader_registry.gd:500:				port_slots[p] = int(port_slots[p]) - need
+autoload/trader_registry.gd:505:				if int(port_slots.get(p, 0)) > 0:
+autoload/trader_registry.gd:507:					port_slots[p] = maxi(0, int(port_slots[p]) - need)
+autoload/trader_registry.gd:561:		sum_pop += int(p["pop"])
+autoload/trader_registry.gd:566:		var pop: int = int(p["pop"])
+autoload/trader_registry.gd:586:				row["ships"] = int(row["ships"]) + 1
+autoload/trader_registry.gd:600:	var tpw: int = int(tpw_map.get(String(SHIP_TYPE), 1))
+autoload/trader_registry.gd:651:	var n_pick: int = int(floor(float(ids.size()) * rate + 1e-9))
+autoload/trader_registry.gd:659:		scored.append({"id": String(tid), "r": int(step[1])})
+autoload/trader_registry.gd:661:		if int(a["r"]) != int(b["r"]):
+autoload/trader_registry.gd:662:			return int(a["r"]) < int(b["r"])
+autoload/trader_registry.gd:708:	var preview: int = int(quote.get(MarketPricer.KEY_TOTAL_LI, 0))
+autoload/trader_registry.gd:728:	var idle: int = int(idle_map.get(String(sid), 0))
+autoload/trader_registry.gd:730:	var hold_cap: int = int(cap_map.get(String(SHIP_TYPE), 0))
+autoload/trader_registry.gd:770:		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+autoload/trader_registry.gd:811:				mid = int(intel["mid_li"])
+autoload/trader_registry.gd:848:		if int(a["score"]) != int(b["score"]):
+autoload/trader_registry.gd:849:			return int(a["score"]) > int(b["score"])
+autoload/trader_registry.gd:861:		var q2: int = int(c["qty"])
+autoload/trader_registry.gd:862:		var days2: int = int(c["voyage_days"])
+autoload/trader_registry.gd:866:		var buy_cost: int = int(buy_q.get(MarketPricer.KEY_TOTAL_LI, 0))
+autoload/trader_registry.gd:871:			dest2, good2, q2, int(c["mid_li"]), c.get("weeks", 0.0), int(c["weekly"])
+autoload/trader_registry.gd:902:			int(best["daily_profit_li"]),
+autoload/trader_registry.gd:903:			int(best["buy_cost_li"]),
+autoload/trader_registry.gd:904:			int(best["sell_revenue_li"]),
+autoload/trader_registry.gd:912:		idle_map[String(sid)] = int(decision["idle_days_after"])
+autoload/trader_registry.gd:918:	var qty_f: int = int(best["qty"])
+autoload/trader_registry.gd:920:	var preview: int = int(buy2.get(MarketPricer.KEY_TOTAL_LI, 0))
+autoload/trader_registry.gd:941:		"expected_profit_li": int(best["daily_profit_li"]),
+autoload/trader_registry.gd:947:	_record_season_sail(from_port, good_f, qty_f, int(best["daily_profit_li"]))
+autoload/trader_registry.gd:959:		var wq: int = int(snap.get("window_qty", 0)) if not snap.is_empty() else 0
+autoload/trader_registry.gd:995:		if int(board.get(IntelLedger.KEY_N, 0)) == 0:
+autoload/trader_registry.gd:1004:				weeks_f = float(int(weeks_x)) / float(scale)
+autoload/trader_registry.gd:1006:			"mid_li": int(board[IntelLedger.KEY_CONSENSUS_MID]),
+autoload/trader_registry.gd:1041:	var ship_draft: int = int(ShipRegistry.SHIP_DRAFT[type_s])
+autoload/trader_registry.gd:1054:		return int(cache[key])
+autoload/trader_registry.gd:1156:			out.append(int(x))
+autoload/trader_registry.gd:1159:			out.append(int(x))
+autoload/trader_registry.gd:1162:			out.append(int(x))
+
+
+=== E(4) await、call_deferred、process_priority、Timer、randi、randf、Time.、OS.get_ticks ===
+CMD: rg -n 'await |call_deferred|process_priority|Timer|randi|randf|Time\.|OS\.get_ticks' ...
+無
+
+=== E(5) 遍歷 Dictionary 的位置與排序方式 ===
+CMD: rg -n 'for .+ in .*:|\.keys\(|\.values\(|\.items\(' ... + manual note on afford_by_good
+autoload/trader_registry.gd:108:	for tid in all_trader_ids():
+autoload/trader_registry.gd:112:		for sid_v in t["ship_ids"]:
+autoload/trader_registry.gd:128:	for tid in all_trader_ids():
+autoload/trader_registry.gd:133:		for sid_v in t["ship_ids"]:
+autoload/trader_registry.gd:236:	for key in [
+autoload/trader_registry.gd:309:	for tid in ids:
+autoload/trader_registry.gd:344:	var keys: Array = _traders.keys()
+autoload/trader_registry.gd:357:	for sid_v in t["ship_ids"]:
+autoload/trader_registry.gd:380:	for tid in all_trader_ids():
+autoload/trader_registry.gd:389:		for sid in sorted_ships:
+autoload/trader_registry.gd:401:	for pair in pairs:
+autoload/trader_registry.gd:409:			for dk in (excl_v as Dictionary).keys():
+autoload/trader_registry.gd:424:	for item_v in _pending_signals:
+autoload/trader_registry.gd:443:	for i in range(n):
+autoload/trader_registry.gd:476:	for tid in all_trader_ids():
+autoload/trader_registry.gd:484:	for row in alloc:
+autoload/trader_registry.gd:486:	var port_order: Array = port_slots.keys()
+autoload/trader_registry.gd:493:	for tid in all_trader_ids():
+autoload/trader_registry.gd:497:		for p in port_order:
+autoload/trader_registry.gd:504:			for p in port_order:
+autoload/trader_registry.gd:515:		for _s in range(need):
+autoload/trader_registry.gd:533:	for tid2 in all_trader_ids():
+autoload/trader_registry.gd:547:	for pid_v in PortRegistry.all_ids():
+autoload/trader_registry.gd:560:	for p in ports:
+autoload/trader_registry.gd:565:	for p in ports:
+autoload/trader_registry.gd:580:	for i in range(remain):
+autoload/trader_registry.gd:584:		for row in result:
+autoload/trader_registry.gd:604:	for pid_v in PortRegistry.all_ids():
+autoload/trader_registry.gd:607:	for a in ids:
+autoload/trader_registry.gd:608:		for b in ids:
+autoload/trader_registry.gd:615:			for hop_v in path:
+autoload/trader_registry.gd:631:	for tid in all_trader_ids():
+autoload/trader_registry.gd:656:	for tid in ids:
+autoload/trader_registry.gd:665:	for i in range(mini(n_pick, scored.size())):
+autoload/trader_registry.gd:736:		for g in GoodCatalog.all_ids():
+autoload/trader_registry.gd:744:		for g in GoodCatalog.all_ids():
+autoload/trader_registry.gd:749:		for p in PortRegistry.all_ids():
+autoload/trader_registry.gd:762:	for dest_v in ports:
+autoload/trader_registry.gd:775:		for good_v in goods:
+autoload/trader_registry.gd:858:	for c in top:
+autoload/trader_registry.gd:955:	for c in candidates:
+autoload/trader_registry.gd:1134:	for e in errors:
+autoload/trader_registry.gd:1155:		for x in v:
+autoload/trader_registry.gd:1158:		for x in v:
+autoload/trader_registry.gd:1161:		for x in v:
+tests/unit/test_perf_afford_1787.gd:195:	for dest_v in ports:
+tests/unit/test_perf_afford_1787.gd:200:		for good_v in goods:
+tests/unit/test_perf_afford_1787.gd:255:	for dest_v in ports:
+tests/unit/test_perf_afford_1787.gd:260:		for good_v in goods:
+tests/unit/test_perf_afford_1787.gd:308:	for r_v in rows:
+tests/unit/test_perf_afford_1787.gd:325:	for r_v in rows:
+tests/unit/test_perf_afford_1787.gd:393:	for i in range(1, 3):
+tests/unit/test_perf_afford_1787.gd:413:	for tid2 in TraderRegistry.all_trader_ids():
+tests/unit/test_perf_afford_1787.gd:479:	for e in get_errors():
+
+NOTE_PRODUCT: afford_by_good is local Dictionary used only as cache lookup by String(good) key;
+  candidate loop still iterates ports/goods Arrays (not Dictionary insertion order). C-08 ok.
+
+=== E(6) 每個 FRM、ERR、PRM 處的 ID 註解缺漏（本 diff 新增／變更區塊） ===
+CMD: rg -n "FRM-|ERR-|PRM-|D-104|D-60" changed files
+tests/unit/test_perf_afford_1787.gd:3:## Basis D-60e：測試名含 17_87；依據 FRM-SYS17-02、FRM-SYS05-09、D-104(c)④。
+tests/unit/test_perf_afford_1787.gd:59:func test_17_87_EX_05_09_01_cash_surplus_candidates_match_frozen() -> void:
+tests/unit/test_perf_afford_1787.gd:88:func test_17_87_EX_05_09_02_cash_bottleneck_candidates_match_frozen() -> void:
+tests/unit/test_perf_afford_1787.gd:100:func test_17_87_EX_05_09_03_zero_stock_no_candidates_match_frozen() -> void:
+tests/unit/test_perf_afford_1787.gd:127:func test_17_87_EX_17_02_01_pick_B_matches_frozen() -> void:
+tests/unit/test_perf_afford_1787.gd:361:	var start: int = Params.get_int("PRM-SYS05-START_CASH")
+tests/unit/test_perf_afford_1787.gd:411:	var crew_map: Dictionary = Params.get_value("PRM-SYS13-CREW")
+tests/unit/test_perf_afford_1787.gd:432:	var cap_map: Dictionary = Params.get_value("PRM-SYS13-CAPACITY")
+autoload/trader_registry.gd:2:## Autoload: TraderRegistry — SYS-17 ST-TRADER (03_Systems 17.1／WP-36／D-104(c)／D-109).
+autoload/trader_registry.gd:14:const ERR_SYS17_01 := &"ERR-SYS17-01"
+autoload/trader_registry.gd:15:const ERR_SYS17_02 := &"ERR-SYS17-02"
+autoload/trader_registry.gd:16:const ERR_SYS17_03 := &"ERR-SYS17-03"
+autoload/trader_registry.gd:17:const ERR_SYS17_04 := &"ERR-SYS17-04"
+autoload/trader_registry.gd:18:const ERR_SYS17_05 := &"ERR-SYS17-05"
+autoload/trader_registry.gd:19:const ERR_SYS17_06 := &"ERR-SYS17-06"
+autoload/trader_registry.gd:20:const ERR_SYS17_07 := &"ERR-SYS17-07"
+autoload/trader_registry.gd:22:const PRM_COUNT := "PRM-SYS17-MERCHANT_COUNT_MAX"
+autoload/trader_registry.gd:23:const PRM_START_CASH := "PRM-SYS17-START_CASH"
+autoload/trader_registry.gd:24:const PRM_SHIP_MIX := "PRM-SYS17-SHIP_MIX"
+autoload/trader_registry.gd:25:const PRM_TIER_MIX := "PRM-SYS17-TIER_MIX"
+autoload/trader_registry.gd:26:const PRM_EXPLORE_RATE := "PRM-SYS17-EXPLORE_RATE"
+autoload/trader_registry.gd:27:const PRM_EXPLORE_QTY := "PRM-SYS17-EXPLORE_QTY"
+autoload/trader_registry.gd:28:const PRM_PROFIT_MIN := "PRM-SYS17-PROFIT_MIN_LI"
+autoload/trader_registry.gd:29:const PRM_IDLE_MAX := "PRM-SYS17-IDLE_DAYS_MAX"
+autoload/trader_registry.gd:30:const PRM_LOSS_TOL := "PRM-SYS17-LOSS_TOL_PPM"
+autoload/trader_registry.gd:31:const PRM_PPM := "PRM-SYS06-PPM_SCALE"
+autoload/trader_registry.gd:32:const PRM_TICKS_PER_DAY := "PRM-SYS00-TICKS_PER_DAY"
+autoload/trader_registry.gd:33:const PRM_ARREARS_LIM := "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT"
+autoload/trader_registry.gd:34:const PRM_TPW := "PRM-SYS13-TICKS_PER_WAYPOINT"
+autoload/trader_registry.gd:35:const PRM_CAPACITY := "PRM-SYS13-CAPACITY"
+autoload/trader_registry.gd:36:const PRM_CREW := "PRM-SYS13-CREW"
+autoload/trader_registry.gd:42:const SHIP_TYPE := &"SH-03" ## D-104(c)／D-94 third type (250 擔)
+autoload/trader_registry.gd:47:const PRM_TOP_N := "PRM-SYS17-TOP_N_PRECISE"
+autoload/trader_registry.gd:63:## Explore seed from scenario (FRM-SYS23-03／FRM-SYS17-04). No module-fixed default (F3).
+autoload/trader_registry.gd:241:			errors.append(_err(ERR_SYS17_01, key, null, "missing PRM (ERR-SYS17-01)"))
+autoload/trader_registry.gd:270:	## FRM-SYS17-06／07: ① roster+accounts → ② grant_genesis_cash → ③ ships+crew.
+autoload/trader_registry.gd:296:	## FRM-SYS17-06／D-23c: SOURCE → each ACT-TR-nnn；cash = ships × START_CASH (D-104(c)).
+autoload/trader_registry.gd:350:	## FRM-SYS17-08／D-50: SYS-22 calls after liquidation; mode → RETIRED only.
+autoload/trader_registry.gd:370:	## FRM-SYS17-01／03／05；D-104(c)⑤ perf. Insert after IntelLedger (17.1 F／25.1).
+autoload/trader_registry.gd:376:	## Explore lottery once per day (FRM-SYS17-04).
+autoload/trader_registry.gd:592:	## D-104(c)⑤: once at boot — days = ceili(waypoints × TPW ／ TICKS_PER_DAY).
+autoload/trader_registry.gd:639:	## D-104(c)⑤ shared mid cache reserved; per-candidate board_for is authoritative (F2).
+autoload/trader_registry.gd:649:	## F4① GAP: EXPLORE_RATE is 定點數 0..1 (not ppm); FRM-SYS17-04 writes no integer
+autoload/trader_registry.gd:679:	## FRM-SYS17-05: arrival day → sell.
+autoload/trader_registry.gd:713:		## Stay; retry next day (FRM-SYS17-05).
+autoload/trader_registry.gd:756:	## 17-87 A1／FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：
+autoload/trader_registry.gd:760:	## Coarse pass then top-3 precise (D-104(c)⑤).
+autoload/trader_registry.gd:789:				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+autoload/trader_registry.gd:795:					## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：經區域快取取可負擔量。
+autoload/trader_registry.gd:818:			## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：廉價判斷之後才取可負擔量（惰性）。
+autoload/trader_registry.gd:915:	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
+autoload/trader_registry.gd:987:	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
+autoload/trader_registry.gd:1001:		if weeks_x != null and typeof(weeks_x) == TYPE_INT and Params.has_prm("PRM-SYS15-WEEKS_SCALE"):
+autoload/trader_registry.gd:1002:			var scale: int = Params.get_int("PRM-SYS15-WEEKS_SCALE")
+autoload/trader_registry.gd:1048:	## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④（17-87 A1）：
+autoload/trader_registry.gd:1050:	## 鍵用 String(good) 查詢（C-08：不依 Dictionary 插入序遍歷）。
+
+E(6) NOTE: A1 call site comments cite FRM-SYS17-02 / FRM-SYS05-09 / D-104(c)④ (C-12).
+  Test file cites 17_87 / frm_examples EX-* / D-60e in names+comments.

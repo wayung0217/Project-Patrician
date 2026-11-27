@@ -1,0 +1,75 @@
+diff-trader_registry.txt
+diff --git a/autoload/trader_registry.gd b/autoload/trader_registry.gd
+index ea670fe..3df5944 100644
+--- a/autoload/trader_registry.gd
++++ b/autoload/trader_registry.gd
+@@ -753,6 +753,10 @@ func _evaluate_and_maybe_sail(
+ 	var candidates: Array = []
+ 	## Dest ports excluded because board_for / dest intel empty (F2 "no market").
+ 	var excl_dests: Dictionary = {}
++	## 17-87 A1／FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：
++	## 每次 eval_sail、每種貨最多呼叫 max_affordable_qty 一次；結果只存本評估區域字典
++	## （評估結束即丟棄；不得模組／成員層快取；不得跨船、跨日、跨評估）。
++	var afford_by_good: Dictionary = {}
+ 	## Coarse pass then top-3 precise (D-104(c)⑤).
+ 	var coarse: Array = []
+ 	for dest_v in ports:
+@@ -777,10 +781,6 @@ func _evaluate_and_maybe_sail(
+ 			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
+ 			if market_qty < 1:
+ 				continue
+-			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
+-			if afford < 1:
+-				continue
+-			dest_saw_good = true
+ 			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+ 			var mid: int = 0
+ 			var weeks_v: Variant = 0.0
+@@ -791,6 +791,13 @@ func _evaluate_and_maybe_sail(
+ 				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+ 				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+ 				if not explore:
++					## excl_dests 語意不變：舊碼在 no_intel continue 前已要求 afford≥1。
++					## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：經區域快取取可負擔量。
++					var afford_excl: int = _afford_qty_cached(
++						afford_by_good, acct, from_port, good
++					)
++					if afford_excl >= 1:
++						dest_saw_good = true
+ 					continue
+ 				if not GoodCatalog.is_loaded():
+ 					continue
+@@ -808,6 +815,11 @@ func _evaluate_and_maybe_sail(
+ 				weekly = DemandModel.weekly_potential_demand(dest, good)
+ 			if weekly < 1:
+ 				continue ## D-110(g)
++			## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：廉價判斷之後才取可負擔量（惰性）。
++			var afford: int = _afford_qty_cached(afford_by_good, acct, from_port, good)
++			if afford < 1:
++				continue
++			dest_saw_good = true
+ 			var q: int = mini(mini(afford, free_cap), market_qty)
+ 			if explore:
+ 				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+@@ -1030,6 +1042,21 @@ func _draft_ok(ship_id: StringName, dest: StringName) -> bool:
+ 	return ship_draft <= ShipRegistry.port_draft(dest)
+ 
+ 
++func _afford_qty_cached(
++	cache: Dictionary, actor: StringName, port: StringName, good: StringName
++) -> int:
++	## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④（17-87 A1）：
++	## 單次評估內每貨至多一次 max_affordable_qty；cache 必須是呼叫方區域字典。
++	## 鍵用 String(good) 查詢（C-08：不依 Dictionary 插入序遍歷）。
++	## 不改 CashLedger.max_affordable_qty 本體與簽名。
++	var key := String(good)
++	if cache.has(key):
++		return int(cache[key])
++	var qty: int = CashLedger.max_affordable_qty(actor, port, good)
++	cache[key] = qty
++	return qty
++
++
+ func _clear_plan(t: Dictionary, sid: StringName) -> void:
+ 	(t["plans"] as Dictionary)[String(sid)] = TradeEvaluator.empty_plan()
+ 

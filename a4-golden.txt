@@ -1,0 +1,17 @@
+a4-golden.txt
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+tip=107c17fea29da54363713e5896805a2ebd630a0e
+tree=7b533dd0b03b885aefcc357465dea8be06892a52
+CI_run=https://github.com/wayung0217/Project-Patrician/actions/runs/46051122126
+job=golden-30d-compare conclusion=success
+EXPECTED_SHA256=cb4288967c1ef79844c672a906b1ddfd02843d841b1710517c39e2e733167bf7
+--- artifact out/golden/30d.sha256 (verbatim) ---
+cb4288967c1ef79844c672a906b1ddfd02843d841b1710517c39e2e733167bf7  out/golden/30d.csv
+--- CI log lines (verbatim) ---
+cb4288967c1ef79844c672a906b1ddfd02843d841b1710517c39e2e733167bf7  out/golden/30d.csv
+GOLDEN_SUMMARY rows=527 cols=19 bytes=2272202
+DIFF_CELLS=0
+GOLDEN_CELLS_IDENTICAL=1
+GOLDEN_BOOTSTRAP=0
+GOLDEN_BASE_RUN_ID=46022172465
+MATCH_EXPECTED=yes

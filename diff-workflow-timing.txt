@@ -1,0 +1,134 @@
+diff-workflow-timing.txt
+diff --git a/.github/workflows/m1b-afford-timing-1787.yml b/.github/workflows/m1b-afford-timing-1787.yml
+new file mode 100644
+index 0000000..fc234c1
+--- /dev/null
++++ b/.github/workflows/m1b-afford-timing-1787.yml
+@@ -0,0 +1,127 @@
++# 17-87 Lane A A5：Za_G0_A0 甲＝main／乙＝PR tip 同 job 序列計時（B-6 Actions）。
++# 不改模擬語意；只產 ELAPSED_MS。觸發：push 本檔或 workflow_dispatch。
++# Retarget after EX-17-02-01 assert fix; A5 on frozen tip.
++name: M1b-Afford-Timing-1787
++
++on:
++  workflow_dispatch:
++  push:
++    branches:
++      - perf-afford-1787
++    paths:
++      - ".github/workflows/m1b-afford-timing-1787.yml"
++
++jobs:
++  afford-timing:
++    runs-on: ubuntu-latest
++    timeout-minutes: 180
++    steps:
++      - name: Checkout PR tip
++        uses: actions/checkout@v7
++        with:
++          fetch-depth: 0
++
++      - name: Record runner specs
++        run: |
++          set -euo pipefail
++          {
++            echo "=== runner specs ==="
++            echo "os=$(uname -s) $(uname -r) $(uname -m)"
++            echo "pretty=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || true)"
++            echo "nproc=$(nproc)"
++            echo "cpu_model=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ //')"
++            echo "mem_total_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
++            free -h || true
++            lscpu || true
++          } | tee out_runner_specs.txt
++          mkdir -p out/afford_timing
++          cp out_runner_specs.txt out/afford_timing/runner_specs.txt
++
++      - name: Download Godot 4.7.2-stable
++        run: |
++          set -euo pipefail
++          curl -fsSL -o godot.zip \
++            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
++          unzip -q godot.zip
++          chmod +x Godot_v4.7.2-stable_linux.x86_64
++          mv Godot_v4.7.2-stable_linux.x86_64 godot
++          ./godot --version
++
++      - name: A5 serial 甲乙 ×3 days=30 + 甲乙 days=10
++        env:
++          MAIN_REF: origin/main
++          TIP_SHA: ${{ github.sha }}
++        run: |
++          set -euo pipefail
++          git fetch origin main
++          MAIN_SHA=$(git rev-parse "$MAIN_REF")
++          TIP_SHA=$(git rev-parse "$TIP_SHA")
++          echo "MAIN_SHA=$MAIN_SHA" | tee out/afford_timing/shas.txt
++          echo "TIP_SHA=$TIP_SHA" | tee -a out/afford_timing/shas.txt
++          CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ //')
++          echo "cpu_model=$CPU" | tee -a out/afford_timing/shas.txt
++
++          run_one() {
++            local label="$1"
++            local ref="$2"
++            local days="$3"
++            local round="$4"
++            local outdir="out/afford_timing/${label}_d${days}_r${round}"
++            mkdir -p "$outdir" out/afford_timing/_scenarios
++            git checkout -f "$ref"
++            ./godot --headless --path . --import
++            python3 tools/m1b_prepare_scenario.py --group Za_G0_A0 \
++              --out "out/afford_timing/_scenarios/Za_G0_A0_d${days}.json"
++            local scen
++            scen="$(pwd)/out/afford_timing/_scenarios/Za_G0_A0_d${days}.json"
++            cp "$scen" "$outdir/scenario.json"
++            git rev-parse HEAD > "$outdir/commit_sha.txt"
++            set +e
++            ./godot --headless --path . -s res://sim/sim_runner.gd -- \
++              --scenario "$scen" --inline --season-progress --days "$days" \
++              --out-dir "$(pwd)/$outdir" \
++              2>&1 | tee "$outdir/sim_runner.log"
++            local rc=${PIPESTATUS[0]}
++            set -e
++            echo "exit_code=$rc" > "$outdir/timing.txt"
++            echo "label=$label" >> "$outdir/timing.txt"
++            echo "days=$days" >> "$outdir/timing.txt"
++            echo "round=$round" >> "$outdir/timing.txt"
++            echo "commit_sha=$(git rev-parse HEAD)" >> "$outdir/timing.txt"
++            echo "cpu_model=$CPU" >> "$outdir/timing.txt"
++            test -f "$outdir/summary.csv"
++            COMMIT_NOW=$(cat "$outdir/commit_sha.txt")
++            EM=$(python3 -c "import csv; r=next(csv.DictReader(open('$outdir/summary.csv',encoding='utf-8'))); print(r.get('elapsed_ms',''))")
++            echo "$EM" > "$outdir/elapsed_ms.txt"
++            echo "ELAPSED_MS label=$label days=$days round=$round value=$EM"
++            {
++              echo "label=${label}	days=${days}	round=${round}	elapsed_ms=${EM}	cpu_model=${CPU}	commit=${COMMIT_NOW}"
++              echo "summary_csv_elapsed_ms_raw=${EM}"
++            } >> out/afford_timing/a5_elapsed_ms.txt
++            if [[ "$rc" -ne 0 ]]; then
++              echo "::error::timing run failed label=$label days=$days"
++              exit "$rc"
++            fi
++          }
++
++          : > out/afford_timing/a5_elapsed_ms.txt
++          # 甲乙甲乙甲乙 — days 30, three rounds
++          for r in 1 2 3; do
++            run_one jia_main "$MAIN_SHA" 30 "$r"
++            run_one yi_tip "$TIP_SHA" 30 "$r"
++          done
++          # 甲乙 — days 10, one round each
++          run_one jia_main "$MAIN_SHA" 10 1
++          run_one yi_tip "$TIP_SHA" 10 1
++
++          echo "A5_DONE"
++          cat out/afford_timing/a5_elapsed_ms.txt
++
++      - name: Upload afford timing artifact
++        if: always()
++        uses: actions/upload-artifact@v7
++        with:
++          name: afford-timing-1787
++          path: out/afford_timing/
++          retention-days: 14
++          if-no-files-found: warn

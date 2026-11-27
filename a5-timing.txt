@@ -1,0 +1,184 @@
+a5-timing.txt
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+timing_run=https://github.com/wayung0217/Project-Patrician/actions/runs/46051115478
+tip=107c17fea29da54363713e5896805a2ebd630a0e
+main_ref=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+cpu_model=Intel(R) Xeon(R) 6975P-C
+scenario=Za_G0_A0
+NOTE=numbers only; no conclusion (A5 / B-12)
+
+=== a5_elapsed_ms.txt (artifact verbatim) ===
+label=jia_main	days=30	round=1	elapsed_ms=668644	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+summary_csv_elapsed_ms_raw=668644
+label=yi_tip	days=30	round=1	elapsed_ms=190545	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=107c17fea29da54363713e5896805a2ebd630a0e
+summary_csv_elapsed_ms_raw=190545
+label=jia_main	days=30	round=2	elapsed_ms=668430	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+summary_csv_elapsed_ms_raw=668430
+label=yi_tip	days=30	round=2	elapsed_ms=191164	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=107c17fea29da54363713e5896805a2ebd630a0e
+summary_csv_elapsed_ms_raw=191164
+label=jia_main	days=30	round=3	elapsed_ms=667984	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+summary_csv_elapsed_ms_raw=667984
+label=yi_tip	days=30	round=3	elapsed_ms=191285	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=107c17fea29da54363713e5896805a2ebd630a0e
+summary_csv_elapsed_ms_raw=191285
+label=jia_main	days=10	round=1	elapsed_ms=243234	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+summary_csv_elapsed_ms_raw=243234
+label=yi_tip	days=10	round=1	elapsed_ms=86610	cpu_model=Intel(R) Xeon(R) 6975P-C	commit=107c17fea29da54363713e5896805a2ebd630a0e
+summary_csv_elapsed_ms_raw=86610
+
+=== runner_specs.txt ===
+=== runner specs ===
+os=Linux 7.0.0-1018-aws x86_64
+pretty=Ubuntu 26.04.1 LTS
+nproc=4
+cpu_model=Intel(R) Xeon(R) 6975P-C
+mem_total_kb=16077524
+               total        used        free      shared  buff/cache   available
+Mem:            15Gi       1.0Gi        13Gi        44Mi       989Mi        14Gi
+Swap:             0B          0B          0B
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           48 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  4
+On-line CPU(s) list:                     0-3
+Vendor ID:                               GenuineIntel
+Model name:                              Intel(R) Xeon(R) 6975P-C
+CPU family:                              6
+Model:                                   173
+Thread(s) per core:                      2
+Core(s) per socket:                      2
+Socket(s):                               1
+Stepping:                                1
+BogoMIPS:                                5400.00
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq monitor vmx ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd ida arat vnmi avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid bus_lock_detect cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 amx_tile amx_int8 flush_l1d arch_capabilities
+Virtualization:                          VT-x
+Hypervisor vendor:                       KVM
+Virtualization type:                     full
+L1d cache:                               96 KiB (2 instances)
+L1i cache:                               128 KiB (2 instances)
+L2 cache:                                4 MiB (2 instances)
+L3 cache:                                480 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-3
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Not affected
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS Not affected; BHI BHI_DIS_S
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+
+=== shas.txt ===
+MAIN_SHA=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+TIP_SHA=107c17fea29da54363713e5896805a2ebd630a0e
+cpu_model=Intel(R) Xeon(R) 6975P-C
+
+=== per-run timing.txt + summary.csv elapsed_ms column ===
+---- jia_main_d30_r1 ----
+exit_code=0
+label=jia_main
+days=30
+round=1
+commit_sha=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=668644
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,668644
+
+---- yi_tip_d30_r1 ----
+exit_code=0
+label=yi_tip
+days=30
+round=1
+commit_sha=107c17fea29da54363713e5896805a2ebd630a0e
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=190545
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,190545
+
+---- jia_main_d30_r2 ----
+exit_code=0
+label=jia_main
+days=30
+round=2
+commit_sha=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=668430
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,668430
+
+---- yi_tip_d30_r2 ----
+exit_code=0
+label=yi_tip
+days=30
+round=2
+commit_sha=107c17fea29da54363713e5896805a2ebd630a0e
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=191164
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,191164
+
+---- jia_main_d30_r3 ----
+exit_code=0
+label=jia_main
+days=30
+round=3
+commit_sha=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=667984
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,667984
+
+---- yi_tip_d30_r3 ----
+exit_code=0
+label=yi_tip
+days=30
+round=3
+commit_sha=107c17fea29da54363713e5896805a2ebd630a0e
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=191285
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,191285
+
+---- jia_main_d10_r1 ----
+exit_code=0
+label=jia_main
+days=10
+round=1
+commit_sha=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=243234
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,243234
+
+---- yi_tip_d10_r1 ----
+exit_code=0
+label=yi_tip
+days=10
+round=1
+commit_sha=107c17fea29da54363713e5896805a2ebd630a0e
+cpu_model=Intel(R) Xeon(R) 6975P-C
+elapsed_ms.txt=86610
+summary.csv:
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,,N/A,,N/A,,N/A,,N/A,,N/A,,N/A,0,1,,,,86610
+

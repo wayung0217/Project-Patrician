@@ -1,0 +1,189 @@
+A-readcode.txt
+17-87 Lane A — A0 readcode (before any product edit)
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+main_tip=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+branch=perf-afford-1787
+worktree=/tmp/wt-perf-afford-1787
+
+================================================================================
+(a) max_affordable_qty call sites inside candidate loop — each site, args, dest-dependent?
+================================================================================
+
+ONLY call site in candidate loop (product code, origin/main tip dcea87f):
+
+File: autoload/trader_registry.gd
+Line: 780
+Function: _evaluate_and_maybe_sail (lines 721–…)
+Original line:
+			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
+
+Actual arguments:
+  actor = acct          ← t["account_id"] (fixed for this eval_sail)
+  port  = from_port     ← info.port_id of the ship’s present port (fixed for this eval_sail)
+  good  = good          ← inner-loop good_v
+
+Depends on destination port?
+  NO. dest is in scope but is NOT passed. Signature is (actor, port, good) per FRM-SYS05-09 /
+  05_TechSpec 3.6 H; port is 本港 (from_port), not 目的港.
+
+Other repo call sites (NOT in candidate loop; listed for completeness via git grep):
+  autoload/cash_ledger.gd:659  definition
+  tests/unit/*                 test calls
+  docs/spec/*                  spec text
+  No other product call inside trader candidate loop.
+
+================================================================================
+(b) Order of afford call vs skip.market_qty / skip.no_intel / skip.weekly / skip.afford / cand_ok
+================================================================================
+
+Probe names (17-86) map to these continues in _evaluate_and_maybe_sail. Verbatim loop body
+order at tip dcea87f (trader_registry.gd 758–831):
+
+		for dest_v in ports:
+			var dest: StringName = dest_v
+			if String(dest) == String(from_port):
+				continue
+			if not _can_enter(acct, dest):
+				continue
+			if not _draft_ok(sid, dest):
+				continue
+			var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+			if days < 1:
+				continue
+			var dest_had_intel := false
+			var dest_saw_good := false
+			for good_v in goods:
+				var good: StringName = good_v
+				if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
+					continue
+				if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
+					continue
+				var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
+				if market_qty < 1:
+					continue
+				var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
+				if afford < 1:
+					continue
+				dest_saw_good = true
+				var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+				var mid: int = 0
+				var weeks_v: Variant = 0.0
+				if intel.is_empty() or intel.get("mid_li", null) == null:
+					## D-109(c)／F2: empty board → not a profit candidate.
+					## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+					## catalog base_price_li as ranking stand-in only (profit gate skipped).
+					## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+					## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+					if not explore:
+						continue
+					if not GoodCatalog.is_loaded():
+						continue
+					var gd_ex: GoodDef = GoodCatalog.get_good(good)
+					if gd_ex == null or gd_ex.base_price_li < 1:
+						continue
+					mid = gd_ex.base_price_li
+					weeks_v = 0.0
+				else:
+					dest_had_intel = true
+					mid = int(intel["mid_li"])
+					weeks_v = intel.get("weeks", 0.0)
+				var weekly: int = 0
+				if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
+					weekly = DemandModel.weekly_potential_demand(dest, good)
+				if weekly < 1:
+					continue ## D-110(g)
+				var q: int = mini(mini(afford, free_cap), market_qty)
+				if explore:
+					q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+				if q < 1:
+					continue
+				var rough_buy: int = mid ## coarse; precise quote later
+				## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
+				var origin_mid: float = MarketPricer.mid_price(from_port, good)
+				rough_buy = floori(origin_mid * float(q))
+				var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
+				coarse.append({
+					"port_id": dest,
+					"good_id": good,
+					"qty": q,
+					"voyage_days": days,
+					"mid_li": mid,
+					"weeks": weeks_v,
+					"weekly": weekly,
+					"score": score,
+					"rough_buy": rough_buy,
+				})
+
+Named skip order (facts):
+  1. skip.market_qty  — `if market_qty < 1: continue`          BEFORE afford
+  2. max_affordable_qty call                                  HERE (line 780)
+  3. skip.afford      — `if afford < 1: continue`              AFTER afford
+  4. skip.no_intel    — empty intel + not explore → continue   AFTER afford
+  5. skip.weekly      — `if weekly < 1: continue`              AFTER afford
+  6. cand_ok          — coarse.append(...)                     AFTER all of the above
+
+================================================================================
+(c) Writes between two adjacent max_affordable_qty calls inside one eval_sail
+================================================================================
+
+Between two successive executions of line 780 inside the same _evaluate_and_maybe_sail
+invocation, the statements that run are the remainder of that good-iteration and the
+prefix of the next (or dest-loop bookkeeping). Classification:
+
+Ledger / stock / sim-state writes that change max_affordable_qty inputs
+(balance, MARKET stock at from_port×good, quote definition domain):
+  無
+
+Member / module cache writes that change those inputs:
+  無
+  (_board day cache is built once in daily_step before ship loop; not written here.)
+
+Local-only writes (do not change afford return value):
+  - dest_saw_good = true
+  - dest_had_intel = true (when intel present)
+  - mid, weeks_v, weekly, q, rough_buy, score locals
+  - coarse.append(...)  (local Array)
+  - after inner good loop: excl_dests[String(dest)] = true (local Dictionary)
+  - idle_map writes only on early free_cap<1 return or after best empty / no-sail —
+    not between adjacent afford calls inside the candidate nested loops
+
+Diagnostic / last_error writes (do not change afford numeric result for same args):
+  - CashLedger.max_affordable_qty → _quote_buy_total → MarketPricer.quote may
+    _clear_last_error / _record_error / push_error on quote failure paths
+  - CashLedger._last_error may be set when quote_provider missing (not the Za path)
+
+Reads only (not writes): GoodsLedger.get_qty / make_market, _dest_intel →
+IntelLedger.board_for, DemandModel.weekly_potential_demand, MarketPricer.mid_price,
+TradeEvaluator.coarse_score.
+
+Conclusion for (c): no balance / stock / cross-eval cache write between adjacent
+calls. Diagnostic last_error may be overwritten.
+
+================================================================================
+(d) H1 / H2 / H3 verdicts
+================================================================================
+
+H1: max_affordable_qty 實參只有 (actor, 本港, good)，與目的港無關
+  → 成立
+  Evidence (a): line 780 args are (acct, from_port, good); dest not passed.
+  Signature cash_ledger.gd:659:
+    func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
+
+H2: 同一次 eval_sail 候選迴圈內沒有任何寫入，故對同一 (actor, 本港, good) 結果必相同
+  → 成立（回傳值）；診斷 last_error 有寫入但不影響回傳值
+  Evidence (c): no ledger/stock write between calls; inputs (balance, s at 本港×good)
+  unchanged inside one eval_sail; therefore same (acct, from_port, good) → same int.
+  (Strict reading of「沒有任何寫入」would be 部分 because of last_error / locals;
+   the causal claim「結果必相同」holds.)
+
+H3: 現碼對每個（貨，目的港）格都先呼叫它，之後才做 skip.no_intel、skip.weekly 等廉價判斷
+  → 成立
+  Evidence (b): afford at 780 is after skip.market_qty but BEFORE skip.no_intel and
+  skip.weekly. Every cell that passes market_qty calls afford before those cheaper
+  filters. (market_qty itself is already before afford — H3’s listed cheap skips are
+  no_intel / weekly.)
+
+A0 decision: H1 and H2 both 成立 → do A1 (not A2).
+A1 plan: per-eval local Dictionary cache keyed by String(good); call after market /
+no_intel / weekly; preserve excl_dests (dest_saw_good on no_intel path still needs
+afford≥1 via same cache); do not change max_affordable_qty itself.
