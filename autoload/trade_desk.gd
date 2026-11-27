@@ -334,7 +334,7 @@ func execute_trade(
 		if obs_rc != TradeObserver.RECORD_OK:
 			_day_errors.append(
 				ErrorInfoUtil.make_validation(
-					&"ERR-TRADE-OBSERVER-FAIL",
+					&"WRN-TRADE-OBSERVER-FAIL",
 					SYS_ID,
 					SCRIPT_PATH,
 					FIELD_OBSERVERS,
