@@ -390,11 +390,13 @@ jobs:
           path: gut_ui.log
           retention-days: 3
 
-  golden-30d:
-    # 17-62 P6b: skip golden on fork PRs. 17-64 S5: main stores artifact; PRs compare to it.
+  # 17-78 CI-SPLIT: PR-only compare (required check). Fail with GOLDEN_NOT_COMPARED=1
+  # when baseline missing / download fail / dims mismatch — never silent exit 0.
+  golden-30d-compare:
+    # 17-62 P6b: skip golden on fork PRs. 17-64 S5: PRs compare to main artifact.
     if: >-
-      (github.event_name != 'workflow_dispatch' || inputs.job == 'ci')
-      && !(github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true)
+      github.event_name == 'pull_request'
+      && github.event.pull_request.head.repo.fork != true
     runs-on: ubuntu-latest
     # 17-69 2.2: restore 15 (measured ~1m14s).
     timeout-minutes: 15
@@ -473,15 +475,14 @@ jobs:
           print(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")
           PY
 
-      - name: Download latest main golden baseline (PRs)
-        if: github.event_name == 'pull_request'
+      - name: Download latest main golden baseline
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           mkdir -p out/golden-main
           # 17-69 W1(d)／E6(N-15)：只取 main 分支最新未過期 golden-30d artifact。
-          # 無 artifact 或下載失敗 → ::error:: 失敗；不得 GOLDEN_BOOTSTRAP 回退、不得 exit 0。
+          # 無 artifact 或下載失敗 → GOLDEN_NOT_COMPARED=1 + exit 1；不得靜默 exit 0。
           set +e
           ART_META=$(gh api "repos/${{ github.repository }}/actions/artifacts?name=golden-30d&per_page=100" \
             --jq '[.artifacts[] | select(.expired==false and .workflow_run.head_branch=="main")] | .[0] // empty')
@@ -494,7 +495,8 @@ jobs:
           fi
           if [[ -z "${RUN_ID}" ]]; then
             echo "missing" > out/golden-main/STATUS.txt
-            echo "::error::GOLDEN_BASE_MISSING — no non-expired main golden-30d artifact (E6/N-15; no bootstrap)"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::GOLDEN_BASE_MISSING — no non-expired main golden-30d artifact (E6/N-15; S9b; no bootstrap)"
             exit 1
           fi
           echo "GOLDEN_BASE_RUN_ID=${RUN_ID}"
@@ -505,7 +507,8 @@ jobs:
           set -e
           if [[ $RC -ne 0 ]] || [[ ! -f out/golden-main/30d.csv ]]; then
             echo "missing" > out/golden-main/STATUS.txt
-            echo "::error::GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} (E6/N-15; no bootstrap)"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::GOLDEN_BASE_DOWNLOAD_FAIL run=${RUN_ID} rc=${RC} (E6/N-15; S9b; no bootstrap)"
             exit 1
           fi
           echo "present" > out/golden-main/STATUS.txt
@@ -513,11 +516,11 @@ jobs:
           ls -la out/golden-main/
 
       - name: Compare PR golden to main baseline
-        if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
           if [[ ! -f out/golden-main/30d.csv ]]; then
-            echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::GOLDEN_BASE_MISSING — out/golden-main/30d.csv absent after download step (S9b)"
             exit 1
           fi
           STATUS="$(cat out/golden-main/STATUS.txt 2>/dev/null || echo unknown)"
@@ -577,18 +580,107 @@ jobs:
           echo "CSV_ROWS_A=${CSV_ROWS_A} CSV_ROWS_B=${CSV_ROWS_B} CSV_COLS_A=${CSV_COLS_A} CSV_COLS_B=${CSV_COLS_B}"
           echo "DIMS_EQUAL=${DIMS_EQUAL}"
           if [[ "${DIMS_EQUAL}" != "1" ]]; then
-            echo "::error::GOLDEN_DIMS_MISMATCH rows_a=${CSV_ROWS_A} rows_b=${CSV_ROWS_B} cols_a=${CSV_COLS_A} cols_b=${CSV_COLS_B} (D-130)"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::GOLDEN_DIMS_MISMATCH rows_a=${CSV_ROWS_A} rows_b=${CSV_ROWS_B} cols_a=${CSV_COLS_A} cols_b=${CSV_COLS_B} (D-130; S9b)"
             exit 1
           fi
           expect=$((COMPARED_ROWS * COMPARED_COLS))
           if [[ "${COMPARED_CELLS}" -eq 0 ]] || [[ "${COMPARED_CELLS}" -ne "${expect}" ]]; then
-            echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13/D-130)"
+            echo "GOLDEN_NOT_COMPARED=1"
+            echo "::error::COMPARED_CELLS_INVALID cells=${COMPARED_CELLS} expect_rows_x_cols=${expect} (N-13/D-130; S9b)"
             exit 1
           fi
           if [[ $RC -ne 0 ]]; then
             exit "$RC"
           fi
           echo "GOLDEN_CELLS_IDENTICAL=1"
+
+      - name: Upload golden artifact
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: golden-30d
+          path: out/golden/
+          retention-days: 14
+
+  # 17-78 CI-SPLIT: main-push baseline only (upload). No download/compare/diff judge.
+  # Not a merge required check — only golden-30d-compare counts toward merge.
+  golden-30d-baseline:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Cache Godot binary
+        id: cache-godot
+        uses: actions/cache@v5
+        with:
+          path: godot
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Download Godot 4.7.2-stable
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/${GODOT_BIN}.zip"
+          unzip -q godot.zip
+          rm -f godot.zip
+          chmod +x "${GODOT_BIN}"
+          mv "${GODOT_BIN}" godot
+          ./godot --version
+
+      - name: Ensure godot executable
+        run: |
+          set -euo pipefail
+          chmod +x godot
+          ./godot --version
+
+      - name: Cache Godot imported assets
+        uses: actions/cache@v5
+        with:
+          path: .godot/imported
+          key: godot-imported-${{ hashFiles('project.godot', '**/*.import', 'data/**') }}
+          restore-keys: |
+            godot-imported-
+
+      - name: Import project
+        run: |
+          set -euo pipefail
+          ./godot --headless --path . --import
+
+      - name: Assert import leaves clean tree
+        run: |
+          set -euo pipefail
+          dirty="$(git status --porcelain | awk '!($1=="??" && ($2=="godot" || $2=="godot.zip"))' || true)"
+          if [[ -n "${dirty}" ]]; then
+            echo "::error::godot --import dirtied the working tree"
+            echo "$dirty"
+            exit 1
+          fi
+          echo "IMPORT_CLEAN_TREE_OK"
+
+      - name: 30d golden gated
+        run: |
+          set -euo pipefail
+          mkdir -p out/golden
+          tools/run_golden_gated.sh --godot ./godot --out "$(pwd)/out/golden/30d.csv" --days 30 --seed 1 \
+            --log "$(pwd)/out/golden/30d.log"
+          echo "GOLDEN_30D_DONE"
+          wc -l out/golden/30d.csv
+          sha256sum out/golden/30d.csv | tee out/golden/30d.sha256
+          python3 - <<'PY'
+          import csv
+          from pathlib import Path
+          p = Path("out/golden/30d.csv")
+          rows = list(csv.DictReader(p.open(newline="", encoding="utf-8")))
+          cols = list(rows[0].keys()) if rows else []
+          print(f"GOLDEN_SUMMARY rows={len(rows)} cols={len(cols)} bytes={p.stat().st_size}")
+          PY
 
       - name: Upload golden artifact
         if: always()
