@@ -1,10 +1,9 @@
 report.md
 # 17-87 Lane Q QA-READONLY report
 
-ASOF_HKT=2026-11-28 00:17 Asia/Hong_Kong  
+ASOF_HKT=2026-11-28 00:20 Asia/Hong_Kong  
 main tip claimed `dcea87f` — **actual** `dcea87f338f3bea4b49197ce3cbb1c407a28a250` (match)  
 docs/spec B9=v6.99.293 tree `cb4e2c04da3db42696644474f6c0d27c6b862c22`  
-AI_README tip commit `7f75415675c38923233b5d54d29754822b6fd105`  
 Bounds: no code change / no PR / no merge / facts only (L-甲).
 
 ## Tip check
@@ -23,19 +22,19 @@ MATCH=yes
 - `q3-d104c.txt` — D-104(c) ①–⑥ vs tip code
 - `lane.txt`
 - `report.md` — this file
-- (orphan root) `orphan_push.log` `orphan_sha.txt` after push
+- `orphan_push.log` / `orphan_sha.txt` (S9d)
 
 ## S9a A 基線
 
 - Lane: Q QA-READONLY (orphan only)
 - Product HEAD: `dcea87f338f3bea4b49197ce3cbb1c407a28a250` (read-only; no product branch)
-- Base: origin/main `dcea87f338f3bea4b49197ce3cbb1c407a28a250`
+- Base: origin/main same SHA
 - docs/spec: B9 v6.99.293；tree SHA `cb4e2c04da3db42696644474f6c0d27c6b862c22`
-- main 基線測試：gate baseline names file 555 lines (`.github/ci/gut_unit_property_baseline_names.txt`); 17-86／R9-88 記 TOTAL_PASSING≥611 — 本線未跑 CI
+- main 基線：`.github/ci/gut_unit_property_baseline_names.txt` 555 lines；本線未跑 CI
 
 ## S9a B 變更清單
 
-無產品碼變更。`git diff --stat origin/main...HEAD` on working tree for this lane = N/A（未開產品分支）。
+無產品碼變更。
 
 ## S9a C 規格對照
 
@@ -52,7 +51,7 @@ MATCH=yes
 
 ## S9a E 自查掃描
 
-N/A（無 .gd 變更）。未跑 E(1)–(6)。
+N/A（無 .gd 變更）。
 
 ## S9a F 測試
 
@@ -64,7 +63,7 @@ N/A（無 .gd 變更）。未跑 E(1)–(6)。
 
 ## S9a H 偏離與缺口
 
-- 派工寫 03_Systems **r2118**；tip `docs/spec/03_Systems.csv` 實體行 **2169** 含 D-104(c) 效能約束六項原文（已在 q3 標明）。
+- 派工寫 03_Systems **r2118**；tip `docs/spec/03_Systems.csv` 實體行 **2169** 含 D-104(c) 效能約束六項原文（q3 已標）。
 - 17-86 p0 EXCL_REVIEW=14（含已刪 `cursor/perf-probe-1786-c952`）；本線盤點 **13**＝main＋12。
 - Q 線不下「為什麼慢／該怎麼改」。
 
@@ -101,9 +100,28 @@ N/A（無 .gd 變更）。未跑 E(1)–(6)。
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-87-Q`
-- SHA: see `orphan_sha.txt` after push
-- `git ls-tree` embedded in report after push
+- Full SHA: `TIP_SHA`
+- URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-87-Q
+
+### git ls-tree -r -l
+
+```
+TREE_SHA
+```
 
 ## B-10 ls + FILES_TOTAL
 
-(filled after final ls)
+```
+total 75
+drwxrwxrwx 2 ubuntu ubuntu     0 Nov 27 16:14 .
+drwxrwxrwx 2 ubuntu ubuntu     0 Nov 27 16:14 ..
+-rw-rw-rw- 1 ubuntu ubuntu   323 Nov 27 16:17 lane.txt
+-rw-rw-rw- 1 ubuntu ubuntu   547 Nov 27 16:19 orphan_push.log
+-rw-rw-rw- 1 ubuntu ubuntu     8 Nov 27 16:20 orphan_sha.txt
+-rw-rw-rw- 1 ubuntu ubuntu 57811 Nov 27 16:17 q1-source.txt
+-rw-rw-rw- 1 ubuntu ubuntu  4505 Nov 27 16:17 q2-branches.txt
+-rw-rw-rw- 1 ubuntu ubuntu  7651 Nov 27 16:17 q3-d104c.txt
+-rw-rw-rw- 1 ubuntu ubuntu  3653 Nov 27 16:17 report.md
+```
+
+FILES_TOTAL=7
