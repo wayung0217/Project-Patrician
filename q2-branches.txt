@@ -1,0 +1,33 @@
+q2-branches.txt
+PACK=overnight-17-87-Q LANE=Q QA-READONLY
+MAIN_TIP=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+ASOF_HKT=2026-11-28 00:16 Asia/Hong_Kong
+SCOPE=non-review/* remote heads only; no deletes; no PR closes
+NON_REVIEW_COUNT=13
+NOTE_VS_17-86_p0=17-86 p0 EXCL_REVIEW=14 (incl cursor/perf-probe-1786-c952); that probe deleted after 17-86; now 13=main+12
+FORMAT=branch | tip_HKT | author | subject | is_ancestor_of_main | ahead | behind | PR
+is_ancestor=git merge-base --is-ancestor origin/<branch> origin/main → 是/否
+ahead/behind=git rev-list --left-right --count origin/main...origin/<branch> → behind=left ahead=right
+
+cursor/audit-17-76-0b7c | 2026-11-26 22:18:30 Asia/Hong_Kong | wayung0217 | docs(audit): 17-76 N6 params_schema required-keys | ancestor=否 | ahead=6 | behind=16 | PR=無 | tip=5b8d9a02673adc160e27ea66780c2b937a83ed44
+cursor/class-cap-frm-sys07-18-97ab | 2026-11-26 22:17:03 Asia/Hong_Kong | Cursor Agent | fix(PP-225): assert CLASS_CAP effective == requested after set | ancestor=否 | ahead=3 | behind=18 | PR=#96 OPEN https://github.com/wayung0217/Project-Patrician/pull/96 | tip=86e0919c220bf52cf5e5a098a0ed68b64fcc0378
+cursor/d136-m1b-abund-overrides-5981 | 2026-11-26 13:55:09 Asia/Hong_Kong | Cursor Agent | D-139: F5 assert ABUND overrides=0, not grid | ancestor=是 | ahead=0 | behind=23 | PR=#90 MERGED https://github.com/wayung0217/Project-Patrician/pull/90 | tip=01adee0d01514e94f1c3fd7b296dcccf23f78e10
+cursor/diag-c-pp217-5280 | 2026-11-26 16:43:14 Asia/Hong_Kong | Cursor Agent | 17-72 C/C-v: season_ports beggar_ppm/vacancy + D1/D2 gates | ancestor=否 | ahead=1 | behind=18 | PR=#95 OPEN https://github.com/wayung0217/Project-Patrician/pull/95 | tip=0d152698c3a74f4ba1c0cc75d623b06a5cf5d8cb
+cursor/e1-exp2-90d-smoke-9c88 | 2026-11-26 23:17:01 Asia/Hong_Kong | Cursor Agent | 17-72 E1-exp2: H4/W4 smoke 30d → 90d (one season) | ancestor=否 | ahead=1 | behind=16 | PR=#99 OPEN https://github.com/wayung0217/Project-Patrician/pull/99 | tip=5478c190686a75e59f0014a60af27665d70f436f
+cursor/junit-xml-trial-5b41 | 2026-11-26 15:14:05 Asia/Hong_Kong | Cursor Agent | ci(trial): emit gut-unit JUnit XML artifact (17-75 C) | ancestor=否 | ahead=1 | behind=19 | PR=#94 OPEN https://github.com/wayung0217/Project-Patrician/pull/94 | tip=241b90bacb7745927e1222766d551a375b3811e2
+cursor/solo-wp26-a-24c7 | 2026-11-26 12:34:10 Asia/Hong_Kong | Cursor Agent | measure: solo gut wall for test_sys23_wp26_a.gd | ancestor=否 | ahead=1 | behind=23 | PR=#91 OPEN https://github.com/wayung0217/Project-Patrician/pull/91 | tip=9ba9f76fac148475d11a8947385680c32116764e
+cursor/solo-wp26-b-24c7 | 2026-11-26 12:34:10 Asia/Hong_Kong | Cursor Agent | measure: solo gut wall for test_sys23_wp26_b.gd | ancestor=否 | ahead=1 | behind=23 | PR=#92 OPEN https://github.com/wayung0217/Project-Patrician/pull/92 | tip=87962c51ebc1a49aa1611d81985734d5e3f18f33
+cursor/solo-wp26-hist-24c7 | 2026-11-26 12:34:10 Asia/Hong_Kong | Cursor Agent | measure: solo gut wall for test_sys23_wp26.gd | ancestor=否 | ahead=1 | behind=25 | PR=#93 OPEN https://github.com/wayung0217/Project-Patrician/pull/93 | tip=e34ff80dbfd2eabe23360748b8731aca168a445d
+cursor/ui-1755-debug-panels-ff98 | 2026-11-24 00:19:41 Asia/Hong_Kong | Cursor Agent | ui-1755: traders panel + port zone fields (D-115e) | ancestor=否 | ahead=5 | behind=97 | PR=#78 OPEN https://github.com/wayung0217/Project-Patrician/pull/78 | tip=1fd181acf5012a49494b3084e4045202987e4507
+main | 2026-11-27 23:08:11 Asia/Hong_Kong | cursor[bot] | Merge pull request #104 from wayung0217/progress-day-1785 | ancestor=是 | ahead=0 | behind=0 | PR=無 | tip=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+met-lengths-1783 | 2026-11-27 17:12:20 Asia/Hong_Kong | Cursor Agent | ci(m1b): allow met-lengths-* push to run MET matrix | ancestor=是 | ahead=0 | behind=4 | PR=無 | tip=33bd59d198e52529629997133c9bb17522bbf50b
+tools-1758 | 2026-11-26 23:17:01 Asia/Hong_Kong | Cursor Agent | 17-72 E1-exp2: H4/W4 smoke 30d → 90d (one season) | ancestor=否 | ahead=1 | behind=16 | PR=#80 MERGED https://github.com/wayung0217/Project-Patrician/pull/80 | tip=5478c190686a75e59f0014a60af27665d70f436f
+
+## RAW COMMANDS
+git for-each-ref --format="%(refname:short)" refs/remotes/origin | grep -v review
+git log -1 --format=%cI|%an|%s|%H origin/<b>
+git merge-base --is-ancestor origin/<b> origin/main; echo $?
+git rev-list --left-right --count origin/main...origin/<b>
+gh pr list --state all --limit 200 --json number,title,state,headRefName,url
+
+BRANCH_ROWS=13

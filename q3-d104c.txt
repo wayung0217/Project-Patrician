@@ -1,0 +1,155 @@
+q3-d104c.txt
+PACK=overnight-17-87-Q LANE=Q QA-READONLY
+MAIN_TIP=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+ASOF_HKT=2026-11-28 00:16 Asia/Hong_Kong
+SPEC_LOC=docs/spec/03_Systems.csv physical line 2169 (dispatch cites r2118; tip file has text at 2169 under 17.1 F 寫入順序)
+FORMAT=每項：狀態（已落實／未落實／部分）＋檔:行＋一句事實＋原文
+RULE=不下「該怎麼改」
+
+## SPEC ORIGINAL (03_Systems.csv:2169)
+---BEGIN---
+★ D-104(c)（Owner 2026-11-23） 效能約束：① 只在日界、只評估已停泊且閒置的船，不逐 tick；② 目的港行市價每日建一次共用快取（港 × 貨）；③ 港對港航程日數於開機算一次成矩陣；④ 先剔除本港無貨或買不起 1 擔的貨；⑤ 先以行市中價粗篩，只對前 3 名呼叫精確報價；⑥ 只保留最佳候選，不建清單。驗收：十年模擬總耗時與無散商版本並列回報。
+---END---
+
+## ① 只在日界、只評估已停泊且閒置的船，不逐 tick
+STATUS=已落實
+LOC=autoload/trader_registry.gd:369-420 (daily_step); :670-692 (_process_ship_day)
+FACT=TraderRegistry.daily_step 只在日界呼叫；_process_ship_day 僅在 STATE_DOCKED 且 plan.phase 非 OUTBOUND 持貨等待時進入 _evaluate_and_maybe_sail。
+SOURCE:
+369|func daily_step(day: int) -> Array:
+370|	## FRM-SYS17-01／03／05；D-104(c)⑤ perf. Insert after IntelLedger (17.1 F／25.1).
+371|	_day_errors.clear()
+372|	if not _enabled or not _loaded:
+373|		return _day_errors
+374|	_refresh_freeze_from_arrears()
+375|	_build_board_cache_day()
+685|	if state != Ship.STATE_DOCKED:
+686|		return empty
+687|	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
+688|		## Still holding outbound goods that failed to sell — wait.
+689|		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+690|			return empty
+691|	## Idle docked → evaluate.
+692|	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
+
+## ② 目的港行市價每日建一次共用快取（港 × 貨）
+STATUS=未落實
+LOC=autoload/trader_registry.gd:638-640 (_build_board_cache_day); call site :375; per-cell board_for via _dest_intel :972-980
+FACT=_build_board_cache_day 本體為 pass；每日仍對每個（目的港×貨）呼叫 IntelLedger.board_for。
+SOURCE:
+638|func _build_board_cache_day() -> void:
+639|	## D-104(c)⑤ shared mid cache reserved; per-candidate board_for is authoritative (F2).
+640|	pass
+374|	_refresh_freeze_from_arrears()
+375|	_build_board_cache_day()
+975|	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
+976|	var key := "%s|%s" % [String(dest), String(good)]
+977|	if _intel_override.has(key):
+978|		return (_intel_override[key] as Dictionary).duplicate(true)
+979|	if IntelLedger.is_loaded():
+980|		var board: Dictionary = IntelLedger.board_for(actor, present_port, dest, good)
+
+## ③ 港對港航程日數於開機算一次成矩陣
+STATUS=已落實
+LOC=autoload/trader_registry.gd:591-620 (_build_voyage_matrix); call :291 in apply_boot_steps; read :766
+FACT=apply_boot_steps 末呼叫 _build_voyage_matrix 一次寫入 _voyage_days；評估迴圈只讀矩陣。
+SOURCE:
+289|	if not errors.is_empty():
+290|		return errors
+291|	_build_voyage_matrix()
+591|func _build_voyage_matrix() -> void:
+592|	## D-104(c)⑤: once at boot — days = ceili(waypoints × TPW ／ TICKS_PER_DAY).
+593|	_voyage_days.clear()
+766|		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+
+## ④ 先剔除本港無貨或買不起 1 擔的貨
+STATUS=部分
+LOC=autoload/trader_registry.gd:777-782
+FACT=每個（dest×good）格內先 market_qty<1 continue、再 max_affordable_qty 後 afford<1 continue；剔除條件存在，但在目的港外層迴圈內逐格重複，而非先對本港貨清單篩一次。
+SOURCE:
+758|	for dest_v in ports:
+759|		var dest: StringName = dest_v
+760|		if String(dest) == String(from_port):
+761|			continue
+762|		if not _can_enter(acct, dest):
+763|			continue
+764|		if not _draft_ok(sid, dest):
+765|			continue
+766|		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+767|		if days < 1:
+768|			continue
+769|		var dest_had_intel := false
+770|		var dest_saw_good := false
+771|		for good_v in goods:
+772|			var good: StringName = good_v
+773|			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
+774|				continue
+775|			if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
+776|				continue
+777|			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
+778|			if market_qty < 1:
+779|				continue
+780|			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
+781|			if afford < 1:
+782|				continue
+
+## ⑤ 先以行市中價粗篩，只對前 3 名呼叫精確報價
+STATUS=已落實
+LOC=autoload/trader_registry.gd:756-857; PRM-SYS17-TOP_N_PRECISE=3 in fixtures; core/trade_evaluator.gd:101-104 coarse_score
+FACT=coarse 陣列以 mid／rough_buy 打分排序後 slice(0, TOP_N)；僅 top 迴圈呼叫 MarketPricer.quote；fixture／情境 TOP_N_PRECISE＝3。
+SOURCE:
+756|	## Coarse pass then top-3 precise (D-104(c)⑤).
+757|	var coarse: Array = []
+816|			var rough_buy: int = mid ## coarse; precise quote later
+817|			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
+818|			var origin_mid: float = MarketPricer.mid_price(from_port, good)
+819|			rough_buy = floori(origin_mid * float(q))
+820|			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
+844|	var top_n: int = Params.get_int(StringName(PRM_TOP_N))
+845|	var top: Array = coarse.slice(0, mini(top_n, coarse.size()))
+846|	for c in top:
+847|		var dest2: StringName = c["port_id"]
+848|		var good2: StringName = c["good_id"]
+849|		var q2: int = int(c["qty"])
+850|		var days2: int = int(c["voyage_days"])
+851|		var buy_q: Dictionary = MarketPricer.quote(from_port, good2, MarketPricer.SIDE_BUY, q2)
+100|## Coarse rank key for D-104(c)⑤ mid×q − rough buy; higher is better.
+101|static func coarse_score(mid_li: int, qty: int, rough_buy_li: int, voyage_days: int) -> int:
+102|	if voyage_days < 1 or qty < 1:
+103|		return -9223372036854775807
+104|	return floori((float(mid_li) * float(qty) - float(rough_buy_li)) / float(voyage_days))
+
+## ⑥ 只保留最佳候選，不建清單
+STATUS=未落實
+LOC=autoload/trader_registry.gd:753,821-831,862-870,876; core/trade_evaluator.gd:73-97
+FACT=評估建立 coarse 與 candidates 兩個 Array，再 TradeEvaluator.pick_best_candidate(candidates) 取最佳；規格「不建清單」未符合。
+SOURCE:
+753|	var candidates: Array = []
+754|	## Dest ports excluded because board_for / dest intel empty (F2 "no market").
+755|	var excl_dests: Dictionary = {}
+756|	## Coarse pass then top-3 precise (D-104(c)⑤).
+757|	var coarse: Array = []
+862|		candidates.append({
+863|			"port_id": dest2,
+864|			"good_id": good2,
+865|			"qty": q2,
+866|			"voyage_days": days2,
+867|			"daily_profit_li": profit,
+868|			"buy_cost_li": buy_cost,
+869|			"sell_revenue_li": sell_rev,
+870|		})
+871|	stats["evaluable"] = candidates.size()
+872|	## Explore: destinations with no offtake history preferred; skip profit gate later.
+873|	if explore:
+874|		candidates = _filter_explore_candidates(candidates, from_port)
+875|
+876|	var best: Dictionary = TradeEvaluator.pick_best_candidate(candidates)
+73|static func pick_best_candidate(candidates: Array) -> Dictionary:
+74|	if candidates.is_empty():
+75|		return {}
+76|	var best: Dictionary = candidates[0]
+77|	for i in range(1, candidates.size()):
+
+## SUMMARY
+①已落實 ②未落實 ③已落實 ④部分 ⑤已落實 ⑥未落實
+

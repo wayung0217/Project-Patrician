@@ -1,0 +1,552 @@
+q1-source.txt
+PACK=overnight-17-87-Q LANE=Q QA-READONLY
+MAIN_TIP=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+ASOF_HKT=2026-11-28 00:16 Asia/Hong_Kong
+NOTE=Full untruncated sources (S9a 2026-11-20). Line prefix N| is source line number.
+
+# Q1(a) CashLedger.max_affordable_qty + same-file internals it calls
+ANSWER: max_affordable_qty at cash_ledger.gd:659-727. Same-file calls: balance (public 458-464), _quote_buy_total (842-857), _record_error (1010-1013) via miss path and via _quote_buy_total→_record_error; _err (1016-1018) via _record_error.
+
+## Q1(a)-1 max_affordable_qty
+FILE=autoload/cash_ledger.gd
+RANGE=659-727
+LINE_COUNT=69
+---BEGIN FULL TEXT---
+659|func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
+660|	# FRM-SYS05-09／D-124（Owner 2026-11-24；docs/spec v6.99.220；03_Systems r574）：
+661|	# q_afford = 最大 q 同時滿足 buy_total(q) ≤ balance 且 q ≤ s
+662|	# ＝ MIN(現金可負擔量, s)；s = 該港該貨 MARKET 庫存。
+663|	# s = 0 → 回 0，不以 q = 1 試探；倍增／二分不得以 q > s 呼叫 quote()
+664|	# （r451：買量須 ≤ s，否則 ERR-SYS04-06；收斂上界＝回到 quote 定義域，非 C-06 clamp）。
+665|	# A18：quote 失敗不得當 total＝0；視為該 q 不可買。
+666|	# 數值例：frm_examples EX-05-09-01 至 03。庫存不再於 FRM-SYS05-10 重做。
+667|	assert(_loaded, "CashLedger.max_affordable_qty before load")
+668|	var bal: int = balance(actor)
+669|	if bal <= 0:
+670|		return 0
+671|	if _quote_provider == null:
+672|		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
+673|		return 0
+674|	## FRM-SYS05-09／D-124／D-125 甲（Owner 2026-11-25；v6.99.222）：
+675|	## 庫存上界無條件適用（不限 MarketPricer／DemoQuoteProvider）；
+676|	## exclusive upper = s+1；s = MARKET 庫存。舊測 Given 須先種足量庫存。
+677|	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
+678|	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；KIND+PORT Dictionary
+679|	## → get_qty → _container_key → container_id（不用 make_market）。
+680|	## 2.8：GoodsLedger.is_loaded 未見 03_Systems H → 缺口見 evening-17-69-lane2
+681|	## （is_loaded 沿用既有 Autoload 慣例）。
+682|	var abs_hi: int = -1
+683|	if GoodsLedger.is_loaded():
+684|		var port_s: String = String(port)
+685|		var market: Dictionary = {
+686|			GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
+687|			GoodsLedger.KEY_PORT: port_s,
+688|		}
+689|		var stock_cap: int = GoodsLedger.get_qty(market, good)
+690|		## D-124／EX-05-09-03：s = 0 → 0；不得以 q = 1 呼叫 quote()。
+691|		if stock_cap < 1:
+692|			return 0
+693|		abs_hi = stock_cap + 1
+694|	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到 s+1，永不 quote q>s）
+695|	var lo: int = 0
+696|	var hi: int = 1
+697|	while true:
+698|		if abs_hi > 0 and hi >= abs_hi:
+699|			hi = abs_hi
+700|			break
+701|		var t_hi: int = _quote_buy_total(port, good, hi)
+702|		if t_hi < 0 or t_hi > bal:
+703|			break
+704|		lo = hi
+705|		# hi = hi * 2 without literal 2
+706|		var next_hi: int = hi + hi
+707|		if next_hi <= hi:
+708|			# overflow / cap
+709|			break
+710|		if abs_hi > 0 and next_hi >= abs_hi:
+711|			hi = abs_hi
+712|			break
+713|		hi = next_hi
+714|	# 二分
+715|	while lo + 1 < hi:
+716|		var mid: int = floori((lo + hi) / INT_DIV_MID_DENOM)
+717|		var t_mid: int = _quote_buy_total(port, good, mid)
+718|		if t_mid < 0 or t_mid > bal:
+719|			hi = mid
+720|		else:
+721|			lo = mid
+722|	# 整數 quote 校正：確認 lo 可負擔、lo+1 不可
+723|	if lo > 0:
+724|		var t_lo: int = _quote_buy_total(port, good, lo)
+725|		if t_lo < 0 or t_lo > bal:
+726|			lo = lo - 1
+727|	return lo
+---END FULL TEXT---
+
+## Q1(a)-2 balance (same-file; called)
+FILE=autoload/cash_ledger.gd
+RANGE=458-464
+LINE_COUNT=7
+---BEGIN FULL TEXT---
+458|func balance(id: StringName) -> int:
+459|	assert(_loaded, "CashLedger.balance before load")
+460|	var key := String(id)
+461|	assert(_accounts.has(key), "unknown account %s" % key)
+462|	return (_accounts[key] as Account).balance
+463|
+464|
+---END FULL TEXT---
+
+## Q1(a)-3 _quote_buy_total (same-file internal; called)
+FILE=autoload/cash_ledger.gd
+RANGE=842-857
+LINE_COUNT=16
+---BEGIN FULL TEXT---
+842|func _quote_buy_total(port: StringName, good: StringName, qty: int) -> int:
+843|	## A18：quote 失敗（error 鍵）回 INT_API_FAILURE，不得把 total_li＝0 當可負擔.
+844|	if _quote_provider == null:
+845|		return INT_API_FAILURE
+846|	if not _quote_provider.has_method("quote"):
+847|		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing quote()")
+848|		return INT_API_FAILURE
+849|	var q: Variant = _quote_provider.call("quote", port, good, SIDE_BUY, qty)
+850|	if typeof(q) != TYPE_DICTIONARY:
+851|		return INT_API_FAILURE
+852|	var d: Dictionary = q
+853|	if d.has(KEY_ERROR):
+854|		return INT_API_FAILURE
+855|	if not d.has(KEY_TOTAL_LI):
+856|		return INT_API_FAILURE
+857|	return int(d[KEY_TOTAL_LI])
+---END FULL TEXT---
+
+## Q1(a)-4 _record_error (same-file internal; called)
+FILE=autoload/cash_ledger.gd
+RANGE=1010-1013
+LINE_COUNT=4
+---BEGIN FULL TEXT---
+1010|func _record_error(code: StringName, field: String, value: Variant, message: String) -> void:
+1011|	var info: Dictionary = _err(code, field, value, message)
+1012|	_last_error = info
+1013|	push_error("CashLedger: %s" % str(info))
+---END FULL TEXT---
+
+## Q1(a)-5 _err (same-file internal; called by _record_error)
+FILE=autoload/cash_ledger.gd
+RANGE=1016-1018
+LINE_COUNT=3
+---BEGIN FULL TEXT---
+1016|func _err(code: StringName, field: String, value: Variant, message: String) -> Dictionary:
+1017|	# D-04 ErrorInfo = {code, sys, detail}; C-06 file/field/value live in detail.
+1018|	return ErrorInfoUtil.make_validation(code, SYS_ID, SCRIPT_PATH, field, value, message)
+---END FULL TEXT---
+
+# Q1(b) IntelLedger.board_for
+ANSWER: board_for at intel_ledger.gd:413-426 (full function).
+
+## Q1(b) board_for
+FILE=autoload/intel_ledger.gd
+RANGE=413-426
+LINE_COUNT=14
+---BEGIN FULL TEXT---
+413|func board_for(
+414|	actor_id: StringName, port_id: StringName, origin_port: StringName, good_id: StringName
+415|) -> Dictionary:
+416|	## FRM-SYS15-06 + D-37c visibility.
+417|	assert(_loaded, "IntelLedger.board_for before load")
+418|	_clear_last()
+419|	if not _ids_ok(port_id, origin_port, good_id):
+420|		_record(ERR_SYS15_04, KEY_PORT_ID, port_id, "unknown port/origin/good")
+421|		return {}
+422|	if not _actor_present(actor_id, port_id):
+423|		_record(ERR_SYS15_04, KEY_OWNER_ID, actor_id, "actor not present at port")
+424|		return {}
+425|	var samples: Array = _visible_samples(actor_id, port_id, origin_port, good_id)
+426|	return _summarize_board(samples, good_id)
+---END FULL TEXT---
+
+# Q1(c) git grep -n max_affordable_qty / board_for (full repo incl tests/)
+ANSWER: commands run at tip dcea87f; full untruncated output below.
+
+## Q1(c)-1 COMMAND
+git grep -n 'max_affordable_qty'
+OUTPUT_LINE_COUNT=48
+---BEGIN FULL OUTPUT---
+.github/ci/gut_unit_property_baseline_names.txt:128:test_TST_SYS05_08_max_affordable_qty
+autoload/cash_ledger.gd:659:func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
+autoload/cash_ledger.gd:667:	assert(_loaded, "CashLedger.max_affordable_qty before load")
+autoload/trader_registry.gd:780:			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
+docs/spec/03_Systems.csv:593:H 可觀察性,Autoload CashLedger,"post(entries, reason, requester) -> Error；balance(id) -> int；arrears(id) -> int；can_afford(id, amount) -> bool；max_affordable_qty(actor, port, good) -> int；charge_mandatory(id, due, reason, requester) -> int；prorate(fee, days_held) -> int；split_largest_remainder(total, weights) -> Array[int]；close_season() -> SeasonLedgerReport；★ genesis_grant()（D-03：{SOURCE: −START_CASH, ACT-PLAYER: +START_CASH}，reason = GENESIS_CASH）；last_error() -> Dictionary（ErrorInfo）。★ post() 回傳約定（R2-05，Owner 2026-11-18）：成功回 OK、失敗回 FAILED，失敗原因一律經 last_error() 取得 ErrorInfo，與 transfer() 同一套",GDScript 簽名,Draft,res://autoload/cash_ledger.gd,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:675:TST-SYS05-08,示範 5.1,max_affordable_qty,124；total(124) ≤ c0 < total(125)（B624 PASS）,,,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2200:FRM-SYS17-02,SYS-17,"★ 現行（D-104(c)，D-109 整理為正文）：對每艘「已停泊且閒置」的船，評估每個「可到達港 × 可交易貨」：每日邊際利潤 ＝ floori((目的港行市 consensus_mid_li × q − 本港買入報價(q) − 稅費) ÷ 航程日數)；航程日數取開機時算好的港對港矩陣（單程 tick 數 ÷ TICKS_PER_DAY，ceili）。船員工資與維修為沉沒成本，不計入。q ＝ MIN(max_affordable_qty, 艙位餘量, 本港市場庫存, 准入允許量)。目的港該貨無行市（consensus_mid 為 null）者不列入候選（冷啟動由 FRM-SYS17-04 探索負責，D-109(c)）。稅費在稅制（WP-39）上線前一律 0（D-109(b)）。候選須先通過入港資格、吃水（FRM-SYS13-11）與 15.2 商品准入；不通過即剔除，不產生任何過帳。數值例 EX-17-02-01。｜★ D-44g：評估核心實作為 core/trade_evaluator.gd，SYS-18 共用（N-04）。
+docs/spec/03_Systems.csv:2829:B 輸入,—,IntelLedger 與 BrokerDesk.known_price（遠港價格只能靠船報、商館或在場，無全知）；MarketPricer.quote()（本港買入報價，含庫存衝擊）與 mid_price()；CashLedger（balance、max_affordable_qty）；GoodsLedger.get_qty；TradeDesk.execute_trade（買賣一律經此，D-26b）；ShipRegistry（ship_ids、ship_info、position、can_trade、order_ship、sail）；SeaLanes（尋路與航程 tick）；PortRegistry；QualificationProvider（can_enter、can_trade、can_build）；TierRegistry（tier_of、apply_for_tier、新增 would_qualify）；ReputationProvider（regime_rep、city_rep）；BuildingEconomy（land_price、buy_land、order_build、buildings_for_port、新增 invest_quote）；DemandModel（新增 max_substitution_ppm）；GoodCatalog（基準價）；資料表 ai_profiles、ai_difficulty；PRM-SYS18-* 與已登錄的 PRM-SYS05-START_CASH、PRM-SYS09-APPLY_FEE_LI、PRM-SYS09-DUES_PER_SEASON_LI、PRM-SYS06-PPM_SCALE。,—,Draft,25.1；26.1；19.1；20.1,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2880:FRM-SYS18-02,SYS-18,"貿易候選與預期利潤（核心沿用 FRM-SYS17-02，TradeEvaluator，D-44g）：候選＝（目的港 D × 貨 g），須先通過：入港資格 can_enter、買賣資格 can_trade（本港 BUY、目的港 SELL）、吃水（FRM-SYS13-11）、目的港價格已知（known_price 的 level ≥ 1）；不通過即剔除，不產生任何過帳。q ＝ MIN(max_affordable_qty, 艙位餘量, 本港市場庫存, 准入允許量)。預期利潤 π ＝ Rev − Cost_buy − Cost_trip：Cost_buy ＝ quote(本港, g, BUY, q) 的總額（含買入側庫存衝擊，M-118）；Rev ＝ q × P_adj × (PPM_SCALE − SELL_HAIRCUT_PPM) ÷ PPM_SCALE，以 floori 取整（賣出側庫存衝擊，M-118）；Cost_trip ＝ 單程 tick 數 ÷ TICKS_PER_DAY × (船員日薪 ＋ 維修日攤)（運輸成本，M-116，同 FRM-SYS17-02）；P_adj ＝ P_dest（f_substitute ＝ 0）或 FRM-SYS18-03 的調整價；P_dest ＝ known_price 的 mid_li。乘積先驗 int64（C-10、ERR-SYS18-10）。",known_price、quote、船況,π、q,Draft,,,,,,,,,,,,,,,
+docs/spec/05_TechSpec.csv:186:H 可觀察性,Autoload CashLedger,"post(entries, reason, requester) -> Error；balance(id) -> int；arrears(id) -> int；can_afford(id, amount) -> bool；max_affordable_qty(actor, port, good) -> int；charge_mandatory(id, due, reason, requester) -> int；prorate(fee, days_held) -> int；split_largest_remainder(total, weights) -> Array[int]；close_season() -> SeasonLedgerReport；★ genesis_grant()（D-03：{SOURCE: −START_CASH, ACT-PLAYER: +START_CASH}，reason = GENESIS_CASH）；last_error() -> Dictionary（ErrorInfo）。★ post() 回傳約定（R2-05，Owner 2026-11-18）：成功回 OK、失敗回 FAILED，失敗原因一律經 last_error() 取得 ErrorInfo，與 transfer() 同一套",,03_Systems H 可觀察性,可做,,,,
+docs/spec/05_TechSpec.csv:188:H 可觀察性,TradeSlider UI,HSlider，step = 1 擔；拖動開始與市場信號時重算 max_value（FRM-SYS05-10）；拖動中即時顯示整批總額與成交後指示燈；總額 > 餘額時預覽轉紅；drag_ended 才提交；收到 ERR-SYS05-01／07 → value = 0 並提示,UI 不做（1-A8）；max_affordable_qty() 必須實作。,03_Systems H 可觀察性,可做,,,,
+docs/spec/05_TechSpec.csv:266:TST-SYS05-08,示範 5.1,max_affordable_qty,124；total(124) ≤ c0 < total(125)（B624 PASS）,SYS-05,必須通過,,,,
+docs/spec/05_TechSpec.csv:408:WP-56,修復包 5／9 帳本與成交：A18 max_affordable_qty 把 quote 失敗當總額 0；A19 bankruptcy_referred 只發一次（TST-SYS05-07）；A20 post() 回滾補 SINK 抵欠與季統計、prorate 與 split 乘法溢位檢查（ERR-SYS05-08）；A21 MarketPricer.quote 驗港口存在；A22 靜默預設與夾制；A23 TradeDesk 反向分錄對有欠款者的處理,WP-52 已合併,cash_ledger.gd、market_pricer.gd、trade_desk.gd、測試,新增測試：報價超過庫存、bankruptcy 只發一次、回滾後 Σ 全帳戶＝0、未知港報價；守恆與屬性測試全綠；TST-SYS05-08 改用真實 MarketPricer 的案例（買量超過庫存）；TST-SYS05-07 補「達門檻後再過一季不重發」（R9-47 M20、M21）,完成,設計完成（D-84），暫不派工｜★ 已編入派工 17-47 修訂版通宵接力鏈（D-89），待發送｜17-50 步 0 已合併入 main（#44、#45、#53、#55、#51）｜R9-75（2026-11-25）：狀態維持完成；#84 的 test_wp56_cash_market_trade.gd:280 跨模組呼叫 _clear_state()，依 D-128 處理,稽核與品質,2026-11-22,
+docs/spec/05_TechSpec.csv:415:WP-63,WP-53 修正（R9-63 ★2）：(a) FRM-SYS08-18 工坊週收入與週投入一律用基準價 base_price_li，不得用 MarketPricer.mid_price；(b) D-92b：週收入 floori，週投入成本與週人工 ceili；(c) D-92a：城防累加器全整數——每日 acc ＋＝ GARRISON[級] × ARMS（POWDER）_PER_SOLDIER_WK × ACC_SCALE，滿 DAYS_PER_WEEK × ACC_SCALE 即 1 擔，不得先除 7 再量化；(d) 可負擔量回到 FRM-SYS05-09 CashLedger.max_affordable_qty，先寫重現測試再修它對低庫存的誤判，刪除逐擔遞減迴圈；(e) 週毛利 < 0：依 C-05 回報缺口（用既有 ERR-SYS08 碼；無合適碼則列缺口），不得把負值帶進收購價｜★ R9-64 追加：(d) 改為直接改回呼叫 CashLedger.max_affordable_qty（WP-56 A18 已修好報價失敗），刪逐擔遞減迴圈；(f) CashLedger.reverse_last_post 改為先完整驗證再寫入（全有或全無），保留原分錄、只追加沖銷分錄（D-96d）；(g) _public_upgrade_cash 缺 CASH_LI 或等級越界改為報錯（ERR-SYS08-09），不得回 0；(h) apply_opening_init 的 staffed_ports 先排序再遍歷（C-08）；(i) 999999、1 << 30、−1.0e30 與人口 tier 2／3 改為具名常數並註明 EX 編號,17-50 步 0 合併完成,building_economy.gd、cash_ledger.gd（max_affordable_qty、reverse_last_post）、population_model.gd（只改 (i) 的具名常數）、ship_registry.gd（只改 (i)）、測試,期望值只取 frm_examples EX-08-14-01 至 05、EX-08-18-01 至 05（S9f），測試名含 EX 編號；30 日黃金對 pre-1750 基線的差異逐欄解釋,完成,優先級 P2（經濟正確性）｜17-50 線 C｜17-50 已交（R9-65 不合併）；17-51 修正中｜R9-66：C1 改用 ERR-SYS08-14（D-102b，17-53 F2）｜R9-69／D-113(a)：F3 駐軍超買已修並審過；17-57 步 M 合併 #59｜R9-70：#59 合併 17de205（17-57 步 M，510／510）,修正批,2026-11-23,
+docs/spec/05_TechSpec.csv:956:D-124,"FRM-SYS05-09 補寫庫存上界：q_afford ＝ MIN(現金可負擔量, 市場庫存)；搜尋不得以 q > s 呼叫 quote（Owner 2026-11-24 核准）","【Owner 2026-11-24 核准】起因：17-67 為修 CI 卡死，在 max_affordable_qty 加入「以 GoodsLedger 市場庫存收斂搜尋上界」。R9-72 第十二點乙已認定此非 C-06／N-05 禁止的 clamp（r451 明訂買量 q 須 ≤ s，否則 ERR-SYS04-06，故 quote() 的定義域本來就是 q ≤ s；原碼讓二分搜尋探測 q > s，等於在定義域外呼叫，錯誤是規格要求的正確行為，收斂上界只是回到定義域）。但丙項指出：r574 現文只以 balance 定義 q_afford，未寫庫存上界，代碼因此缺規格依據（C-14、C-05）。
+docs/spec/05_TechSpec.csv:966:背景（有證據，非推論）：CI run 45397235504（#83 tip cca43ed）顯示，當守衛設在 PortRegistry.is_loaded() 時兩個既有測試失敗——test_TST_SYS05_08_max_affordable_qty（expected to be > 0，實得 0）與 test_WP56_demo_q_afford_124_still_holds（expected 124，實得 0）。兩者使用 DemoQuoteProvider 且市場為空；依 D-124 字面語意 s ＝ 0 應回 0，與舊測試期望值 124 直接矛盾。Cursor 改以 provider 判斷繞開，使同一條 FRM 在不同 provider 下有兩種語意——R9-72 丁(1) 指出的「產品路徑與測試路徑分歧」並未消失，只是由 PortRegistry 換成 quote provider。
+docs/spec/05_TechSpec.csv:972:★ Owner 裁決 2026-11-25：採甲。(1) CashLedger.max_affordable_qty 的庫存上界改為無條件適用（刪除 _quote_provider == MarketPricer 條件），與 03_Systems r574 FRM-SYS05-09 原文一致，規格不改。(2) Owner 預先核准修改兩個舊測試：test_TST_SYS05_08_max_affordable_qty 與 test_WP56_demo_q_afford_124_still_holds——只在 Given 加入「先在該港 MARKET 放入足量庫存（≥ 期望值）」，期望值（含 124）與測試名稱一律不改，故 gut-unit-gate 的 REMOVED_NAMES 必須仍為「無」。(3) 不得以其他方式（如 is_loaded 判斷、provider 判斷）重新加回條件。執行見 17-69 補正三 W2。","已裁決（甲）：無條件庫存上界＋修兩個舊測試的 Given；規格不改
+docs/spec/05_TechSpec.csv:1604:R9-46,AI 逐行審計第 3 批（autoload 其餘 10 檔、core、sim 全部）：發現 20 項，其中 2 項高嚴重度,Owner 要求逐行審完其餘檔案。AI 完成第 3 批逐行閱讀：autoload 10 檔（cash_ledger 817 行、market_pricer 494、trade_desk 425、ship_registry 817、intel_ledger 772、port_registry 737、sea_lanes 660、params 626、good_catalog 288、clock 158）、core/demand_model.gd、core/rng.gd、core/types 28 檔、core/interfaces 10 檔、sim/ 13 檔（sim_engine、sim_runner、metrics、sampler、scenario_validator、csv_out、transfer_acc 及六個小檔）。對照 03_Systems 第 4、5 節（FRM-SYS04-01 至 10、FRM-SYS05-01 至 15）、第 10 節（FRM-SYS13-01 至 11、FRM-SYS14-01 至 06）、20.1 TradeDesk、25.1（FRM-SYS15-01 至 10）、SYS-06。皆為讀碼結論，沒有跑 Godot；與行為有關者標「推論」。,"★ 發現（嚴重度由高到低）：H7 CashLedger.max_affordable_qty 把 MarketPricer.quote 的失敗當成總額 0：quote 失敗時回傳的字典仍帶 total_li＝0 與 error 鍵，_quote_buy_total 只看 total_li，不看 error；買量超過市場庫存時 quote 失敗、被當成「買得起」，倍增迴圈一路衝到約 2 的 62 次方才停。只要可負擔量落在「2 的 k 次方 ≤ 可負擔量、2 的 k+1 次方 > 庫存」的區間，就回傳荒謬大的數（推論；TST-SYS05-08 只測庫存內），拉桿上限雖再取 MIN(庫存) 蓋住，但會比實際買得起的量大，放手時才被 ERR-SYS05-07 擋下（A18）。目前沒有正式呼叫端，屬潛伏缺陷。H8 SimEngine 把 SimLoop.tick_day() 回傳的每日錯誤清單丟棄（變數 _day_errors 宣告後未使用），模擬跑十年時任何模組的每日錯誤都不會被看見、不會中止、不進報表，「開機 0 錯誤」不等於「十年無錯誤」（C-06，A31）。
+docs/spec/05_TechSpec.csv:1647:R9-53,AI 審計第 10 批（sim_loop 與 trade_desk 測試逐行）：新發現 3 項（Autoload 順序測試不驗順序、恆真 or 斷言、名實不符的測試）；TradeDesk 測試為目前最完整,本批逐行讀 test_sim_loop.gd 的 23 個測試函數中的全部測試本體（約第 60 至 625 行，輔助函數未細讀），以及 test_trade_desk_wp33.gd 的 6 個測試本體（TST-SYS05-14、15、19、20／24、21 與 D28d；其餘 12 個只讀函數名）。目的：找 H7（max_affordable_qty 把 quote 失敗當 0）與 H8（SimEngine 丟掉 tick_day 錯誤）為何存活，並檢查 SimLoop 與 TradeDesk 的測試是否真的驗到名稱所說的行為。,"★ 新發現 3 項（推論，未跑 Godot）：
+docs/spec/05_TechSpec.csv:1652:★ H7、H8 的測試成因：H7 在 cash_ledger 的 TST-SYS05-08（R9-47 已記：假報價提供者沒有庫存上限）；TradeDesk 的測試雖完整，但沒有一個走到「quote 失敗 → max_affordable_qty」的路徑。H8 在 SimEngine，屬 sys23_wp26（尚未讀）。SimLoop 測試只驗 consume 錯誤進入 tick_day 回傳，沒有驗其他子步驟（BuildingEconomy、PopulationModel、IntelLedger、ShipRegistry）的錯誤同樣被收進回傳值。
+docs/spec/05_TechSpec.csv:1748:★ 結構-2 WP-63 (d) 部分過時：WP-56 A18 已修好 max_affordable_qty 對報價失敗的處理，WP-53 只需改回呼叫它。
+docs/spec/05_TechSpec.csv:1821:★ 高-3 #59（WP-63）單獨合併會留錯誤：合 #59 後（631aa0d）黃金日誌 168 次 ERR-SYS04-06「buy qty>stock」（_step_garrison_procure → _try_garrison_buy → max_affordable_qty 報價超過市場庫存）；合 #60 後 161 次；合 #64（WP-67 駐軍原子化）後 0 次。黃金閘門只看 exit 0，ERROR 行不算失敗，所以 17-53、17-54 都沒擋下。
+docs/spec/05_TechSpec.csv:1838:★ 符合 5 F3：根因有證據（_try_garrison_buy → CashLedger.max_affordable_qty 二分搜尋探到超過庫存的數量 → MarketPricer ERR-SYS04-06）；改為先以市場庫存封頂，再逐擔遞減到城市付得起。I1（只合 #59）黃金 ERROR 0，168 次錯誤消失。
+docs/spec/05_TechSpec.csv:1910:十二、17-67 的根因與修法須覆核（Cursor 自行開立，2026-11-24）：回報卡死根因為 K4 測試觸發 max_affordable_qty 超量，錯誤風暴灌爆 GUT 步驟。
+docs/spec/05_TechSpec.csv:1912:　(2) ★ 重點查核：「加庫存上限」是否構成 C-06 與 N-05 禁止的 clamp 靜默修正。max_affordable_qty 是 03_Systems H 可觀察性已定的公開介面（05_TechSpec r173「max_affordable_qty() 必須實作」）。其回傳值若超過庫存，應先判定是公式本身錯、呼叫端用錯、還是測試情境設錯；以封頂掩蓋現象即違反 C-06。Cursor 須逐項說明改的是哪一層、依據哪條 FRM，無依據者屬未經裁決的自行決定（C-05）。
+docs/spec/05_TechSpec.csv:1916:甲、根因成立，證據充分：卡死測試為 test_K4_formal_boot_30d_sail_buy_sell_no_manual_board（tests/unit/test_d123_opening_board_1766.gd），K2 走同一路徑。堆疊 _evaluate_and_maybe_sail → CashLedger.max_affordable_qty → MarketPricer.quote → ERR-SYS04-06；#499 artifact 約 120 萬筆 ERR-SYS04-06、log 1.38 GB。非死迴圈，是錯誤 I/O 風暴。此項通過。
+docs/spec/05_TechSpec.csv:1918:丙、但屬介面語意澄清，須補規格（C-14）：修正後 max_affordable_qty 實質回傳 min(現金可負擔, 市場庫存)，r574 現文未寫此上界。須由 Owner 裁決並回寫 03_Systems r574，之後代碼才算有依據；否則屬未經裁決的自行決定（C-05）。建議另立 D 案。
+docs/spec/05_TechSpec.csv:1920:　(1) 條件分支「when PortRegistry knows the port」使產品路徑與測試路徑分歧（DemoQuoteProvider 測試因未載入 PortRegistry 而不受影響），等於修正本身沒有被測試覆蓋。須新增一個載入 PortRegistry 的測試，斷言 max_affordable_qty ≤ 市場庫存，且該次執行的 ERR-SYS04-06 計數為 0。
+docs/spec/05_TechSpec.csv:1962:發現四（★ 須裁決）：max_affordable_qty 的庫存上界以 _quote_provider 等於 MarketPricer 為條件，D-124 未授權。根因已由 CI run 45397235504 證實：PortRegistry 版守衛使 TST-SYS05-08 與 test_WP56_demo_q_afford_124_still_holds 兩個舊測試失敗（後者 expected 124 實得 0）。同一 FRM 因注入的 provider 不同而有兩種語意。另立 D-125 待裁決。
+docs/spec/05_TechSpec.csv:3401:WP-63：照 05_TechSpec WP-63 列全文，含 R9-64 追加 (d) 至 (i)：工坊週毛利用基準價；D-92b 取整；D-92a 城防累加器全整數；可負擔量改回 CashLedger.max_affordable_qty（WP-56 A18 已修好），刪逐擔遞減迴圈；週毛利 < 0 回報缺口；reverse_last_post 改為先完整驗證再寫入、保留原分錄只加沖銷分錄；_public_upgrade_cash 缺鍵或越界改報 ERR-SYS08-09；staffed_ports 排序後遍歷；未具名哨兵改具名常數。測試期望值只取 EX-08-14-01 至 05、EX-08-18-01 至 05。
+docs/spec/05_TechSpec.csv:3865:★ 特別證據：seed_opening_board 函數全文；K2 修正前後 diff；K4 測試 30 日 trader_summary；z-1758-3 報告的散商總出航與總運量。",,已完成：docs/spec v6.99.210 已 commit；派工已貼給 Cursor（2026-11-24）。,D-123；17-63；17-62；17-61；FRM-SYS15-11；FRM-SYS17-04；S9a；★ K4 規模縮減（Cursor #504 改 2 散商）之證據要求見 R9-72 第四點,已發送 2026-11-24（docs/spec v6.99.210 已 commit）；Cursor 開分支 cursor/m1b-fix-1766、PR #83，CI 跑中｜★ 2026-11-24 20:3x：同一 commit 的 #499（push）與 #500（PR）兩個 run 的 gut-unit-property 都卡逾 3 小時 44 分；同一 run 內 gut-ui、golden-30d 均正常通過。判定測試卡死，且 17-64 的 S1／S2 未涵蓋本分支（重複觸發、舊 run 未取消）。Owner 取消中，詳見 R9-72 第十點。｜2026-11-24 20:5x：卡死根因由 17-67 回報（K4＋max_affordable_qty 超量錯誤風暴）；#83 tip 補 .uid 續跑。,,,2026-11-24
+docs/spec/05_TechSpec.csv:3866:17-67,CI 卡死修正：K4 與 max_affordable_qty 超量錯誤風暴、S2 concurrency、30 分逾時、Node 24（Cursor 2026-11-24 自行開立，本書追認登記）,"【Cursor 自行開立，Owner 未簽發；本列為追認登記】Cursor 回報：#499／#500 卡死根因為 K4 測試觸發 max_affordable_qty 超量，導致錯誤風暴把 GUT 步驟灌爆。已改：加庫存上限、補 S2 concurrency、各 job 加 30 分逾時、actions/checkout 升 Node 24。PR #84（→ main）、#85（→ int-1758），證據 evening-17-67（Owner 已收到 SharePoint 資料夾）。
+docs/spec/05_TechSpec.csv:3867:★ 審查時必查（R9-72 第十二點）：所謂「加庫存上限」是否構成 C-06／N-05 禁止的 clamp 靜默修正；max_affordable_qty 屬 03_Systems H 可觀察性已定介面（05_TechSpec r173），其回傳值若超量，應先確認是公式錯還是呼叫端用錯，不得以封頂掩蓋。",,發送前：本則為 Cursor 自行開立，Owner 未經正式派工。追認或退回由 R9-72 一併裁決；在 Owner 審過 evening-17-67 之前，#84、#85 一律不得合併。,17-66；R9-72 第十、十二點；C-06；N-05；max_affordable_qty（r173）,Cursor 自開，修好待審（未合）；證據 evening-17-67 已交｜★ AI 已審 evening-17-67：根因成立、clamp 疑慮解除；但須補規格（C-14）、補 PortRegistry 覆蓋測試、改回 ui／golden 15 分逾時、交代 #83 三項緩解、補 S9a 與檔案清單。結論見 R9-72 第十二點，#84／#85 仍不得合併。｜★ Owner 2026-11-24 追認（附條件）：追認本則的存在與編號，不等於認可其交付品質——R9-72 第十二點丁五項退件全部仍然有效。複審 evening-17-67 七檔（含 workflow.diff 602 行逐行）：丁(1) 至 (5) 全未解；另查出報告 actions 版本（v7／v6／v7／v8）與自身 workflow.diff 及 commit 8456c57（實為全部 v5）矛盾，依 C-15 為新增退件事由。產品修正本身數學正確，規格依據已由 D-124 補齊（r574 已回寫）。#84／#85 維持不得合併，修正工作併入 17-69 線 2。,,,2026-11-24
+docs/spec/05_TechSpec.csv:3903:2.1 ★ R9-72 丁(1)：新增測試，須實際載入 PortRegistry 與 GoodsLedger（不得走 DemoQuoteProvider 路徑）：(a) 斷言 max_affordable_qty ≤ 該港該貨市場庫存；(b) 斷言該次執行 ERR-SYS04-06 計數＝0；(c) 庫存＝0 時回 0；(d) ★ 現金不足情境：確認庫存上界未蓋過現金限制，結果仍＝現金可負擔量。★ 期望值一律取自 frm_examples 的 EX-05-09-01 至 03（D-124(f)）：(a) 取 EX-05-09-01（庫存為瓶頸，q_afford＝300）、(c) 取 EX-05-09-03（s＝0 回 0 且不呼叫 quote）、(d) 取 EX-05-09-02（現金為瓶頸，q_afford＝120，證明庫存上界未蓋過現金限制）。測試名含 EX 編號與 WP 或紅隊編號並註明依據（D-60e）；不得與產品碼用同一公式推算（S9f 禁止鏡像測試）。
+docs/spec/05_TechSpec.csv:3958:W2 D-125 甲（線 2，#84）：刪除 max_affordable_qty 的 provider 條件，庫存上界無條件適用；只改兩個舊測試的 Given（先放足量庫存），期望值與測名不改；交 gate 輸出證明 REMOVED_NAMES＝無、ADDED_NAMES 仍只有三個 EX-05-09；交 diff 與兩測試前後全文。
+docs/spec/AI_README.csv:583:2026-11-24,v6.99.217,追認登記 Cursor 自行開立的 17-67（CI 卡死修正：K4＋max_affordable_qty 超量錯誤風暴、S2、30 分逾時、Node 24；PR #84／#85，證據 evening-17-67 已交）與 17-68（補交 evening-17-64／17-63／z-1758-2）。R9-72 新增第十二點：覆核「加庫存上限」是否為 C-06／N-05 禁止的 clamp、改動範圍是否超出 17-66 檔案清單；#84／#85 審前不得合併。,05_TechSpec；AI_README；00_Overview,,
+docs/spec/AI_README.csv:584:2026-11-24,v6.99.218,審 evening-17-67：卡死根因成立（K4／K2 走 max_affordable_qty → quote → 約 120 萬筆 ERR-SYS04-06、1.38 GB log）。依 03_Systems r451（q 須 ≤ s）撤回 clamp 保留——收斂二分搜尋上界是回到 quote 定義域，非靜默修正；但須補寫 r574 上界（C-14，另立 D 案）。退件五項：PortRegistry 覆蓋測試、ui／golden 逾時由 15 放寬為 30 應改回、#83 三項緩解須交代、缺 S9a 與檔案清單、actions 版本佐證。並證實 17-64 的 S1／S2 當時未達成（第十一點）。,05_TechSpec；AI_README；00_Overview,,
+tests/unit/test_building_economy_wp23.gd:207:	## max_affordable_qty may probe overstock → ERR-SYS04-06 (expected).
+tests/unit/test_building_economy_wp63.gd:312:	## max_affordable_qty binary-search may probe qty>stock → ERR-SYS04-06 (WP-56 A18).
+tests/unit/test_cash_ledger.gd:329:func test_TST_SYS05_08_max_affordable_qty() -> void:
+tests/unit/test_cash_ledger.gd:350:	var q: int = CashLedger.max_affordable_qty(CashLedger.ACCOUNT_PLAYER, &"PT-01", &"米")
+tests/unit/test_r972_cash_stock_cap_1769.gd:2:## R9-72 丁(1)／17-69 2.1／D-124：max_affordable_qty on real MarketPricer path.
+tests/unit/test_r972_cash_stock_cap_1769.gd:89:	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+tests/unit/test_r972_cash_stock_cap_1769.gd:118:	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+tests/unit/test_r972_cash_stock_cap_1769.gd:135:	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+tests/unit/test_trader_registry_wp36.gd:188:	assert_eq(CashLedger.max_affordable_qty(acct, StringName(PORT_A), StringName(GOOD)), 0)
+tests/unit/test_wp56_cash_market_trade.gd:77:	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+tests/unit/test_wp56_cash_market_trade.gd:250:	var q: int = CashLedger.max_affordable_qty(ACTOR, &"PT-01", &"米")
+---END FULL OUTPUT---
+
+## Q1(c)-2 COMMAND
+git grep -n 'board_for'
+OUTPUT_LINE_COUNT=57
+---BEGIN FULL OUTPUT---
+autoload/intel_ledger.gd:413:func board_for(
+autoload/intel_ledger.gd:417:	assert(_loaded, "IntelLedger.board_for before load")
+autoload/trader_registry.gd:180:	## Test／fixture only (F2): product／sim paths use IntelLedger.board_for(actor, P, O, g).
+autoload/trader_registry.gd:639:	## D-104(c)⑤ shared mid cache reserved; per-candidate board_for is authoritative (F2).
+autoload/trader_registry.gd:754:	## Dest ports excluded because board_for / dest intel empty (F2 "no market").
+autoload/trader_registry.gd:975:	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
+autoload/trader_registry.gd:980:		var board: Dictionary = IntelLedger.board_for(actor, present_port, dest, good)
+docs/spec/03_Systems.csv:2159:B 輸入,—,"公開情報（SYS-15 掛牌快照與自身船報；SYS-15 未上線前由注入的 fixture 提供）；MarketPricer.quote()；CashLedger.balance()；GoodsLedger.get_qty(HOLD)；ShipRegistry 的位置、艙位與 can_trade()；SeaLanes 尋路與航程 tick 數；15.2 商品准入與入港資格；PRM-SYS17-* 全部參數。｜★ 2026-11-20：SYS-15 已定案（25.1）。散商讀取介面為 IntelLedger.board_for（牙行行市）與 own_snapshot（自己的船報）；FRM-SYS17-02 的目的港已知賣價取行市 consensus_mid_li，WP-36 派工前同步。
+docs/spec/03_Systems.csv:2665:H 可觀察性,Autoload 定名,"IntelLedger（res://autoload/intel_ledger.gd）：on_departed(ship_id, owner_id, from_port_id, tick)、on_arrivals(tick, arrivals)（以上實作 ShipEventObserver）；daily_step(day)；own_snapshot(actor_id, origin_port) -> Dictionary（無資料回空）；board_for(actor_id, port_id, origin_port, good_id) -> Dictionary（見 FRM-SYS15-06）；contact_level(actor_id, port_id) -> int；grant_base(actor_id, port_id, requester) -> int（成功回 1、失敗回 0，原因經 last_error()）；last_error() -> Dictionary。信號：board_updated(port_id, tick)（日結統一發出，D-05）。登錄於 ShipRegistry 之後、TraderRegistry 之前。｜★ grant_base 已刪（D-37e、D-38a）：等級 2 改 has_kontor；本段文字留存供對照，不實作（R9-25 ②）",GDScript,Draft｜已追認,C-14；D-14c,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2675:K 未決,與 SYS-17／18 的銜接,散商與 AI 讀資訊只用 board_for 與 own_snapshot（15-G16）；17.1 的情報輸入描述須在 WP-36 派工前同步為本節介面。AI 如何利用分歧度與方向由 SYS-18 定。,—,[待審],15-G16；17.1,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2697:FRM-SYS15-06,SYS-15,"查詢 board_for(actor, P, O, g)：先驗在場（actor 在 P 有停泊船，或持有任何狀態的建築；否則 ERR-SYS15-04、回空）；再回 {n, consensus_mid_li, band ＝ MarketPricer.indicator_band(consensus_mid_li ÷ base_price_li)、consensus_weeks_x、mean_age_days、newest_age_days、divergence_ppm、divergence_band、direction}。查詢不寫入任何狀態。｜★ D-37c（已追認 D-37e）：公開延遲與資格特權可見性見 26.1 FRM-SYS16-04；樣本集依行為者可見性過濾。
+docs/spec/03_Systems.csv:2698:★ 2026-11-24（D-120(b)②，R9-71 高-2）呼叫方式釐清：讀「目的港 O 的行情」時，P 填行為者目前所在港，O 填目的港——board_for(actor, P＝本港, O＝目的港, g)，回傳本港牙行收到、來自 O 的船報共識。不得寫成 board_for(actor, O, O, g)（那要求行為者人在 O）。",FRM-03 至 05,行市結果,Draft,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2711:ERR-SYS15-04,NO_PRESENCE,board_for 的行為者在該港不在場，或 id 不存在（船、港、貨）,回空 Dictionary 並記 last_error；不動狀態,Draft,,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2722:TST-SYS15-05,同一 tick 兩艘船（來自同一起航港）抵同一港，ship_id 不同,tick_step 後立即查 board_for,兩筆同時出現（n ＝ 2）；on_arrivals 恰呼叫一次；不存在只含一筆的中間狀態,SYS-15,必須通過,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2723:TST-SYS15-06,fixture：WINDOW ＝ 10、DECAY ＝ 10；兩筆樣本 age ＝ 5（mid 100）、age ＝ 2（mid 70）,board_for,權重 5、8；consensus_mid_li ＝ (500＋560) 整數除以 13 ＝ 81；mean_age 與 newest_age 依 FRM-SYS15-03；數值僅為 fixture，非正式值,SYS-15,必須通過,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2724:TST-SYS15-07,同一艘船同一起航港連續兩次公開,查 board_for,只算最新一筆（n ＝ 1）,SYS-15,必須通過,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2727:TST-SYS15-10,觀測日齡 ≥ WINDOW_DAYS 的樣本,daily_step 與 board_for,被修剪、不計入；own_snap 保留,SYS-15,必須通過,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2728:TST-SYS15-11,行為者在港 P 有停泊船；另一情境持有建築；另一情境兩者皆無,board_for,前兩者回行市；後者 ERR-SYS15-04 且不改狀態,SYS-15,必須通過,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2735:TST-SYS15-18,玩家與 AI／散商 fixture 行為者的船,相同情境,board_for 與 own_snapshot 回傳同一結構與同一規則（LCR-09）,SYS-15,必須通過,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2779:FRM-SYS16-03,SYS-16,"known_price(actor, P, g) 統一查詢，依序判定：(1) 即時：has_kontor(actor, P) 或 actor 有停泊在 P 的船（[待審]）→ level ＝ 2、source ＝ LIVE、mid_li ＝ floori(MarketPricer.mid_price(P, g))、band ＝ MarketPricer.indicator_band(mid_price ÷ base_price_li)、weeks_x ＝ stock_weeks 的定點整數（null 規則同 FRM-SYS15-01）、age_days ＝ 0；(2) 船報：取候選集合——actor 自己對 P 的 own_snapshot，以及 actor 在場的每個港 P′（port_id 升序）的 board_for(actor, P′, P, g) 且 n ≥ 1；挑觀測日齡最小者，同齡先 own_snapshot、再 port_id 小者；回 level ＝ 1、source ＝ OWN_SNAPSHOT 或 BOARD@P′、mid_li、band、age_days、n；(3) 其餘 level ＝ 0、source ＝ RANGE，回 low_li、high_li（FRM-SYS16-07）。level 1 但無任何候選時，同 (3)。",IntelLedger、MarketPricer,報價資訊,Draft,,,,,,,,,,,,,,,
+docs/spec/03_Systems.csv:2810:TST-SYS16-13,DELAY ＝ D tick；新船報於 tick t 入庫；一般 actor 與持資格 actor（tier ＝ 最低階）,在 t、t＋D－1、t＋D 查 board_for、broker_detail、known_price(level 1 來源為牌),持資格者於 t 即見；一般 actor 於 t＋D 才見；三個入口結果一致,SYS-16,必須通過,,,,,,,,,,,,,,,
+docs/spec/05_TechSpec.csv:344:WP-36,SYS-17 散商（TraderRegistry）：ST-TRADER、每日決策、探索、起始資金專用入口、開局配船與水手、破產退場五步（03_Systems 17.1）｜★ D-44g：FRM-SYS17-02 的評估核心須實作為 res://core/trade_evaluator.gd（純函數，SYS-18 共用）；若本包先於 WP-42 派工，請在派工時一併要求。,WP-30、WP-33、WP-35 合併後；順序排在 WP-37 之後（正式開機需 TradeObserver）,trader_registry.gd、cash_ledger.gd（genesis 例外入口）、sim_loop.gd、params.gd、測試,TST-SYS17-01 至 12；見 17-08、17-09,進行中,派工單草稿見第 17 節（未派）；D-23b 至 g、D-26e｜★ D-50：破產與清算由 SYS-22（WP-44）統一執行；本包只做「對凍結者每日步驟跳過」與 retire 入口（待 WP-44 配合），不得自寫清算（N-04）。｜★ D-104(c)（待 Owner 核對）：提前至 M1b，取代 L2 遷移作為運貨層｜R9-71：#72 不合併——模擬未接線（G-INT-01）、遠港行情 board_for 用法錯、規範四項（17-58）｜D-120：修正與重跑派 17-58 線 F（#72 續用）｜17-58 線 F 進行中（Cursor 10:2x 回報）,Phase 2（成交與制度）,2026-11-24,
+docs/spec/05_TechSpec.csv:930:(b) 17-58（散商修正＋重跑）：① sim_engine 依 layers.TRADERS／QUAL_OPEN 呼叫 set_layers，QUAL_OPEN 開時改注入「全部允許」的資格 fixture；② 遠港行情改用 board_for(actor, 本港, 目的港, g)（25.1 語意），刪除 intel_override 的產品路徑依賴；③ 散商亂數種子接情境 seed；④ 修中-2 四項（可改 market_pricer.gd 公開 batch_area 並刪複製）；⑤ 修情境檔 ABUND 重複；⑥ 補交 220b8fc 的 git show --cc 與逐檔說明；⑦ 重跑 Z（G0／G1／G2 × ABUND 0／250000，5 年）＋G0 散商關＋G0H 5 年，報告加散商出航次數、運量、獲利分布。
+docs/spec/05_TechSpec.csv:1877:◆ 高-2 散商讀遠港行情的用法錯（線 A 新發現）：trader_registry 呼叫 board_for(actor, dest, dest, g)，要求人在目的港；25.1 的 board_for(actor, P, O, g) 是「在本港 P 讀從 O 來的船報」，應寫 board_for(actor, 本港, 目的港, g)。不改的話，接線後散商也只會靠探索出航。另外散商亂數種子固定為 1，沒有接情境種子（Z3 三個種子結果相同的原因之一）。
+docs/spec/05_TechSpec.csv:1981:【三、M1b ② 的機制鏈已由 17-63 診斷包完整證實】(a) 開機接線正確：set_layers(true,true)＋SimQualificationOpenFixture；(b) 名冊正確：48 商人、83 船、全部 DOCKED、16 港皆有船（b_roster_by_port.txt 逐港清單）；(c) 三十天每日恆為 evaluable_candidates＝0、dest_excluded_no_market＝16、explore_hit＝2、sail＝0；(d) 第 1、7、30 日全港 board_for 紀錄數皆為 0。→ 冷啟動循環死結：船不開→無到港→情報板空→無候選→船不開。另有獨立的取樣缺口：TraderRegistry 當時缺 season_sail_count／ships_in_port_count，故 trader_summary 的 sail／ships 欄恆為 0（此缺口已於 #83 以 D-123(c) 補上，見 interfaces.md）。
+docs/spec/05_TechSpec.csv:3706: F2 遠港行情（R9-71 高-2）：_dest_intel 改為 IntelLedger.board_for(actor, 本港 P, 目的港 O, g)（25.1 FRM-SYS15-06 的 2026-11-24 釐清）；n＝0 或回空 → 該目的港不列候選（17.1 無行市不列候選）。產品與模擬路徑不得依賴 intel_override；若保留作測試注入點，預設為空，報告以 grep 列出所有設定位置（應只在 tests/）。測試：(a) 散商在 P、P 的牙行有來自 O 的船報 → 候選用 O 的 consensus_mid_li；(b) P 沒有來自 O 的船報 → O 不列候選；(c) 散商不在 O 也不影響 (a)。
+docs/spec/05_TechSpec.csv:3804:Z2 在 CI 用 int-1758（5467e4e）跑 Za_G0_A0 30 日，走和步 Z 完全相同的入口（run_m1b／sim_runner --inline、repo 內情境檔），印出並交：(a) 開機時 set_layers 收到的參數與注入的資格替身類名；(b) 散商人數、船數、各船所在港；(c) 每日：可評估候選數、因「無行市」被排除的目的港數、探索抽中的散商數、實際出航數；(d) 第 1、7、30 日各港牙行（board_for）的船報筆數。
+docs/spec/05_TechSpec.csv:3857:K1 開局船報（FRM-SYS15-11）：新增公開方法 IntelLedger.seed_opening_board()（屬 D-123 已核准的介面變更，PR 描述逐字列出簽章），SimLoop.boot() 在開局市場庫存寫入後呼叫一次。測試：(a) 開機後任一港 P 對任一 O≠P、任一貨 g，board_for 回 n ＝ 1、consensus_mid_li ＝ O 的開局 mid_li；(b) 日齡達 WINDOW_DAYS 後該筆被修剪；(c) 真實船報抵港後兩筆並存、權重照 FRM-SYS15-03；(d) 不寫 own_snap、不改 contact；(e) 取價失敗收集全部錯誤、拒絕啟動。
+sim/m1b_diag_z.gd:117:		"d_board_for_days": _board_snapshots,
+tests/unit/test_d123_opening_board_1766.gd:57:	## Presence at PORT_A for board_for.
+tests/unit/test_d123_opening_board_1766.gd:61:	var board: Dictionary = IntelLedger.board_for(
+tests/unit/test_d123_opening_board_1766.gd:83:	var board: Dictionary = IntelLedger.board_for(
+tests/unit/test_d123_opening_board_1766.gd:96:	var board: Dictionary = IntelLedger.board_for(
+tests/unit/test_intel_ledger_wp40.gd:212:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:223:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:240:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:247:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:252:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:257:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:261:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:271:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:283:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:288:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:293:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:310:	board = IntelLedger.board_for(ACTOR, StringName(PT_A), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:349:	var board_c: Dictionary = IntelLedger.board_for(
+tests/unit/test_intel_ledger_wp40.gd:355:	var board_b: Dictionary = IntelLedger.board_for(
+tests/unit/test_intel_ledger_wp40.gd:419:	var board_p: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:420:	var board_ai: Dictionary = IntelLedger.board_for(ACTOR_B, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:457:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:461:	board = IntelLedger.board_for(ACTOR_B, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:465:	board = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:475:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:498:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:506:	var board: Dictionary = IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_intel_ledger_wp40.gd:588:	return IntelLedger.board_for(ACTOR, StringName(PT_B), StringName(PT_A), StringName(GOOD))
+tests/unit/test_lane_f_wp36_1758.gd:80:func test_F2_dest_intel_uses_board_for_present_port_origin() -> void:
+---END FULL OUTPUT---
+
+# Q1(d) 散商候選迴圈 calling (a)(b)
+ANSWER: Candidate loop body is _evaluate_and_maybe_sail (trader_registry.gd:721-937); calls CashLedger.max_affordable_qty at L780; calls _dest_intel at L784 which calls IntelLedger.board_for at L980.
+
+## Q1(d)-1 _evaluate_and_maybe_sail
+FILE=autoload/trader_registry.gd
+RANGE=721-937
+LINE_COUNT=217
+---BEGIN FULL TEXT---
+721|func _evaluate_and_maybe_sail(
+722|	tid: StringName, sid: StringName, t: Dictionary, info: Dictionary, explore: bool
+723|) -> Dictionary:
+724|	var stats := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
+725|	var from_port: StringName = StringName(info.get("port_id", &""))
+726|	var acct: StringName = t["account_id"]
+727|	var idle_map: Dictionary = t["idle_days"]
+728|	var idle: int = int(idle_map.get(String(sid), 0))
+729|	var cap_map: Dictionary = Params.get_value(StringName(PRM_CAPACITY))
+730|	var hold_cap: int = int(cap_map.get(String(SHIP_TYPE), 0))
+731|	var hold_id: StringName = StringName(GoodsLedger.CONTAINER_ID_FMT_HOLD % String(sid))
+732|	var hold_dict: Dictionary = GoodsLedger.make_hold(String(sid), String(acct))
+733|	## Free hold space.
+734|	var used: int = 0
+735|	if GoodCatalog.is_loaded():
+736|		for g in GoodCatalog.all_ids():
+737|			used += GoodsLedger.get_qty(hold_dict, g)
+738|	var free_cap: int = hold_cap - used
+739|	if free_cap < 1:
+740|		idle_map[String(sid)] = idle + 1
+741|		return stats
+742|	var goods: Array = []
+743|	if GoodCatalog.is_loaded():
+744|		for g in GoodCatalog.all_ids():
+745|			goods.append(g)
+746|	goods.sort_custom(func(a, b): return String(a) < String(b))
+747|	var ports: Array = []
+748|	if PortRegistry.is_loaded():
+749|		for p in PortRegistry.all_ids():
+750|			ports.append(p)
+751|	ports.sort_custom(func(a, b): return String(a) < String(b))
+752|
+753|	var candidates: Array = []
+754|	## Dest ports excluded because board_for / dest intel empty (F2 "no market").
+755|	var excl_dests: Dictionary = {}
+756|	## Coarse pass then top-3 precise (D-104(c)⑤).
+757|	var coarse: Array = []
+758|	for dest_v in ports:
+759|		var dest: StringName = dest_v
+760|		if String(dest) == String(from_port):
+761|			continue
+762|		if not _can_enter(acct, dest):
+763|			continue
+764|		if not _draft_ok(sid, dest):
+765|			continue
+766|		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+767|		if days < 1:
+768|			continue
+769|		var dest_had_intel := false
+770|		var dest_saw_good := false
+771|		for good_v in goods:
+772|			var good: StringName = good_v
+773|			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
+774|				continue
+775|			if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
+776|				continue
+777|			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
+778|			if market_qty < 1:
+779|				continue
+780|			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
+781|			if afford < 1:
+782|				continue
+783|			dest_saw_good = true
+784|			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+785|			var mid: int = 0
+786|			var weeks_v: Variant = 0.0
+787|			if intel.is_empty() or intel.get("mid_li", null) == null:
+788|				## D-109(c)／F2: empty board → not a profit candidate.
+789|				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+790|				## catalog base_price_li as ranking stand-in only (profit gate skipped).
+791|				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+792|				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+793|				if not explore:
+794|					continue
+795|				if not GoodCatalog.is_loaded():
+796|					continue
+797|				var gd_ex: GoodDef = GoodCatalog.get_good(good)
+798|				if gd_ex == null or gd_ex.base_price_li < 1:
+799|					continue
+800|				mid = gd_ex.base_price_li
+801|				weeks_v = 0.0
+802|			else:
+803|				dest_had_intel = true
+804|				mid = int(intel["mid_li"])
+805|				weeks_v = intel.get("weeks", 0.0)
+806|			var weekly: int = 0
+807|			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
+808|				weekly = DemandModel.weekly_potential_demand(dest, good)
+809|			if weekly < 1:
+810|				continue ## D-110(g)
+811|			var q: int = mini(mini(afford, free_cap), market_qty)
+812|			if explore:
+813|				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+814|			if q < 1:
+815|				continue
+816|			var rough_buy: int = mid ## coarse; precise quote later
+817|			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
+818|			var origin_mid: float = MarketPricer.mid_price(from_port, good)
+819|			rough_buy = floori(origin_mid * float(q))
+820|			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
+821|			coarse.append({
+822|				"port_id": dest,
+823|				"good_id": good,
+824|				"qty": q,
+825|				"voyage_days": days,
+826|				"mid_li": mid,
+827|				"weeks": weeks_v,
+828|				"weekly": weekly,
+829|				"score": score,
+830|				"rough_buy": rough_buy,
+831|			})
+832|		if dest_saw_good and not dest_had_intel and not explore:
+833|			excl_dests[String(dest)] = true
+834|	stats["excl_dests"] = excl_dests
+835|	coarse.sort_custom(func(a, b):
+836|		if int(a["score"]) != int(b["score"]):
+837|			return int(a["score"]) > int(b["score"])
+838|		var ap := String(a["port_id"])
+839|		var bp := String(b["port_id"])
+840|		if ap != bp:
+841|			return ap < bp
+842|		return String(a["good_id"]) < String(b["good_id"])
+843|	)
+844|	var top_n: int = Params.get_int(StringName(PRM_TOP_N))
+845|	var top: Array = coarse.slice(0, mini(top_n, coarse.size()))
+846|	for c in top:
+847|		var dest2: StringName = c["port_id"]
+848|		var good2: StringName = c["good_id"]
+849|		var q2: int = int(c["qty"])
+850|		var days2: int = int(c["voyage_days"])
+851|		var buy_q: Dictionary = MarketPricer.quote(from_port, good2, MarketPricer.SIDE_BUY, q2)
+852|		if buy_q.has(MarketPricer.KEY_ERROR):
+853|			continue
+854|		var buy_cost: int = int(buy_q.get(MarketPricer.KEY_TOTAL_LI, 0))
+855|		## Recompute affordable with precise quote.
+856|		if buy_cost > CashLedger.balance(acct):
+857|			continue
+858|		var sell_rev: int = _estimate_sell_revenue(
+859|			dest2, good2, q2, int(c["mid_li"]), c.get("weeks", 0.0), int(c["weekly"])
+860|		)
+861|		var profit: int = TradeEvaluator.daily_marginal_profit(sell_rev, buy_cost, TAX_LI, days2)
+862|		candidates.append({
+863|			"port_id": dest2,
+864|			"good_id": good2,
+865|			"qty": q2,
+866|			"voyage_days": days2,
+867|			"daily_profit_li": profit,
+868|			"buy_cost_li": buy_cost,
+869|			"sell_revenue_li": sell_rev,
+870|		})
+871|	stats["evaluable"] = candidates.size()
+872|	## Explore: destinations with no offtake history preferred; skip profit gate later.
+873|	if explore:
+874|		candidates = _filter_explore_candidates(candidates, from_port)
+875|
+876|	var best: Dictionary = TradeEvaluator.pick_best_candidate(candidates)
+877|	var profit_min: int = Params.get_int(StringName(PRM_PROFIT_MIN))
+878|	var idle_max: int = Params.get_int(StringName(PRM_IDLE_MAX))
+879|	var loss_tol: int = Params.get_int(StringName(PRM_LOSS_TOL))
+880|	var ppm: int = Params.get_int(StringName(PRM_PPM))
+881|	if best.is_empty():
+882|		idle_map[String(sid)] = idle + 1
+883|		_clear_plan(t, sid)
+884|		return stats
+885|	var decision: Dictionary
+886|	if explore:
+887|		decision = {"sail": true, "idle_days_after": 0}
+888|	else:
+889|		decision = TradeEvaluator.decide_sail_or_idle(
+890|			int(best["daily_profit_li"]),
+891|			int(best["buy_cost_li"]),
+892|			int(best["sell_revenue_li"]),
+893|			idle,
+894|			profit_min,
+895|			idle_max,
+896|			loss_tol,
+897|			ppm
+898|		)
+899|	if not bool(decision["sail"]):
+900|		idle_map[String(sid)] = int(decision["idle_days_after"])
+901|		_clear_plan(t, sid)
+902|		return stats
+903|	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
+904|	var dest_f: StringName = best["port_id"]
+905|	var good_f: StringName = best["good_id"]
+906|	var qty_f: int = int(best["qty"])
+907|	var buy2: Dictionary = MarketPricer.quote(from_port, good_f, MarketPricer.SIDE_BUY, qty_f)
+908|	var preview: int = int(buy2.get(MarketPricer.KEY_TOTAL_LI, 0))
+909|	var seq: int = TradeDesk.execute_trade(
+910|		acct, hold_id, from_port, good_f, MarketPricer.SIDE_BUY, qty_f, preview
+911|	)
+912|	if seq < 1:
+913|		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+914|		_clear_plan(t, sid)
+915|		idle_map[String(sid)] = idle + 1
+916|		return stats
+917|	var arrival: int = ShipRegistry.sail(acct, sid, dest_f)
+918|	if arrival < 1:
+919|		## Rollback not available as single API — leave goods in hold; clear plan; record.
+920|		_day_errors.append(_err(ERR_SYS17_06, "sail", sid, "sail failed after buy"))
+921|		_clear_plan(t, sid)
+922|		return stats
+923|	var new_plan := {
+924|		"phase": TradeEvaluator.PHASE_OUTBOUND,
+925|		"from_port": from_port,
+926|		"to_port": dest_f,
+927|		"good_id": good_f,
+928|		"qty": qty_f,
+929|		"expected_profit_li": int(best["daily_profit_li"]),
+930|	}
+931|	(t["plans"] as Dictionary)[String(sid)] = new_plan
+932|	t["mode"] = MODE_SAILING
+933|	idle_map[String(sid)] = 0
+934|	_queue_signal("trader_plan_set", [tid, sid, new_plan])
+935|	_record_season_sail(from_port, good_f, qty_f, int(best["daily_profit_li"]))
+936|	stats["sailed"] = 1
+937|	return stats
+---END FULL TEXT---
+
+## Q1(d)-2 _dest_intel (board_for wrapper used by loop)
+FILE=autoload/trader_registry.gd
+RANGE=972-997
+LINE_COUNT=26
+---BEGIN FULL TEXT---
+972|func _dest_intel(
+973|	actor: StringName, present_port: StringName, dest: StringName, good: StringName
+974|) -> Dictionary:
+975|	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
+976|	var key := "%s|%s" % [String(dest), String(good)]
+977|	if _intel_override.has(key):
+978|		return (_intel_override[key] as Dictionary).duplicate(true)
+979|	if IntelLedger.is_loaded():
+980|		var board: Dictionary = IntelLedger.board_for(actor, present_port, dest, good)
+981|		if board.is_empty():
+982|			return {}
+983|		if int(board.get(IntelLedger.KEY_N, 0)) == 0:
+984|			return {}
+985|		if board.get(IntelLedger.KEY_CONSENSUS_MID, null) == null:
+986|			return {}
+987|		var weeks_x = board.get(IntelLedger.KEY_CONSENSUS_WEEKS, null)
+988|		var weeks_f: Variant = null
+989|		if weeks_x != null and typeof(weeks_x) == TYPE_INT and Params.has_prm("PRM-SYS15-WEEKS_SCALE"):
+990|			var scale: int = Params.get_int("PRM-SYS15-WEEKS_SCALE")
+991|			if scale > 0:
+992|				weeks_f = float(int(weeks_x)) / float(scale)
+993|		return {
+994|			"mid_li": int(board[IntelLedger.KEY_CONSENSUS_MID]),
+995|			"weeks": weeks_f if weeks_f != null else 0.0,
+996|		}
+997|	return {}
+---END FULL TEXT---
+
+# Q1 TOTALS
+SOURCE_FUNCTION_LINES_TOTAL=356
+GREP_MAX_LINES=48
+GREP_BOARD_LINES=57
+Q1_FILE_LINE_COUNT=551
