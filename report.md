@@ -121,7 +121,7 @@ label=yi_tip	days=10	round=1	elapsed_ms=86610	commit=107c17fea29da54363713e58968
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-87-A`
-- Full SHA: `c382d0af4971585b480637a3159d2e0c91f4e478`
+- Full SHA: `5e3dade7da2dde4974fb2b479129a20dc4c7e3eb`
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-87-A
 
 ### git ls-tree -r -l
@@ -137,16 +137,16 @@ label=yi_tip	days=10	round=1	elapsed_ms=86610	commit=107c17fea29da54363713e58968
 100644 blob 7e1bf4e73f77c2a0bf7fd88f124af8731e29b996    8587	evidence-special.txt
 100644 blob e128046157ad9d6a8844f3144ea3faa75773fa9c    1183	failed-runs.txt
 100644 blob 284a7efe5e38577e6d23f38307e785640d4a982f     376	lane.txt
-100644 blob c01a3539343d983ffb932f3f3bd5a81c15dc4c3b    1469	manifest.txt
-100644 blob 70cce2cc2be95f5ef7f255d57880bc3b63993f9e    1301	orphan_push.log
-100644 blob 538a2522eafe1e10a3376796d0f0b1d6234fdd8e      41	orphan_sha.txt
-100644 blob a82c3e79243e85efbcbdbcebfb603107a695a109    5849	report.md
+100644 blob 9379b279562d68bd00cca2bfb9fcaf70317a021d    1435	manifest.txt
+100644 blob f015ac0a7ea74b5479cee174056dc328e9262666    1364	orphan_push.log
+100644 blob beffd0b47163063e9aeb25bcb8f7301f58dd4beb      41	orphan_sha.txt
+100644 blob 5c371d4ce1f86e4002648324b1e2c02708769562    6748	report.md
 ```
 
 ## B-10 ls + FILES_TOTAL
 
 ```
-total 88
+total 89
 drwxrwxrwx 2 ubuntu ubuntu     0 Nov 27 16:14 .
 drwxrwxrwx 2 ubuntu ubuntu     0 Nov 27 16:14 ..
 -rw-rw-rw- 1 ubuntu ubuntu   748 Nov 27 19:36 a4-golden.txt
@@ -159,10 +159,10 @@ drwxrwxrwx 2 ubuntu ubuntu     0 Nov 27 16:14 ..
 -rw-rw-rw- 1 ubuntu ubuntu  8587 Nov 27 19:37 evidence-special.txt
 -rw-rw-rw- 1 ubuntu ubuntu  1183 Nov 27 19:37 failed-runs.txt
 -rw-rw-rw- 1 ubuntu ubuntu   376 Nov 27 19:37 lane.txt
--rw-rw-rw- 1 ubuntu ubuntu  1469 Nov 27 19:37 manifest.txt
+-rw-rw-rw- 1 ubuntu ubuntu  1435 Nov 27 19:37 manifest.txt
 -rw-rw-rw- 1 ubuntu ubuntu  1301 Nov 27 19:37 orphan_push.log
 -rw-rw-rw- 1 ubuntu ubuntu    41 Nov 27 19:37 orphan_sha.txt
--rw-rw-rw- 1 ubuntu ubuntu  5849 Nov 27 19:37 report.md
+-rw-rw-rw- 1 ubuntu ubuntu  6748 Nov 27 19:37 report.md
 ```
 
 FILES_TOTAL=14
