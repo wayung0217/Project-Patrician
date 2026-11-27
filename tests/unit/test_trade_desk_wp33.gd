@@ -536,7 +536,17 @@ func test_WP59_D28d_observer_failure_keeps_trade() -> void:
 	assert_gte(seq, 1)
 	assert_lt(CashLedger.balance(ACTOR), cash_before)
 	assert_eq(obs.records.size(), 1)
-	assert_gt(TradeDesk.take_day_errors().size(), 0)
+	var day_errs: Array = TradeDesk.take_day_errors()
+	assert_gt(day_errs.size(), 0)
+	var saw_wrn := false
+	for e_v in day_errs:
+		if typeof(e_v) != TYPE_DICTIONARY:
+			continue
+		var code: String = String((e_v as Dictionary).get(ErrorInfoUtil.KEY_CODE, ""))
+		if code == "WRN-TRADE-OBSERVER-FAIL":
+			saw_wrn = true
+			break
+	assert_true(saw_wrn, "expected WRN-TRADE-OBSERVER-FAIL in day_errors")
 	var obs2: FixtureTradeObserver = TradeDesk._observers[1] as FixtureTradeObserver
 	assert_eq(obs2.records.size(), 1)
 	assert_push_error_count(1)
