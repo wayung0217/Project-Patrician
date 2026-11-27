@@ -1,0 +1,237 @@
+p5-no-intel.txt
+PACK=overnight-17-87-P
+LANE=P DIAG-PERF-4
+PROBE_SHA=7d0c4ad049859db17ec29bf584f8677c707eadd1
+ACTIONS_RUN=https://github.com/wayung0217/Project-Patrician/actions/runs/46033150459
+cpu_model=Intel(R) Xeon(R) 6975P-C
+BASE_MAIN=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+FACTS_ONLY=yes
+NOTE=Daily PERF_P5_CELLS series filled from Actions probe-za-d60 after job completes.
+
+===== (a) skip.no_intel decision code (autoload/trader_registry.gd) =====
+878|			dest_saw_good = true
+879|			SimPerfProbe.begin("traders.intel")
+880|			SimPerfProbe.count("mod.TraderRegistry._dest_intel", 1)
+881|			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+882|			SimPerfProbe.end("traders.intel")
+883|			var mid: int = 0
+884|			var weeks_v: Variant = 0.0
+885|			SimPerfProbe.begin("cl.intel_branch")
+886|			var intel_empty: bool = intel.is_empty() or intel.get("mid_li", null) == null
+887|			if intel_empty:
+888|				## D-109(c)／F2: empty board → not a profit candidate.
+889|				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+890|				## catalog base_price_li as ranking stand-in only (profit gate skipped).
+891|				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+892|				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+893|				if not explore:
+894|					SimPerfProbe.end("cl.intel_branch")
+895|					SimPerfProbe.count("skip.no_intel", 1)
+896|					continue
+897|				if not GoodCatalog.is_loaded():
+898|					SimPerfProbe.end("cl.intel_branch")
+899|					SimPerfProbe.count("skip.explore_base", 1)
+900|					continue
+901|				SimPerfProbe.count("mod.GoodCatalog.get_good", 1)
+902|				var gd_ex: GoodDef = GoodCatalog.get_good(good)
+903|				if gd_ex == null or gd_ex.base_price_li < 1:
+904|					SimPerfProbe.end("cl.intel_branch")
+905|					SimPerfProbe.count("skip.explore_base", 1)
+906|					continue
+907|				mid = gd_ex.base_price_li
+908|				weeks_v = 0.0
+909|			else:
+910|				dest_had_intel = true
+911|				mid = int(intel["mid_li"])
+912|				weeks_v = intel.get("weeks", 0.0)
+913|			SimPerfProbe.end("cl.intel_branch")
+914|			SimPerfProbe.begin("cl.weekly")
+915|			var weekly: int = 0
+916|			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
+917|				SimPerfProbe.count("mod.DemandModel.weekly_potential_demand", 1)
+918|				weekly = DemandModel.weekly_potential_demand(dest, good)
+919|			SimPerfProbe.end("cl.weekly")
+920|			if weekly < 1:
+
+===== (a2) _dest_intel (autoload/trader_registry.gd) =====
+1152|func _dest_intel(
+1153|	actor: StringName, present_port: StringName, dest: StringName, good: StringName
+1154|) -> Dictionary:
+1155|	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
+1156|	SimPerfProbe.count("traders.alloc_string", 1)
+1157|	var key := "%s|%s" % [String(dest), String(good)]
+1158|	if _intel_override.has(key):
+1159|		SimPerfProbe.count("traders.alloc_dict", 1)
+1160|		return (_intel_override[key] as Dictionary).duplicate(true)
+1161|	if IntelLedger.is_loaded():
+1162|		## 17-87: timing+note inside IntelLedger.board_for (avoid double begin/end).
+1163|		var board: Dictionary = IntelLedger.board_for(actor, present_port, dest, good)
+1164|		if board.is_empty():
+1165|			return {}
+1166|		if int(board.get(IntelLedger.KEY_N, 0)) == 0:
+1167|			return {}
+1168|		if board.get(IntelLedger.KEY_CONSENSUS_MID, null) == null:
+1169|			return {}
+1170|		var weeks_x = board.get(IntelLedger.KEY_CONSENSUS_WEEKS, null)
+1171|		var weeks_f: Variant = null
+1172|		if weeks_x != null and typeof(weeks_x) == TYPE_INT and Params.has_prm("PRM-SYS15-WEEKS_SCALE"):
+1173|			var scale: int = Params.get_int("PRM-SYS15-WEEKS_SCALE")
+1174|			if scale > 0:
+1175|				weeks_f = float(int(weeks_x)) / float(scale)
+1176|		SimPerfProbe.count("traders.alloc_dict", 1)
+1177|		return {
+1178|			"mid_li": int(board[IntelLedger.KEY_CONSENSUS_MID]),
+1179|			"weeks": weeks_f if weeks_f != null else 0.0,
+1180|		}
+1181|	return {}
+1182|
+1183|
+1184|func _can_enter(actor: StringName, port: StringName) -> bool:
+1185|	if _qual_open:
+
+===== (a3) IntelLedger.board_for (autoload/intel_ledger.gd 413-460) =====
+413|func board_for(
+414|	actor_id: StringName, port_id: StringName, origin_port: StringName, good_id: StringName
+415|) -> Dictionary:
+416|	## FRM-SYS15-06 + D-37c visibility.
+417|	## 17-87 P3: bisect timing + alloc counts; P1 note_board; print-only.
+418|	var _p3: bool = SimPerfProbe.is_full()
+419|	if _p3:
+420|		SimPerfProbe.begin("mod.IntelLedger.board_for")
+421|		SimPerfProbe.begin("bf.ids_ok")
+422|	assert(_loaded, "IntelLedger.board_for before load")
+423|	_clear_last()
+424|	var ids_ok: bool = _ids_ok(port_id, origin_port, good_id)
+425|	if _p3:
+426|		SimPerfProbe.end("bf.ids_ok")
+427|	if not ids_ok:
+428|		_record(ERR_SYS15_04, KEY_PORT_ID, port_id, "unknown port/origin/good")
+429|		if _p3:
+430|			SimPerfProbe.bf_alloc_dict(1)
+431|			SimPerfProbe.note_board(actor_id, port_id, origin_port, good_id, {})
+432|			SimPerfProbe.end("mod.IntelLedger.board_for")
+433|		return {}
+434|	if _p3:
+435|		SimPerfProbe.begin("bf.actor_present")
+436|	var present_ok: bool = _actor_present(actor_id, port_id)
+437|	if _p3:
+438|		SimPerfProbe.end("bf.actor_present")
+439|	if not present_ok:
+440|		_record(ERR_SYS15_04, KEY_OWNER_ID, actor_id, "actor not present at port")
+441|		if _p3:
+442|			SimPerfProbe.bf_alloc_dict(1)
+443|			SimPerfProbe.note_board(actor_id, port_id, origin_port, good_id, {})
+444|			SimPerfProbe.end("mod.IntelLedger.board_for")
+445|		return {}
+446|	if _p3:
+447|		SimPerfProbe.begin("bf.visible_samples")
+448|	var samples: Array = _visible_samples(actor_id, port_id, origin_port, good_id)
+449|	if _p3:
+450|		SimPerfProbe.end("bf.visible_samples")
+451|		SimPerfProbe.begin("bf.summarize_board")
+452|	var out: Dictionary = _summarize_board(samples, good_id)
+453|	if _p3:
+454|		SimPerfProbe.end("bf.summarize_board")
+455|		SimPerfProbe.bf_alloc_dict(1)
+456|		SimPerfProbe.note_board(actor_id, port_id, origin_port, good_id, out)
+457|		SimPerfProbe.end("mod.IntelLedger.board_for")
+458|	return out
+459|
+460|
+
+===== (b) data fields / PRM-IDs / values used on this path =====
+From _dest_intel / board_for / intel_empty branch:
+- Fields read from board: IntelLedger.KEY_N, KEY_CONSENSUS_MID, KEY_CONSENSUS_WEEKS
+- Local intel dict fields: mid_li (int), weeks (float|0.0)
+- intel_empty predicate: intel.is_empty() OR intel.get("mid_li", null) == null
+- explore flag: bool from daily explore lottery (FRM-SYS17-04); if explore and empty → GoodCatalog.base_price_li stand-in (D-126)
+- Za_G0_A0 scenario overrides (tools/m1b_prepare_scenario.py) for this path:
+PRM-SYS15-WINDOW_DAYS = 28
+PRM-SYS15-DECAY_DAYS = 28
+PRM-SYS15-WEEKS_SCALE = 100
+PRM-SYS15-PUBLIC_DELAY_TICKS = 0
+PRM-SYS15-DIVERGENCE_LO_PPM = 100000
+PRM-SYS15-DIVERGENCE_HI_PPM = 300000
+PRM-SYS15-DIRECTION_DEADBAND_PPM = 20000
+PRM-SYS17-EXPLORE_RATE = 0.05
+PRM-SYS17-EXPLORE_QTY = 50
+PRM-SYS17-TOP_N_PRECISE = 3
+PRM-SYS17-PROFIT_MIN_LI = 0
+NOTE: formal data/params/params.json does not contain PRM-SYS15_* / PRM-SYS17_* keys; M1b supplies them via scenario overrides.
+
+===== (c) d1–d60 「有行市的（港，貨）格數」=====
+SOURCE=PERF_P5_CELLS from probe-za-d60
+COLUMNS=day market_stock_nz offtake_nz intel_report_entries
+DEFINITION_FACTS=
+- market_stock_nz = count (port,good) with MARKET stock ≥ 1
+- offtake_nz = count (port,good) with offtake window_qty ≠ 0
+- intel_report_entries = sum over ports of IntelLedger.diag_recorded_report_count(port)
+
+PERF_P5_CELLS day=1 market_stock_nz=325 offtake_nz=271 intel_report_entries=240
+PERF_P5_CELLS day=2 market_stock_nz=324 offtake_nz=288 intel_report_entries=272
+PERF_P5_CELLS day=3 market_stock_nz=323 offtake_nz=300 intel_report_entries=296
+PERF_P5_CELLS day=4 market_stock_nz=321 offtake_nz=312 intel_report_entries=323
+PERF_P5_CELLS day=5 market_stock_nz=322 offtake_nz=315 intel_report_entries=339
+PERF_P5_CELLS day=6 market_stock_nz=321 offtake_nz=318 intel_report_entries=357
+PERF_P5_CELLS day=7 market_stock_nz=321 offtake_nz=320 intel_report_entries=370
+PERF_P5_CELLS day=8 market_stock_nz=321 offtake_nz=320 intel_report_entries=382
+PERF_P5_CELLS day=9 market_stock_nz=322 offtake_nz=320 intel_report_entries=394
+PERF_P5_CELLS day=10 market_stock_nz=321 offtake_nz=320 intel_report_entries=406
+PERF_P5_CELLS day=11 market_stock_nz=320 offtake_nz=320 intel_report_entries=413
+PERF_P5_CELLS day=12 market_stock_nz=319 offtake_nz=321 intel_report_entries=422
+PERF_P5_CELLS day=13 market_stock_nz=318 offtake_nz=321 intel_report_entries=428
+PERF_P5_CELLS day=14 market_stock_nz=317 offtake_nz=321 intel_report_entries=433
+PERF_P5_CELLS day=15 market_stock_nz=314 offtake_nz=321 intel_report_entries=442
+PERF_P5_CELLS day=16 market_stock_nz=314 offtake_nz=321 intel_report_entries=448
+PERF_P5_CELLS day=17 market_stock_nz=312 offtake_nz=321 intel_report_entries=451
+PERF_P5_CELLS day=18 market_stock_nz=309 offtake_nz=321 intel_report_entries=457
+PERF_P5_CELLS day=19 market_stock_nz=310 offtake_nz=321 intel_report_entries=465
+PERF_P5_CELLS day=20 market_stock_nz=310 offtake_nz=321 intel_report_entries=468
+PERF_P5_CELLS day=21 market_stock_nz=308 offtake_nz=321 intel_report_entries=477
+PERF_P5_CELLS day=22 market_stock_nz=305 offtake_nz=321 intel_report_entries=481
+PERF_P5_CELLS day=23 market_stock_nz=303 offtake_nz=321 intel_report_entries=485
+PERF_P5_CELLS day=24 market_stock_nz=302 offtake_nz=321 intel_report_entries=489
+PERF_P5_CELLS day=25 market_stock_nz=293 offtake_nz=321 intel_report_entries=499
+PERF_P5_CELLS day=26 market_stock_nz=284 offtake_nz=321 intel_report_entries=504
+PERF_P5_CELLS day=27 market_stock_nz=271 offtake_nz=321 intel_report_entries=511
+PERF_P5_CELLS day=28 market_stock_nz=211 offtake_nz=321 intel_report_entries=273
+PERF_P5_CELLS day=29 market_stock_nz=154 offtake_nz=321 intel_report_entries=239
+PERF_P5_CELLS day=30 market_stock_nz=155 offtake_nz=321 intel_report_entries=214
+PERF_P5_CELLS day=31 market_stock_nz=159 offtake_nz=321 intel_report_entries=214
+PERF_P5_CELLS day=32 market_stock_nz=159 offtake_nz=320 intel_report_entries=209
+PERF_P5_CELLS day=33 market_stock_nz=160 offtake_nz=320 intel_report_entries=215
+PERF_P5_CELLS day=34 market_stock_nz=163 offtake_nz=320 intel_report_entries=207
+PERF_P5_CELLS day=35 market_stock_nz=161 offtake_nz=320 intel_report_entries=205
+PERF_P5_CELLS day=36 market_stock_nz=165 offtake_nz=320 intel_report_entries=201
+PERF_P5_CELLS day=37 market_stock_nz=165 offtake_nz=320 intel_report_entries=202
+PERF_P5_CELLS day=38 market_stock_nz=165 offtake_nz=319 intel_report_entries=199
+PERF_P5_CELLS day=39 market_stock_nz=164 offtake_nz=319 intel_report_entries=198
+PERF_P5_CELLS day=40 market_stock_nz=165 offtake_nz=319 intel_report_entries=197
+PERF_P5_CELLS day=41 market_stock_nz=163 offtake_nz=318 intel_report_entries=194
+PERF_P5_CELLS day=42 market_stock_nz=159 offtake_nz=318 intel_report_entries=201
+PERF_P5_CELLS day=43 market_stock_nz=157 offtake_nz=317 intel_report_entries=203
+PERF_P5_CELLS day=44 market_stock_nz=158 offtake_nz=316 intel_report_entries=202
+PERF_P5_CELLS day=45 market_stock_nz=158 offtake_nz=315 intel_report_entries=206
+PERF_P5_CELLS day=46 market_stock_nz=158 offtake_nz=313 intel_report_entries=210
+PERF_P5_CELLS day=47 market_stock_nz=158 offtake_nz=313 intel_report_entries=208
+PERF_P5_CELLS day=48 market_stock_nz=158 offtake_nz=312 intel_report_entries=210
+PERF_P5_CELLS day=49 market_stock_nz=158 offtake_nz=312 intel_report_entries=211
+PERF_P5_CELLS day=50 market_stock_nz=155 offtake_nz=309 intel_report_entries=211
+PERF_P5_CELLS day=51 market_stock_nz=155 offtake_nz=308 intel_report_entries=210
+PERF_P5_CELLS day=52 market_stock_nz=157 offtake_nz=307 intel_report_entries=208
+PERF_P5_CELLS day=53 market_stock_nz=158 offtake_nz=302 intel_report_entries=207
+PERF_P5_CELLS day=54 market_stock_nz=160 offtake_nz=297 intel_report_entries=212
+PERF_P5_CELLS day=55 market_stock_nz=159 offtake_nz=284 intel_report_entries=207
+PERF_P5_CELLS day=56 market_stock_nz=158 offtake_nz=234 intel_report_entries=207
+PERF_P5_CELLS day=57 market_stock_nz=157 offtake_nz=185 intel_report_entries=212
+PERF_P5_CELLS day=58 market_stock_nz=160 offtake_nz=187 intel_report_entries=204
+PERF_P5_CELLS day=59 market_stock_nz=158 offtake_nz=189 intel_report_entries=190
+PERF_P5_CELLS day=60 market_stock_nz=160 offtake_nz=191 intel_report_entries=186
+
+===== (d) spec FRM / decision IDs =====
+- FRM-SYS17-02 (03_Systems): 「目的港該貨無行市（consensus_mid 為 null）者不列入候選（冷啟動由 FRM-SYS17-04 探索負責，D-109(c)）」
+- D-109(c): empty board → not a profit candidate (code comment at trader_registry.gd)
+- FRM-SYS17-04 / D-123(b) / D-126: explore may sail without board; base_price_li ranking stand-in
+- FRM-SYS15-06: board_for(actor, P, O, g) query interface
+- FRM-SYS15-03: S empty → n=0, other fields null
+- Code comment F2／FRM-SYS15-06 (2026-11-24) on _dest_intel

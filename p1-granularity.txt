@@ -1,0 +1,172 @@
+p1-granularity.txt
+PACK=overnight-17-87-P
+LANE=P DIAG-PERF-4
+ACTIONS_RUN=https://github.com/wayung0217/Project-Patrician/actions/runs/46033150459
+JOB=probe-za-d60
+PROBE_SHA=7d0c4ad049859db17ec29bf584f8677c707eadd1
+BASE_MAIN=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+cpu_model=Intel(R) Xeon(R) 6975P-C
+SCENARIO=Za_G0_A0 --days 60
+FACTS_ONLY=yes NO_OPTIMIZE=yes
+summary.csv elapsed_ms=1237918
+
+===== P1(a)(b) job totals (from PERF_P1C / PERF_P1B) =====
+PERF_P1C board_dest_same=25567 board_dest_diff=1040070 job_afford_calls=1069350 job_board_calls=1066080
+PERF_P1B afford_mismatch_total=0 board_mismatch_total=0
+NOTE: afford_mismatch_total=0 and board_mismatch_total=0 → no same-arg different-return cases listed.
+
+===== P1(c) board_for same dest|good across ships/days =====
+KEY=origin_port|good (board_for origin = 目的港)
+board_dest_same=25567
+board_dest_diff=1040070
+
+===== P1(d) per-eval call-count distributions d10 / d30 / d60 =====
+PERF_P1_DIST day=10 metric=afford_calls n=64 min=270 median=315 max=345
+PERF_P1_DIST day=10 metric=afford_distinct n=64 min=18 median=21 max=23
+PERF_P1_DIST day=10 metric=board_calls n=64 min=270 median=315 max=345
+PERF_P1_DIST day=10 metric=board_distinct n=64 min=270 median=315 max=345
+PERF_P1_DIST day=30 metric=afford_calls n=77 min=90 median=195 max=240
+PERF_P1_DIST day=30 metric=afford_distinct n=77 min=6 median=13 max=16
+PERF_P1_DIST day=30 metric=board_calls n=77 min=90 median=195 max=240
+PERF_P1_DIST day=30 metric=board_distinct n=77 min=90 median=195 max=240
+PERF_P1_DIST day=60 metric=afford_calls n=65 min=120 median=195 max=255
+PERF_P1_DIST day=60 metric=afford_distinct n=65 min=8 median=13 max=17
+PERF_P1_DIST day=60 metric=board_calls n=65 min=0 median=195 max=255
+PERF_P1_DIST day=60 metric=board_distinct n=65 min=0 median=195 max=255
+PERF_P1C board_dest_same=25567 board_dest_diff=1040070 job_afford_calls=1069350 job_board_calls=1066080
+PERF_P1B afford_mismatch_total=0 board_mismatch_total=0
+
+===== P1(d) daily lines d1–d60 (PERF_P1_DAY + PERF_P1_EVALDAY) =====
+PERF_P1_DAY day=1 afford_calls=26205 board_calls=26010 cells=34860 skip.same_port=83 skip.market_qty=8655 skip.no_intel=0 skip.weekly=2336 skip.afford=195 cand_ok=23674
+PERF_P1_EVALDAY day=1 evals=83 afford_calls_sum=26205 afford_distinct_sum=1747 board_calls_sum=26010 board_distinct_sum=26010
+PERF_P1_DAY day=2 afford_calls=20400 board_calls=20235 cells=27300 skip.same_port=65 skip.market_qty=6900 skip.no_intel=0 skip.weekly=1924 skip.afford=165 cand_ok=18311
+PERF_P1_EVALDAY day=2 evals=65 afford_calls_sum=20400 afford_distinct_sum=1360 board_calls_sum=20235 board_distinct_sum=20235
+PERF_P1_DAY day=3 afford_calls=16590 board_calls=16515 cells=21840 skip.same_port=52 skip.market_qty=5250 skip.no_intel=0 skip.weekly=1661 skip.afford=75 cand_ok=14854
+PERF_P1_EVALDAY day=3 evals=52 afford_calls_sum=16590 afford_distinct_sum=1106 board_calls_sum=16515 board_distinct_sum=16515
+PERF_P1_DAY day=4 afford_calls=19470 board_calls=19350 cells=26040 skip.same_port=62 skip.market_qty=6570 skip.no_intel=0 skip.weekly=1888 skip.afford=120 cand_ok=17462
+PERF_P1_EVALDAY day=4 evals=62 afford_calls_sum=19470 afford_distinct_sum=1298 board_calls_sum=19350 board_distinct_sum=19350
+PERF_P1_DAY day=5 afford_calls=16125 board_calls=16065 cells=21840 skip.same_port=52 skip.market_qty=5715 skip.no_intel=0 skip.weekly=1424 skip.afford=60 cand_ok=14641
+PERF_P1_EVALDAY day=5 evals=52 afford_calls_sum=16125 afford_distinct_sum=1075 board_calls_sum=16065 board_distinct_sum=16065
+PERF_P1_DAY day=6 afford_calls=20160 board_calls=20055 cells=27300 skip.same_port=65 skip.market_qty=7140 skip.no_intel=0 skip.weekly=1739 skip.afford=105 cand_ok=18316
+PERF_P1_EVALDAY day=6 evals=65 afford_calls_sum=20160 afford_distinct_sum=1344 board_calls_sum=20055 board_distinct_sum=20055
+PERF_P1_DAY day=7 afford_calls=19785 board_calls=19740 cells=26880 skip.same_port=64 skip.market_qty=7095 skip.no_intel=0 skip.weekly=1706 skip.afford=45 cand_ok=18034
+PERF_P1_EVALDAY day=7 evals=64 afford_calls_sum=19785 afford_distinct_sum=1319 board_calls_sum=19740 board_distinct_sum=19740
+PERF_P1_DAY day=8 afford_calls=18795 board_calls=18795 cells=25620 skip.same_port=61 skip.market_qty=6825 skip.no_intel=0 skip.weekly=1670 skip.afford=0 cand_ok=17125
+PERF_P1_EVALDAY day=8 evals=61 afford_calls_sum=18795 afford_distinct_sum=1253 board_calls_sum=18795 board_distinct_sum=18795
+PERF_P1_DAY day=9 afford_calls=19050 board_calls=19050 cells=26040 skip.same_port=62 skip.market_qty=6990 skip.no_intel=0 skip.weekly=1730 skip.afford=0 cand_ok=17320
+PERF_P1_EVALDAY day=9 evals=62 afford_calls_sum=19050 afford_distinct_sum=1270 board_calls_sum=19050 board_distinct_sum=19050
+PERF_P1_DAY day=10 afford_calls=19980 board_calls=19980 cells=26880 skip.same_port=64 skip.market_qty=6900 skip.no_intel=0 skip.weekly=1884 skip.afford=0 cand_ok=18096
+PERF_P1_EVALDAY day=10 evals=64 afford_calls_sum=19980 afford_distinct_sum=1332 board_calls_sum=19980 board_distinct_sum=19980
+PERF_P1_DIST day=10 metric=afford_calls n=64 min=270 median=315 max=345
+PERF_P1_DIST day=10 metric=afford_distinct n=64 min=18 median=21 max=23
+PERF_P1_DIST day=10 metric=board_calls n=64 min=270 median=315 max=345
+PERF_P1_DIST day=10 metric=board_distinct n=64 min=270 median=315 max=345
+PERF_P1_DAY day=11 afford_calls=20850 board_calls=20850 cells=28140 skip.same_port=67 skip.market_qty=7290 skip.no_intel=0 skip.weekly=1976 skip.afford=0 cand_ok=18874
+PERF_P1_EVALDAY day=11 evals=67 afford_calls_sum=20850 afford_distinct_sum=1390 board_calls_sum=20850 board_distinct_sum=20850
+PERF_P1_DAY day=12 afford_calls=21210 board_calls=21210 cells=28980 skip.same_port=69 skip.market_qty=7770 skip.no_intel=0 skip.weekly=1921 skip.afford=0 cand_ok=19289
+PERF_P1_EVALDAY day=12 evals=69 afford_calls_sum=21210 afford_distinct_sum=1414 board_calls_sum=21210 board_distinct_sum=21210
+PERF_P1_DAY day=13 afford_calls=21165 board_calls=21045 cells=28560 skip.same_port=68 skip.market_qty=7395 skip.no_intel=0 skip.weekly=2088 skip.afford=120 cand_ok=18957
+PERF_P1_EVALDAY day=13 evals=68 afford_calls_sum=21165 afford_distinct_sum=1411 board_calls_sum=21045 board_distinct_sum=21045
+PERF_P1_DAY day=14 afford_calls=20895 board_calls=20865 cells=28560 skip.same_port=68 skip.market_qty=7665 skip.no_intel=0 skip.weekly=1995 skip.afford=30 cand_ok=18870
+PERF_P1_EVALDAY day=14 evals=68 afford_calls_sum=20895 afford_distinct_sum=1393 board_calls_sum=20865 board_distinct_sum=20865
+PERF_P1_DAY day=15 afford_calls=22650 board_calls=22650 cells=31080 skip.same_port=74 skip.market_qty=8430 skip.no_intel=0 skip.weekly=2216 skip.afford=0 cand_ok=20434
+PERF_P1_EVALDAY day=15 evals=74 afford_calls_sum=22650 afford_distinct_sum=1510 board_calls_sum=22650 board_distinct_sum=22650
+PERF_P1_DAY day=16 afford_calls=22815 board_calls=22815 cells=31920 skip.same_port=76 skip.market_qty=9105 skip.no_intel=0 skip.weekly=1981 skip.afford=0 cand_ok=20834
+PERF_P1_EVALDAY day=16 evals=76 afford_calls_sum=22815 afford_distinct_sum=1521 board_calls_sum=22815 board_distinct_sum=22815
+PERF_P1_DAY day=17 afford_calls=22170 board_calls=22170 cells=31080 skip.same_port=74 skip.market_qty=8910 skip.no_intel=0 skip.weekly=1890 skip.afford=0 cand_ok=20280
+PERF_P1_EVALDAY day=17 evals=74 afford_calls_sum=22170 afford_distinct_sum=1478 board_calls_sum=22170 board_distinct_sum=22170
+PERF_P1_DAY day=18 afford_calls=22920 board_calls=22905 cells=32340 skip.same_port=77 skip.market_qty=9420 skip.no_intel=0 skip.weekly=1944 skip.afford=15 cand_ok=20961
+PERF_P1_EVALDAY day=18 evals=77 afford_calls_sum=22920 afford_distinct_sum=1528 board_calls_sum=22905 board_distinct_sum=22905
+PERF_P1_DAY day=19 afford_calls=24030 board_calls=24015 cells=33600 skip.same_port=80 skip.market_qty=9570 skip.no_intel=0 skip.weekly=2060 skip.afford=15 cand_ok=21955
+PERF_P1_EVALDAY day=19 evals=80 afford_calls_sum=24030 afford_distinct_sum=1602 board_calls_sum=24015 board_distinct_sum=24015
+PERF_P1_DAY day=20 afford_calls=23145 board_calls=23145 cells=31920 skip.same_port=76 skip.market_qty=8775 skip.no_intel=0 skip.weekly=1967 skip.afford=0 cand_ok=21178
+PERF_P1_EVALDAY day=20 evals=76 afford_calls_sum=23145 afford_distinct_sum=1543 board_calls_sum=23145 board_distinct_sum=23145
+PERF_P1_DAY day=21 afford_calls=23520 board_calls=23520 cells=33180 skip.same_port=79 skip.market_qty=9660 skip.no_intel=0 skip.weekly=1935 skip.afford=0 cand_ok=21585
+PERF_P1_EVALDAY day=21 evals=79 afford_calls_sum=23520 afford_distinct_sum=1568 board_calls_sum=23520 board_distinct_sum=23520
+PERF_P1_DAY day=22 afford_calls=23475 board_calls=23475 cells=33180 skip.same_port=79 skip.market_qty=9705 skip.no_intel=0 skip.weekly=1948 skip.afford=0 cand_ok=21527
+PERF_P1_EVALDAY day=22 evals=79 afford_calls_sum=23475 afford_distinct_sum=1565 board_calls_sum=23475 board_distinct_sum=23475
+PERF_P1_DAY day=23 afford_calls=22965 board_calls=22965 cells=32760 skip.same_port=78 skip.market_qty=9795 skip.no_intel=0 skip.weekly=1758 skip.afford=0 cand_ok=21207
+PERF_P1_EVALDAY day=23 evals=78 afford_calls_sum=22965 afford_distinct_sum=1531 board_calls_sum=22965 board_distinct_sum=22965
+PERF_P1_DAY day=24 afford_calls=22710 board_calls=22710 cells=32340 skip.same_port=77 skip.market_qty=9630 skip.no_intel=0 skip.weekly=1791 skip.afford=0 cand_ok=20919
+PERF_P1_EVALDAY day=24 evals=77 afford_calls_sum=22710 afford_distinct_sum=1514 board_calls_sum=22710 board_distinct_sum=22710
+PERF_P1_DAY day=25 afford_calls=23085 board_calls=23085 cells=33600 skip.same_port=80 skip.market_qty=10515 skip.no_intel=0 skip.weekly=1801 skip.afford=0 cand_ok=21284
+PERF_P1_EVALDAY day=25 evals=80 afford_calls_sum=23085 afford_distinct_sum=1539 board_calls_sum=23085 board_distinct_sum=23085
+PERF_P1_DAY day=26 afford_calls=22530 board_calls=22515 cells=32760 skip.same_port=78 skip.market_qty=10230 skip.no_intel=0 skip.weekly=1751 skip.afford=15 cand_ok=20764
+PERF_P1_EVALDAY day=26 evals=78 afford_calls_sum=22530 afford_distinct_sum=1502 board_calls_sum=22515 board_distinct_sum=22515
+PERF_P1_DAY day=27 afford_calls=22620 board_calls=22620 cells=34020 skip.same_port=81 skip.market_qty=11400 skip.no_intel=0 skip.weekly=1741 skip.afford=0 cand_ok=20879
+PERF_P1_EVALDAY day=27 evals=81 afford_calls_sum=22620 afford_distinct_sum=1508 board_calls_sum=22620 board_distinct_sum=22620
+PERF_P1_DAY day=28 afford_calls=19845 board_calls=19710 cells=30660 skip.same_port=73 skip.market_qty=10815 skip.no_intel=11894 skip.weekly=631 skip.afford=135 cand_ok=7185
+PERF_P1_EVALDAY day=28 evals=73 afford_calls_sum=19845 afford_distinct_sum=1323 board_calls_sum=19710 board_distinct_sum=19710
+PERF_P1_DAY day=29 afford_calls=17730 board_calls=17730 cells=31920 skip.same_port=76 skip.market_qty=14190 skip.no_intel=11195 skip.weekly=567 skip.afford=0 cand_ok=5968
+PERF_P1_EVALDAY day=29 evals=76 afford_calls_sum=17730 afford_distinct_sum=1182 board_calls_sum=17730 board_distinct_sum=17730
+PERF_P1_DAY day=30 afford_calls=15180 board_calls=15165 cells=32340 skip.same_port=77 skip.market_qty=17160 skip.no_intel=9967 skip.weekly=521 skip.afford=15 cand_ok=4677
+PERF_P1_EVALDAY day=30 evals=77 afford_calls_sum=15180 afford_distinct_sum=1012 board_calls_sum=15165 board_distinct_sum=15165
+PERF_P1_DIST day=30 metric=afford_calls n=77 min=90 median=195 max=240
+PERF_P1_DIST day=30 metric=afford_distinct n=77 min=6 median=13 max=16
+PERF_P1_DIST day=30 metric=board_calls n=77 min=90 median=195 max=240
+PERF_P1_DIST day=30 metric=board_distinct n=77 min=90 median=195 max=240
+PERF_P1_DAY day=31 afford_calls=15240 board_calls=15240 cells=33180 skip.same_port=79 skip.market_qty=17940 skip.no_intel=10215 skip.weekly=530 skip.afford=0 cand_ok=4495
+PERF_P1_EVALDAY day=31 evals=79 afford_calls_sum=15240 afford_distinct_sum=1016 board_calls_sum=15240 board_distinct_sum=15240
+PERF_P1_DAY day=32 afford_calls=14160 board_calls=14115 cells=30660 skip.same_port=73 skip.market_qty=16500 skip.no_intel=9347 skip.weekly=507 skip.afford=45 cand_ok=4261
+PERF_P1_EVALDAY day=32 evals=73 afford_calls_sum=14160 afford_distinct_sum=944 board_calls_sum=14115 board_distinct_sum=14115
+PERF_P1_DAY day=33 afford_calls=13830 board_calls=13560 cells=28980 skip.same_port=69 skip.market_qty=15150 skip.no_intel=9137 skip.weekly=466 skip.afford=270 cand_ok=3957
+PERF_P1_EVALDAY day=33 evals=69 afford_calls_sum=13830 afford_distinct_sum=922 board_calls_sum=13560 board_distinct_sum=13560
+PERF_P1_DAY day=34 afford_calls=13920 board_calls=13710 cells=28980 skip.same_port=69 skip.market_qty=15060 skip.no_intel=9689 skip.weekly=405 skip.afford=210 cand_ok=3616
+PERF_P1_EVALDAY day=34 evals=69 afford_calls_sum=13920 afford_distinct_sum=928 board_calls_sum=13710 board_distinct_sum=13710
+PERF_P1_DAY day=35 afford_calls=15210 board_calls=15000 cells=31500 skip.same_port=75 skip.market_qty=16290 skip.no_intel=10671 skip.weekly=434 skip.afford=210 cand_ok=3895
+PERF_P1_EVALDAY day=35 evals=75 afford_calls_sum=15210 afford_distinct_sum=1014 board_calls_sum=15000 board_distinct_sum=15000
+PERF_P1_DAY day=36 afford_calls=15000 board_calls=14805 cells=31080 skip.same_port=74 skip.market_qty=16080 skip.no_intel=10078 skip.weekly=499 skip.afford=195 cand_ok=4228
+PERF_P1_EVALDAY day=36 evals=74 afford_calls_sum=15000 afford_distinct_sum=1000 board_calls_sum=14805 board_distinct_sum=14805
+PERF_P1_DAY day=37 afford_calls=17025 board_calls=17025 cells=33600 skip.same_port=80 skip.market_qty=16575 skip.no_intel=11699 skip.weekly=621 skip.afford=0 cand_ok=4705
+PERF_P1_EVALDAY day=37 evals=80 afford_calls_sum=17025 afford_distinct_sum=1135 board_calls_sum=17025 board_distinct_sum=17025
+PERF_P1_DAY day=38 afford_calls=15780 board_calls=15780 cells=32340 skip.same_port=77 skip.market_qty=16560 skip.no_intel=10828 skip.weekly=587 skip.afford=0 cand_ok=4365
+PERF_P1_EVALDAY day=38 evals=77 afford_calls_sum=15780 afford_distinct_sum=1052 board_calls_sum=15780 board_distinct_sum=15780
+PERF_P1_DAY day=39 afford_calls=15855 board_calls=15855 cells=32340 skip.same_port=77 skip.market_qty=16485 skip.no_intel=10824 skip.weekly=618 skip.afford=0 cand_ok=4413
+PERF_P1_EVALDAY day=39 evals=77 afford_calls_sum=15855 afford_distinct_sum=1057 board_calls_sum=15855 board_distinct_sum=15855
+PERF_P1_DAY day=40 afford_calls=15780 board_calls=15780 cells=31920 skip.same_port=76 skip.market_qty=16140 skip.no_intel=11362 skip.weekly=515 skip.afford=0 cand_ok=3903
+PERF_P1_EVALDAY day=40 evals=76 afford_calls_sum=15780 afford_distinct_sum=1052 board_calls_sum=15780 board_distinct_sum=15780
+PERF_P1_DAY day=41 afford_calls=15390 board_calls=15390 cells=31500 skip.same_port=75 skip.market_qty=16110 skip.no_intel=11020 skip.weekly=467 skip.afford=0 cand_ok=3903
+PERF_P1_EVALDAY day=41 evals=75 afford_calls_sum=15390 afford_distinct_sum=1026 board_calls_sum=15390 board_distinct_sum=15390
+PERF_P1_DAY day=42 afford_calls=15540 board_calls=15540 cells=32340 skip.same_port=77 skip.market_qty=16800 skip.no_intel=10960 skip.weekly=552 skip.afford=0 cand_ok=4028
+PERF_P1_EVALDAY day=42 evals=77 afford_calls_sum=15540 afford_distinct_sum=1036 board_calls_sum=15540 board_distinct_sum=15540
+PERF_P1_DAY day=43 afford_calls=15405 board_calls=15405 cells=32340 skip.same_port=77 skip.market_qty=16935 skip.no_intel=10768 skip.weekly=560 skip.afford=0 cand_ok=4077
+PERF_P1_EVALDAY day=43 evals=77 afford_calls_sum=15405 afford_distinct_sum=1027 board_calls_sum=15405 board_distinct_sum=15405
+PERF_P1_DAY day=44 afford_calls=14070 board_calls=14070 cells=28980 skip.same_port=69 skip.market_qty=14910 skip.no_intel=10117 skip.weekly=473 skip.afford=0 cand_ok=3480
+PERF_P1_EVALDAY day=44 evals=69 afford_calls_sum=14070 afford_distinct_sum=938 board_calls_sum=14070 board_distinct_sum=14070
+PERF_P1_DAY day=45 afford_calls=14430 board_calls=14430 cells=29820 skip.same_port=71 skip.market_qty=15390 skip.no_intel=10308 skip.weekly=449 skip.afford=0 cand_ok=3673
+PERF_P1_EVALDAY day=45 evals=71 afford_calls_sum=14430 afford_distinct_sum=962 board_calls_sum=14430 board_distinct_sum=14430
+PERF_P1_DAY day=46 afford_calls=14775 board_calls=14775 cells=30660 skip.same_port=73 skip.market_qty=15885 skip.no_intel=10549 skip.weekly=461 skip.afford=0 cand_ok=3765
+PERF_P1_EVALDAY day=46 evals=73 afford_calls_sum=14775 afford_distinct_sum=985 board_calls_sum=14775 board_distinct_sum=14775
+PERF_P1_DAY day=47 afford_calls=14550 board_calls=14550 cells=30660 skip.same_port=73 skip.market_qty=16110 skip.no_intel=10759 skip.weekly=435 skip.afford=0 cand_ok=3356
+PERF_P1_EVALDAY day=47 evals=73 afford_calls_sum=14550 afford_distinct_sum=970 board_calls_sum=14550 board_distinct_sum=14550
+PERF_P1_DAY day=48 afford_calls=14520 board_calls=14520 cells=30240 skip.same_port=72 skip.market_qty=15720 skip.no_intel=10396 skip.weekly=467 skip.afford=0 cand_ok=3657
+PERF_P1_EVALDAY day=48 evals=72 afford_calls_sum=14520 afford_distinct_sum=968 board_calls_sum=14520 board_distinct_sum=14520
+PERF_P1_DAY day=49 afford_calls=14250 board_calls=14250 cells=30240 skip.same_port=72 skip.market_qty=15990 skip.no_intel=10417 skip.weekly=426 skip.afford=0 cand_ok=3407
+PERF_P1_EVALDAY day=49 evals=72 afford_calls_sum=14250 afford_distinct_sum=950 board_calls_sum=14250 board_distinct_sum=14250
+PERF_P1_DAY day=50 afford_calls=14220 board_calls=14220 cells=31080 skip.same_port=74 skip.market_qty=16860 skip.no_intel=10452 skip.weekly=459 skip.afford=0 cand_ok=3309
+PERF_P1_EVALDAY day=50 evals=74 afford_calls_sum=14220 afford_distinct_sum=948 board_calls_sum=14220 board_distinct_sum=14220
+PERF_P1_DAY day=51 afford_calls=13905 board_calls=13905 cells=30240 skip.same_port=72 skip.market_qty=16335 skip.no_intel=10377 skip.weekly=432 skip.afford=0 cand_ok=3096
+PERF_P1_EVALDAY day=51 evals=72 afford_calls_sum=13905 afford_distinct_sum=927 board_calls_sum=13905 board_distinct_sum=13905
+PERF_P1_DAY day=52 afford_calls=14130 board_calls=14130 cells=29820 skip.same_port=71 skip.market_qty=15690 skip.no_intel=9970 skip.weekly=534 skip.afford=0 cand_ok=3626
+PERF_P1_EVALDAY day=52 evals=71 afford_calls_sum=14130 afford_distinct_sum=942 board_calls_sum=14130 board_distinct_sum=14130
+PERF_P1_DAY day=53 afford_calls=14910 board_calls=14910 cells=30660 skip.same_port=73 skip.market_qty=15750 skip.no_intel=11125 skip.weekly=450 skip.afford=0 cand_ok=3335
+PERF_P1_EVALDAY day=53 evals=73 afford_calls_sum=14910 afford_distinct_sum=994 board_calls_sum=14910 board_distinct_sum=14910
+PERF_P1_DAY day=54 afford_calls=15540 board_calls=15540 cells=32340 skip.same_port=77 skip.market_qty=16800 skip.no_intel=11665 skip.weekly=409 skip.afford=0 cand_ok=3466
+PERF_P1_EVALDAY day=54 evals=77 afford_calls_sum=15540 afford_distinct_sum=1036 board_calls_sum=15540 board_distinct_sum=15540
+PERF_P1_DAY day=55 afford_calls=13995 board_calls=13995 cells=29400 skip.same_port=70 skip.market_qty=15405 skip.no_intel=10335 skip.weekly=419 skip.afford=0 cand_ok=3241
+PERF_P1_EVALDAY day=55 evals=70 afford_calls_sum=13995 afford_distinct_sum=933 board_calls_sum=13995 board_distinct_sum=13995
+PERF_P1_DAY day=56 afford_calls=13290 board_calls=13020 cells=27720 skip.same_port=66 skip.market_qty=14430 skip.no_intel=9598 skip.weekly=304 skip.afford=270 cand_ok=3118
+PERF_P1_EVALDAY day=56 evals=66 afford_calls_sum=13290 afford_distinct_sum=886 board_calls_sum=13020 board_distinct_sum=13020
+PERF_P1_DAY day=57 afford_calls=13275 board_calls=13200 cells=28560 skip.same_port=68 skip.market_qty=15285 skip.no_intel=9849 skip.weekly=268 skip.afford=75 cand_ok=3083
+PERF_P1_EVALDAY day=57 evals=68 afford_calls_sum=13275 afford_distinct_sum=885 board_calls_sum=13200 board_distinct_sum=13200
+PERF_P1_DAY day=58 afford_calls=13290 board_calls=12960 cells=28140 skip.same_port=67 skip.market_qty=14850 skip.no_intel=9839 skip.weekly=264 skip.afford=330 cand_ok=2857
+PERF_P1_EVALDAY day=58 evals=67 afford_calls_sum=13290 afford_distinct_sum=886 board_calls_sum=12960 board_distinct_sum=12960
+PERF_P1_DAY day=59 afford_calls=13110 board_calls=12900 cells=28560 skip.same_port=68 skip.market_qty=15450 skip.no_intel=9163 skip.weekly=350 skip.afford=210 cand_ok=3387
+PERF_P1_EVALDAY day=59 evals=68 afford_calls_sum=13110 afford_distinct_sum=874 board_calls_sum=12900 board_distinct_sum=12900
+PERF_P1_DAY day=60 afford_calls=12885 board_calls=12540 cells=27300 skip.same_port=65 skip.market_qty=14415 skip.no_intel=8826 skip.weekly=281 skip.afford=345 cand_ok=3433
+PERF_P1_EVALDAY day=60 evals=65 afford_calls_sum=12885 afford_distinct_sum=859 board_calls_sum=12540 board_distinct_sum=12540
+PERF_P1_DIST day=60 metric=afford_calls n=65 min=120 median=195 max=255
+PERF_P1_DIST day=60 metric=afford_distinct n=65 min=8 median=13 max=17
+PERF_P1_DIST day=60 metric=board_calls n=65 min=0 median=195 max=255
+PERF_P1_DIST day=60 metric=board_distinct n=65 min=0 median=195 max=255
+

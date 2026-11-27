@@ -1,0 +1,15 @@
+lane.txt
+LANE=P
+PACK=17-87
+ROLE=DIAG-PERF-4
+NO_PR=yes
+NO_MERGE=yes
+NO_OPTIMIZE=yes
+PROBE_BRANCH=perf-probe-1787
+PROBE_SHA=7d0c4ad049859db17ec29bf584f8677c707eadd1
+PROBE_DELETED=yes
+BASE_MAIN=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+ACTIONS_RUN=https://github.com/wayung0217/Project-Patrician/actions/runs/46033150459
+ORPHAN_BRANCH=review/overnight-17-87-P
+ORPHAN_SHA=c6e206643a71fb703098d2a4f8d0be8b845ecb88
+STATUS=pack_ready

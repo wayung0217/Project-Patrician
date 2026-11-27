@@ -1,0 +1,51 @@
+p4-opening-place.txt
+PACK=overnight-17-87-P
+LANE=P DIAG-PERF-4
+ACTIONS_RUN=https://github.com/wayung0217/Project-Patrician/actions/runs/46033150459
+JOB=probe-za-d60
+PROBE_SHA=7d0c4ad049859db17ec29bf584f8677c707eadd1
+cpu_model=Intel(R) Xeon(R) 6975P-C
+SCENARIO=Za_G0_A0 --days 60 day=1 opening_place
+FACTS_ONLY=yes
+NOTE=work_buckets=0 for all 16 ports in this run (workers map empty or size 0 at open).
+
+===== per-port (PERF_P4_PORT) =====
+PERF_P4_PORT port=PT-01 usec=2371070 residents=2200 residences=22 work_buckets=0
+PERF_P4_PORT port=PT-02 usec=1632145 residents=1800 residences=18 work_buckets=0
+PERF_P4_PORT port=PT-03 usec=5028727 residents=3200 residences=32 work_buckets=0
+PERF_P4_PORT port=PT-04 usec=6447572 residents=3600 residences=36 work_buckets=0
+PERF_P4_PORT port=PT-05 usec=7889139 residents=4000 residences=40 work_buckets=0
+PERF_P4_PORT port=PT-06 usec=504858 residents=1000 residences=10 work_buckets=0
+PERF_P4_PORT port=PT-07 usec=1258219 residents=1600 residences=16 work_buckets=0
+PERF_P4_PORT port=PT-08 usec=510333 residents=1000 residences=10 work_buckets=0
+PERF_P4_PORT port=PT-09 usec=498757 residents=1000 residences=10 work_buckets=0
+PERF_P4_PORT port=PT-10 usec=710405 residents=1200 residences=12 work_buckets=0
+PERF_P4_PORT port=PT-11 usec=1655788 residents=1800 residences=18 work_buckets=0
+PERF_P4_PORT port=PT-12 usec=5621429 residents=3400 residences=34 work_buckets=0
+PERF_P4_PORT port=PT-13 usec=1959775 residents=2000 residences=20 work_buckets=0
+PERF_P4_PORT port=PT-14 usec=4379291 residents=3000 residences=30 work_buckets=0
+PERF_P4_PORT port=PT-15 usec=2366318 residents=2200 residences=22 work_buckets=0
+PERF_P4_PORT port=PT-16 usec=741507 residents=1200 residences=12 work_buckets=0
+
+===== bisect (PERF_ALL pop.op.*) =====
+PERF_SEG rank=17 name=pop.opening_place usec_inc=43575504 usec_exc=364 calls=16
+PERF_SEG rank=18 name=pop.op.place.score_loop usec_inc=43116453 usec_exc=43116453 calls=34200
+PERF_SEG rank=22 name=pop.op.poor usec_inc=31934747 usec_exc=158441 calls=16
+PERF_SEG rank=28 name=pop.op.citizen usec_inc=10645419 usec_exc=58567 calls=16
+PERF_SEG rank=17 name=pop.opening_place usec_inc=43575504 usec_exc=364 calls=16
+PERF_SEG rank=18 name=pop.op.place.score_loop usec_inc=43116453 usec_exc=43116453 calls=34200
+PERF_SEG rank=22 name=pop.op.poor usec_inc=31934747 usec_exc=158441 calls=16
+PERF_SEG rank=28 name=pop.op.citizen usec_inc=10645419 usec_exc=58567 calls=16
+PERF_ALL name=pop.op.citizen usec_inc=10645419 usec_exc=58567 calls=16 avg_usec=665338.688
+PERF_ALL name=pop.op.clear usec_inc=148 usec_exc=148 calls=16 avg_usec=9.250
+PERF_ALL name=pop.op.place.commit usec_inc=41459 usec_exc=41459 calls=34200 avg_usec=1.212
+PERF_ALL name=pop.op.place.local_ids usec_inc=103029 usec_exc=103029 calls=34200 avg_usec=3.013
+PERF_ALL name=pop.op.place.params usec_inc=85755 usec_exc=85755 calls=34200 avg_usec=2.507
+PERF_ALL name=pop.op.place.score_loop usec_inc=43116453 usec_exc=43116453 calls=34200 avg_usec=1260.715
+PERF_ALL name=pop.op.poor usec_inc=31934747 usec_exc=158441 calls=16 avg_usec=1995921.688
+PERF_ALL name=pop.op.rich usec_inc=994826 usec_exc=11288 calls=16 avg_usec=62176.625
+
+BISECT notes (facts):
+- pop.opening_place exclusive residual=364 (≤ 10% of 43575504).
+- Class split: pop.op.poor / citizen / rich / clear.
+- Inside place_one_in: score_loop dominates (43116453 / 34200 calls); local_ids / params / commit are small leaves.

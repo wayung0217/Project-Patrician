@@ -1,0 +1,193 @@
+p3-board-for.txt
+PACK=overnight-17-87-P
+LANE=P DIAG-PERF-4
+ACTIONS_RUN=https://github.com/wayung0217/Project-Patrician/actions/runs/46033150459
+JOB=probe-za-d60
+PROBE_SHA=7d0c4ad049859db17ec29bf584f8677c707eadd1
+cpu_model=Intel(R) Xeon(R) 6975P-C
+SCENARIO=Za_G0_A0 --days 60
+FACTS_ONLY=yes
+BISECT_STOP=largest unclassified exclusive ≤ 10% of parent inclusive (or leaf)
+
+===== board_for top + children (PERF_SEG / PERF_ALL excerpts) =====
+PERF_SEG rank=11 name=mod.IntelLedger.board_for usec_inc=135870647 usec_exc=11628655 calls=1066080
+NOTE: board_for usec_exc=11628655 ≤ 0.10 * usec_inc=13587064.7 → residual stop met at board_for exclusive.
+Children (facts):
+PERF_SEG rank=12 name=bf.visible_samples usec_inc=58167635 usec_exc=9325514 calls=1066080
+PERF_SEG rank=19 name=bf.vs.loop usec_inc=38826388 usec_exc=32215762 calls=1066080
+PERF_SEG rank=20 name=bf.actor_present usec_inc=35543761 usec_exc=3828879 calls=1066080
+PERF_SEG rank=23 name=bf.ap.ships usec_inc=31714882 usec_exc=31714882 calls=1066080
+PERF_SEG rank=25 name=bf.summarize_board usec_inc=24919572 usec_exc=24919572 calls=1066080
+PERF_SEG rank=30 name=bf.vs.sample_visible usec_inc=6610626 usec_exc=6610626 calls=2365888
+PERF_SEG rank=31 name=bf.ids_ok usec_inc=5611024 usec_exc=5611024 calls=1066080
+PERF_SEG rank=32 name=bf.vs.keys_sort usec_inc=5303484 usec_exc=5303484 calls=1066080
+PERF_SEG rank=35 name=bf.vs.params_clock usec_inc=3347678 usec_exc=3347678 calls=1066080
+PERF_ALL name=bf.vs.board_get usec_inc=1364571 usec_exc=1364571 calls=1066080 avg_usec=1.280
+PERF_ALL name=bf.ap.buildings — (present in early-return path when ships miss; see actor_present nesting)
+
+Largest child of board_for by usec_inc: bf.visible_samples.
+Largest child of visible_samples: bf.vs.loop (usec_exc=32215762 leaf residual inside loop after sample_visible timed).
+Largest under actor_present: bf.ap.ships (leaf).
+
+===== object creation counts =====
+PERF_P3_ALLOC dict=3789338 array=2132160 duplicate=0
+
+===== raw perf_p3.log (SEG/ALL excerpt file) =====
+PERF_SEG rank=1 name=engine.job_total usec_inc=1237918056 usec_exc=1128 calls=1
+PERF_SEG rank=2 name=engine.day_loop usec_inc=1237511770 usec_exc=351745 calls=1
+PERF_SEG rank=3 name=simloop.tick_day usec_inc=1237160025 usec_exc=3102 calls=60
+PERF_SEG rank=4 name=simloop.traders usec_inc=1186493334 usec_exc=2890 calls=60
+PERF_SEG rank=5 name=traders.daily_step usec_inc=1186490444 usec_exc=923859 calls=60
+PERF_SEG rank=6 name=traders.eval_sail usec_inc=1185130975 usec_exc=1124755 calls=4316
+PERF_SEG rank=7 name=traders.candidate_loop usec_inc=1178905915 usec_exc=18043597 calls=4316
+PERF_SEG rank=8 name=cl.afford usec_inc=931233588 usec_exc=3332527 calls=1069350
+PERF_SEG rank=9 name=mod.CashLedger.max_affordable_qty usec_inc=927901061 usec_exc=927901061 calls=1069350
+PERF_SEG rank=10 name=traders.intel usec_inc=146008613 usec_exc=10137966 calls=1066080
+PERF_SEG rank=11 name=mod.IntelLedger.board_for usec_inc=135870647 usec_exc=11628655 calls=1066080
+PERF_SEG rank=12 name=bf.visible_samples usec_inc=58167635 usec_exc=9325514 calls=1066080
+PERF_SEG rank=13 name=simloop.pop usec_inc=47583332 usec_exc=695 calls=60
+PERF_SEG rank=14 name=pop.daily_step usec_inc=47582377 usec_exc=4143 calls=60
+PERF_SEG rank=15 name=pop.port_loop usec_inc=47578234 usec_exc=61738 calls=960
+PERF_SEG rank=16 name=pop.first usec_inc=43765510 usec_exc=4 calls=1
+PERF_SEG rank=17 name=pop.opening_place usec_inc=43575504 usec_exc=364 calls=16
+PERF_SEG rank=18 name=pop.op.place.score_loop usec_inc=43116453 usec_exc=43116453 calls=34200
+PERF_SEG rank=19 name=bf.vs.loop usec_inc=38826388 usec_exc=32215762 calls=1066080
+PERF_SEG rank=20 name=bf.actor_present usec_inc=35543761 usec_exc=3828879 calls=1066080
+PERF_SEG rank=21 name=traders.profit_fees usec_inc=33553559 usec_exc=3569982 calls=656595
+PERF_SEG rank=22 name=pop.op.poor usec_inc=31934747 usec_exc=158441 calls=16
+PERF_SEG rank=23 name=bf.ap.ships usec_inc=31714882 usec_exc=31714882 calls=1066080
+PERF_SEG rank=24 name=prices.mid_price usec_inc=30821657 usec_exc=30821657 calls=676111
+PERF_SEG rank=25 name=bf.summarize_board usec_inc=24919572 usec_exc=24919572 calls=1066080
+PERF_SEG rank=26 name=cl.weekly usec_inc=21070477 usec_exc=21070477 calls=722681
+PERF_SEG rank=27 name=cl.market_qty usec_inc=19036071 usec_exc=6690921 calls=1812720
+PERF_SEG rank=28 name=pop.op.citizen usec_inc=10645419 usec_exc=58567 calls=16
+PERF_SEG rank=29 name=mod.GoodsLedger.get_qty usec_inc=8650333 usec_exc=8650333 calls=1812720
+PERF_SEG rank=30 name=bf.vs.sample_visible usec_inc=6610626 usec_exc=6610626 calls=2365888
+PERF_SEG rank=31 name=bf.ids_ok usec_inc=5611024 usec_exc=5611024 calls=1066080
+PERF_SEG rank=32 name=bf.vs.keys_sort usec_inc=5303484 usec_exc=5303484 calls=1066080
+PERF_SEG rank=33 name=pop.later usec_inc=3817127 usec_exc=256 calls=59
+PERF_SEG rank=34 name=mod.GoodsLedger.make_market usec_inc=3694817 usec_exc=3694817 calls=1812720
+PERF_SEG rank=35 name=bf.vs.params_clock usec_inc=3347678 usec_exc=3347678 calls=1066080
+PERF_SEG rank=36 name=cl.draft_ok usec_inc=2874151 usec_exc=165250 calls=64740
+PERF_SEG rank=37 name=mod.ShipRegistry.ship_info usec_inc=2708901 usec_exc=2708901 calls=64740
+PERF_SEG rank=38 name=pop.place_movers usec_inc=2599064 usec_exc=2599064 calls=960
+PERF_SEG rank=39 name=traders.qual usec_inc=2554798 usec_exc=2554798 calls=1877460
+PERF_SEG rank=40 name=c08.sort.candidates usec_inc=2017332 usec_exc=2017332 calls=4316
+PERF_CNT name=cl.cand_ok calls=656595
+PERF_CNT name=cl.cells_entered calls=1812720
+PERF_CNT name=mod.CashLedger.balance calls=12924
+PERF_CNT name=mod.DemandModel.weekly_potential_demand calls=722681
+PERF_CNT name=mod.GoodCatalog.get_good calls=13971
+PERF_CNT name=mod.MarketPricer.mid_price calls=656595
+PERF_CNT name=mod.MarketPricer.quote calls=13561
+PERF_CNT name=mod.ShipRegistry.sail calls=637
+PERF_CNT name=mod.TradeDesk.execute_trade calls=637
+PERF_CNT name=mod.TradeEvaluator.coarse_score calls=656595
+PERF_CNT name=mod.TradeEvaluator.daily_marginal_profit calls=12924
+PERF_CNT name=mod.TradeEvaluator.decide_sail_or_idle calls=4129
+PERF_CNT name=mod.TradeEvaluator.pick_best_candidate calls=4316
+PERF_CNT name=mod.TraderRegistry._can_enter calls=64740
+PERF_CNT name=mod.TraderRegistry._can_trade_good calls=3625440
+PERF_CNT name=mod.TraderRegistry._dest_intel calls=1066080
+PERF_CNT name=mod.TraderRegistry._draft_ok calls=64740
+PERF_CNT name=simloop.day_errors_items calls=1232
+PERF_CNT name=skip.afford calls=3270
+PERF_CNT name=skip.market_qty calls=743370
+PERF_CNT name=skip.no_intel calls=343399
+PERF_CNT name=skip.same_port calls=4316
+PERF_CNT name=skip.weekly calls=66086
+PERF_CNT name=traders.alloc_array calls=24520
+PERF_CNT name=traders.alloc_callable calls=12948
+PERF_CNT name=traders.alloc_dict calls=3209753
+PERF_CNT name=traders.alloc_string calls=1298805
+PERF_CNT name=traders.candidates calls=656595
+PERF_CNT name=traders.diag_eval_sum calls=12924
+PERF_CNT name=traders.diag_sails_sum calls=637
+PERF_CNT name=traders.idle_eval calls=4316
+PERF_CNT name=traders.sailed calls=637
+PERF_CNT name=traders.state_sailing calls=664
+PERF_CNT name=traders.state_sell calls=595
+PERF_CNT name=traders.trades_exec calls=1232
+PERF_CNT name=traders.visit calls=4980
+PERF_CNT name=traders.voyage_matrix_entries calls=240
+PERF_ALL name=bf.actor_present usec_inc=35543761 usec_exc=3828879 calls=1066080 avg_usec=33.341
+PERF_ALL name=bf.ap.ships usec_inc=31714882 usec_exc=31714882 calls=1066080 avg_usec=29.749
+PERF_ALL name=bf.ids_ok usec_inc=5611024 usec_exc=5611024 calls=1066080 avg_usec=5.263
+PERF_ALL name=bf.summarize_board usec_inc=24919572 usec_exc=24919572 calls=1066080 avg_usec=23.375
+PERF_ALL name=bf.visible_samples usec_inc=58167635 usec_exc=9325514 calls=1066080 avg_usec=54.562
+PERF_ALL name=bf.vs.board_get usec_inc=1364571 usec_exc=1364571 calls=1066080 avg_usec=1.280
+PERF_ALL name=bf.vs.keys_sort usec_inc=5303484 usec_exc=5303484 calls=1066080 avg_usec=4.975
+PERF_ALL name=bf.vs.loop usec_inc=38826388 usec_exc=32215762 calls=1066080 avg_usec=36.420
+PERF_ALL name=bf.vs.params_clock usec_inc=3347678 usec_exc=3347678 calls=1066080 avg_usec=3.140
+PERF_ALL name=bf.vs.sample_visible usec_inc=6610626 usec_exc=6610626 calls=2365888 avg_usec=2.794
+PERF_ALL name=c08.sort.candidates usec_inc=2017332 usec_exc=2017332 calls=4316 avg_usec=467.408
+PERF_ALL name=c08.sort.consume_jobs usec_inc=56440 usec_exc=56440 calls=60 avg_usec=940.667
+PERF_ALL name=c08.sort.trader_pairs usec_inc=5061 usec_exc=5061 calls=60 avg_usec=84.350
+PERF_ALL name=cl.afford usec_inc=931233588 usec_exc=3332527 calls=1069350 avg_usec=870.841
+PERF_ALL name=cl.coarse_append usec_inc=1577422 usec_exc=1577422 calls=656595 avg_usec=2.402
+PERF_ALL name=cl.draft_ok usec_inc=2874151 usec_exc=165250 calls=64740 avg_usec=44.395
+PERF_ALL name=cl.excl_dest usec_inc=89455 usec_exc=89455 calls=64740 avg_usec=1.382
+PERF_ALL name=cl.intel_branch usec_inc=1501625 usec_exc=1501625 calls=1066080 avg_usec=1.409
+PERF_ALL name=cl.market_qty usec_inc=19036071 usec_exc=6690921 calls=1812720 avg_usec=10.501
+PERF_ALL name=cl.qty usec_inc=786308 usec_exc=786308 calls=656595 avg_usec=1.198
+PERF_ALL name=cl.self_port usec_inc=75730 usec_exc=75730 calls=69056 avg_usec=1.097
+PERF_ALL name=cl.voyage_dict_get usec_inc=109295 usec_exc=109295 calls=64740 avg_usec=1.688
+PERF_ALL name=cl.voyage_key usec_inc=146236 usec_exc=146236 calls=64740 avg_usec=2.259
+PERF_ALL name=cl.weekly usec_inc=21070477 usec_exc=21070477 calls=722681 avg_usec=29.156
+PERF_ALL name=engine.boot usec_inc=405069 usec_exc=359892 calls=1 avg_usec=405069.000
+PERF_ALL name=engine.day_loop usec_inc=1237511770 usec_exc=351745 calls=1 avg_usec=1237511770.000
+PERF_ALL name=engine.job_total usec_inc=1237918056 usec_exc=1128 calls=1 avg_usec=1237918056.000
+PERF_ALL name=engine.metrics usec_inc=89 usec_exc=89 calls=1 avg_usec=89.000
+PERF_ALL name=mod.CashLedger.max_affordable_qty usec_inc=927901061 usec_exc=927901061 calls=1069350 avg_usec=867.724
+PERF_ALL name=mod.GoodsLedger.get_qty usec_inc=8650333 usec_exc=8650333 calls=1812720 avg_usec=4.772
+PERF_ALL name=mod.GoodsLedger.make_market usec_inc=3694817 usec_exc=3694817 calls=1812720 avg_usec=2.038
+PERF_ALL name=mod.IntelLedger.board_for usec_inc=135870647 usec_exc=11628655 calls=1066080 avg_usec=127.449
+PERF_ALL name=mod.ShipRegistry.ship_info usec_inc=2708901 usec_exc=2708901 calls=64740 avg_usec=41.843
+PERF_ALL name=pop.abund_scarce usec_inc=1029009 usec_exc=1029009 calls=960 avg_usec=1071.884
+PERF_ALL name=pop.apply_opening_init usec_inc=1235 usec_exc=1235 calls=1 avg_usec=1235.000
+PERF_ALL name=pop.daily_step usec_inc=47582377 usec_exc=4143 calls=60 avg_usec=793039.617
+PERF_ALL name=pop.ext_sat_input usec_inc=46358 usec_exc=46358 calls=2880 avg_usec=16.097
+PERF_ALL name=pop.first usec_inc=43765510 usec_exc=4 calls=1 avg_usec=43765510.000
+PERF_ALL name=pop.flows usec_inc=76868 usec_exc=76868 calls=960 avg_usec=80.071
+PERF_ALL name=pop.hire usec_inc=51254 usec_exc=51254 calls=960 avg_usec=53.390
+PERF_ALL name=pop.later usec_inc=3817127 usec_exc=256 calls=59 avg_usec=64697.068
+PERF_ALL name=pop.op.citizen usec_inc=10645419 usec_exc=58567 calls=16 avg_usec=665338.688
+PERF_ALL name=pop.op.clear usec_inc=148 usec_exc=148 calls=16 avg_usec=9.250
+PERF_ALL name=pop.op.place.commit usec_inc=41459 usec_exc=41459 calls=34200 avg_usec=1.212
+PERF_ALL name=pop.op.place.local_ids usec_inc=103029 usec_exc=103029 calls=34200 avg_usec=3.013
+PERF_ALL name=pop.op.place.params usec_inc=85755 usec_exc=85755 calls=34200 avg_usec=2.507
+PERF_ALL name=pop.op.place.score_loop usec_inc=43116453 usec_exc=43116453 calls=34200 avg_usec=1260.715
+PERF_ALL name=pop.op.poor usec_inc=31934747 usec_exc=158441 calls=16 avg_usec=1995921.688
+PERF_ALL name=pop.op.rich usec_inc=994826 usec_exc=11288 calls=16 avg_usec=62176.625
+PERF_ALL name=pop.opening_place usec_inc=43575504 usec_exc=364 calls=16 avg_usec=2723469.000
+PERF_ALL name=pop.place_movers usec_inc=2599064 usec_exc=2599064 calls=960 avg_usec=2707.358
+PERF_ALL name=pop.port_loop usec_inc=47578234 usec_exc=61738 calls=960 avg_usec=49560.660
+PERF_ALL name=pop.satisfaction usec_inc=129007 usec_exc=82649 calls=960 avg_usec=134.382
+PERF_ALL name=pop.sync_residences usec_inc=55790 usec_exc=55790 calls=960 avg_usec=58.115
+PERF_ALL name=prices.mid_price usec_inc=30821657 usec_exc=30821657 calls=676111 avg_usec=45.587
+PERF_ALL name=simloop.buildings usec_inc=1449011 usec_exc=1449011 calls=60 avg_usec=24150.183
+PERF_ALL name=simloop.conservation usec_inc=38986 usec_exc=38986 calls=60 avg_usec=649.767
+PERF_ALL name=simloop.consume usec_inc=684893 usec_exc=628453 calls=60 avg_usec=11414.883
+PERF_ALL name=simloop.intel_ledger usec_inc=41328 usec_exc=41328 calls=60 avg_usec=688.800
+PERF_ALL name=simloop.offtake usec_inc=754755 usec_exc=754755 calls=60 avg_usec=12579.250
+PERF_ALL name=simloop.pop usec_inc=47583332 usec_exc=695 calls=60 avg_usec=793055.533
+PERF_ALL name=simloop.ships_daily usec_inc=4424 usec_exc=4424 calls=60 avg_usec=73.733
+PERF_ALL name=simloop.tick_day usec_inc=1237160025 usec_exc=3102 calls=60 avg_usec=20619333.750
+PERF_ALL name=simloop.ticks_ships usec_inc=70968 usec_exc=70968 calls=60 avg_usec=1182.800
+PERF_ALL name=simloop.tradedesk_observers usec_inc=35892 usec_exc=35892 calls=60 avg_usec=598.200
+PERF_ALL name=simloop.traders usec_inc=1186493334 usec_exc=2890 calls=60 avg_usec=19774888.900
+PERF_ALL name=traders.candidate_loop usec_inc=1178905915 usec_exc=18043597 calls=4316 avg_usec=273147.802
+PERF_ALL name=traders.daily_step usec_inc=1186490444 usec_exc=923859 calls=60 avg_usec=19774840.733
+PERF_ALL name=traders.eval_sail usec_inc=1185130975 usec_exc=1124755 calls=4316 avg_usec=274590.124
+PERF_ALL name=traders.intel usec_inc=146008613 usec_exc=10137966 calls=1066080 avg_usec=136.958
+PERF_ALL name=traders.profit_fees usec_inc=33553559 usec_exc=3569982 calls=656595 avg_usec=51.102
+PERF_ALL name=traders.qual usec_inc=2554798 usec_exc=2554798 calls=1877460 avg_usec=1.361
+PERF_ALL name=traders.sail_create usec_inc=1794839 usec_exc=1031421 calls=637 avg_usec=2817.644
+PERF_ALL name=traders.sell usec_inc=317994 usec_exc=65616 calls=595 avg_usec=534.444
+PERF_ALL name=traders.topn_precise usec_inc=1000325 usec_exc=1000325 calls=4316 avg_usec=231.771
+PERF_ALL name=traders.tradedesk usec_inc=540187 usec_exc=482560 calls=1232 avg_usec=438.463
+PERF_ALL name=traders.visit_setup usec_inc=117616 usec_exc=112555 calls=60 avg_usec=1960.267
+PERF_ALL name=traders.voyage_lookup usec_inc=500521 usec_exc=244990 calls=64740 avg_usec=7.731
+PERF_ALL name=traders.voyage_matrix_boot usec_inc=26907 usec_exc=26907 calls=1 avg_usec=26907.000
+PERF_P3_ALLOC dict=3789338 array=2132160 duplicate=0
+

@@ -1,0 +1,9 @@
+line=overhead_r1_yi_outer
+label=乙_outer_r1
+commit_sha=7d0c4ad049859db17ec29bf584f8677c707eadd1
+duration_s=344
+exit_code=0
+ELAPSED_MS=342345
+PERF_PROBE=1
+PERF_PROBE_LEVEL=outer
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz

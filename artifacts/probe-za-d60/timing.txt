@@ -1,0 +1,11 @@
+line=probe_za_d60
+commit_sha=7d0c4ad049859db17ec29bf584f8677c707eadd1
+start=2026-11-27T16:23:31Z
+end=2026-11-27T16:44:10Z
+duration_s=1239
+exit_code=0
+ELAPSED_MS=
+days=60
+PERF_PROBE=1
+PERF_PROBE_LEVEL=full
+cpu_model=Intel(R) Xeon(R) 6975P-C

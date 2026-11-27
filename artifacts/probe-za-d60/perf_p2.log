@@ -1,0 +1,19 @@
+PERF_P2_DAY day=10 s0=0 all_s=13470 cant1=0 search=6510
+PERF_P2_DAY_QUOTE_N day=10 n=6510 min=7 median=19 max=23
+PERF_P2_DAY_QUOTE_USEC day=10 n=6510 min=429 median=1078 p90=1324 max=1738
+PERF_P2_DAY_REST_USEC day=10 n=6510 min=19 median=41 p90=48 max=73
+PERF_P2_DAY_QUOTE_AVG_USEC day=10 avg=59.779 sum_quote_usec=6832742 sum_quotes=114300
+PERF_P2_DAY day=30 s0=0 all_s=8880 cant1=15 search=6285
+PERF_P2_DAY_QUOTE_N day=30 n=6285 min=3 median=19 max=24
+PERF_P2_DAY_QUOTE_USEC day=30 n=6285 min=191 median=1081 p90=1326 max=1835
+PERF_P2_DAY_REST_USEC day=30 n=6285 min=12 median=42 p90=49 max=155
+PERF_P2_DAY_QUOTE_AVG_USEC day=30 avg=58.721 sum_quote_usec=6656370 sum_quotes=113355
+PERF_P2_DAY day=60 s0=0 all_s=9225 cant1=345 search=3315
+PERF_P2_DAY_QUOTE_N day=60 n=3315 min=3 median=19 max=25
+PERF_P2_DAY_QUOTE_USEC day=60 n=3315 min=143 median=1069 p90=1344 max=1584
+PERF_P2_DAY_REST_USEC day=60 n=3315 min=12 median=43 p90=50 max=72
+PERF_P2_DAY_QUOTE_AVG_USEC day=60 avg=55.936 sum_quote_usec=3346906 sum_quotes=59835
+PERF_P2_JOB s0=0 all_s=705180 cant1=3270 search=360900
+PERF_P2_JOB_QUOTE_N n=360900 min=3 median=19 max=25
+PERF_P2_JOB_QUOTE_USEC n=360900 min=137 median=1055 p90=1312 max=7290
+PERF_P2_JOB_REST_USEC n=360900 min=11 median=41 p90=49 max=354

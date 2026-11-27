@@ -1,0 +1,3 @@
+label=乙_outer_r1
+PERF_PROBE=1
+PERF_PROBE_LEVEL=outer

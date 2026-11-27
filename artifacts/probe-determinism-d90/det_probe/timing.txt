@@ -1,0 +1,4 @@
+exit_code=0
+commit_sha=7d0c4ad049859db17ec29bf584f8677c707eadd1
+PERF_PROBE=1
+cpu_model=AMD EPYC 9V74 80-Core Processor

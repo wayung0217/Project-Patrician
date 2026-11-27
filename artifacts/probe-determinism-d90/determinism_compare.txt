@@ -1,0 +1,14 @@
+summary_fields_probe=['run_id', 'combo_index', 'seed', 'combo', 'aborted', 'abort_reason', 'MET-01', 'MET-01_pass', 'MET-02', 'MET-02_pass', 'MET-03', 'MET-03_pass', 'MET-04', 'MET-04_pass', 'MET-05a', 'MET-05a_pass', 'MET-05b', 'MET-05b_pass', 'MET-06', 'MET-06_pass', 'OBS-01', 'OBS-02', 'OBS-03']
+summary_fields_clean=['run_id', 'combo_index', 'seed', 'combo', 'aborted', 'abort_reason', 'MET-01', 'MET-01_pass', 'MET-02', 'MET-02_pass', 'MET-03', 'MET-03_pass', 'MET-04', 'MET-04_pass', 'MET-05a', 'MET-05a_pass', 'MET-05b', 'MET-05b_pass', 'MET-06', 'MET-06_pass', 'OBS-01', 'OBS-02', 'OBS-03']
+summary_stripped_identical=True
+season_ports.csv_probe_bytes=4741 sha256=2733ff61c5af7103fe5da084276139f2cb881496fd9432c3dc2dbfb5f50170bc
+season_ports.csv_clean_bytes=4741 sha256=2733ff61c5af7103fe5da084276139f2cb881496fd9432c3dc2dbfb5f50170bc
+season_ports.csv_identical=True
+season_cells.csv_probe_bytes=22685 sha256=138f431a7e2139e275baea02b4bc12ac0e930aca273e040216fb354b88376715
+season_cells.csv_clean_bytes=22685 sha256=138f431a7e2139e275baea02b4bc12ac0e930aca273e040216fb354b88376715
+season_cells.csv_identical=True
+trader_summary.csv_probe_bytes=3131 sha256=aad976b783c038c80e45bcaaaab4e29a5372a2a91f03a931cfaf989f717e4bf1
+trader_summary.csv_clean_bytes=3131 sha256=aad976b783c038c80e45bcaaaab4e29a5372a2a91f03a931cfaf989f717e4bf1
+trader_summary.csv_identical=True
+summary_stripped_probe_bytes=299 sha256=cdbdfaa09311eefa4a6cda1a4977f4818d9e920e134556ba22465cbb1b708ef2
+summary_stripped_clean_bytes=299 sha256=cdbdfaa09311eefa4a6cda1a4977f4818d9e920e134556ba22465cbb1b708ef2

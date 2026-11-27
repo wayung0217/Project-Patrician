@@ -1,0 +1,118 @@
+p6-overhead-determinism.txt
+PACK=overnight-17-87-P
+LANE=P DIAG-PERF-4
+ACTIONS_RUN=https://github.com/wayung0217/Project-Patrician/actions/runs/46033150459
+FACTS_ONLY=yes
+PROBE_SHA=7d0c4ad049859db17ec29bf584f8677c707eadd1
+BASE_MAIN=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+
+===== P6(a) overhead --days 10 × 2 rounds (same job serial 甲/乙/丙) =====
+JOB=probe-overhead-d10
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+(all 6 ELAPSED_MS on this CPU; do not cross-compare to d60/d90 CPUs)
+
+RAW overhead_summary.txt:
+MAIN_SHA=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+PROBE_SHA=7d0c4ad049859db17ec29bf584f8677c707eadd1
+ROUNDS=2
+=== ROUND 1 ===
+--- r1_jia_clean ---
+line=overhead_r1_jia_clean
+label=甲_clean_main_r1
+commit_sha=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+duration_s=337
+exit_code=0
+ELAPSED_MS=335708
+PERF_PROBE=0
+PERF_PROBE_LEVEL=
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+--- r1_yi_outer ---
+line=overhead_r1_yi_outer
+label=乙_outer_r1
+commit_sha=7d0c4ad049859db17ec29bf584f8677c707eadd1
+duration_s=344
+exit_code=0
+ELAPSED_MS=342345
+PERF_PROBE=1
+PERF_PROBE_LEVEL=outer
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+--- r1_bing_full ---
+line=overhead_r1_bing_full
+label=丙_full_r1
+commit_sha=7d0c4ad049859db17ec29bf584f8677c707eadd1
+duration_s=373
+exit_code=0
+ELAPSED_MS=372117
+PERF_PROBE=1
+PERF_PROBE_LEVEL=full
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+=== ROUND 2 ===
+--- r2_jia_clean ---
+line=overhead_r2_jia_clean
+label=甲_clean_main_r2
+commit_sha=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+duration_s=334
+exit_code=0
+ELAPSED_MS=332702
+PERF_PROBE=0
+PERF_PROBE_LEVEL=
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+--- r2_yi_outer ---
+line=overhead_r2_yi_outer
+label=乙_outer_r2
+commit_sha=7d0c4ad049859db17ec29bf584f8677c707eadd1
+duration_s=345
+exit_code=0
+ELAPSED_MS=343917
+PERF_PROBE=1
+PERF_PROBE_LEVEL=outer
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+--- r2_bing_full ---
+line=overhead_r2_bing_full
+label=丙_full_r2
+commit_sha=7d0c4ad049859db17ec29bf584f8677c707eadd1
+duration_s=373
+exit_code=0
+ELAPSED_MS=371430
+PERF_PROBE=1
+PERF_PROBE_LEVEL=full
+cpu_model=Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz
+
+
+ELAPSED_MS table (from timing.txt):
+round=1 甲_clean_main ELAPSED_MS=335708
+round=1 乙_outer      ELAPSED_MS=342345
+round=1 丙_full       ELAPSED_MS=372117
+round=2 甲_clean_main ELAPSED_MS=332702
+round=2 乙_outer      ELAPSED_MS=343917
+round=2 丙_full       ELAPSED_MS=371430
+
+===== P6(b) determinism probe vs clean --days 90 (season outputs) =====
+JOB=probe-determinism-d90
+cpu_model=AMD EPYC 9V74 80-Core Processor
+det_probe elapsed_ms(summary.csv)=2116381 commit=7d0c4ad049859db17ec29bf584f8677c707eadd1 PERF_PROBE=1
+det_clean elapsed_ms(summary.csv)=1862261 commit=dcea87f338f3bea4b49197ce3cbb1c407a28a250 PERF_PROBE=0
+
+RAW determinism_compare.txt:
+summary_fields_probe=['run_id', 'combo_index', 'seed', 'combo', 'aborted', 'abort_reason', 'MET-01', 'MET-01_pass', 'MET-02', 'MET-02_pass', 'MET-03', 'MET-03_pass', 'MET-04', 'MET-04_pass', 'MET-05a', 'MET-05a_pass', 'MET-05b', 'MET-05b_pass', 'MET-06', 'MET-06_pass', 'OBS-01', 'OBS-02', 'OBS-03']
+summary_fields_clean=['run_id', 'combo_index', 'seed', 'combo', 'aborted', 'abort_reason', 'MET-01', 'MET-01_pass', 'MET-02', 'MET-02_pass', 'MET-03', 'MET-03_pass', 'MET-04', 'MET-04_pass', 'MET-05a', 'MET-05a_pass', 'MET-05b', 'MET-05b_pass', 'MET-06', 'MET-06_pass', 'OBS-01', 'OBS-02', 'OBS-03']
+summary_stripped_identical=True
+season_ports.csv_probe_bytes=4741 sha256=2733ff61c5af7103fe5da084276139f2cb881496fd9432c3dc2dbfb5f50170bc
+season_ports.csv_clean_bytes=4741 sha256=2733ff61c5af7103fe5da084276139f2cb881496fd9432c3dc2dbfb5f50170bc
+season_ports.csv_identical=True
+season_cells.csv_probe_bytes=22685 sha256=138f431a7e2139e275baea02b4bc12ac0e930aca273e040216fb354b88376715
+season_cells.csv_clean_bytes=22685 sha256=138f431a7e2139e275baea02b4bc12ac0e930aca273e040216fb354b88376715
+season_cells.csv_identical=True
+trader_summary.csv_probe_bytes=3131 sha256=aad976b783c038c80e45bcaaaab4e29a5372a2a91f03a931cfaf989f717e4bf1
+trader_summary.csv_clean_bytes=3131 sha256=aad976b783c038c80e45bcaaaab4e29a5372a2a91f03a931cfaf989f717e4bf1
+trader_summary.csv_identical=True
+summary_stripped_probe_bytes=299 sha256=cdbdfaa09311eefa4a6cda1a4977f4818d9e920e134556ba22465cbb1b708ef2
+summary_stripped_clean_bytes=299 sha256=cdbdfaa09311eefa4a6cda1a4977f4818d9e920e134556ba22465cbb1b708ef2
+
+
+File byte/sha256 (also in compare):
+season_ports.csv: 4741 bytes sha256=2733ff61c5af7103fe5da084276139f2cb881496fd9432c3dc2dbfb5f50170bc identical=True
+season_cells.csv: 22685 bytes sha256=138f431a7e2139e275baea02b4bc12ac0e930aca273e040216fb354b88376715 identical=True
+trader_summary.csv: 3131 bytes sha256=aad976b783c038c80e45bcaaaab4e29a5372a2a91f03a931cfaf989f717e4bf1 identical=True
+summary.csv stripped (no elapsed_ms): 299 bytes sha256=cdbdfaa09311eefa4a6cda1a4977f4818d9e920e134556ba22465cbb1b708ef2 identical=True
+NOTE: raw summary.csv bytes differ only in elapsed_ms column (probe 316B sha differs from clean); stripped compare identical=True.
