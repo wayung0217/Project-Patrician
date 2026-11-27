@@ -20,6 +20,10 @@
 
 .PARAMETER ReportOnly
   Only run tools/run_m1b_report.gd against existing out\m1b\.
+
+.PARAMETER DayProgress
+  17-85 B: pass --day-progress (default off). Updates Write-Progress each game day
+  from DAY_PROGRESS lines; ETA from PowerShell clock. Season PROGRESS lines kept.
 #>
 [CmdletBinding()]
 param(
@@ -36,7 +40,10 @@ param(
   [int]$SmokeDays = 0,
 
   [Parameter(Mandatory = $false)]
-  [switch]$ReportOnly
+  [switch]$ReportOnly,
+
+  [Parameter(Mandatory = $false)]
+  [switch]$DayProgress
 )
 
 # 17-64 T2: one season = 90 days (PRM-SYS00-DAYS_PER_SEASON). Short smoke OK.
@@ -193,6 +200,10 @@ foreach ($gName in $selected) {
   if ($SmokeDays -gt 0) {
     $args += @("--days", "$SmokeDays")
   }
+  # 17-85 B: opt-in day lines (default off). SmokeDays and full runs both honor -DayProgress.
+  if ($DayProgress) {
+    $args += @("--day-progress")
+  }
 
   $gStart = Get-Date
   $timingPath = Join-Path $groupDir "timing.txt"
@@ -207,7 +218,18 @@ foreach ($gName in $selected) {
     & $GodotPath @args 2>&1 | Tee-Object -FilePath $logPath | ForEach-Object {
       $line = "$_"
       # Match ASCII marker from sim_engine (PS 5.1 safe).
-      if ($line -match "PROGRESS pct=(\d+)") {
+      if ($line -match "^DAY_PROGRESS day=(\d+) total=(\d+)$") {
+        # 17-85 B: per-day bar; pct = day/total; ETA from PS clock (no sim timing).
+        Append-Progress $line
+        $dayN = [int]$Matches[1]
+        $dayTotal = [Math]::Max(1, [int]$Matches[2])
+        $pct = [int](100.0 * $dayN / $dayTotal)
+        $elapsed = (Get-Date) - $gStart
+        $eta = if ($dayN -gt 0 -and $dayN -lt $dayTotal) {
+          [TimeSpan]::FromSeconds($elapsed.TotalSeconds * ($dayTotal - $dayN) / $dayN)
+        } else { [TimeSpan]::Zero }
+        Write-Progress -Id 2 -Activity $gName -Status ("day {0}/{1} {2}% elapsed={3:hh\:mm\:ss} ETA={4:hh\:mm\:ss}" -f $dayN, $dayTotal, $pct, $elapsed, $eta) -PercentComplete ([Math]::Min(99, $pct))
+      } elseif ($line -match "PROGRESS pct=(\d+)") {
         Append-Progress $line
         $pct = [int]$Matches[1]
         $elapsed = (Get-Date) - $gStart

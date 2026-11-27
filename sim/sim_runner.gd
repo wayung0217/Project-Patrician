@@ -20,6 +20,7 @@ const ARG_INLINE := "--inline"
 const ARG_DAYS := "--days"
 const ARG_OUT_DIR := "--out-dir"
 const ARG_SEASON_PROGRESS := "--season-progress"
+const ARG_DAY_PROGRESS := "--day-progress"
 
 const PATH_VALIDATOR := "res://sim/scenario_validator.gd"
 const PATH_GRID := "res://sim/grid_expand.gd"
@@ -51,10 +52,12 @@ func _main() -> void:
 	var out_dir: String = _arg_value(args, ARG_OUT_DIR)
 	var inline_mode: bool = _arg_flag(args, ARG_INLINE)
 	var season_progress: bool = _arg_flag(args, ARG_SEASON_PROGRESS) or inline_mode
+	## 17-85 B: opt-in only (default off; not implied by --inline).
+	var day_progress: bool = _arg_flag(args, ARG_DAY_PROGRESS)
 	if not job_path.is_empty():
 		## W1: accept user:// or absolute; resolve via globalize_path when user://.
 		var resolved_job: String = _resolve_path(job_path)
-		var rc: int = _run_job_file(resolved_job, season_progress, days_raw)
+		var rc: int = _run_job_file(resolved_job, season_progress, days_raw, day_progress)
 		quit(rc)
 		return
 	if scenario_path.is_empty():
@@ -73,7 +76,7 @@ func _main() -> void:
 		quit(1)
 		return
 	var rc2: int = _run_scenario_orchestrator(
-		scenario_path, ports_dir, inline_mode, season_progress, days_raw, out_dir
+		scenario_path, ports_dir, inline_mode, season_progress, days_raw, out_dir, day_progress
 	)
 	quit(rc2)
 
@@ -84,7 +87,8 @@ func _run_scenario_orchestrator(
 	inline_mode: bool,
 	season_progress: bool,
 	days_raw: String,
-	out_dir: String
+	out_dir: String,
+	day_progress: bool = false
 ) -> int:
 	var SimScenarioValidator: GDScript = load(PATH_VALIDATOR) as GDScript
 	var SimGridExpand: GDScript = load(PATH_GRID) as GDScript
@@ -148,6 +152,7 @@ func _run_scenario_orchestrator(
 			"ports_dir": ports_dir,
 			"result_path": "user://sim_jobs/result_%d.json" % rid,
 			"season_progress": season_progress,
+			"day_progress": day_progress,
 		}
 		var jf := FileAccess.open(job_file, FileAccess.WRITE)
 		if jf == null:
@@ -161,7 +166,10 @@ func _run_scenario_orchestrator(
 			## W4: same-process job (Owner Windows; progress visible).
 			print("sim_runner_inline_job: %s" % job_file)
 			exit_code = _run_job_file(
-				ProjectSettings.globalize_path(job_file), season_progress, days_raw
+				ProjectSettings.globalize_path(job_file),
+				season_progress,
+				days_raw,
+				day_progress
 			)
 		else:
 			## W1 argv: one element per arg; --job = user:// path (no spaces).
@@ -184,6 +192,8 @@ func _run_scenario_orchestrator(
 			])
 			if season_progress:
 				cmd_args.append(ARG_SEASON_PROGRESS)
+			if day_progress:
+				cmd_args.append(ARG_DAY_PROGRESS)
 			## Evidence (d): one actual argv line for subprocess launch.
 			print("sim_runner_child_argv: %s %s" % [exe, " ".join(cmd_args)])
 			## Prove --job value is a single array element (W1 tests).
@@ -270,7 +280,12 @@ func _run_scenario_orchestrator(
 	return 0
 
 
-func _run_job_file(job_path: String, season_progress: bool = false, days_raw: String = "") -> int:
+func _run_job_file(
+	job_path: String,
+	season_progress: bool = false,
+	days_raw: String = "",
+	day_progress: bool = false
+) -> int:
 	## job_path may be user:// or absolute (W1 child globalize_path).
 	var path: String = job_path
 	if path.begins_with("user://"):
@@ -300,10 +315,12 @@ func _run_job_file(job_path: String, season_progress: bool = false, days_raw: St
 	var job: Dictionary = payload["job"]
 	var ports_dir: String = String(payload.get("ports_dir", ""))
 	var want_progress: bool = season_progress or bool(payload.get("season_progress", false))
+	var want_day: bool = day_progress or bool(payload.get("day_progress", false))
 	var engine: RefCounted = SimEngine.new()
 	if not ports_dir.is_empty():
 		engine.set("ports_dir", ports_dir)
 	engine.set("print_season_progress", want_progress)
+	engine.set("print_day_progress", want_day)
 	var one: Dictionary = engine.call(
 		"run_one_job",
 		scenario,
