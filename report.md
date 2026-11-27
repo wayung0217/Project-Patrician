@@ -134,7 +134,7 @@ label=yi_tip	days=10	round=1	elapsed_ms=86610	commit=107c17fea29da54363713e58968
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-87-A`
-- Full SHA: `78ab4fd401a8a48bfd3e6adb1b5b253ba31a1e87`
+- Full SHA: `0e05e1b47caecc5253ab6f48b1dce96a4a66d3be` _(content tip; align push updates store orphan_sha to final HEAD)_
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-87-A
 
 ### git ls-tree -r -l
@@ -158,9 +158,9 @@ _(ls-tree of content tip before meta; final tip below)_
 ## B-10 ls + FILES_TOTAL
 
 ```
-total 132
+total 136
 drwxr-xr-x   3 ubuntu ubuntu  4096 Nov 27 19:36 .
-drwxrwxrwt. 16 root   root    4096 Nov 27 19:35 ..
+drwxrwxrwt. 16 root   root    4096 Nov 27 19:36 ..
 -rw-r--r--   1 ubuntu ubuntu   748 Nov 27 19:35 a4-golden.txt
 -rw-r--r--   1 ubuntu ubuntu  9744 Nov 27 19:35 a5-timing.txt
 -rw-r--r--   1 ubuntu ubuntu  8665 Nov 27 19:35 A-readcode.txt
@@ -170,11 +170,12 @@ drwxrwxrwt. 16 root   root    4096 Nov 27 19:35 ..
 -rw-r--r--   1 ubuntu ubuntu 20669 Nov 27 19:35 evidence-e-scan.txt
 -rw-r--r--   1 ubuntu ubuntu  8587 Nov 27 19:35 evidence-special.txt
 -rw-r--r--   1 ubuntu ubuntu  1183 Nov 27 19:35 failed-runs.txt
-drwxr-xr-x   8 ubuntu ubuntu  4096 Nov 27 19:35 .git
+drwxr-xr-x   8 ubuntu ubuntu  4096 Nov 27 19:36 .git
 -rw-r--r--   1 ubuntu ubuntu   376 Nov 27 19:35 lane.txt
--rw-r--r--   1 ubuntu ubuntu   687 Nov 27 19:36 orphan_push.log
+-rw-r--r--   1 ubuntu ubuntu  1435 Nov 27 19:36 manifest.txt
+-rw-r--r--   1 ubuntu ubuntu   816 Nov 27 19:36 orphan_push.log
 -rw-r--r--   1 ubuntu ubuntu    41 Nov 27 19:36 orphan_sha.txt
--rw-r--r--   1 ubuntu ubuntu  5896 Nov 27 19:35 report.md
+-rw-r--r--   1 ubuntu ubuntu  7858 Nov 27 19:36 report.md
 ```
 
-FILES_TOTAL=13 _(provisional; final after manifest)_
+FILES_TOTAL=14
