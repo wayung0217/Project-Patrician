@@ -100,29 +100,29 @@ N/A（無 .gd 變更）。
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-87-Q`
-- Full SHA: `25109f26e978a5ef1505934cc3a199f7c8831554`
+- Full SHA: `5c244f87205e374abccffd81306abd210631ed30`
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-87-Q
 
 ### git ls-tree -r -l
 
 ```
 100644 blob 524a56e16e505d77bb41ed9064203ae89eee206d     323	lane.txt
-100644 blob ac27034fe1e007fa1ce8214a69fc54622a5b44d0     760	orphan_push.log
-100644 blob 922b1253f89f8f801b0cbdbe7bb262482401dae7      41	orphan_sha.txt
+100644 blob ebfc8f10da53ef4e6cba7843cfc8ca1a2a227e42     922	orphan_push.log
+100644 blob dd8b5cb8a419d76e2130819c43ec369183bab938      41	orphan_sha.txt
 100644 blob ac662cef960b297b5d2ece66249a5ca30815e32c   57811	q1-source.txt
 100644 blob 7eec456cec0335bec3cdb145cfda6c6c4f60af9e    4505	q2-branches.txt
 100644 blob 1b8c3137f6f89b04f8b6c8df307b8584e63d5426    7651	q3-d104c.txt
-100644 blob 38c6e861d01d8540dd74f0f4e07a3564d2330c41    4463	report.md
+100644 blob 8b0c91431cc39c481f016054afe860d11d2cb7b6    4463	report.md
 ```
 
 ## B-10 ls + FILES_TOTAL
 
 ```
-total 75
+total 76
 drwxrwxrwx 2 ubuntu ubuntu     0 Nov 27 16:14 .
 drwxrwxrwx 2 ubuntu ubuntu     0 Nov 27 16:14 ..
 -rw-rw-rw- 1 ubuntu ubuntu   323 Nov 27 16:17 lane.txt
--rw-rw-rw- 1 ubuntu ubuntu   922 Nov 27 16:20 orphan_push.log
+-rw-rw-rw- 1 ubuntu ubuntu  1085 Nov 27 16:20 orphan_push.log
 -rw-rw-rw- 1 ubuntu ubuntu    41 Nov 27 16:20 orphan_sha.txt
 -rw-rw-rw- 1 ubuntu ubuntu 57811 Nov 27 16:17 q1-source.txt
 -rw-rw-rw- 1 ubuntu ubuntu  4505 Nov 27 16:17 q2-branches.txt
