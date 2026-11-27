@@ -1,10 +1,15 @@
-# 17-83 DIAG-METRICS-2 / R9-93: Za_G0_A0 length matrix (manual only).
+# 17-83 DIAG-METRICS-2 / R9-93: Za_G0_A0 length matrix (manual / push).
 # P1-A: days 450+720; P1-C: 720×seeds 2..5 (scenario seeds-only). Pack ≤6 lines.
 # No secrets. No product/autoload/sim/test changes.
+# Agent tokens lack actions:write → workflow_dispatch 403; push met-lengths-* is the
+# same H4/E1 workaround used elsewhere (17-61/17-72).
 name: M1b-MET-Lengths
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "met-lengths-*"
 
 jobs:
   za-g0-a0-length:
