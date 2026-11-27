@@ -100,13 +100,19 @@ N/A（無 .gd 變更）。
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-87-Q`
-- Full SHA: `TIP_SHA`
+- Full SHA: `55a016c2efa7a4f9c5b8b62b757658736117ea4f`
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-87-Q
 
 ### git ls-tree -r -l
 
 ```
-TREE_SHA
+100644 blob 524a56e16e505d77bb41ed9064203ae89eee206d     323	lane.txt
+100644 blob d7d1f6bd05e860ebd3ce27098961a775e51171a0     547	orphan_push.log
+100644 blob 622e73de68cc2425afbcf8b9a4247415bab5b24c       8	orphan_sha.txt
+100644 blob ac662cef960b297b5d2ece66249a5ca30815e32c   57811	q1-source.txt
+100644 blob 7eec456cec0335bec3cdb145cfda6c6c4f60af9e    4505	q2-branches.txt
+100644 blob 1b8c3137f6f89b04f8b6c8df307b8584e63d5426    7651	q3-d104c.txt
+100644 blob 1ebcf4023d5579c27aba3019dfa905de35020f5b    3919	report.md
 ```
 
 ## B-10 ls + FILES_TOTAL
