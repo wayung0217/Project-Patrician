@@ -134,49 +134,15 @@ label=yi_tip	days=10	round=1	elapsed_ms=86610	commit=107c17fea29da54363713e58968
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-87-A`
-- Full SHA: `b0e04dbdf1d82c67d172fe94389f14873b14218f`
+- Full SHA: 
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-87-A
 
 ### git ls-tree -r -l
 
-```
-100644 blob 5a55d02c28a48b2ba46563b906476b800c8a0bcd    8665	A-readcode.txt
-100644 blob 8100cc8010500c2f9707c8ac500788b4898d027b     748	a4-golden.txt
-100644 blob 938a79ff5ef7d836878608c5a9c22b4a8a1447e4    9744	a5-timing.txt
-100644 blob f2b403fbcb2adabfdc553612c38887d9b679bc8e   19055	diff-tests.txt
-100644 blob fa8e3e308c515c4e2e04af85d967f826c0c252de    3304	diff-trader_registry.txt
-100644 blob 45331ff420c2a1f476df3c9f0aa76bc6bb3163f9    5532	diff-workflow-timing.txt
-100644 blob 35cc871485037d73f4c48d745fdf257c7236262f   20669	evidence-e-scan.txt
-100644 blob 7e1bf4e73f77c2a0bf7fd88f124af8731e29b996    8587	evidence-special.txt
-100644 blob e128046157ad9d6a8844f3144ea3faa75773fa9c    1183	failed-runs.txt
-100644 blob 284a7efe5e38577e6d23f38307e785640d4a982f     376	lane.txt
-100644 blob df36f9fff9679a284677986232704cb814650220    1435	manifest.txt
-100644 blob 1c8614c33413a8d5057b84cd59578a427e63ffeb    1053	orphan_push.log
-100644 blob 0575bb98e7f7b559e4d8022e1d3cede938e16446      41	orphan_sha.txt
-100644 blob 80a2d4f661954098070551df0e8ca69a244994f6    7948	report.md
-```
+
 
 ## B-10 ls + FILES_TOTAL
 
-```
-total 136
-drwxr-xr-x   3 ubuntu ubuntu  4096 Nov 27 19:36 .
-drwxrwxrwt. 16 root   root    4096 Nov 27 19:36 ..
--rw-r--r--   1 ubuntu ubuntu   748 Nov 27 19:35 a4-golden.txt
--rw-r--r--   1 ubuntu ubuntu  9744 Nov 27 19:35 a5-timing.txt
--rw-r--r--   1 ubuntu ubuntu  8665 Nov 27 19:35 A-readcode.txt
--rw-r--r--   1 ubuntu ubuntu 19055 Nov 27 19:35 diff-tests.txt
--rw-r--r--   1 ubuntu ubuntu  3304 Nov 27 19:35 diff-trader_registry.txt
--rw-r--r--   1 ubuntu ubuntu  5532 Nov 27 19:35 diff-workflow-timing.txt
--rw-r--r--   1 ubuntu ubuntu 20669 Nov 27 19:35 evidence-e-scan.txt
--rw-r--r--   1 ubuntu ubuntu  8587 Nov 27 19:35 evidence-special.txt
--rw-r--r--   1 ubuntu ubuntu  1183 Nov 27 19:35 failed-runs.txt
-drwxr-xr-x   8 ubuntu ubuntu  4096 Nov 27 19:36 .git
--rw-r--r--   1 ubuntu ubuntu   376 Nov 27 19:35 lane.txt
--rw-r--r--   1 ubuntu ubuntu  1435 Nov 27 19:36 manifest.txt
--rw-r--r--   1 ubuntu ubuntu  1182 Nov 27 19:36 orphan_push.log
--rw-r--r--   1 ubuntu ubuntu    41 Nov 27 19:36 orphan_sha.txt
--rw-r--r--   1 ubuntu ubuntu  7948 Nov 27 19:36 report.md
-```
+
 
 FILES_TOTAL=14
