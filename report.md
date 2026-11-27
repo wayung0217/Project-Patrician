@@ -119,6 +119,9 @@ V0∥Q/P/A0；V1 於 A tip 凍結＋CI 綠後啟動。
 - `orphan_push.log` / `orphan_sha.txt` (S9d)
 - store also: `dispatch-v0.txt`, `dispatch-v1.txt`, `artifacts/v0/`, `artifacts/v1/`
 
+ORPHAN=`review/overnight-17-87-V` @ `1b90da9e6be7ba31e2a782715dbaaaad77ead37d`
+VERIFY_BRANCH_DELETED=`perf-verify-1787` was `8a5391b3f2e8ee78eba4cecc5729aad7aa16a866`
+
 ## FILES_TOTAL
 
 - `artifacts/v0/Za_G0_A0_d450_s1/combos.csv`
@@ -224,5 +227,6 @@ V0∥Q/P/A0；V1 於 A tip 凍結＋CI 綠後啟動。
 - `v1-a-side.txt`
 - `v2-compare.txt`
 - `v3-met.txt`
+- `verify-branch-deleted.txt`
 
-FILES_TOTAL=103
+FILES_TOTAL=104

@@ -1,0 +1,8 @@
+verify-branch-deleted.txt
+VERIFY_BRANCH=perf-verify-1787
+FINAL_SHA_BEFORE_DELETE=8a5391b3f2e8ee78eba4cecc5729aad7aa16a866
+DELETED=yes
+AUTHORIZED=B-5 dispatch-17-87
+DELETED_AT_HKT=2026-11-28 04:09:27
+To https://github.com/wayung0217/Project-Patrician
+ - [deleted]         perf-verify-1787
