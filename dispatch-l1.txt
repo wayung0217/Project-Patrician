@@ -1,0 +1,18 @@
+dispatch-l1.txt
+METHOD=push perf-verify-1788 (workflow_dispatch typically 403)
+WORKFLOW=.github/workflows/m1b-longrun-1788.yml
+REF=perf-verify-1788 @ 6d1ad7331166f3a5eb366d7631f3f24bbccaa630
+PRODUCT_BASE=107c17fea29da54363713e5896805a2ebd630a0e
+PRODUCT_TREE=7b533dd0b03b885aefcc357465dea8be06892a52
+TRADER_REGISTRY_BLOB=3df59445ae15ff5eee2f97a0e6d48d977c931352
+MATRIX=1800/s1 3600/s1
+RUN=46091383793
+URL=https://github.com/wayung0217/Project-Patrician/actions/runs/46091383793
+
+=== V force-push heads-up (HKT 2026-11-28 ~10:13) ===
+BRANCH_HEAD_NOW=e154ae8306b4f311aa1f5ad716ee8b4b46b31281
+AUTHORITATIVE_RUN=46091383793 head=6d1ad7331166f3a5eb366d7631f3f24bbccaa630 status=in_progress (keep)
+DUPLICATE_RUN=46096974533 head=e154ae8 status=in_progress (cancel requested; agent token 403 actions:write)
+CANCEL_ATTEMPT=gh run cancel + REST POST /cancel → HTTP 403 Resource not accessible by integration
+ACTION_NEEDED=Owner or Lane V cancel duplicate 46096974533 if still running
+NO_SHORTENED_RERUN=yes

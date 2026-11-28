@@ -1,0 +1,14 @@
+failed-runs.txt
+AUTHORITATIVE_RUN=46091383793
+AUTHORITATIVE_FAILURES=none
+RETRIES=0
+
+=== DUPLICATE (not authoritative; ignore outputs) ===
+RUN=46096974533
+CAUSE=Lane V force-push perf-verify-1788 to e154ae8 re-triggered M1b-Longrun-1788 (paths match)
+HEAD=e154ae8306b4f311aa1f5ad716ee8b4b46b31281
+PRODUCT_CHECKOUT=A tip (trader_registry blob bdb1601f…) ≠ #105 tip required for L
+CANCEL_ATTEMPT=gh run cancel + REST POST → HTTP 403 Resource not accessible by integration
+CANCEL_RESULT=not cancelled by Lane L agent (needs Owner/V)
+ACTION=ignored; pack uses 46091383793 only
+NO_SHORTENED_RERUN=yes

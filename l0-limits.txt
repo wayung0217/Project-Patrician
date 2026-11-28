@@ -1,0 +1,29 @@
+l0-limits.txt
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+LANE=L LONG-RUN
+PRODUCT_COMMIT=107c17fea29da54363713e5896805a2ebd630a0e
+PRODUCT_TREE=7b533dd0b03b885aefcc357465dea8be06892a52
+TRADER_REGISTRY_BLOB=3df59445ae15ff5eee2f97a0e6d48d977c931352
+WORKFLOW_BRANCH=perf-verify-1788
+WORKFLOW_COMMIT=6d1ad7331166f3a5eb366d7631f3f24bbccaa630
+
+=== Q4(a) scenario years (Za_G0_A0 via docs/spec/scenario_M1b_G0.json) ===
+years=5
+warmup_years=1
+DAYS_PER_YEAR=360
+DAYS_LIMIT_YEARS_X_360=1800
+BRIEF_EXPECTED_LIMIT=3600
+ACTUAL_VS_EXPECTED=actual 1800 (years=5); expected 3600 was not matched
+
+=== FRM-SYS23-07 warmup check (warmup_years=1, SEASONS_PER_YEAR=4) ===
+DAYS_PER_SEASON=90
+SEASONS_PER_YEAR=4
+1800_days seasons=1800/90=20; eval_seasons after warmup=20-4=16
+3600_days seasons=3600/90=40; eval_seasons after warmup=40-4=36
+NOTE=both lengths have eval_seasons >= 1 (sufficient per brief arithmetic)
+NOTE_METRICS=sim_engine days_override sets total_days absolute; metrics still use scenario years=5
+
+=== L1 request ===
+job_d1800=Za_G0_A0 --days 1800 seed=1
+job_d3600=Za_G0_A0 --days 3600 seed=1
+NOTE_3600_VS_LIMIT=3600 > years×360=1800; L1 still requests --days 3600 (days_override allowed by sim_engine); scenario years/params/seeds unchanged

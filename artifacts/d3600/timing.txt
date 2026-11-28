@@ -1,0 +1,15 @@
+commit_sha=6d1ad7331166f3a5eb366d7631f3f24bbccaa630
+product_base_sha=107c17fea29da54363713e5896805a2ebd630a0e
+product_tree_sha=7b533dd0b03b885aefcc357465dea8be06892a52
+trader_registry_blob=3df59445ae15ff5eee2f97a0e6d48d977c931352
+a_pr=105
+lane=L
+start=2026-11-28T01:06:27Z
+end=2026-11-28T02:59:44Z
+duration_s=6797
+status=ok
+exit_code=0
+days=3600
+seed=1
+group=Za_G0_A0
+cpu_model=AMD EPYC 9V45 96-Core Processor
