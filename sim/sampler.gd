@@ -12,6 +12,7 @@ const HDR_SEASON_CELLS := (
 	"run_id,seed,season_index,port_id,good_id,stock,mid_li,stock_weeks,band,"
 	+ "produced,consumed,relocated_in,relocated_out,excess_consumed"
 )
+## 17-72 C／C-v: +beggar_ppm／beggar_gt_10（待聘比例＋>10% 標）＋vacant_jobs／vacant_beds（空職／空床分開）.
 const HDR_SEASON_PORTS := (
 	"run_id,seed,season_index,port_id,rich,citizen,poor,beggar,sat_weighted,"
 	+ "workplaces,beds,city_balance_li,queue_position,"
@@ -19,7 +20,8 @@ const HDR_SEASON_PORTS := (
 	+ "queue_state,sat_poor,sat_citizen,sat_rich,job_cap,cap_sat_up1,cap_sat_up2,"
 	+ "pf1,pf2,pf3,pf4,pf5,pf6,"
 	+ "unmet_poor_top3,unmet_citizen_top3,unmet_rich_top3,"
-	+ "city_auto_housing"
+	+ "city_auto_housing,"
+	+ "beggar_ppm,beggar_gt_10,vacant_jobs,vacant_beds"
 )
 const HDR_DAILY := (
 	"run_id,seed,day,good_id,stock,mid_li,stock_weeks,band,"
@@ -151,6 +153,26 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 	var unmet_p: String = _top3_unmet_for_class(port_s, PopulationModel.CLASS_POOR)
 	var unmet_c: String = _top3_unmet_for_class(port_s, PopulationModel.CLASS_CITIZEN)
 	var unmet_r: String = _top3_unmet_for_class(port_s, PopulationModel.CLASS_RICH)
+	## 17-72 C-v1／v2／v3: residents＝貧民＋市民＋富人（乞丐不佔床／不算居民，FRM-SYS07）.
+	var residents: int = poor + citizen + rich
+	var vacant_beds: int = beds - residents
+	if vacant_beds < 0:
+		vacant_beds = 0
+	var vacant_jobs: int = job_cap - residents
+	if vacant_jobs < 0:
+		vacant_jobs = 0
+	var beggar_ppm := 0
+	var beggar_gt_10 := 0
+	if Params.is_loaded() and Params.has_prm("PRM-SYS07-RATE_SCALE"):
+		var rate_scale: int = Params.get_int("PRM-SYS07-RATE_SCALE")
+		if residents > 0 and rate_scale > 0:
+			beggar_ppm = (beggar * rate_scale) / residents
+		var cap_ppm := 0
+		if Params.has_prm("PRM-SYS07-UNEMPLOYED_CAP_PPM"):
+			cap_ppm = Params.get_int("PRM-SYS07-UNEMPLOYED_CAP_PPM")
+		## 標 >10%：與 UNEMPLOYED_CAP_PPM（試驗值 100000＝10%）同口徑，嚴格大於；缺鍵不標.
+		if cap_ppm > 0 and beggar_ppm > cap_ppm:
+			beggar_gt_10 = 1
 	season_ports.append({
 		"run_id": run_id,
 		"seed": seed,
@@ -185,6 +207,10 @@ func _sample_port_row(run_id: int, seed: int, season_index: int, port_s: String)
 		"unmet_citizen_top3": unmet_c,
 		"unmet_rich_top3": unmet_r,
 		"city_auto_housing": BuildingEconomy.city_auto_housing_count(StringName(port_s)),
+		"beggar_ppm": beggar_ppm,
+		"beggar_gt_10": beggar_gt_10,
+		"vacant_jobs": vacant_jobs,
+		"vacant_beds": vacant_beds,
 	})
 
 

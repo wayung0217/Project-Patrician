@@ -120,7 +120,7 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
 		var unmet_c: String = _csv_escape(String(r.get("unmet_citizen_top3", "")))
 		var unmet_r: String = _csv_escape(String(r.get("unmet_rich_top3", "")))
 		lines.append(
-			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s"
 			% [
 				_fmt(r["run_id"]), _fmt(r["seed"]), _fmt(r["season_index"]), r["port_id"],
 				_fmt(r["rich"]), _fmt(r["citizen"]), _fmt(r["poor"]), _fmt(r["beggar"]),
@@ -145,6 +145,10 @@ static func _write_season_ports(path: String, rows: Array) -> bool:
 				_fmt(r.get("pf6", 0)),
 				unmet_p, unmet_c, unmet_r,
 				_fmt(r.get("city_auto_housing", 0)),
+				_fmt(r.get("beggar_ppm", 0)),
+				_fmt(r.get("beggar_gt_10", 0)),
+				_fmt(r.get("vacant_jobs", 0)),
+				_fmt(r.get("vacant_beds", 0)),
 			]
 		)
 	return _store(path, lines)

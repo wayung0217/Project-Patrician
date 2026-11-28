@@ -115,8 +115,14 @@ func test_D110d_season_headers_include_queue_and_flows() -> void:
 	assert_true(SimSampler.HDR_SEASON_PORTS.find("sat_poor") >= 0)
 	assert_true(SimSampler.HDR_SEASON_PORTS.find("job_cap") >= 0)
 	assert_true(SimSampler.HDR_SEASON_PORTS.find("city_auto_housing") >= 0)
+	## 17-72 C-v2／C-v3.
+	assert_true(SimSampler.HDR_SEASON_PORTS.find("beggar_ppm") >= 0)
+	assert_true(SimSampler.HDR_SEASON_PORTS.find("beggar_gt_10") >= 0)
+	assert_true(SimSampler.HDR_SEASON_PORTS.find("vacant_jobs") >= 0)
+	assert_true(SimSampler.HDR_SEASON_PORTS.find("vacant_beds") >= 0)
 	assert_true(SimSampler.HDR_SEASON_CELLS.find("excess_consumed") >= 0)
 	assert_true(SimSampler.HDR_TRADER_SUMMARY.find("sail_count") >= 0)
+	assert_true(SimSampler.HDR_TRADER_SUMMARY.find("cargo_dan_json") >= 0)
 
 
 func test_D110d_csv_out_writes_new_columns_and_trader_summary() -> void:
@@ -134,6 +140,7 @@ func test_D110d_csv_out_writes_new_columns_and_trader_summary() -> void:
 		"pf1": 0, "pf2": 0, "pf3": 0, "pf4": 0, "pf5": 0, "pf6": 0,
 		"unmet_poor_top3": "", "unmet_citizen_top3": "", "unmet_rich_top3": "",
 		"city_auto_housing": 0,
+		"beggar_ppm": 0, "beggar_gt_10": 0, "vacant_jobs": 34, "vacant_beds": 94,
 	})
 	sampler.season_cells.append({
 		"run_id": 0, "seed": 1, "season_index": 0, "port_id": PORT, "good_id": "GD-001",
@@ -152,12 +159,47 @@ func test_D110d_csv_out_writes_new_columns_and_trader_summary() -> void:
 	var d: String = SimCsvOut.out_dir(sid)
 	var ports_hdr: String = _first_line(d + "season_ports.csv")
 	assert_eq(ports_hdr, SimSampler.HDR_SEASON_PORTS)
+	var ports_row: String = _second_line(d + "season_ports.csv")
+	var ports_cols: PackedStringArray = ports_row.split(",")
+	assert_eq(ports_cols.size(), SimSampler.HDR_SEASON_PORTS.split(",").size())
+	assert_eq(ports_cols[ports_cols.size() - 4], "0") ## beggar_ppm
+	assert_eq(ports_cols[ports_cols.size() - 3], "0") ## beggar_gt_10
+	assert_eq(ports_cols[ports_cols.size() - 2], "34") ## vacant_jobs
+	assert_eq(ports_cols[ports_cols.size() - 1], "94") ## vacant_beds
 	var cells_hdr: String = _first_line(d + "season_cells.csv")
 	assert_eq(cells_hdr, SimSampler.HDR_SEASON_CELLS)
 	var trader_hdr: String = _first_line(d + "trader_summary.csv")
 	assert_eq(trader_hdr, SimSampler.HDR_TRADER_SUMMARY)
 	var cell_row: String = _second_line(d + "season_cells.csv")
 	assert_true(cell_row.ends_with(",7") or cell_row.find(",7\n") >= 0 or cell_row.split(",")[-1] == "7")
+
+
+func test_1772_Cv_beggar_ppm_and_vacancy_math() -> void:
+	## 17-72 C-v2／C-v3：ppm 與空職／空床公式（fixture Params；無完整港 boot）.
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
+	var rate_scale: int = Params.get_int("PRM-SYS07-RATE_SCALE")
+	var cap_ppm: int = Params.get_int("PRM-SYS07-UNEMPLOYED_CAP_PPM")
+	assert_gt(rate_scale, 0)
+	assert_gt(cap_ppm, 0)
+	## residents=1000、beggar=50 → ppm=50*rate/1000；若 CAP=10% 則不標.
+	var residents := 1000
+	var beggar_ok := 50
+	var ppm_ok: int = (beggar_ok * rate_scale) / residents
+	assert_eq(ppm_ok > cap_ppm, false)
+	## beggar=200 → 20% > 10% → 標.
+	var beggar_hi := 200
+	var ppm_hi: int = (beggar_hi * rate_scale) / residents
+	assert_eq(ppm_hi > cap_ppm, true)
+	## vacant：beds=1200 job_cap=1100 residents=1000 → beds 200／jobs 100.
+	var beds := 1200
+	var job_cap := 1100
+	var vacant_beds: int = beds - residents
+	var vacant_jobs: int = job_cap - residents
+	assert_eq(vacant_beds, 200)
+	assert_eq(vacant_jobs, 100)
+	## 超額居民 → 空位歸零.
+	assert_eq(maxi(0, beds - 1300), 0)
+	assert_eq(maxi(0, job_cap - 1300), 0)
 
 
 func test_D110d_transfer_acc_excess_consumed() -> void:
