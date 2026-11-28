@@ -1,0 +1,160 @@
+q3-d28.txt
+PACK=overnight-17-88-Q LANE=Q
+MAIN_TIP=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+ASOF_HKT=2026-11-28 09:09 Asia/Hong_Kong
+NO_60D_RUN=yes（讀碼回答）
+
+### Q3(a) seed_opening_board 開局筆數／age／tick
+ANSWER=
+- 筆數：對每個港 P、每個其他港 O≠P 寫入 1 筆 → N_ports×(N_ports−1)。
+- data/ports .tres 數＝16；故開局筆數＝16×15＝240。
+- 每筆：KEY_DAY_TAKEN=0、KEY_TICK_TAKEN=0、KEY_TICK_ARRIVED=0（age 起算 day_taken=0；tick_arrived=0）。
+SOURCE FILE=autoload/intel_ledger.gd LINES=189-269 TOTAL_LINES=81
+```gdscript
+func seed_opening_board() -> Array:
+	## FRM-SYS15-11／D-123(a): one OPENING report per (P, O≠P) from O's opening mid/band.
+	## Call once after opening MARKET stock, before day-1 tick. No own_snap／ship_snap／contact.
+	assert(_loaded, "IntelLedger.seed_opening_board before load")
+	var errors: Array = []
+	if not PortRegistry.is_loaded() or not GoodCatalog.is_loaded() or not MarketPricer.is_loaded():
+		errors.append(
+			_err(ERR_SYS15_05, "seed_opening_board", null, "PortRegistry/GoodCatalog/MarketPricer required")
+		)
+		_emit_errors(errors)
+		return errors
+	var ports: Array = []
+	for p in PortRegistry.all_ids():
+		ports.append(p)
+	ports.sort_custom(func(a, b): return String(a) < String(b))
+	var goods: Array = []
+	for g in GoodCatalog.all_ids():
+		goods.append(g)
+	goods.sort_custom(func(a, b): return String(a) < String(b))
+	var weeks_scale: int = Params.get_int(StringName(PRM_WEEKS_SCALE))
+	## Two-pass: price every (O,g); write only if no ERR-SYS15-05 (C-06 collect-all).
+	var snaps_by_origin: Dictionary = {} ## origin:String → goods Dictionary
+	for o_v in ports:
+		var o: StringName = o_v
+		var goods_snap: Dictionary = {}
+		for g_v in goods:
+			var good_id: StringName = g_v
+			var mid: float = MarketPricer.mid_price(o, good_id)
+			var mp_err: Dictionary = MarketPricer.last_error()
+			if not mp_err.is_empty() or mid <= 0.0:
+				errors.append(
+					_err(ERR_SYS15_05, String(good_id), o, "opening mid_price failed")
+				)
+				continue
+			var mid_li: int = floori(mid)
+			if mid_li < 1:
+				errors.append(
+					_err(ERR_SYS15_05, String(good_id), o, "opening mid_li < 1")
+				)
+				continue
+			var good: GoodDef = GoodCatalog.get_good(String(good_id))
+			var base_li: int = good.base_price_li if good != null else 0
+			var ratio: float = mid / float(base_li) if base_li > 0 else 0.0
+			var band: int = MarketPricer.indicator_band(ratio)
+			var w: Variant = MarketPricer.stock_weeks(o, good_id)
+			var weeks_x: Variant = null
+			if w != null:
+				weeks_x = floori(float(w) * float(weeks_scale))
+			goods_snap[String(good_id)] = {
+				KEY_MID_LI: mid_li,
+				KEY_BAND: band,
+				KEY_WEEKS_X: weeks_x,
+			}
+		snaps_by_origin[String(o)] = goods_snap
+	if not errors.is_empty():
+		_emit_errors(errors)
+		return errors
+	for p_v in ports:
+		var p: StringName = p_v
+		var port_s: String = String(p)
+		if not _rec.has(port_s):
+			_rec[port_s] = {}
+		for o_v2 in ports:
+			var o2: StringName = o_v2
+			if String(o2) == port_s:
+				continue
+			var snap: Dictionary = {
+				KEY_SHIP_ID: OPENING_SHIP_ID,
+				KEY_OWNER_ID: &"",
+				KEY_ORIGIN_PORT: o2,
+				KEY_TICK_TAKEN: 0,
+				KEY_DAY_TAKEN: 0,
+				KEY_GOODS: (snaps_by_origin[String(o2)] as Dictionary).duplicate(true),
+				KEY_PUBLISHED: true,
+			}
+			var pair: String = _pair_key(OPENING_SHIP_ID, o2)
+			(_rec[port_s] as Dictionary)[pair] = {
+				KEY_SNAPSHOT: snap,
+				KEY_TICK_ARRIVED: 0,
+			}
+	return errors
+```
+
+PORT_COUNT_EVIDENCE:
+data/ports/*.tres count = 16
+
+### Q3(b) daily_step 修剪 age≥WINDOW_DAYS；d28 是否移除開局船報
+ANSWER=
+- 修剪條件原文：`if age >= window_d: board.erase(pair)`，其中 `age = today - day_taken`、`today = Clock.day`、`window_d = Params.get_int(PRM_WINDOW_DAYS)`。
+- 開局船報 day_taken＝0；當 Clock.day＝28 且 WINDOW_DAYS＝28 時 age＝28 ≥ 28 → 會 erase。
+- 因此 d28 的 daily_step 會移除這批開局船報（在 Clock.day 已為 28 的該次 daily_step）。
+SOURCE FILE=autoload/intel_ledger.gd LINES=360-386
+```gdscript
+func daily_step(_day: int) -> Array:
+	## FRM-SYS15-08: trim ST-BOARD by age；return pending snapshot errors.
+	assert(_loaded, "IntelLedger.daily_step before load")
+	var window_d: int = Params.get_int(StringName(PRM_WINDOW_DAYS))
+	var today: int = Clock.day
+	var port_keys: Array = _rec.keys()
+	port_keys.sort()
+	for port_s_variant in port_keys:
+		var port_s: String = String(port_s_variant)
+		var board: Dictionary = _rec[port_s]
+		var pair_keys: Array = board.keys()
+		pair_keys.sort()
+		for pair_variant in pair_keys:
+			var pair: String = String(pair_variant)
+			var entry: Dictionary = board[pair]
+			var snap: Dictionary = entry.get(KEY_SNAPSHOT, {})
+			var day_taken: int = _dict_int(snap, KEY_DAY_TAKEN, 0)
+			var age: int = today - day_taken
+			if age >= window_d:
+				board.erase(pair)
+		if board.is_empty():
+			_rec.erase(port_s)
+		else:
+			_rec[port_s] = board
+	var out: Array = _pending_errors.duplicate()
+	_pending_errors.clear()
+	return out
+```
+
+### Q3(c) d1 intel_report_entries＝240 是否＝開局筆數
+ANSWER=是。開局筆數＝16×15＝240（見 Q3(a)）；與 17-87 P 線所述 d1＝240＝16 港×15 個其他港一致。
+SOURCE=見 Q3(a) seed_opening_board 雙重迴圈（P 全部港 × O≠P）＋ data/ports 16。
+
+### Q3(d) Za_G0_A0 的 WINDOW_DAYS、DECAY_DAYS
+ANSWER=
+- Za_G0_A0 ← docs/spec/scenario_M1b_G0.json（tools/m1b_prepare_scenario.py GROUPS）。
+- PRM-SYS15-WINDOW_DAYS＝28；PRM-SYS15-DECAY_DAYS＝28。
+docs/spec/scenario_M1b_G0.json:3: "years": 5,
+docs/spec/scenario_M1b_G0.json:4: "warmup_years": 1,
+docs/spec/scenario_M1b_G0.json:260: "PRM-SYS15-DECAY_DAYS": 28,
+docs/spec/scenario_M1b_G0.json:266: "PRM-SYS15-WINDOW_DAYS": 28,
+Const keys in intel_ledger.gd:
+autoload/intel_ledger.gd:23: const PRM_WINDOW_DAYS := "PRM-SYS15-WINDOW_DAYS"
+autoload/intel_ledger.gd:28: const PRM_DECAY_DAYS := "PRM-SYS15-DECAY_DAYS"
+autoload/intel_ledger.gd:38: 	PRM_WINDOW_DAYS,
+autoload/intel_ledger.gd:39: 	PRM_DECAY_DAYS,
+
+PREPARED Za_G0_A0.json overrides excerpt:
+{
+  "scenario_id": "Za_G0_A0",
+  "PRM-SYS15-WINDOW_DAYS": 28,
+  "PRM-SYS15-DECAY_DAYS": 28
+}
+

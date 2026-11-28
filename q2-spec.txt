@@ -1,0 +1,51 @@
+q2-spec.txt
+PACK=overnight-17-88-Q LANE=Q
+B9=docs/spec/AI_README.csv line9 版本,v6.99.293
+docs/spec TREE_SHA=cb4e2c04da3db42696644474f6c0d27c6b862c22
+MAIN_TIP=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+ASOF_HKT=2026-11-28 09:09 Asia/Hong_Kong
+SOURCE=docs/spec/03_Systems.csv（D-37c 裁決全文另在 05_TechSpec.csv L570；03_Systems 內對應列亦貼）
+
+### FRM-SYS15-06
+FILE=docs/spec/03_Systems.csv PHYSICAL_LINES=2697-2698 TOTAL_LINES=2
+```
+FRM-SYS15-06,SYS-15,"查詢 board_for(actor, P, O, g)：先驗在場（actor 在 P 有停泊船，或持有任何狀態的建築；否則 ERR-SYS15-04、回空）；再回 {n, consensus_mid_li, band ＝ MarketPricer.indicator_band(consensus_mid_li ÷ base_price_li)、consensus_weeks_x、mean_age_days、newest_age_days、divergence_ppm、divergence_band、direction}。查詢不寫入任何狀態。｜★ D-37c（已追認 D-37e）：公開延遲與資格特權可見性見 26.1 FRM-SYS16-04；樣本集依行為者可見性過濾。
+★ 2026-11-24（D-120(b)②，R9-71 高-2）呼叫方式釐清：讀「目的港 O 的行情」時，P 填行為者目前所在港，O 填目的港——board_for(actor, P＝本港, O＝目的港, g)，回傳本港牙行收到、來自 O 的船報共識。不得寫成 board_for(actor, O, O, g)（那要求行為者人在 O）。",FRM-03 至 05,行市結果,Draft,,,,,,,,,,,,,,,
+```
+
+### D-37c (03_Systems F寫入順序／公開延遲)
+FILE=docs/spec/03_Systems.csv PHYSICAL_LINES=2756-2756 TOTAL_LINES=1
+```
+F 寫入順序,公開延遲,對 25.1 FRM-SYS15-02 與 FRM-SYS15-03 的修改（D-37c，已追認）：每筆船報入庫時記 tick_arrived；一般行為者在 tick_arrived ＋ PRM-SYS15-PUBLIC_DELAY_TICKS 之後才看得到；持牙行資格者在 tick_arrived 即看得到。延遲＝0 時特權自動失效。,—,Draft｜已追認,D-37c；25.1,,,,,,,,,,,,,,,
+```
+
+### FRM-SYS16-04
+FILE=docs/spec/03_Systems.csv PHYSICAL_LINES=2780-2780 TOTAL_LINES=1
+```
+FRM-SYS16-04,SYS-16,"可見性（供 IntelLedger 使用，D-37c）：港 P 上某筆船報對 actor 可見，若 Clock.tick ≥ tick_arrived ＋ PRM-SYS15-PUBLIC_DELAY_TICKS，或 is_broker_qualified(actor, P)。可見性只過濾樣本集 S，其後行市、分歧度、方向皆以 FRM-SYS15-03 至 05 對可見子集計算。持資格者不得寫入或影響任何船報與牌價。",tick、資格,樣本子集,Draft,,,,,,,,,,,,,,,
+```
+
+### FRM-SYS15-11
+FILE=docs/spec/03_Systems.csv PHYSICAL_LINES=2704-2704 TOTAL_LINES=1
+```
+FRM-SYS15-11,SYS-15,"開局船報（D-123(a)，Owner 2026-11-24）：開機時對每個港 P、每個其他港 O（O ≠ P，port_id 升序），在 rec[P] 寫入一筆 key ＝ (&""OPENING"", O) 的船報：snapshot ＝ 依 FRM-SYS15-01 同樣方式對 O 的全部貨取 mid_li 與 band（以開局市場庫存計），day_taken ＝ 0、tick_taken ＝ 0、tick_arrived ＝ 0、origin_port ＝ O、published ＝ true。之後一律照一般船報處理：計入 FRM-SYS15-03 行市（權重隨日齡線性衰減）、由 FRM-SYS15-08 在 age ≥ WINDOW_DAYS 時修剪；真實船報抵港後與之並存、以權重自然取代。所有行為者讀到的都是同一份（玩家、散商、AI 一樣，LCR-04）。不寫 own_snap、不寫 ship_snap、不改 contact。取價失敗依 ERR-SYS15-05 收集全部錯誤、拒絕啟動（C-06）。",,,,,,,,,,,,,,,,,,
+```
+
+### FRM-SYS15-03
+FILE=docs/spec/03_Systems.csv PHYSICAL_LINES=2694-2694 TOTAL_LINES=1
+```
+FRM-SYS15-03,SYS-15,行市：對（港 P、起航港 O、貨 g、今日 d）取樣本集 S ＝ rec[P] 中 origin ＝ O 且 0 ≤ age ＜ WINDOW_DAYS 者，age ＝ d － day_taken。S 空 → n ＝ 0，其餘欄位為 null，不報錯。權重 w_i ＝ DECAY_DAYS － age_i；W ＝ Σ w_i。consensus_mid_li ＝ (Σ w_i × mid_i) 整數除以 W（整數商，不經 float，C-09）；mean_age_days ＝ (Σ w_i × age_i) 整數除以 W；newest_age_days ＝ MIN age_i；n ＝ |S|；consensus_weeks_x 以同權重只計 weeks_x 非 null 的樣本（全為 null → null）。｜★ D-37c（已追認 D-37e）：公開延遲與資格特權可見性見 26.1 FRM-SYS16-04；樣本集依行為者可見性過濾。,ST-BOARD,行市,Draft,,,,,,,,,,,,,,,
+```
+
+### TST-SYS15-10
+FILE=docs/spec/03_Systems.csv PHYSICAL_LINES=2727-2727 TOTAL_LINES=1
+```
+TST-SYS15-10,觀測日齡 ≥ WINDOW_DAYS 的樣本,daily_step 與 board_for,被修剪、不計入；own_snap 保留,SYS-15,必須通過,,,,,,,,,,,,,,,
+```
+
+### D-37c (05_TechSpec.csv decision row — not in 03_Systems as ID-start row)
+FILE=docs/spec/05_TechSpec.csv PHYSICAL_LINES=570-570 TOTAL_LINES=1
+```
+D-37c,牙行資格特權：公開延遲＋資格提前看,新增參數 PRM-SYS15-PUBLIC_DELAY_TICKS（無值）與 PRM-SYS15-BROKER_MIN_TIER_BY_LADDER（各階梯牙行資格最低階，無值，明制預期第 2 階）。新船報先只給持資格者看，延遲 tick 數後才公開給全部人；特權只讀、不能影響掛牌（影響掛牌押後）；延遲＝0 時特權失效，模擬器可先在無特權基線跑。,對 25.1 的 FRM-SYS15-02、03、06 與 board_samples 有小改（D-37e 已追認）；WP-40 一併實作。,WP-40、WP-41,03_Systems 26.1 FRM-SYS16-02、04；Q-20,,,,
+```
+

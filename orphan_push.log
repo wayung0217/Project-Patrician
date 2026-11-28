@@ -1,0 +1,14 @@
+orphan_push.log
+=== orphan push review/overnight-17-88-Q 2026-11-28 09:15:48 Asia/Hong_Kong ===
+orphan_sha.txt=7865afd8e789104e14fc5a53d88cdd0ee07b1095
+branch_tip=cf9f51b766538a52483c45376d92081ee0375f43
+cf9f51b766538a52483c45376d92081ee0375f43	refs/heads/review/overnight-17-88-Q
+=== git ls-tree -r -l ===
+100644 blob 7e8b173496548a2b7837912c0b5442d2947d3bce     382	lane.txt
+100644 blob 8bb2700b700386fffac7137ab56f457f80ef0837     204	orphan_push.log
+100644 blob 782fd2c3c41860029672296245f34ff75c754270      56	orphan_sha.txt
+100644 blob d8209cb2cfeba6f0162eb3522885fe01e9d83455  482996	q1-source.txt
+100644 blob 67cb4f431861c076a7337a654b1c90deaed1ab11    5190	q2-spec.txt
+100644 blob 479c4d20b270e95ebdcefa6fbd71e55e8321df1b    6139	q3-d28.txt
+100644 blob 1d93903a83c7ea2a0a7b57a8965a2571a10e2c35    7413	q4-runner.txt
+100644 blob bea134b081b27bc921570a7a4b9b15bcede8c8c4    4320	report.md

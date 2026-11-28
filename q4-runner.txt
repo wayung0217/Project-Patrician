@@ -1,0 +1,205 @@
+q4-runner.txt
+PACK=overnight-17-88-Q LANE=Q
+MAIN_TIP=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+ASOF_HKT=2026-11-28 09:09 Asia/Hong_Kong
+
+### Q4(a) Za_G0_A0 years 與天數相關欄位
+ANSWER=years＝5；warmup_years＝1；seeds＝[1]；scenario_id（prepared）＝Za_G0_A0。天數相關 overrides 見下。
+BASE_FILE=docs/spec/scenario_M1b_G0.json（Za_G0_A0 via m1b_prepare_scenario.py）
+TOP_FIELDS_JSON=
+{
+  "scenario_id": "Za_G0_A0",
+  "years": 5,
+  "warmup_years": 1,
+  "seeds": [
+    1
+  ]
+}
+
+DAY_RELATED_OVERRIDES_JSON=
+{
+  "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
+  "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 4,
+  "PRM-SYS07-ABUND_FULL_WEEKS": 12,
+  "PRM-SYS07-ABUND_START_WEEKS": 8,
+  "PRM-SYS07-SCARCE_START_WEEKS": 2,
+  "PRM-SYS07-UP1_STREAK_DAYS": 28,
+  "PRM-SYS07-UP2_STREAK_DAYS": 56,
+  "PRM-SYS08-BUILD_DAYS": {
+    "RESIDENCE": 28,
+    "WAREHOUSE": 21,
+    "IND1": 42,
+    "IND2": 56,
+    "IND3": 70,
+    "PUBLIC": 84,
+    "KONTOR": 84
+  },
+  "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
+  "PRM-SYS08-COMPENSATION_WEEKS": 52,
+  "PRM-SYS08-LAND_RENT_RATE_YEAR": 0.06,
+  "PRM-SYS08-LEVY_THRESHOLD_SEASONS": 4,
+  "PRM-SYS08-OPENING_STOCK_DEMAND_WEEKS": 4,
+  "PRM-SYS08-OPENING_STOCK_OUTPUT_WEEKS": 2,
+  "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS": 4,
+  "PRM-SYS08-VACANCY_GRACE_DAYS": 84,
+  "PRM-SYS08-ZONE_SAT_DAYS": 28,
+  "PRM-SYS13-BUILD_DAYS": {
+    "SH-01": 30,
+    "SH-02": 40,
+    "SH-03": 45,
+    "SH-04": 75
+  },
+  "PRM-SYS13-REPAIR_RATE_SEASON": 0.02,
+  "PRM-SYS15-DECAY_DAYS": 28,
+  "PRM-SYS15-WEEKS_SCALE": 100,
+  "PRM-SYS15-WINDOW_DAYS": 28,
+  "PRM-SYS17-IDLE_DAYS_MAX": 5
+}
+
+SOURCE lines docs/spec/scenario_M1b_G0.json (years/warmup + selected):
+L3:   "years": 5,
+L4:   "warmup_years": 1,
+L15:     "PRM-SYS03-OFFTAKE_WINDOW_DAYS": 28,
+L16:     "PRM-SYS05-ARREARS_SEASONS_TO_BANKRUPT": 4,
+L19:     "PRM-SYS07-ABUND_FULL_WEEKS": 12,
+L20:     "PRM-SYS07-ABUND_START_WEEKS": 8,
+L52:     "PRM-SYS07-SCARCE_START_WEEKS": 2,
+L61:     "PRM-SYS07-UP1_STREAK_DAYS": 28,
+L62:     "PRM-SYS07-UP2_STREAK_DAYS": 56,
+L75:     "PRM-SYS08-BUILD_DAYS": {
+L115:     "PRM-SYS08-CITY_HOUSING_MAX_PER_SEASON": 1,
+L122:     "PRM-SYS08-COMPENSATION_WEEKS": 52,
+L148:     "PRM-SYS08-LAND_RENT_RATE_YEAR": 0.06,
+L150:     "PRM-SYS08-LEVY_THRESHOLD_SEASONS": 4,
+L153:     "PRM-SYS08-OPENING_STOCK_DEMAND_WEEKS": 4,
+L154:     "PRM-SYS08-OPENING_STOCK_OUTPUT_WEEKS": 2,
+L158:     "PRM-SYS08-QUEUE_MAT_DEMAND_WEEKS": 4,
+L176:     "PRM-SYS08-VACANCY_GRACE_DAYS": 84,
+L197:     "PRM-SYS08-ZONE_SAT_DAYS": 28,
+L198:     "PRM-SYS08-ZONE_SAT_MIN": 600,
+L200:     "PRM-SYS13-BUILD_DAYS": {
+L247:     "PRM-SYS13-REPAIR_RATE_SEASON": 0.02,
+L260:     "PRM-SYS15-DECAY_DAYS": 28,
+L265:     "PRM-SYS15-WEEKS_SCALE": 100,
+L266:     "PRM-SYS15-WINDOW_DAYS": 28,
+L269:     "PRM-SYS17-IDLE_DAYS_MAX": 5,
+
+### Q4(b) --days N 當 N > years×360
+ANSWER=sim_runner 把 --days 寫入 scenario["days_override"]；sim_engine 以 total_days = years×seasons_y×days_per_season 為初值，若有 days_override≥1 則 total_days = d_ov（無上限截斷到 years×360）。因此 N>years×360 時會跑 N 日（metrics 仍用 years）。
+SOURCE sim/sim_runner.gd (days_override assign):
+```gdscript
+// --- lines 110-116 ---
+	if not days_raw.is_empty():
+		if not days_raw.is_valid_int() or int(days_raw) < 1:
+			push_error(
+				"sim_runner: argv days=%s reason=--days must be int ≥ 1" % days_raw
+			)
+			return 1
+		scenario["days_override"] = int(days_raw)
+// --- lines 311-312 ---
+	if not days_raw.is_empty() and days_raw.is_valid_int():
+		scenario["days_override"] = int(days_raw)
+```
+SOURCE sim/sim_engine.gd (total_days / days_override):
+```gdscript
+	var years: int = SimScenarioValidator.as_int(scenario[SimScenarioValidator.KEY_YEARS])
+	var days_per_season: int = Params.get_int(PRM_DAYS_PER_SEASON)
+	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+	var total_days: int = years * seasons_y * days_per_season
+	## 17-59 SmokeDays / --days: optional absolute day cap (metrics still use years).
+	if scenario.has("days_override"):
+		var d_ov: int = SimJsonInt.as_int(scenario["days_override"], "days_override")
+		if d_ov >= 1:
+			total_days = d_ov
+```
+FILE=sim/sim_engine.gd LINES=233-241
+
+### Q4(c) --season-progress 與 --day-progress 印出行範例
+ANSWER=
+- --day-progress → print `DAY_PROGRESS day=<n> total=<N>`
+- --season-progress → print `PROGRESS pct=... all_pct=... group=i/n name y=.. q=.. elapsed=.. eta=.. pop=.. sails_cum=..`
+FORMAT_SOURCE sim/sim_engine.gd:
+### _emit_day_progress
+FILE=sim/sim_engine.gd LINES=404-407 TOTAL_LINES=4
+```gdscript
+func _emit_day_progress(day: int, total_days: int) -> void:
+	## Print-only (17-85 B). ASCII for PS 5.1. day + total only — no Time.*／pop／ledger.
+	## Format: DAY_PROGRESS day=<n> total=<N>
+	print("DAY_PROGRESS day=%d total=%d" % [day, total_days])
+```
+
+### _emit_season_progress
+FILE=sim/sim_engine.gd LINES=410-472 TOTAL_LINES=63
+```gdscript
+func _emit_season_progress(
+	season_index: int,
+	total_days: int,
+	days_per_season: int,
+	seasons_y: int,
+	sampler: SimSampler
+) -> void:
+	## Print-only (W5/H1). ASCII markers for PS 5.1 (no CJK in tools/*.ps1).
+	## Format: PROGRESS pct=<job%> all_pct=<%> group=<i>/<n> <name> y=<y> q=<q> elapsed=<h:mm> eta=<h:mm> pop=<n> sails_cum=<n>
+	var group_i: String = OS.get_environment("M1B_GROUP_I")
+	var group_n: String = OS.get_environment("M1B_GROUP_N")
+	var group_name: String = OS.get_environment("M1B_GROUP_NAME")
+	var all_pct_env: String = OS.get_environment("M1B_ALL_PCT")
+	if group_i.is_empty():
+		group_i = "1"
+	if group_n.is_empty():
+		group_n = "1"
+	if group_name.is_empty():
+		group_name = "job"
+	var y: int = int(season_index / seasons_y) + 1
+	var q: int = int(season_index % seasons_y) + 1
+	var days_done: int = (season_index + 1) * days_per_season
+	if days_done > total_days:
+		days_done = total_days
+	var pct_job: float = 100.0 * float(days_done) / float(maxi(total_days, 1))
+	var elapsed_ms: int = Time.get_ticks_msec() - _progress_t0_msec
+	var elapsed_s: int = int(elapsed_ms / 1000)
+	var eta_s: int = 0
+	if days_done > 0 and days_done < total_days:
+		eta_s = int(float(elapsed_s) * float(total_days - days_done) / float(days_done))
+	var pop: int = 0
+	for row_v in sampler.season_ports:
+		var row: Dictionary = row_v
+		if int(row.get("season_index", -1)) != season_index:
+			continue
+		pop += (
+			int(row.get("rich", 0))
+			+ int(row.get("citizen", 0))
+			+ int(row.get("poor", 0))
+			+ int(row.get("beggar", 0))
+		)
+	## Cumulative sails across seasons so far.
+	var sails_cum: int = 0
+	for row_v3 in sampler.trader_summary_rows:
+		sails_cum += int((row_v3 as Dictionary).get("sail_count", 0))
+	var all_pct: String = all_pct_env if not all_pct_env.is_empty() else ("%.0f" % pct_job)
+	var line: String = (
+		"PROGRESS pct=%.0f all_pct=%s group=%s/%s %s y=%d q=%d elapsed=%s eta=%s pop=%d sails_cum=%d"
+		% [
+			pct_job,
+			all_pct,
+			group_i,
+			group_n,
+			group_name,
+			y,
+			q,
+			_fmt_hmm(elapsed_s),
+			_fmt_hmm(eta_s),
+			pop,
+			sails_cum,
+		]
+	)
+	print(line)
+```
+
+EXAMPLE_LINES（非本線新跑；既有 artifact）:
+DAY_PROGRESS day=1 total=5
+DAY_PROGRESS day=5 total=5
+SOURCE_DAY=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/evening-17-85-B/ps1-test.txt:65-69
+PROGRESS pct=12 all_pct=12 group=1/1 Za_G0_A0 y=1 q=1 elapsed=0:05 eta=0:40 pop=34451 sails_cum=1024
+SOURCE_SEASON=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/overnight-17-87-V/artifacts/v1/Za_G0_A0_d720_s1/sim_runner.log:5
+
