@@ -83,9 +83,28 @@ MATCH=yes
 ## Orphan (S9d)
 
 - Branch: `review/overnight-17-91-Q`
-- - Full SHA (orphan_sha.txt): 
+- Full SHA (orphan_sha.txt): `8bc13c44431f64fef741fe3e32f7d4436469f810`
+- Branch tip: see `orphan_push.log` / `git ls-remote`
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-91-Q
 
 ## FILES_TOTAL
 
-
+```
+lane.txt
+ls-tree.txt
+orphan_push.log
+orphan_sha.txt
+q1-source-a-1.txt
+q1-source-b-1.txt
+q1-source-c-1.txt
+q1-source-d-1.txt
+q1-source-d-2.txt
+q1-source-d-3.txt
+q2-answers.txt
+q3-offtake.txt
+q4-spec-vs-code.txt
+q5-draft.txt
+q6-recheck.txt
+report.md
+FILES_TOTAL=16
+```

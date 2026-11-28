@@ -1,0 +1,7 @@
+orphan_push.log
+=== orphan push review/overnight-17-91-Q 2026-11-28 14:25:48 Asia/Hong_Kong ===
+orphan_sha.txt=8bc13c44431f64fef741fe3e32f7d4436469f810
+branch_tip=PENDING
+NO_PR=yes
+NO_MERGE=yes
+NOTE=B-6: orphan_sha.txt field matches orphan_sha.txt (8bc13c44431f64fef741fe3e32f7d4436469f810).
