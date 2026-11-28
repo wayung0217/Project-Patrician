@@ -131,3 +131,22 @@ d10: 114998/106012/99502
 ## FILES_TOTAL
 
 見報告末 `ls` 與 `manifest.txt`（pack 完成後更新）。
+
+## ls pack
+a4-golden.txt
+a5-timing.txt
+A-readcode.txt
+ci-gate.txt
+diff-cash_ledger.txt
+diff-tests.txt
+diff-trader_registry.txt
+diff-workflow-timing.txt
+evidence-e-scan.txt
+evidence-special.txt
+failed-runs.txt
+lane.txt
+manifest.txt
+orphan_push.log
+orphan_sha.txt
+report.md
+FILES_TOTAL=16
