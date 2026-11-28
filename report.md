@@ -1,7 +1,7 @@
 report.md
 # 17-91 Lane Q QA-READONLY-5 report
 
-ASOF_HKT=2026-11-28 14:19:47 Asia/Hong_Kong  
+ASOF_HKT=2026-11-28 14:25:48 Asia/Hong_Kong  
 main tip claimed `25a398492fa568a223fb4802adbb4f15bc40bcbb` — **actual** `25a398492fa568a223fb4802adbb4f15bc40bcbb` (match=yes)  
 ONELINE=`25a3984 Merge pull request #106 from wayung0217/perf-afford-1788`  
 docs/spec B9=v6.99.293 tree `cb4e2c04da3db42696644474f6c0d27c6b862c22`  
