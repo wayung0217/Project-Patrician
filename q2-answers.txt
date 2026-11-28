@@ -1,0 +1,334 @@
+q2-answers.txt
+# PACK=17-91 LANE=Q QA-READONLY-5
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# ASOF_HKT=2026-11-28 14:19:47 Asia/Hong_Kong
+# Format: 答案＋原文；不下判斷。
+
+## Q2(a) 探索船離港是否同路徑取快照；取不到的情況（ERR-SYS15-05）
+
+答案：
+1. 探索船與一般船同一出航路徑：TraderRegistry._evaluate_and_maybe_sail → TradeDesk.execute_trade(BUY) → ShipRegistry.sail →（成功後）_ship_observer.on_departed → IntelLedger.on_departed（FRM-SYS15-01）。探索旗標不另開快照路徑。
+2. ERR-SYS15-05 觸發（本線讀到）：
+   (i) on_departed 內某貨 MarketPricer.mid_price 失敗或 mid≤0 → _fail_snapshot(..., "mid_price failed")；
+   (ii) mid_li < 1 → _fail_snapshot(..., "mid_li < 1")；
+   (iii) seed_opening_board：依賴未載入／opening mid_price 失敗／opening mid_li < 1（開局船報路徑，非離港）。
+3. 快照失敗不擋出航：ShipRegistry.sail 註解「snapshot fail ≠ block sail」；失敗時 _ship_snap 該船被 erase，抵港時 on_arrivals 因無 Dictionary snap 而 continue（不公開）。
+
+原文：
+```
+autoload/ship_registry.gd:327-330
+327|	_queue_signal("ship_departed", [s.ship_id, from_port, dest_port, depart_tick, arrival])
+328|	# 25.1 F／D-34d: on_departed after SAILING committed, before return (snapshot fail ≠ block sail).
+329|	if _ship_observer != null:
+330|		_ship_observer.on_departed(s.ship_id, s.owner, from_port, depart_tick)
+```
+```
+autoload/intel_ledger.gd:272-291
+272|func on_departed(
+273|	ship_id: StringName, owner_id: StringName, from_port_id: StringName, tick: int
+274|) -> void:
+275|	## FRM-SYS15-01.
+276|	assert(_loaded, "IntelLedger.on_departed before load")
+277|	_clear_last()
+278|	var goods: Dictionary = {}
+279|	var ids: PackedStringArray = GoodCatalog.all_ids()
+280|	var weeks_scale: int = Params.get_int(StringName(PRM_WEEKS_SCALE))
+281|	for g_variant in ids:
+282|		var good_id: StringName = StringName(g_variant)
+283|		var mid: float = MarketPricer.mid_price(from_port_id, good_id)
+284|		var mp_err: Dictionary = MarketPricer.last_error()
+285|		if not mp_err.is_empty() or mid <= 0.0:
+286|			_fail_snapshot(ship_id, from_port_id, good_id, "mid_price failed")
+287|			return
+288|		var mid_li: int = floori(mid)
+289|		if mid_li < 1:
+290|			_fail_snapshot(ship_id, from_port_id, good_id, "mid_li < 1")
+291|			return
+```
+```
+autoload/intel_ledger.gd:505-512
+505|func _fail_snapshot(
+506|	ship_id: StringName, from_port: StringName, good_id: StringName, message: String
+507|) -> void:
+508|	_ship_snap.erase(String(ship_id))
+509|	var info: Dictionary = _err(
+510|		ERR_SYS15_05, String(good_id), from_port, "snapshot failed: %s" % message
+511|	)
+512|	_pending_errors.append(info)
+```
+```
+autoload/intel_ledger.gd:334-336
+334|		var snap: Variant = _ship_snap.get(String(sid), null)
+335|		if typeof(snap) != TYPE_DICTIONARY:
+336|			continue
+```
+```
+autoload/trader_registry.gd:919-933
+919|	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
+920|	var dest_f: StringName = best["port_id"]
+921|	var good_f: StringName = best["good_id"]
+922|	var qty_f: int = int(best["qty"])
+923|	var buy2: Dictionary = MarketPricer.quote(from_port, good_f, MarketPricer.SIDE_BUY, qty_f)
+924|	var preview: int = int(buy2.get(MarketPricer.KEY_TOTAL_LI, 0))
+925|	var seq: int = TradeDesk.execute_trade(
+926|		acct, hold_id, from_port, good_f, MarketPricer.SIDE_BUY, qty_f, preview
+927|	)
+928|	if seq < 1:
+929|		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+930|		_clear_plan(t, sid)
+931|		idle_map[String(sid)] = idle + 1
+932|		return stats
+933|	var arrival: int = ShipRegistry.sail(acct, sid, dest_f)
+```
+
+## Q2(b) 除「船離開 D、抵達另一港」外，別港得知 D 行情的路徑
+
+答案：寫入牙行板 `_rec` 的路徑僅兩條（本線 grep `_rec[`）：
+1. seed_opening_board（FRM-SYS15-11）：對每個抵達港 P、每個起航港 O≠P，寫 OPENING 船報（origin＝O，含 D 當 O 時）。
+2. on_arrivals（FRM-SYS15-02）：船有未公開 `_ship_snap` 且 origin≠抵達港時，把起航港快照寫入抵達港 `_rec`。
+其餘：
+- own_snapshot／_own_snap：船主自有快照，不是別港牙行板。
+- board_for：只讀 `_rec`（經 _visible_samples），不寫入。
+- daily_step：只按 PRM-SYS15-WINDOW_DAYS 修剪 `_rec`，不新增行情。
+未發現其他把 D 行情寫入別港 `_rec` 的產品路徑。
+
+原文：
+```
+autoload/intel_ledger.gd:246-268
+246|	for p_v in ports:
+247|		var p: StringName = p_v
+248|		var port_s: String = String(p)
+249|		if not _rec.has(port_s):
+250|			_rec[port_s] = {}
+251|		for o_v2 in ports:
+252|			var o2: StringName = o_v2
+253|			if String(o2) == port_s:
+254|				continue
+255|			var snap: Dictionary = {
+256|				KEY_SHIP_ID: OPENING_SHIP_ID,
+257|				KEY_OWNER_ID: &"",
+258|				KEY_ORIGIN_PORT: o2,
+259|				KEY_TICK_TAKEN: 0,
+260|				KEY_DAY_TAKEN: 0,
+261|				KEY_GOODS: (snaps_by_origin[String(o2)] as Dictionary).duplicate(true),
+262|				KEY_PUBLISHED: true,
+263|			}
+264|			var pair: String = _pair_key(OPENING_SHIP_ID, o2)
+265|			(_rec[port_s] as Dictionary)[pair] = {
+266|				KEY_SNAPSHOT: snap,
+267|				KEY_TICK_ARRIVED: 0,
+268|			}
+```
+```
+autoload/intel_ledger.gd:340-352
+340|		var origin: StringName = snap_d.get(KEY_ORIGIN_PORT, &"")
+341|		if String(origin) == String(port_id):
+342|			continue
+343|		var port_s: String = String(port_id)
+344|		if not _rec.has(port_s):
+345|			_rec[port_s] = {}
+346|		var pair: String = _pair_key(sid, origin)
+347|		(_rec[port_s] as Dictionary)[pair] = {
+348|			KEY_SNAPSHOT: snap_d.duplicate(true),
+349|			KEY_TICK_ARRIVED: tick,
+350|		}
+351|		snap_d[KEY_PUBLISHED] = true
+352|		_ship_snap[String(sid)] = snap_d
+```
+```
+autoload/intel_ledger.gd:398-411
+398|func own_snapshot(actor_id: StringName, origin_port: StringName) -> Dictionary:
+399|	## FRM-SYS15-07.
+400|	assert(_loaded, "IntelLedger.own_snapshot before load")
+401|	_clear_last()
+402|	var by_origin: Variant = _own_snap.get(String(actor_id), null)
+403|	if typeof(by_origin) != TYPE_DICTIONARY:
+404|		return {}
+405|	var snap_v: Variant = (by_origin as Dictionary).get(String(origin_port), null)
+406|	if typeof(snap_v) != TYPE_DICTIONARY:
+407|		return {}
+408|	var out: Dictionary = (snap_v as Dictionary).duplicate(true)
+409|	out[KEY_AGE_DAYS] = Clock.day - _dict_int(out, KEY_DAY_TAKEN, 0)
+410|	return out
+411|
+```
+
+## Q2(c) 零貨載（買量 0）可否出航
+
+答案：本線散商出航路徑強制先 BUY 成交再 sail。條件：
+- 候選 q 經 MIN(afford, free_cap, market_qty[, EXPLORE_QTY])；q<1 則 continue（不進候選）。
+- 決策 sail 後 execute_trade(SIDE_BUY, qty_f)；seq<1 則清計畫、idle+1、return（不呼叫 sail）。
+- sail 僅在 BUY seq≥1 之後。
+因此買量為 0 不會走到 ShipRegistry.sail。
+
+原文：
+```
+autoload/trader_registry.gd:826-830
+826|			var q: int = mini(mini(afford, free_cap), market_qty)
+827|			if explore:
+828|				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+829|			if q < 1:
+830|				continue
+```
+```
+autoload/trader_registry.gd:919-938
+919|	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
+920|	var dest_f: StringName = best["port_id"]
+921|	var good_f: StringName = best["good_id"]
+922|	var qty_f: int = int(best["qty"])
+923|	var buy2: Dictionary = MarketPricer.quote(from_port, good_f, MarketPricer.SIDE_BUY, qty_f)
+924|	var preview: int = int(buy2.get(MarketPricer.KEY_TOTAL_LI, 0))
+925|	var seq: int = TradeDesk.execute_trade(
+926|		acct, hold_id, from_port, good_f, MarketPricer.SIDE_BUY, qty_f, preview
+927|	)
+928|	if seq < 1:
+929|		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+930|		_clear_plan(t, sid)
+931|		idle_map[String(sid)] = idle + 1
+932|		return stats
+933|	var arrival: int = ShipRegistry.sail(acct, sid, dest_f)
+934|	if arrival < 1:
+935|		## Rollback not available as single API — leave goods in hold; clear plan; record.
+936|		_day_errors.append(_err(ERR_SYS17_06, "sail", sid, "sail failed after buy"))
+937|		_clear_plan(t, sid)
+938|		return stats
+```
+
+## Q2(d) 探索船抵 D、賣完後狀態轉移
+
+答案：
+1. 抵港當日（STATE_DOCKED 且 plan.phase＝OUTBOUND）：_process_ship_day 先 _try_sell。
+2. 賣成（TradeDesk seq≥1）：_clear_plan；mode＝IDLE；該船 idle_days＝0。同一次 _process_ship_day 會重讀 plan／state，若已 DOCKED 且 phase≠OUTBOUND（已清為 NONE），落入 `_evaluate_and_maybe_sail(..., explore)`——explore 為當日抽籤結果（該散商是否在 explore_set）。
+3. 探索旗標：每日 daily_step 重算 `_pick_explore_traders(day)`；不跨日保留。賣完當日若該散商當日被抽中，同日可再以 explore=true 評估；否則 explore=false。次日須再被抽中才算探索。
+
+原文：
+```
+autoload/trader_registry.gd:376-404
+376|	## Explore lottery once per day (FRM-SYS17-04).
+377|	var explore_set: Dictionary = _pick_explore_traders(day)
+378|	## Process (trader_id, ship_id) ascending (D-109 plan-per-ship).
+379|	var pairs: Array = []
+380|	for tid in all_trader_ids():
+381|		var t: Dictionary = _traders[String(tid)]
+382|		if bool(t.get("retired", false)) or t.get("mode") == MODE_RETIRED:
+383|			continue
+384|		if is_frozen(t["account_id"]):
+385|			continue
+386|		var sids: Array = t["ship_ids"]
+387|		var sorted_ships: Array = sids.duplicate()
+388|		sorted_ships.sort_custom(func(a, b): return String(a) < String(b))
+389|		for sid in sorted_ships:
+390|			pairs.append([tid, sid])
+391|	pairs.sort_custom(func(a, b):
+392|		var ta := String(a[0])
+393|		var tb := String(b[0])
+394|		if ta != tb:
+395|			return ta < tb
+396|		return String(a[1]) < String(b[1])
+397|	)
+398|	var diag_eval := 0
+399|	var diag_excl_ports: Dictionary = {}
+400|	var diag_sails := 0
+401|	for pair in pairs:
+402|		var tid: StringName = pair[0]
+403|		var sid: StringName = pair[1]
+404|		var st: Dictionary = _process_ship_day(tid, sid, day, explore_set.has(String(tid)))
+```
+```
+autoload/trader_registry.gd:679-692
+679|	## FRM-SYS17-05: arrival day → sell.
+680|	if state == Ship.STATE_DOCKED and StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+681|		_try_sell(tid, sid, t, plan, info)
+682|		plan = plans.get(String(sid), TradeEvaluator.empty_plan())
+683|		info = ShipRegistry.ship_info(sid)
+684|		state = StringName(info.get("state", &""))
+685|	if state != Ship.STATE_DOCKED:
+686|		return empty
+687|	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
+688|		## Still holding outbound goods that failed to sell — wait.
+689|		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+690|			return empty
+691|	## Idle docked → evaluate.
+692|	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
+```
+```
+autoload/trader_registry.gd:709-717
+709|	var seq: int = TradeDesk.execute_trade(
+710|		acct, hold_id, port, good, MarketPricer.SIDE_SELL, qty, preview
+711|	)
+712|	if seq < 1:
+713|		## Stay; retry next day (FRM-SYS17-05).
+714|		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+715|		return
+716|	_clear_plan(t, sid)
+717|	t["mode"] = MODE_IDLE
+```
+
+## Q2(e) 賣不掉時停多久、是否擋離港
+
+答案：
+- _try_sell：TradeDesk.execute_trade(SELL) seq<1 → 記錄錯誤並 return；不清 plan、不改 phase。
+- 次日 _process_ship_day：仍 DOCKED+OUTBOUND → 再 _try_sell；若仍失敗，phase 仍 OUTBOUND → `return empty`（不進入 _evaluate_and_maybe_sail）。
+- 因此滯留至賣出成功（或 hold qty≤0 走 inconsistent 清 plan）為止；滯留期間不評估新出航（擋住離港決策）。碼無固定天數上限。
+
+原文：
+```
+autoload/trader_registry.gd:712-714
+712|	if seq < 1:
+713|		## Stay; retry next day (FRM-SYS17-05).
+714|		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+```
+```
+autoload/trader_registry.gd:685-690
+685|	if state != Ship.STATE_DOCKED:
+686|		return empty
+687|	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
+688|		## Still holding outbound goods that failed to sell — wait.
+689|		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+690|			return empty
+```
+
+## Q2(f) 每日探索抽籤人數與旗標範圍
+
+答案：
+- n_pick ＝ floor(散商總數 × EXPLORE_RATE + 1e-9)；若 rate>0 且 ids 非空且 n_pick<1，則 n_pick＝1（下限 1）。非 ceil。
+- 抽籤母體＝all_trader_ids()（未退休過濾在 daily_step 處理船時；_pick_explore_traders 本身不查船／停泊／閒置）。
+- 不限定「旗下有停泊閒置船」。
+- 旗標：explore_set 以 trader_id 為鍵；daily_step 對該散商每艘船呼叫 `_process_ship_day(..., explore_set.has(tid))` → 當日該散商所有被處理的船皆帶同一 explore bool。
+
+原文：
+```
+autoload/trader_registry.gd:643-666
+643|func _pick_explore_traders(day: int) -> Dictionary:
+644|	var out: Dictionary = {}
+645|	var rate: float = Params.get_float(StringName(PRM_EXPLORE_RATE))
+646|	if rate <= 0.0:
+647|		return out
+648|	var ids: PackedStringArray = all_trader_ids()
+649|	## F4① GAP: EXPLORE_RATE is 定點數 0..1 (not ppm); FRM-SYS17-04 writes no integer
+650|	## precision for n×rate — do not invent ppm conversion (dispatch: 列缺口停該項).
+651|	var n_pick: int = int(floor(float(ids.size()) * rate + 1e-9))
+652|	if n_pick < 1 and rate > 0.0 and not ids.is_empty():
+653|		n_pick = 1
+654|	## Deterministic: score each trader by SplitMix output; take lowest n_pick ids by score then id.
+655|	var scored: Array = []
+656|	for tid in ids:
+657|		var seed: int = Rng.derive_seed(_rng_seed, day, String(tid), "", PURPOSE_EXPLORE)
+658|		var step: Array = Rng.next(seed)
+659|		scored.append({"id": String(tid), "r": int(step[1])})
+660|	scored.sort_custom(func(a, b):
+661|		if int(a["r"]) != int(b["r"]):
+662|			return int(a["r"]) < int(b["r"])
+663|		return String(a["id"]) < String(b["id"])
+664|	)
+665|	for i in range(mini(n_pick, scored.size())):
+666|		out[String(scored[i]["id"])] = true
+```
+```
+autoload/trader_registry.gd:401-404
+401|	for pair in pairs:
+402|		var tid: StringName = pair[0]
+403|		var sid: StringName = pair[1]
+404|		var st: Dictionary = _process_ship_day(tid, sid, day, explore_set.has(String(tid)))
+```
+情境參考（非碼預設）：scenario_M1b_G0.json PRM-SYS17-EXPLORE_RATE=0.05、MERCHANT_COUNT_MAX=48 → floor(48*0.05)=2。

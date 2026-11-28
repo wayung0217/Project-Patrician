@@ -1,0 +1,261 @@
+q3-offtake.txt
+# PACK=17-91 LANE=Q
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# ASOF_HKT=2026-11-28 14:19:47 Asia/Hong_Kong
+
+## Q3 去化 window_qty 組成（對應 H3）
+
+### 組成（碼）
+window_qty ＝ local_W ＋ Σ_a MAX(0, export_a − sellin_a)（_aggregate_window／FRM-SYS03-07）。
+
+計入來源（_apply_offtake_on_transfer + container_departed）：
+- REASON_CONSUME 或 REASON_CONSTRUCT_USE 自 MARKET → local ＋＝ q（居民／建造消耗）
+- REASON_CONSUME／CONSTRUCT_USE 自 owner 容器 → local ＋＝ MIN(pending,q)（僅 pending 部分）
+- REASON_TRADE MARKET→owner → pending ＋＝ q（尚未入 window，待離港）
+- REASON_TRADE owner→MARKET → sellin ＋＝ q；並減 pending
+- container_departed（HOLD 離港）→ 將 pending 計入 export
+- LOAD／UNLOAD：只搬 pending，不直接改 window
+不計入：GENESIS、PRODUCE、EXCESS_CONSUME（直接 return）
+
+### 視窗天數
+Params PRM-SYS03-OFFTAKE_WINDOW_DAYS（規格無值；M1b／scenario 試驗值 28）。
+roll 時 window_days ＝ min(W, record_days)，record_days 自首次 roll epoch 起算。
+
+### 何時滾動
+SimLoop 呼叫 GoodsLedger.roll_offtake_snapshot(Clock.day)（日結；autoload/sim_loop.gd:302）。
+
+### 各呼叫者（git grep）
+===== offtake_snapshot =====
+25a398492fa568a223fb4802adbb4f15bc40bcbb:.github/ci/gut_unit_property_baseline_names.txt:551:test_abund_03_excess_not_in_offtake_snapshot
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:31:## 15.1 附錄 C: offtake_snapshot unknown port／good.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:114:var _offtake_snapshot: Dictionary = {}
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:115:## First roll_offtake_snapshot day (window_days epoch); -1 = none yet.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:168:func seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:176:	## Test／fixture seed for previous-day offtake (F11); replaces writing `_offtake_snapshot`.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:177:	assert(_loaded, "GoodsLedger.seed_offtake_snapshot before load_and_validate")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:180:	if not _offtake_snapshot.has(port_s):
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:181:		_offtake_snapshot[port_s] = {}
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:182:	var by_good: Dictionary = _offtake_snapshot[port_s]
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:189:	_offtake_snapshot[port_s] = by_good
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:476:func offtake_snapshot(port_id: StringName, good_id: StringName) -> Dictionary:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:478:	assert(_loaded, "GoodsLedger.offtake_snapshot before load_and_validate")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:483:		_record_error(ERR_SYS03_07, FIELD_PORT_ID if not _is_known_port(port_s) else "good_id", port_s if not _is_known_port(port_s) else good_s, "offtake_snapshot unknown port_id or good_id")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:485:	if not _offtake_snapshot.has(port_s):
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:487:	var by_good: Dictionary = _offtake_snapshot[port_s]
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:618:func roll_offtake_snapshot(day: int) -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:620:	assert(_loaded, "GoodsLedger.roll_offtake_snapshot before load_and_validate")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:654:		if not _offtake_snapshot.has(port_s):
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:655:			_offtake_snapshot[port_s] = {}
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:656:		var snap_port: Dictionary = _offtake_snapshot[port_s]
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:665:		_offtake_snapshot[port_s] = snap_port
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:916:	_offtake_snapshot = {}
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/market_pricer.gd:5:## WP-32／15.1: denominator from GoodsLedger.offtake_snapshot (previous-day); anchor = base_price_li.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/market_pricer.gd:82:const FIELD_OFFTAKE := "offtake_snapshot"
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/market_pricer.gd:317:	var snap: Dictionary = GoodsLedger.offtake_snapshot(port_id, good_id)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/sim_loop.gd:302:	GoodsLedger.roll_offtake_snapshot(Clock.day)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/trader_registry.gd:962:		var snap: Dictionary = GoodsLedger.offtake_snapshot(dest, good)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:1653:MET-01,均衡帶比例,"對 weekly_consumption > 0 的所有 (港, 貨) 格與所有評估季，季末指示燈 band ＝ 2（均衡）的比例｜★ D-52b（2026-11-20）：本列與 MET-02 的「weekly_consumption」解讀為 weekly_offtake（＝ GoodsLedger.offtake_snapshot：window_qty × PRM-SYS04-DAYS_PER_WEEK ÷ window_days，與 MarketPricer 同源）。
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:1979:F 寫入順序,日結,守恆檢查之後、發信號之前，由 SimLoop 呼叫 GoodsLedger.roll_offtake_snapshot(day)。當日所有報價一律讀前一日快照；當日交易於隔日才影響分母。,—,Draft,15-G12；2.3-06,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:1981:H 可觀察性,Godot 介面,"GoodsLedger 新增：offtake_snapshot(port_id, good_id) -> Dictionary{window_qty, local_qty, window_days, day}（查無回空 Dictionary＋last_error，D-08c）；set_container_port(container_id, port_id) -> int（OK／FAILED）；container_departed(container_id) -> int（回本次計入的擔數，失敗回 0）；roll_offtake_snapshot(day)（僅 SimLoop 呼叫）。不新增信號。",GDScript,Draft,D-08c、D-04,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:1982:H 可觀察性,MarketPricer,改讀 GoodsLedger.offtake_snapshot()；不再呼叫 ConsumptionProvider.weekly_consumption()，不再有 TransitAnchorProvider。MarketPricer 仍為純函數、不持有狀態。,GDScript,Draft,r417；15-G14,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2008:ERR-SYS03-07,offtake_snapshot 查無 port_id 或 good_id,回空 Dictionary＋last_error,D-08c,,,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2047:SimLoop 每日排程,r298；05_TechSpec 2.3,日結加 roll_offtake_snapshot；boot 加空跑（FRM-SYS03-11，待 SYS-17）,WP-08／15,,,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2168:F 寫入順序,每日 tick,"在 2.3 每日排程中，位置固定為：BuildingEconomy.daily_step → PopulationModel.daily_step → ★ TraderRegistry.daily_step → ShipRegistry 工資累計 → 守恆檢查 → roll_offtake_snapshot → 發信號。散商當日的買賣一律讀前一日去化快照（15-G12），當日成交於隔日才影響分母。｜★ 2026-11-20：IntelLedger.daily_step（25.1）位於 ShipRegistry 每日步驟之後、TraderRegistry.daily_step 之前。
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2461:FRM-SYS11-03,SYS-11,本地消耗比例 λ：取前一日快照（FRM-SYS03-08）的 local_qty 與 window_qty；λ ＝ local_qty ÷ window_qty；window_qty ＝ 0 時 λ ＝ 0（非錯誤：無人消耗也無人流出，則此港此貨不影響聲望）。純轉口貨 λ 近 0、本地大量消耗 λ 近 1。,offtake_snapshot,local_qty、window_qty,Draft,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2839:F 寫入順序,每日 tick,在 2.3 每日排程中，位置固定為：… TraderRegistry.daily_step → ★ AiRegistry.daily_step → ShipRegistry 工資累計 → 守恆檢查 → roll_offtake_snapshot → 發信號。AI 當日買賣讀前一日去化快照（15-G12）。IntelLedger.daily_step 位置不變（在 TraderRegistry 之前）。,—,Draft｜已追認,2.3；D-44f,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/05_TechSpec.csv:624:D-52b,stock_weeks 週消耗來源：採 GoodsLedger.offtake_snapshot（2026-11-20）,接受 Cursor 的選擇：weekly_offtake ＝ window_qty × PRM-SYS04-DAYS_PER_WEEK ÷ window_days（與 MarketPricer 報價實際使用的去化量相同），不用 DemandModel.weekly_demand。理由：指示燈 band 是用報價的 mid 計算，分母必須與定價同源，否則 MET-01 的「均衡帶比例」會與玩家實際看到的價格脫鉤。03_Systems 9.8 MET-01 的「weekly_consumption」用語據此加註。,MET-01、MET-02 的「weekly_consumption > 0」解讀為 weekly_offtake > 0；去化窗口參數為 PRM-SYS03-OFFTAKE_WINDOW_DAYS（情境檔試驗值 28）。,WP-26,D-47b；03_Systems FRM-SYS04-01、09；15.1,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/05_TechSpec.csv:721:D-95,17-47 收尾與 17-50 授權（AI 起草 2026-11-22；待 Owner 確認，發送 17-50 即視為核准 a 至 f）,(a) D-89b：追認 00_review-addendum 第 3 節全部公開名；其中 PopulationModel.reset_runtime_state、set_upgrade_streaks、get_upgrade_streak、is_opening_placed、has_port、clear_port_residence_tracking 與 GoodsLedger.seed_offtake_snapshot 標為「測試輔助」，產品碼不得呼叫（A35 加掃描規則，只報不擋）。★ D-96(d)：CashLedger.reverse_last_post 排除在追認之外，改由 WP-63 修正。(b) 授權 Cursor 在 17-50 步 0 依 R9-63 順序合併：#44 → #45 → #53 → #55 → #51；#46 至 #50、#52 已含於 #53，關閉。(c) D-94(a) 船型試驗值核准，寫入 scenario_L1_baseline.json overrides；D-94(b) 開局市場庫存暫不寫代碼（尚無 FRM 規格，S9e 未過），WP-62 本次只做匯出、CI、介面。(d) 新公開名（C-14 提案）：SeaLanes.lane_ids() -> Array[StringName]（升序）；GoodsLedger.container_used(container: Dictionary) -> int（擔）；TradeDesk.last_trade_total_li() -> int（最近一次成功成交總額，厘；失敗不更新；開機 0）。(e) WP-63、WP-64 立案。(f) WP-60 十年輸出（night-17-47/step10_wp60/b2_sim_out）定為「修復前基線」。,05_TechSpec WP-63、WP-64、17-50、R9-63,R9-63；17-50；WP-62；WP-27,D-89b；D-94；C-14；S9e,2026-11-22,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/05_TechSpec.csv:1564:R9-19,WP-26 階段 2（wp26-report，PR #38，head 217a1f5）：部分證實，須補證,Cursor 回報：sim/ 第一層實作；GUT 364／364（353＋11）、CI 兩項綠；證據 (a) rg 對 autoload、core 無引用（空）；(b) TST-SYS23-02 前後 sha256 相同；(c) 三組壞情境各自一條錯誤；(d) 五個輸出檔表頭與列數（season_cells 3072、daily_PT-01 17280、summary 與 combos 各 1）；(e) sim/ 對他模組私有成員只有註解提及；(f) 取樣公開方法清單；(g) grid 12 組順序。stock_weeks 週消耗取 GoodsLedger.offtake_snapshot（window_qty × DAYS_PER_WEEK ÷ window_days）。缺口：無公開 SimLoop 重置，改以 CLI 子行程隔離；boot 必發 genesis_grant，START_CASH＝0 會 ERR-SYS05-05；OBS-03 輸出 0。,有證據的：(a)(b)(f)(g)、表頭逐字相符（與 9.9 逐欄對照）、列數與 8 季×16 港×24 貨相符、daily 列數 720 日×24 貨相符。未證實：B 變更清單（未貼 diff --stat）、C 規格對照（ERR-01、03、05、06 無測試對應）、E(1)(3)(4)(5)(6) 全缺、測試私有成員存取清單（D-32b）、F 測試名單與 R2-11、(c) 只示範單一錯誤、(d) 的 cmp 只有一句自述。待裁決已處理：D-52a、b、c。處置：不授權合併，依 17-37 補證。,部分證實；須補證,2026-11-20,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/05_TechSpec.csv:2783:15-02,GoodsLedger 新增,ST-OFFTAKE（daily、pending、snapshot）；FRM-SYS03-05 至 10；公開方法 offtake_snapshot、set_container_port、container_departed、roll_offtake_snapshot；ERR-SYS03-07 至 09；容器登記加 owner_id、port_id（D-20c）。,pending 更新與 transfer 同一原子操作，transfer 失敗不記錄；彙總依 owner_id、good_id 升序（C-08）；不得解析容器 id 字串（D-08d）；debug 模式每 tick 檢查 0 ≤ pending ≤ get_qty。,03_Systems 15.1 B、D、F、H,待派,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/05_TechSpec.csv:2788:15-07,SimLoop 排程,每日日結：守恆檢查之後、發信號之前呼叫 GoodsLedger.roll_offtake_snapshot(day)。,寫成 SimLoop 內明確步驟，不得用 signal 連線或 call_deferred（C-04）；boot 不加空跑。,03_Systems 15.1 F,待派,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/AI_README.csv:420:2026-11-20,v6.99.54,審 Cursor 的 WP-26 階段 2 報告（wp26-report，PR #38，head 217a1f5，CI 綠，GUT 364／364）：部分證實（R9-19），S9a 的 B、C、E(1)(3)(4)(5)(6)、測試私有成員清單、F 測試名單缺漏，須補證（17-37）。裁決 D-52a（第一層允許 genesis_grant）、D-52b（stock_weeks 採 offtake_snapshot，MET-01 用語加註）、D-52c（OBS-03 空白不寫 0，03_Systems 9.8 加註）。★ 本版不得在 WP-43 閘門通過前 commit（閘門檢查 B9＝v6.99.53）。,05_TechSpec、03_Systems、AI_README、00_Overview,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/property/test_PROP_market_quote_bounds.gd:116:	## D-32b／F11: public seed_offtake_snapshot（不再寫 _offtake_snapshot）.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/property/test_PROP_market_quote_bounds.gd:119:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_intel_ledger_wp40.gd:651:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:186:func test_abund_03_excess_not_in_offtake_snapshot() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:198:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:199:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD_RICE))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:411:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:417:			GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:421:	var snap: Dictionary = GoodsLedger.offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:457:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:485:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:75:	var snap: Dictionary = GoodsLedger.offtake_snapshot(&"PT-99", StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:78:	var snap2: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), &"GD-999")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:118:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:119:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:131:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:132:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:156:		GoodsLedger.roll_offtake_snapshot(GoodsLedger.current_day())
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:157:		var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:172:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:173:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:175:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:176:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:182:	GoodsLedger.roll_offtake_snapshot(3)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:183:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 100)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:196:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:197:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:217:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:218:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:235:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:236:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 50)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:239:	GoodsLedger.roll_offtake_snapshot(8)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:240:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:251:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:252:	var before: int = int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:266:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:267:	var after: int = int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:318:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:319:	var snap_after_depart: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:340:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:341:	var snap_after_sellin: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:372:	GoodsLedger.roll_offtake_snapshot(3)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:426:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_perf_afford_1787.gd:216:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_perf_afford_1788.gd:275:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_r972_cash_stock_cap_1769.gd:191:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trade_desk_wp33.gd:598:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trader_registry_wp36.gd:315:	GoodsLedger.seed_offtake_snapshot(StringName(PORT_A), StringName(GOOD), 50, 50, 7, 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_wp56_cash_market_trade.gd:299:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tools/a35_norm_scan.py:38:    "seed_offtake_snapshot",
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tools/golden_harness.gd:316:		var snap: Dictionary = goods.call("offtake_snapshot", StringName(port_s), StringName(gid))
+===== roll_offtake_snapshot =====
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:115:## First roll_offtake_snapshot day (window_days epoch); -1 = none yet.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:618:func roll_offtake_snapshot(day: int) -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/goods_ledger.gd:620:	assert(_loaded, "GoodsLedger.roll_offtake_snapshot before load_and_validate")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/sim_loop.gd:302:	GoodsLedger.roll_offtake_snapshot(Clock.day)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:1979:F 寫入順序,日結,守恆檢查之後、發信號之前，由 SimLoop 呼叫 GoodsLedger.roll_offtake_snapshot(day)。當日所有報價一律讀前一日快照；當日交易於隔日才影響分母。,—,Draft,15-G12；2.3-06,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:1981:H 可觀察性,Godot 介面,"GoodsLedger 新增：offtake_snapshot(port_id, good_id) -> Dictionary{window_qty, local_qty, window_days, day}（查無回空 Dictionary＋last_error，D-08c）；set_container_port(container_id, port_id) -> int（OK／FAILED）；container_departed(container_id) -> int（回本次計入的擔數，失敗回 0）；roll_offtake_snapshot(day)（僅 SimLoop 呼叫）。不新增信號。",GDScript,Draft,D-08c、D-04,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2047:SimLoop 每日排程,r298；05_TechSpec 2.3,日結加 roll_offtake_snapshot；boot 加空跑（FRM-SYS03-11，待 SYS-17）,WP-08／15,,,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2168:F 寫入順序,每日 tick,"在 2.3 每日排程中，位置固定為：BuildingEconomy.daily_step → PopulationModel.daily_step → ★ TraderRegistry.daily_step → ShipRegistry 工資累計 → 守恆檢查 → roll_offtake_snapshot → 發信號。散商當日的買賣一律讀前一日去化快照（15-G12），當日成交於隔日才影響分母。｜★ 2026-11-20：IntelLedger.daily_step（25.1）位於 ShipRegistry 每日步驟之後、TraderRegistry.daily_step 之前。
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/03_Systems.csv:2839:F 寫入順序,每日 tick,在 2.3 每日排程中，位置固定為：… TraderRegistry.daily_step → ★ AiRegistry.daily_step → ShipRegistry 工資累計 → 守恆檢查 → roll_offtake_snapshot → 發信號。AI 當日買賣讀前一日去化快照（15-G12）。IntelLedger.daily_step 位置不變（在 TraderRegistry 之前）。,—,Draft｜已追認,2.3；D-44f,,,,,,,,,,,,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/05_TechSpec.csv:2783:15-02,GoodsLedger 新增,ST-OFFTAKE（daily、pending、snapshot）；FRM-SYS03-05 至 10；公開方法 offtake_snapshot、set_container_port、container_departed、roll_offtake_snapshot；ERR-SYS03-07 至 09；容器登記加 owner_id、port_id（D-20c）。,pending 更新與 transfer 同一原子操作，transfer 失敗不記錄；彙總依 owner_id、good_id 升序（C-08）；不得解析容器 id 字串（D-08d）；debug 模式每 tick 檢查 0 ≤ pending ≤ get_qty。,03_Systems 15.1 B、D、F、H,待派,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:docs/spec/05_TechSpec.csv:2788:15-07,SimLoop 排程,每日日結：守恆檢查之後、發信號之前呼叫 GoodsLedger.roll_offtake_snapshot(day)。,寫成 SimLoop 內明確步驟，不得用 signal 連線或 call_deferred（C-04）；boot 不加空跑。,03_Systems 15.1 F,待派,,,,
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:198:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:118:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:131:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:156:		GoodsLedger.roll_offtake_snapshot(GoodsLedger.current_day())
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:172:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:175:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:182:	GoodsLedger.roll_offtake_snapshot(3)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:196:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:217:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:235:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:239:	GoodsLedger.roll_offtake_snapshot(8)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:251:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:266:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:318:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:340:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:372:	GoodsLedger.roll_offtake_snapshot(3)
+
+### 寧波／松江居民消費是否使 (港,貨) window_qty ≠ 0
+答案：碼上，若該港 MARKET 發生 REASON_CONSUME，local 計入 window_qty，可使非 0。寧波 PT-04／松江 PT-05 在實際跑局是否每日／每貨非 0＝需執行（本線只讀、未跑模擬）。
+
+原文：
+```
+autoload/goods_ledger.gd:922-951
+922|func _apply_offtake_on_transfer(
+923|	from_key: String, to_key: String, good_s: String, qty_i: int, reason: StringName
+924|) -> void:
+925|	# FRM-SYS03-05 (a)–(f). GENESIS／PRODUCE do not record.
+926|	# FRM-SYS07-16: EXCESS_CONSUME is not clearance／offtake (居民用得更寬裕).
+927|	if reason == REASON_GENESIS or reason == REASON_PRODUCE or reason == REASON_EXCESS_CONSUME:
+928|		return
+929|	var from_kind: String = String(_kind_by_id.get(from_key, ""))
+930|	var to_kind: String = String(_kind_by_id.get(to_key, ""))
+931|
+932|	# (a) TRADE MARKET:P → X：pending[X][g] ＋＝ q
+933|	if reason == REASON_TRADE and from_kind == KIND_MARKET and _is_owner_container_kind(to_kind):
+934|		_add_pending(to_key, good_s, qty_i)
+935|		return
+936|
+937|	# (b) TRADE X → MARKET:P：sellin＋＝q；pending −＝ MIN(pending, q)
+938|	if reason == REASON_TRADE and to_kind == KIND_MARKET and _is_owner_container_kind(from_kind):
+939|		var port_b: String = String((_container_meta.get(to_key, {}) as Dictionary).get(FIELD_PORT_ID, ""))
+940|		var owner_b: String = String((_container_meta.get(from_key, {}) as Dictionary).get(FIELD_OWNER_ID, ""))
+941|		if not port_b.is_empty() and not owner_b.is_empty():
+942|			_add_daily_owner_qty(port_b, good_s, FIELD_SELLIN, owner_b, qty_i)
+943|		_reduce_pending(from_key, good_s, qty_i)
+944|		return
+945|
+946|	# (c) CONSUME／CONSTRUCT_USE 自 MARKET:P：local ＋＝ q
+947|	if (reason == REASON_CONSUME or reason == REASON_CONSTRUCT_USE) and from_kind == KIND_MARKET:
+948|		var port_c: String = String((_container_meta.get(from_key, {}) as Dictionary).get(FIELD_PORT_ID, ""))
+949|		if not port_c.is_empty():
+950|			_add_daily_local(port_c, good_s, qty_i)
+951|		return
+```
+```
+autoload/goods_ledger.gd:1056-1099
+1056|func _aggregate_window(port_s: String, good_s: String, day: int, w: int) -> Dictionary:
+1057|	# FRM-SYS03-07: local_W + Σ MAX(0, export_a − sellin_a) with owner_id ascending.
+1058|	var local_w: int = 0
+1059|	var export_by_owner: Dictionary = {}
+1060|	var sellin_by_owner: Dictionary = {}
+1061|	if _offtake_daily.has(port_s):
+1062|		var by_good: Dictionary = _offtake_daily[port_s]
+1063|		if by_good.has(good_s):
+1064|			var by_day: Dictionary = by_good[good_s]
+1065|			var day_keys: Array = by_day.keys()
+1066|			day_keys.sort()
+1067|			for day_key_variant in day_keys:
+1068|				var day_s: String = String(day_key_variant)
+1069|				var d_i: int = int(day_s)
+1070|				if d_i <= day - w:
+1071|					continue
+1072|				var cell: Dictionary = by_day[day_key_variant]
+1073|				local_w = local_w + int(cell.get(FIELD_LOCAL, 0))
+1074|				var ex: Dictionary = cell.get(FIELD_EXPORT, {})
+1075|				for a_variant in ex.keys():
+1076|					var a: String = String(a_variant)
+1077|					export_by_owner[a] = int(export_by_owner.get(a, 0)) + int(ex[a_variant])
+1078|				var si: Dictionary = cell.get(FIELD_SELLIN, {})
+1079|				for a_variant2 in si.keys():
+1080|					var a2: String = String(a_variant2)
+1081|					sellin_by_owner[a2] = int(sellin_by_owner.get(a2, 0)) + int(si[a_variant2])
+1082|	var owners: Dictionary = {}
+1083|	for a in export_by_owner.keys():
+1084|		owners[String(a)] = true
+1085|	for a in sellin_by_owner.keys():
+1086|		owners[String(a)] = true
+1087|	var owner_list: Array = owners.keys()
+1088|	owner_list.sort()
+1089|	var net_sum: int = 0
+1090|	for a_variant in owner_list:
+1091|		var a: String = String(a_variant)
+1092|		var net_a: int = int(export_by_owner.get(a, 0)) - int(sellin_by_owner.get(a, 0))
+1093|		if net_a < 0:
+1094|			net_a = 0
+1095|		net_sum = net_sum + net_a
+1096|	return {
+1097|		FIELD_WINDOW_QTY: local_w + net_sum,
+1098|		FIELD_LOCAL_QTY: local_w,
+1099|	}
+```
+```
+autoload/goods_ledger.gd:618-627
+618|func roll_offtake_snapshot(day: int) -> void:
+619|	# FRM-SYS03-07／08／09: SimLoop only; after conservation, before signals (15-07).
+620|	assert(_loaded, "GoodsLedger.roll_offtake_snapshot before load_and_validate")
+621|	var w: int = Params.get_int(PRM_OFFTAKE_WINDOW_DAYS)
+622|	if _offtake_epoch_day < 0:
+623|		_offtake_epoch_day = day
+624|	var record_days: int = day - _offtake_epoch_day + 1
+625|	if record_days < 1:
+626|		record_days = 1
+627|	var window_days: int = w if w < record_days else record_days
+```
+```
+autoload/sim_loop.gd:300-304
+300|
+301|	# 15-07／15.1 F: after conservation, before signals — roll offtake snapshot (C-04 explicit call).
+302|	GoodsLedger.roll_offtake_snapshot(Clock.day)
+303|
+304|	# 2.3-06 步驟 6: 全部寫入完成後才發出信號（D-05(a)）
+```
+```
+autoload/goods_ledger.gd:61-62
+61|## FRM-SYS07-16／D-104(h): abundance excess consume (MARKET → EXTERNAL); not in offtake snapshot.
+62|const REASON_EXCESS_CONSUME := &"EXCESS_CONSUME"
+```

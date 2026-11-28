@@ -1,0 +1,97 @@
+q1-source-d-3.txt
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# part=3/3
+# source_body_total_lines=341
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tools/golden_harness.gd:317:		var wq: int = int(snap.get("window_qty", 0)) if not snap.is_empty() else 0
+===== git grep -n '_filter_explore_candidates' 25a398492fa568a223fb4802adbb4f15bc40bcbb =====
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/trader_registry.gd:890:		candidates = _filter_explore_candidates(candidates, from_port)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:autoload/trader_registry.gd:956:func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Array:
+===== git grep -n 'explore|offtake_snapshot|window_qty|_filter_explore_candidates' 25a398492fa568a223fb4802adbb4f15bc40bcbb -- tests/ =====
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/property/test_PROP_market_quote_bounds.gd:116:	## D-32b／F11: public seed_offtake_snapshot（不再寫 _offtake_snapshot）.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/property/test_PROP_market_quote_bounds.gd:119:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:2:## 17-66／D-123: K1 seed_opening_board (a)–(e), K2 explore without board, K4 formal 30d.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:13:## Leave enough for explore qty=50; keep max_affordable probes short.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:18:	## Enough weekly demand so D-110(g) does not zero explore／profit candidates.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:142:func test_K2_explore_sails_without_opening_board() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:143:	## Do NOT call seed_opening_board; empty ST-BOARD; explore hit must still sail ≥1.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:146:	## Force every trader into explore set by raising rate via Params if present.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:151:	## Single forced explore day (D-123(b)); no 30d re-eval burn.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:159:		true ## explore=true
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_d123_opening_board_1766.gd:162:	assert_gte(sailed, 1, "explore must sail without board (D-123(b))")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_intel_ledger_wp40.gd:646:	# Mirror test_market_pricer: window_days == DAYS_PER_WEEK → weekly_offtake == window_qty.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_intel_ledger_wp40.gd:651:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_intel_ledger_wp40.gd:661:func _set_offtake(port: String, good: String, window_qty: int, _window_days: int) -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_intel_ledger_wp40.gd:662:	_inject_offtake_weekly(port, good, window_qty)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:186:func test_abund_03_excess_not_in_offtake_snapshot() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:198:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:199:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD_RICE))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:201:	var window_qty: int = int(snap.get("window_qty", 0))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_b_pop_demand_1755.gd:203:	assert_eq(window_qty, 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_f_wp36_1758.gd:127:func test_F3_same_seed_explore_identical() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_f_wp36_1758.gd:131:	var a: Dictionary = TraderRegistry._pick_explore_traders(5)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_f_wp36_1758.gd:132:	var b: Dictionary = TraderRegistry._pick_explore_traders(5)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_f_wp36_1758.gd:136:func test_F3_seeds_1_vs_2_explore_differ_some_day() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_f_wp36_1758.gd:142:		var a: Dictionary = TraderRegistry._pick_explore_traders(day)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_lane_f_wp36_1758.gd:144:		var b: Dictionary = TraderRegistry._pick_explore_traders(day)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:402:func test_TST_SYS04_11_zero_window_qty_floor() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:403:	# TST-SYS04-11／AB2: window_qty＝0 with normal window_days（≠ SYS04-07 C=0 via weekly inject）.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:411:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:417:			GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:421:	var snap: Dictionary = GoodsLedger.offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:452:	# TST-SYS04-13: window_qty 70、window_days 7、DAYS_PER_WEEK 7、stock 210 → weekly_offtake＝70、w＝3、m＝M3
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:457:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:482:	# weekly_offtake = window_qty × DAYS_PER_WEEK ÷ window_days; use window_days=DAYS_PER_WEEK.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_market_pricer.gd:485:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:75:	var snap: Dictionary = GoodsLedger.offtake_snapshot(&"PT-99", StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:78:	var snap2: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), &"GD-999")
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:111:	# 甲賣進 100；乙買 100 上船離港 → window_qty＝100
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:118:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:119:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:120:	assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 100)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:124:	# 甲賣進 100；同窗口甲另一船買 100 離港 → window_qty＝0
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:131:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:132:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:133:	assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:137:	# 甲買進倉再賣回，重複兩次 → window_qty 始終 0；pending 回 0
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:156:		GoodsLedger.roll_offtake_snapshot(GoodsLedger.current_day())
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:157:		var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:158:		assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:172:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:173:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:175:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:176:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:182:	GoodsLedger.roll_offtake_snapshot(3)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:183:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 100)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:196:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:197:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:199:	assert_eq(int(snap.get("window_qty", SNAP_MISSING)), 50)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:217:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:218:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:235:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:236:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 50)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:239:	GoodsLedger.roll_offtake_snapshot(8)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:240:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:251:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:252:	var before: int = int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:266:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:267:	var after: int = int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:318:	GoodsLedger.roll_offtake_snapshot(1)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:319:	var snap_after_depart: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:320:	var window_after_depart: int = int(snap_after_depart.get("window_qty", 0))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:340:	GoodsLedger.roll_offtake_snapshot(2)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:341:	var snap_after_sellin: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:343:	var window_after_sellin: int = int(snap_after_sellin.get("window_qty", SNAP_MISSING))
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:372:	GoodsLedger.roll_offtake_snapshot(3)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_offtake_wp32.gd:426:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_perf_afford_1787.gd:216:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_perf_afford_1788.gd:275:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_r972_cash_stock_cap_1769.gd:191:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trade_desk_wp33.gd:598:	GoodsLedger.seed_offtake_snapshot(
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trader_registry_wp36.gd:228:func test_TST_SYS17_05_deterministic_explore_pick() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trader_registry_wp36.gd:231:	## Minimal roster for explore pick without full boot.
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trader_registry_wp36.gd:242:	var a: Dictionary = TraderRegistry._pick_explore_traders(3)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trader_registry_wp36.gd:243:	var b: Dictionary = TraderRegistry._pick_explore_traders(3)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trader_registry_wp36.gd:267:func test_TST_SYS17_10_explore_rate_positive_selects() -> void:
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_trader_registry_wp36.gd:315:	GoodsLedger.seed_offtake_snapshot(StringName(PORT_A), StringName(GOOD), 50, 50, 7, 0)
+25a398492fa568a223fb4802adbb4f15bc40bcbb:tests/unit/test_wp56_cash_market_trade.gd:299:	GoodsLedger.seed_offtake_snapshot(
+# END_PART part=3/3 file_bytes=13383

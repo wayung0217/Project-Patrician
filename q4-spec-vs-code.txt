@@ -1,0 +1,118 @@
+q4-spec-vs-code.txt
+# PACK=17-91 LANE=Q
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# ASOF_HKT=2026-11-28 14:19:47 Asia/Hong_Kong
+
+## Q4 FRM-SYS17-04 規格對碼
+
+### brief 所稱 r2148
+本 commit docs/spec/03_Systems.csv L2148 內容（非 FRM-SYS17-04）：
+L2148:TST-SYS17-03（17 節草案，已由 17.1 同號取代，勿實作）,無籍、單籍與雙籍散商,面對管制港與首批管制貨,按 15.2 通過或拒絕；拒絕不移貨、不扣款,草案,,,,,,,,,,,,,,,,
+
+### 現行 FRM-SYS17-04 原文（本 commit L2206–2209）
+L2206:FRM-SYS17-04,SYS-17,"探索：每日先以種子派生抽籤（FRM-SYS23-10：UTF-8＋FNV-1a 64，欄位 seed、day、trader_id、用途，0x1F 分隔 → SplitMix64）選出比例 ＝ EXPLORE_RATE 的散商；這些散商改以「無去化歷史的港」為目的地，數量上限 EXPLORE_QTY，不套用利潤門檻。其餘流程與 03 相同。
+L2207:★ 2026-11-24（D-120(b)③）：seed 一律取情境種子（FRM-SYS23-03 帶入的遊戲種子），不得在散商模組內另設固定種子；同情境不同種子，探索抽籤結果應不同。
+L2208:★ 2026-11-24（D-123(b)）：探索不依賴行市——被抽中的散商即使所有目的港都無船報也必須出航（目的港、貨、量照本公式）；17-63 診斷「抽中 2、出航 0」須查明原因並修正，修正不得改變本公式語意，若語意不明列缺口。
+L2209:★ 2026-11-25（D-126 甲）：被抽中的探索散商若目的港無行市（board 無資料），以該貨 GoodCatalog.base_price_li 作為候選排序的代用中價 [待審]；只用於排序，不用於任何門檻；非探索路徑維持無行市不列候選。",種子、day、trader_id,探索名單,Draft,,,,,,,,,,,,,,,
+
+### _filter_explore_candidates 原文
+```
+autoload/trader_registry.gd:956-966
+956|func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Array:
+957|	## Prefer destinations with empty offtake history for any candidate good.
+958|	var cold: Array = []
+959|	for c in candidates:
+960|		var dest: StringName = c["port_id"]
+961|		var good: StringName = c["good_id"]
+962|		var snap: Dictionary = GoodsLedger.offtake_snapshot(dest, good)
+963|		var wq: int = int(snap.get("window_qty", 0)) if not snap.is_empty() else 0
+964|		if wq == 0:
+965|			cold.append(c)
+966|	return cold if not cold.is_empty() else candidates
+```
+
+### 逐項標註（只標，不判好壞）
+
+| # | 規格要點（FRM-SYS17-04 L2206–2209） | 碼位置 | 標註 |
+|---|--------------------------------------|--------|------|
+| 1 | 每日種子派生抽籤選出比例＝EXPLORE_RATE 的散商 | _pick_explore_traders:651 floor(n×rate)；下限 1 | 用語不同（碼用 floor＋下限1；規格寫「比例＝」未寫 floor／ceil） |
+| 2 | 抽籤欄位 seed、day、trader_id、用途 → SplitMix64 | _pick_explore_traders:657 Rng.derive_seed(..., PURPOSE_EXPLORE) | 一致 |
+| 3 | 改以「無去化歷史的港」為目的地 | _filter_explore_candidates：以 (dest,good) window_qty＝0 為 cold；有 cold 才限縮，否則維持全部候選 | 用語不同／碼更寬（單位為（港,貨）非整港；無 cold 時不限縮） |
+| 4 | 數量上限 EXPLORE_QTY | _evaluate_and_maybe_sail:827-828 mini(q, EXPLORE_QTY) | 一致 |
+| 5 | 不套用利潤門檻 | explore 時 decision={"sail":true} 跳過 decide_sail_or_idle | 一致 |
+| 6 | 其餘流程與 03 相同 | 同 BUY＋sail／sell 路徑 | 一致 |
+| 7 | seed 取情境種子，不得模組內另設固定種子 | set_rng_seed／_rng_seed；無模組固定種子 | 一致 |
+| 8 | 無行市也必須出航；無 mid 以 base_price_li 排序代用 | :790-811 explore 分支用 base_price_li | 一致 |
+
+### tests/ 探索目的地相關（名稱＋關鍵斷言原文）
+
+#### test_TST_SYS17_05_deterministic_explore_pick（tests/unit/test_trader_registry_wp36.gd:228-244）
+關鍵斷言：
+```
+242|	var a: Dictionary = TraderRegistry._pick_explore_traders(3)
+243|	var b: Dictionary = TraderRegistry._pick_explore_traders(3)
+244|	assert_eq(str(a.keys()), str(b.keys()))
+```
+
+#### test_TST_SYS17_10_explore_rate_positive_selects（tests/unit/test_trader_registry_wp36.gd:267-270）
+關鍵斷言：
+```
+267|func test_TST_SYS17_10_explore_rate_positive_selects() -> void:
+268|	if not Params.is_loaded():
+269|		assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+270|	assert_gt(Params.get_float("PRM-SYS17-EXPLORE_RATE"), 0.0)
+```
+註：本測試只 assert EXPLORE_RATE>0，不斷言目的地／去化。
+
+#### test_F3_same_seed_explore_identical（tests/unit/test_lane_f_wp36_1758.gd:127-133）
+```
+127|func test_F3_same_seed_explore_identical() -> void:
+128|	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+129|	_seed_mini_roster()
+130|	TraderRegistry.set_rng_seed(11)
+131|	var a: Dictionary = TraderRegistry._pick_explore_traders(5)
+132|	var b: Dictionary = TraderRegistry._pick_explore_traders(5)
+133|	assert_eq(str(a.keys()), str(b.keys()))
+```
+
+#### test_F3_seeds_1_vs_2_explore_differ_some_day（tests/unit/test_lane_f_wp36_1758.gd:136-148）
+```
+136|func test_F3_seeds_1_vs_2_explore_differ_some_day() -> void:
+137|	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
+138|	_seed_mini_roster()
+139|	var differ := false
+140|	for day in range(1, 91):
+141|		TraderRegistry.set_rng_seed(1)
+142|		var a: Dictionary = TraderRegistry._pick_explore_traders(day)
+143|		TraderRegistry.set_rng_seed(2)
+144|		var b: Dictionary = TraderRegistry._pick_explore_traders(day)
+145|		if str(a.keys()) != str(b.keys()):
+146|			differ = true
+147|			break
+148|	assert_true(differ)
+```
+
+#### test_K2_explore_sails_without_opening_board（tests/unit/test_d123_opening_board_1766.gd:142-162）
+```
+142|func test_K2_explore_sails_without_opening_board() -> void:
+143|	## Do NOT call seed_opening_board; empty ST-BOARD; explore hit must still sail ≥1.
+144|	_boot_traders_mini()
+145|	DemandModel.set_potential_demand_provider(PotentialDemandAll.new())
+146|	## Force every trader into explore set by raising rate via Params if present.
+147|	assert_gt(Params.get_float("PRM-SYS17-EXPLORE_RATE"), 0.0)
+148|	## Empty board confirmed.
+149|	assert_eq(IntelLedger.diag_recorded_report_count(StringName(PORT_A)), 0)
+150|	var sailed := 0
+151|	## Single forced explore day (D-123(b)); no 30d re-eval burn.
+152|	Clock._tick = Params.get_int("PRM-SYS00-TICKS_PER_DAY")
+153|	GoodsLedger.set_day(Clock.day)
+154|	CashLedger.set_day(Clock.day)
+155|	var st: Dictionary = TraderRegistry._process_ship_day(
+156|		&"TR-001",
+157|		TraderRegistry._traders["TR-001"]["ship_ids"][0],
+158|		1,
+159|		true ## explore=true
+160|	)
+161|	sailed = int(st.get("sailed", 0))
+162|	assert_gte(sailed, 1, "explore must sail without board (D-123(b))")
+```

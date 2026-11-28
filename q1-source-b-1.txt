@@ -1,0 +1,254 @@
+q1-source-b-1.txt
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# part=1/1
+# source_body_total_lines=249
+## selected consts autoload/intel_ledger.gd
+19|const ERR_SYS15_05 := &"ERR-SYS15-05"
+23|const PRM_WINDOW_DAYS := "PRM-SYS15-WINDOW_DAYS"
+77|## FRM-SYS15-11／D-123(a): virtual ship_id for opening board reports.
+78|const OPENING_SHIP_ID := &"OPENING"
+
+## autoload/intel_ledger.gd:189-269  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=seed_opening_board  total_lines_this_func=81
+189|func seed_opening_board() -> Array:
+190|	## FRM-SYS15-11／D-123(a): one OPENING report per (P, O≠P) from O's opening mid/band.
+191|	## Call once after opening MARKET stock, before day-1 tick. No own_snap／ship_snap／contact.
+192|	assert(_loaded, "IntelLedger.seed_opening_board before load")
+193|	var errors: Array = []
+194|	if not PortRegistry.is_loaded() or not GoodCatalog.is_loaded() or not MarketPricer.is_loaded():
+195|		errors.append(
+196|			_err(ERR_SYS15_05, "seed_opening_board", null, "PortRegistry/GoodCatalog/MarketPricer required")
+197|		)
+198|		_emit_errors(errors)
+199|		return errors
+200|	var ports: Array = []
+201|	for p in PortRegistry.all_ids():
+202|		ports.append(p)
+203|	ports.sort_custom(func(a, b): return String(a) < String(b))
+204|	var goods: Array = []
+205|	for g in GoodCatalog.all_ids():
+206|		goods.append(g)
+207|	goods.sort_custom(func(a, b): return String(a) < String(b))
+208|	var weeks_scale: int = Params.get_int(StringName(PRM_WEEKS_SCALE))
+209|	## Two-pass: price every (O,g); write only if no ERR-SYS15-05 (C-06 collect-all).
+210|	var snaps_by_origin: Dictionary = {} ## origin:String → goods Dictionary
+211|	for o_v in ports:
+212|		var o: StringName = o_v
+213|		var goods_snap: Dictionary = {}
+214|		for g_v in goods:
+215|			var good_id: StringName = g_v
+216|			var mid: float = MarketPricer.mid_price(o, good_id)
+217|			var mp_err: Dictionary = MarketPricer.last_error()
+218|			if not mp_err.is_empty() or mid <= 0.0:
+219|				errors.append(
+220|					_err(ERR_SYS15_05, String(good_id), o, "opening mid_price failed")
+221|				)
+222|				continue
+223|			var mid_li: int = floori(mid)
+224|			if mid_li < 1:
+225|				errors.append(
+226|					_err(ERR_SYS15_05, String(good_id), o, "opening mid_li < 1")
+227|				)
+228|				continue
+229|			var good: GoodDef = GoodCatalog.get_good(String(good_id))
+230|			var base_li: int = good.base_price_li if good != null else 0
+231|			var ratio: float = mid / float(base_li) if base_li > 0 else 0.0
+232|			var band: int = MarketPricer.indicator_band(ratio)
+233|			var w: Variant = MarketPricer.stock_weeks(o, good_id)
+234|			var weeks_x: Variant = null
+235|			if w != null:
+236|				weeks_x = floori(float(w) * float(weeks_scale))
+237|			goods_snap[String(good_id)] = {
+238|				KEY_MID_LI: mid_li,
+239|				KEY_BAND: band,
+240|				KEY_WEEKS_X: weeks_x,
+241|			}
+242|		snaps_by_origin[String(o)] = goods_snap
+243|	if not errors.is_empty():
+244|		_emit_errors(errors)
+245|		return errors
+246|	for p_v in ports:
+247|		var p: StringName = p_v
+248|		var port_s: String = String(p)
+249|		if not _rec.has(port_s):
+250|			_rec[port_s] = {}
+251|		for o_v2 in ports:
+252|			var o2: StringName = o_v2
+253|			if String(o2) == port_s:
+254|				continue
+255|			var snap: Dictionary = {
+256|				KEY_SHIP_ID: OPENING_SHIP_ID,
+257|				KEY_OWNER_ID: &"",
+258|				KEY_ORIGIN_PORT: o2,
+259|				KEY_TICK_TAKEN: 0,
+260|				KEY_DAY_TAKEN: 0,
+261|				KEY_GOODS: (snaps_by_origin[String(o2)] as Dictionary).duplicate(true),
+262|				KEY_PUBLISHED: true,
+263|			}
+264|			var pair: String = _pair_key(OPENING_SHIP_ID, o2)
+265|			(_rec[port_s] as Dictionary)[pair] = {
+266|				KEY_SNAPSHOT: snap,
+267|				KEY_TICK_ARRIVED: 0,
+268|			}
+269|	return errors
+
+## autoload/intel_ledger.gd:272-318  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=on_departed  total_lines_this_func=47
+272|func on_departed(
+273|	ship_id: StringName, owner_id: StringName, from_port_id: StringName, tick: int
+274|) -> void:
+275|	## FRM-SYS15-01.
+276|	assert(_loaded, "IntelLedger.on_departed before load")
+277|	_clear_last()
+278|	var goods: Dictionary = {}
+279|	var ids: PackedStringArray = GoodCatalog.all_ids()
+280|	var weeks_scale: int = Params.get_int(StringName(PRM_WEEKS_SCALE))
+281|	for g_variant in ids:
+282|		var good_id: StringName = StringName(g_variant)
+283|		var mid: float = MarketPricer.mid_price(from_port_id, good_id)
+284|		var mp_err: Dictionary = MarketPricer.last_error()
+285|		if not mp_err.is_empty() or mid <= 0.0:
+286|			_fail_snapshot(ship_id, from_port_id, good_id, "mid_price failed")
+287|			return
+288|		var mid_li: int = floori(mid)
+289|		if mid_li < 1:
+290|			_fail_snapshot(ship_id, from_port_id, good_id, "mid_li < 1")
+291|			return
+292|		var good: GoodDef = GoodCatalog.get_good(String(good_id))
+293|		var base_li: int = good.base_price_li
+294|		var ratio: float = mid / float(base_li) if base_li > 0 else 0.0
+295|		var band: int = MarketPricer.indicator_band(ratio)
+296|		var w: Variant = MarketPricer.stock_weeks(from_port_id, good_id)
+297|		var weeks_x: Variant = null
+298|		if w != null:
+299|			weeks_x = floori(float(w) * float(weeks_scale))
+300|		goods[String(good_id)] = {
+301|			KEY_MID_LI: mid_li,
+302|			KEY_BAND: band,
+303|			KEY_WEEKS_X: weeks_x,
+304|		}
+305|	var snap: Dictionary = {
+306|		KEY_SHIP_ID: ship_id,
+307|		KEY_OWNER_ID: owner_id,
+308|		KEY_ORIGIN_PORT: from_port_id,
+309|		KEY_TICK_TAKEN: tick,
+310|		KEY_DAY_TAKEN: Clock.day,
+311|		KEY_GOODS: goods,
+312|		KEY_PUBLISHED: false,
+313|	}
+314|	_ship_snap[String(ship_id)] = snap
+315|	var owner_s: String = String(owner_id)
+316|	if not _own_snap.has(owner_s):
+317|		_own_snap[owner_s] = {}
+318|	(_own_snap[owner_s] as Dictionary)[String(from_port_id)] = snap.duplicate(true)
+
+## autoload/intel_ledger.gd:321-357  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=on_arrivals  total_lines_this_func=37
+321|func on_arrivals(tick: int, arrivals: Array) -> void:
+322|	## FRM-SYS15-02: batch write; query must not see partial batch.
+323|	assert(_loaded, "IntelLedger.on_arrivals before load")
+324|	var ports_touched: Dictionary = {}
+325|	for item_variant in arrivals:
+326|		if typeof(item_variant) != TYPE_DICTIONARY:
+327|			continue
+328|		var item: Dictionary = item_variant
+329|		var sid: StringName = item.get(KEY_SHIP_ID, &"")
+330|		var owner_id: StringName = item.get(KEY_OWNER_ID, &"")
+331|		var port_id: StringName = item.get(KEY_PORT_ID, &"")
+332|		var from_port: StringName = item.get(KEY_FROM_PORT_ID, &"")
+333|		_bump_contact(owner_id, port_id)
+334|		var snap: Variant = _ship_snap.get(String(sid), null)
+335|		if typeof(snap) != TYPE_DICTIONARY:
+336|			continue
+337|		var snap_d: Dictionary = snap
+338|		if bool(snap_d.get(KEY_PUBLISHED, false)):
+339|			continue
+340|		var origin: StringName = snap_d.get(KEY_ORIGIN_PORT, &"")
+341|		if String(origin) == String(port_id):
+342|			continue
+343|		var port_s: String = String(port_id)
+344|		if not _rec.has(port_s):
+345|			_rec[port_s] = {}
+346|		var pair: String = _pair_key(sid, origin)
+347|		(_rec[port_s] as Dictionary)[pair] = {
+348|			KEY_SNAPSHOT: snap_d.duplicate(true),
+349|			KEY_TICK_ARRIVED: tick,
+350|		}
+351|		snap_d[KEY_PUBLISHED] = true
+352|		_ship_snap[String(sid)] = snap_d
+353|		ports_touched[port_s] = true
+354|	var port_keys: Array = ports_touched.keys()
+355|	port_keys.sort()
+356|	for p in port_keys:
+357|		_pending_board_signals.append({"port_id": StringName(p), "tick": tick})
+
+## autoload/intel_ledger.gd:360-386  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=daily_step  total_lines_this_func=27
+360|func daily_step(_day: int) -> Array:
+361|	## FRM-SYS15-08: trim ST-BOARD by age；return pending snapshot errors.
+362|	assert(_loaded, "IntelLedger.daily_step before load")
+363|	var window_d: int = Params.get_int(StringName(PRM_WINDOW_DAYS))
+364|	var today: int = Clock.day
+365|	var port_keys: Array = _rec.keys()
+366|	port_keys.sort()
+367|	for port_s_variant in port_keys:
+368|		var port_s: String = String(port_s_variant)
+369|		var board: Dictionary = _rec[port_s]
+370|		var pair_keys: Array = board.keys()
+371|		pair_keys.sort()
+372|		for pair_variant in pair_keys:
+373|			var pair: String = String(pair_variant)
+374|			var entry: Dictionary = board[pair]
+375|			var snap: Dictionary = entry.get(KEY_SNAPSHOT, {})
+376|			var day_taken: int = _dict_int(snap, KEY_DAY_TAKEN, 0)
+377|			var age: int = today - day_taken
+378|			if age >= window_d:
+379|				board.erase(pair)
+380|		if board.is_empty():
+381|			_rec.erase(port_s)
+382|		else:
+383|			_rec[port_s] = board
+384|	var out: Array = _pending_errors.duplicate()
+385|	_pending_errors.clear()
+386|	return out
+
+## autoload/intel_ledger.gd:413-426  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=board_for  total_lines_this_func=14
+413|func board_for(
+414|	actor_id: StringName, port_id: StringName, origin_port: StringName, good_id: StringName
+415|) -> Dictionary:
+416|	## FRM-SYS15-06 + D-37c visibility.
+417|	assert(_loaded, "IntelLedger.board_for before load")
+418|	_clear_last()
+419|	if not _ids_ok(port_id, origin_port, good_id):
+420|		_record(ERR_SYS15_04, KEY_PORT_ID, port_id, "unknown port/origin/good")
+421|		return {}
+422|	if not _actor_present(actor_id, port_id):
+423|		_record(ERR_SYS15_04, KEY_OWNER_ID, actor_id, "actor not present at port")
+424|		return {}
+425|	var samples: Array = _visible_samples(actor_id, port_id, origin_port, good_id)
+426|	return _summarize_board(samples, good_id)
+
+## autoload/intel_ledger.gd:398-410  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=own_snapshot  total_lines_this_func=13
+398|func own_snapshot(actor_id: StringName, origin_port: StringName) -> Dictionary:
+399|	## FRM-SYS15-07.
+400|	assert(_loaded, "IntelLedger.own_snapshot before load")
+401|	_clear_last()
+402|	var by_origin: Variant = _own_snap.get(String(actor_id), null)
+403|	if typeof(by_origin) != TYPE_DICTIONARY:
+404|		return {}
+405|	var snap_v: Variant = (by_origin as Dictionary).get(String(origin_port), null)
+406|	if typeof(snap_v) != TYPE_DICTIONARY:
+407|		return {}
+408|	var out: Dictionary = (snap_v as Dictionary).duplicate(true)
+409|	out[KEY_AGE_DAYS] = Clock.day - _dict_int(out, KEY_DAY_TAKEN, 0)
+410|	return out
+
+## autoload/intel_ledger.gd:505-514  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_fail_snapshot  total_lines_this_func=10
+505|func _fail_snapshot(
+506|	ship_id: StringName, from_port: StringName, good_id: StringName, message: String
+507|) -> void:
+508|	_ship_snap.erase(String(ship_id))
+509|	var info: Dictionary = _err(
+510|		ERR_SYS15_05, String(good_id), from_port, "snapshot failed: %s" % message
+511|	)
+512|	_pending_errors.append(info)
+513|	_last_error = info
+514|	push_error("IntelLedger: %s" % str(info))
+
+# END_PART part=1/1 file_bytes=10643

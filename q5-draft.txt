@@ -1,0 +1,157 @@
+q5-draft.txt
+# PACK=17-91 LANE=Q
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# ASOF_HKT=2026-11-28 14:19:47 Asia/Hong_Kong
+
+## Q5 吃水（對應 H6）
+
+### data/ports 五港 draft_limit_class 原值
+| port | tres 行 |
+|------|---------|
+| PT-04 寧波 | draft_limit_class = 2 |
+| PT-05 松江 | draft_limit_class = 1 |
+| PT-08 雞籠 | draft_limit_class = 3 |
+| PT-09 淡水 | draft_limit_class = 2 |
+| PT-11 那霸 | draft_limit_class = 2 |
+
+數值：寧波 2、松江 1、雞籠 3、淡水 2、那霸 2。
+
+### docs/spec/ports.csv（brief：為準）
+```
+﻿port_id,name_zh,is_free_port,draft_limit_class,regime_id
+PT-01,月港,false,2,明
+PT-02,安海,true,2,明（鄭氏實控）
+PT-03,福州,false,3,明
+PT-04,寧波,true,2,明
+PT-05,松江,true,1,明
+PT-06,澎湖,true,2,明（巡檢司）
+PT-07,大員,true,2,無主
+PT-08,雞籠,false,3,西班牙
+PT-09,淡水,false,2,西班牙
+PT-10,魍港,true,1,無主（漢人聚落）
+PT-11,那霸,true,2,琉球王府
+PT-12,長崎,false,3,日本幕府
+PT-13,平戶,true,2,松浦氏
+PT-14,博多,true,2,日本（黑田氏）
+PT-15,鹿兒島,false,3,島津氏（薩摩）
+PT-16,釜山倭館,false,2,朝鮮（對馬宗氏管）
+```
+對應（AI_README／D-48a 暫定編碼 淺1／中2／深3）：
+- PT-04 寧波 → 2 → 中
+- PT-05 松江 → 1 → 淺
+- PT-08 雞籠 → 3 → 深
+- PT-09 淡水 → 2 → 中
+- PT-11 那霸 → 2 → 中
+
+### 載入器如何轉成 PortDef.draft_limit_class
+1. tools/csv_import.gd：欄位型別 COL_TYPE_INT；`def.draft_limit_class = int(row["draft_limit_class"])`——整數直寫，無 −1／枚舉重映射。
+2. PortRegistry.load_and_validate：ResourceLoader.load data/ports/*.tres；PortDef 欄位原樣入 _by_id；註解「stored only — no validation」。
+3. 本線未找到載入時把 1/2/3 轉成 0/1/2 的轉換碼。
+
+原文：
+```
+tools/csv_import.gd:179-189
+179|## draft_limit_class: enum UNIT-DRAFT stored as int cell pending SYS-13 (TechSpec D83).
+180|## role_cells are supplied by role_cells.csv (D-08i), not ports.csv columns.
+181|const PORT_DEF_FIELDS: Array[Dictionary] = [
+182|	{"name": "port_id", "type": COL_TYPE_STRING},
+183|	{"name": "name_zh", "type": COL_TYPE_STRING},
+184|	{"name": "is_free_port", "type": COL_TYPE_BOOL},
+185|	{"name": "draft_limit_class", "type": COL_TYPE_INT},
+186|	{"name": "regime_id", "type": COL_TYPE_STRING},
+187|]
+188|
+189|## RoleCell import rows — 03_Systems r261–r263 plus join keys required by D-08i
+```
+```
+tools/csv_import.gd:2275-2285
+2275|	for row_variant in port_rows:
+2276|		var row: Dictionary = row_variant
+2277|		var def := PortDef.new()
+2278|		def.port_id = String(row["port_id"])
+2279|		def.name_zh = String(row["name_zh"])
+2280|		def.is_free_port = bool(row["is_free_port"])
+2281|		def.draft_limit_class = int(row["draft_limit_class"])
+2282|		def.regime_id = String(row["regime_id"])
+2283|		if cells_by_port.has(def.port_id):
+2284|			def.role_cells = cells_by_port[def.port_id]
+2285|		else:
+```
+```
+core/types/port_def.gd:1-16
+1|class_name PortDef
+2|extends Resource
+3|## SYS-02 PortDef static port definition (03_Systems §2 / TechSpec 3.3).
+4|## draft_limit_class: stored only; not validated / not used until SYS-13 (Owner B3 / 1-A5).
+5|##
+6|## 缺口（承載關係）：03_Systems r256–r263／TechSpec 3.3 D 欄未列出 PortDef→RoleCell 容器欄位名。
+7|## 實作以 role_cells: Dictionary[good_id → RoleCell] 承載 ST-ROLE，以支援 ports/*.tres 與 FRM-SYS02-01。
+8|
+9|@export var port_id: String = ""
+10|@export var name_zh: String = ""
+11|@export var is_free_port: bool = false
+12|## UNIT-DRAFT [待審] — store only (B3); no validation in SYS-02.
+13|@export var draft_limit_class: int = 0
+14|@export var regime_id: String = ""
+15|## good_id (String) → RoleCell. Not listed as a D-field name in TechSpec; see file header gap note.
+16|@export var role_cells: Dictionary = {}
+```
+```
+autoload/port_registry.gd:2-4
+2|## Autoload: PortRegistry — loads res://data/ports/*.tres, owns ST-ROLE (TechSpec 3.3 / WP-04).
+3|## _ready() only clears fields; load_and_validate() performs I/O and FRM checks (2.2-01).
+4|## draft_limit_class stored on PortDef only — no validation / no logic (Owner B3 / 1-A5).
+```
+
+### ShipRegistry.port_draft 全文與常數
+```
+autoload/ship_registry.gd:71-81
+71|## UNIT-DRAFT ints (fixtures use 0=淺; TST-SYS13-14 ladder).
+72|const DRAFT_SHALLOW := 0
+73|const DRAFT_MEDIUM := 1
+74|const DRAFT_DEEP := 2
+75|
+76|const SHIP_DRAFT := {
+77|	"SH-01": DRAFT_SHALLOW,
+78|	"SH-02": DRAFT_MEDIUM,
+79|	"SH-03": DRAFT_MEDIUM,
+80|	"SH-04": DRAFT_DEEP,
+81|}
+```
+```
+autoload/ship_registry.gd:465-477
+465|func port_draft(port_id: StringName) -> int:
+466|	## FRM-SYS13-11.
+467|	assert(_loaded, "ShipRegistry.port_draft before load")
+468|	var port: PortDef = PortRegistry.get_port(String(port_id))
+469|	if port == null:
+470|		_record(ERR_SYS13_01, "port_id", port_id, "unknown port")
+471|		return HOLD_CHECK_FAILURE
+472|	var base: int = int(port.draft_limit_class)
+473|	var dock_lv: int = 0
+474|	if BuildingEconomy.is_loaded():
+475|		dock_lv = BuildingEconomy.public_level(port_id, CB_DOCK)
+476|	var boosted: int = base + maxi(0, dock_lv - 1)
+477|	return mini(DRAFT_DEEP, boosted)
+```
+UNIT-DRAFT（碼註解）：淺 0／中 1／深 2。
+SHIP_DRAFT：SH-01=0、SH-02=1、SH-03=1、SH-04=2。
+散商 SHIP_TYPE＝SH-03（autoload/trader_registry.gd:42）→ 船吃水 1。
+
+### 04_Content 各港吃水
+本 commit 無獨立 docs/spec/04_Content.csv（僅 Project Patrician.xlsx 工作簿）。03_Systems U-56 稱「港口三級 淺／中／深（04_Content G 欄）」。
+brief 指定以 docs/spec/ports.csv 為準（見上表）。
+TechSpec／AI_README 記 ports 匯出編碼：
+L608:D-48a,匯出表對齊匯入器格式（依 Cursor 補查 R9-17，2026-11-20）,goods：布林只接受小寫 true／false，已符合；is_strategic 全 false 可過；season_mask 取 15。ports：欄位只能是 port_id、name_zh、is_free_port、draft_limit_class、regime_id，多欄會被表頭檢查擋下，因此已刪除 ladder_id 欄（WP-35 實作 D-26a 後再加）；draft_limit_class 為整數，PortRegistry 不驗，暫用淺 1／中 2／深 3。price_curve：weeks、mult 兩欄 float，已符合。更正 D-47c 中 ports 含 ladder_id 的描述。,整張匯出時不得加標題或註解列（D-19e 同）；三張仍屬試跑值，匯出後只供模擬器用。,WP-26,R9-17；D-47c；D-26a；D-19e,,,,
+L118:ports,★ CSV 匯出專用（整張匯出為 ports.csv）：16 港，欄位只有 port_id、name_zh、is_free_port、draft_limit_class（淺 1／中 2／深 3，暫定）、regime_id；不含 ladder_id（WP-35 後再加）；試跑值（D-47c、D-48a）,Draft（待 Owner 審）,2026-11-20,,
+
+### 兩套整數並陳（只列事實）
+| 來源 | 淺 | 中 | 深 |
+|------|----|----|-----|
+| ports.csv／D-48a 暫定 | 1 | 2 | 3 |
+| ShipRegistry UNIT-DRAFT 常數 | 0 | 1 | 2 |
+
+FRM-SYS13-11：
+L1841:FRM-SYS13-11,SYS-13,"港口現行吃水：port_draft ＝ MIN(DEEP, PortDef.draft_limit_class ＋ MAX(0, 碼頭等級 − 1))；無碼頭以 0 級計（OQ-16g；04A CB-06「松江由淺升深要連升兩級」）；進港條件：船吃水 ≤ port_draft",PortDef、CB-06 等級,級距,查詢,Draft,,,,,,,,,,,,,,
+U-56：
+L1724:U-56,吃水限制進港,船吃水級距 > 港口可容級距即不得進港；港口三級 淺／中／深（04_Content G 欄）；碼頭 CB-06 每升一級改寫吃水,F-3；OQ-04 4b；04A CB-06；UNIT-DRAFT,進港判定 FRM,已定（動態規則見 OQ-16g）,,,,,,,,,,,,,,,

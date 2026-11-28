@@ -1,0 +1,396 @@
+q1-source-a-1.txt
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# part=1/1
+# source_body_total_lines=391
+## EXPLORE-related consts/vars (autoload/trader_registry.gd)
+26|const PRM_EXPLORE_RATE := "PRM-SYS17-EXPLORE_RATE"
+27|const PRM_EXPLORE_QTY := "PRM-SYS17-EXPLORE_QTY"
+45|const PURPOSE_EXPLORE := "EXPLORE"
+237|		PRM_COUNT, PRM_START_CASH, PRM_SHIP_MIX, PRM_TIER_MIX, PRM_EXPLORE_RATE,
+238|		PRM_EXPLORE_QTY, PRM_PROFIT_MIN, PRM_IDLE_MAX, PRM_LOSS_TOL, PRM_PPM, PRM_TOP_N
+645|	var rate: float = Params.get_float(StringName(PRM_EXPLORE_RATE))
+649|	## F4① GAP: EXPLORE_RATE is 定點數 0..1 (not ppm); FRM-SYS17-04 writes no integer
+657|		var seed: int = Rng.derive_seed(_rng_seed, day, String(tid), "", PURPOSE_EXPLORE)
+828|				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+
+## autoload/trader_registry.gd:643-667  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_pick_explore_traders  total_lines_this_func=25
+643|func _pick_explore_traders(day: int) -> Dictionary:
+644|	var out: Dictionary = {}
+645|	var rate: float = Params.get_float(StringName(PRM_EXPLORE_RATE))
+646|	if rate <= 0.0:
+647|		return out
+648|	var ids: PackedStringArray = all_trader_ids()
+649|	## F4① GAP: EXPLORE_RATE is 定點數 0..1 (not ppm); FRM-SYS17-04 writes no integer
+650|	## precision for n×rate — do not invent ppm conversion (dispatch: 列缺口停該項).
+651|	var n_pick: int = int(floor(float(ids.size()) * rate + 1e-9))
+652|	if n_pick < 1 and rate > 0.0 and not ids.is_empty():
+653|		n_pick = 1
+654|	## Deterministic: score each trader by SplitMix output; take lowest n_pick ids by score then id.
+655|	var scored: Array = []
+656|	for tid in ids:
+657|		var seed: int = Rng.derive_seed(_rng_seed, day, String(tid), "", PURPOSE_EXPLORE)
+658|		var step: Array = Rng.next(seed)
+659|		scored.append({"id": String(tid), "r": int(step[1])})
+660|	scored.sort_custom(func(a, b):
+661|		if int(a["r"]) != int(b["r"]):
+662|			return int(a["r"]) < int(b["r"])
+663|		return String(a["id"]) < String(b["id"])
+664|	)
+665|	for i in range(mini(n_pick, scored.size())):
+666|		out[String(scored[i]["id"])] = true
+667|	return out
+
+## autoload/trader_registry.gd:369-420  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=daily_step  total_lines_this_func=52
+369|func daily_step(day: int) -> Array:
+370|	## FRM-SYS17-01／03／05；D-104(c)⑤ perf. Insert after IntelLedger (17.1 F／25.1).
+371|	_day_errors.clear()
+372|	if not _enabled or not _loaded:
+373|		return _day_errors
+374|	_refresh_freeze_from_arrears()
+375|	_build_board_cache_day()
+376|	## Explore lottery once per day (FRM-SYS17-04).
+377|	var explore_set: Dictionary = _pick_explore_traders(day)
+378|	## Process (trader_id, ship_id) ascending (D-109 plan-per-ship).
+379|	var pairs: Array = []
+380|	for tid in all_trader_ids():
+381|		var t: Dictionary = _traders[String(tid)]
+382|		if bool(t.get("retired", false)) or t.get("mode") == MODE_RETIRED:
+383|			continue
+384|		if is_frozen(t["account_id"]):
+385|			continue
+386|		var sids: Array = t["ship_ids"]
+387|		var sorted_ships: Array = sids.duplicate()
+388|		sorted_ships.sort_custom(func(a, b): return String(a) < String(b))
+389|		for sid in sorted_ships:
+390|			pairs.append([tid, sid])
+391|	pairs.sort_custom(func(a, b):
+392|		var ta := String(a[0])
+393|		var tb := String(b[0])
+394|		if ta != tb:
+395|			return ta < tb
+396|		return String(a[1]) < String(b[1])
+397|	)
+398|	var diag_eval := 0
+399|	var diag_excl_ports: Dictionary = {}
+400|	var diag_sails := 0
+401|	for pair in pairs:
+402|		var tid: StringName = pair[0]
+403|		var sid: StringName = pair[1]
+404|		var st: Dictionary = _process_ship_day(tid, sid, day, explore_set.has(String(tid)))
+405|		diag_eval += int(st.get("evaluable", 0))
+406|		diag_sails += int(st.get("sailed", 0))
+407|		var excl_v: Variant = st.get("excl_dests", {})
+408|		if typeof(excl_v) == TYPE_DICTIONARY:
+409|			for dk in (excl_v as Dictionary).keys():
+410|				diag_excl_ports[String(dk)] = true
+411|	if _diag_z != null and _diag_z.has_method("note_day_eval"):
+412|		_diag_z.call(
+413|			"note_day_eval",
+414|			day,
+415|			diag_eval,
+416|			diag_excl_ports.size(),
+417|			explore_set.size(),
+418|			diag_sails
+419|		)
+420|	return _day_errors
+
+## autoload/trader_registry.gd:670-692  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_process_ship_day  total_lines_this_func=23
+670|func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool) -> Dictionary:
+671|	var empty := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
+672|	var t: Dictionary = _traders[String(tid)]
+673|	var info: Dictionary = ShipRegistry.ship_info(sid)
+674|	if info.is_empty():
+675|		return empty
+676|	var plans: Dictionary = t["plans"]
+677|	var plan: Dictionary = plans.get(String(sid), TradeEvaluator.empty_plan())
+678|	var state: StringName = StringName(info.get("state", &""))
+679|	## FRM-SYS17-05: arrival day → sell.
+680|	if state == Ship.STATE_DOCKED and StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+681|		_try_sell(tid, sid, t, plan, info)
+682|		plan = plans.get(String(sid), TradeEvaluator.empty_plan())
+683|		info = ShipRegistry.ship_info(sid)
+684|		state = StringName(info.get("state", &""))
+685|	if state != Ship.STATE_DOCKED:
+686|		return empty
+687|	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
+688|		## Still holding outbound goods that failed to sell — wait.
+689|		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+690|			return empty
+691|	## Idle docked → evaluate.
+692|	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
+
+## autoload/trader_registry.gd:695-718  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_try_sell  total_lines_this_func=24
+695|func _try_sell(tid: StringName, sid: StringName, t: Dictionary, plan: Dictionary, info: Dictionary) -> void:
+696|	var good: StringName = plan.get("good_id", &"")
+697|	var port: StringName = StringName(info.get("port_id", &""))
+698|	var acct: StringName = t["account_id"]
+699|	var hold_id: StringName = StringName(GoodsLedger.CONTAINER_ID_FMT_HOLD % String(sid))
+700|	var hold_dict: Dictionary = GoodsLedger.make_hold(String(sid), String(acct))
+701|	var qty: int = GoodsLedger.get_qty(hold_dict, good)
+702|	if qty <= 0:
+703|		_note_plan_inconsistent(tid, sid, "OUTBOUND but hold empty")
+704|		_clear_plan(t, sid)
+705|		t["mode"] = MODE_IDLE
+706|		return
+707|	var quote: Dictionary = MarketPricer.quote(port, good, MarketPricer.SIDE_SELL, qty)
+708|	var preview: int = int(quote.get(MarketPricer.KEY_TOTAL_LI, 0))
+709|	var seq: int = TradeDesk.execute_trade(
+710|		acct, hold_id, port, good, MarketPricer.SIDE_SELL, qty, preview
+711|	)
+712|	if seq < 1:
+713|		## Stay; retry next day (FRM-SYS17-05).
+714|		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+715|		return
+716|	_clear_plan(t, sid)
+717|	t["mode"] = MODE_IDLE
+718|	(t["idle_days"] as Dictionary)[String(sid)] = 0
+
+## autoload/trader_registry.gd:721-953  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_evaluate_and_maybe_sail  total_lines_this_func=233
+721|func _evaluate_and_maybe_sail(
+722|	tid: StringName, sid: StringName, t: Dictionary, info: Dictionary, explore: bool
+723|) -> Dictionary:
+724|	var stats := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
+725|	var from_port: StringName = StringName(info.get("port_id", &""))
+726|	var acct: StringName = t["account_id"]
+727|	var idle_map: Dictionary = t["idle_days"]
+728|	var idle: int = int(idle_map.get(String(sid), 0))
+729|	var cap_map: Dictionary = Params.get_value(StringName(PRM_CAPACITY))
+730|	var hold_cap: int = int(cap_map.get(String(SHIP_TYPE), 0))
+731|	var hold_id: StringName = StringName(GoodsLedger.CONTAINER_ID_FMT_HOLD % String(sid))
+732|	var hold_dict: Dictionary = GoodsLedger.make_hold(String(sid), String(acct))
+733|	## Free hold space.
+734|	var used: int = 0
+735|	if GoodCatalog.is_loaded():
+736|		for g in GoodCatalog.all_ids():
+737|			used += GoodsLedger.get_qty(hold_dict, g)
+738|	var free_cap: int = hold_cap - used
+739|	if free_cap < 1:
+740|		idle_map[String(sid)] = idle + 1
+741|		return stats
+742|	var goods: Array = []
+743|	if GoodCatalog.is_loaded():
+744|		for g in GoodCatalog.all_ids():
+745|			goods.append(g)
+746|	goods.sort_custom(func(a, b): return String(a) < String(b))
+747|	var ports: Array = []
+748|	if PortRegistry.is_loaded():
+749|		for p in PortRegistry.all_ids():
+750|			ports.append(p)
+751|	ports.sort_custom(func(a, b): return String(a) < String(b))
+752|
+753|	var candidates: Array = []
+754|	## Dest ports excluded because board_for / dest intel empty (F2 "no market").
+755|	var excl_dests: Dictionary = {}
+756|	## 17-87 A1／FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：
+757|	## 每次 eval_sail、每種貨最多呼叫 max_affordable_qty 一次；結果只存本評估區域字典
+758|	## （評估結束即丟棄；不得模組／成員層快取；不得跨船、跨日、跨評估）。
+759|	var afford_by_good: Dictionary = {}
+760|	## 17-88 A1／FRM-SYS17-02／D-104(c)／SYS-04 純函數：
+761|	## 每次評估、每種貨最多呼叫 mid_price(本港, good) 一次；區域字典，評估結束即丟棄。
+762|	var mid_by_good: Dictionary = {}
+763|	## Coarse pass then top-3 precise (D-104(c)⑤).
+764|	var coarse: Array = []
+765|	for dest_v in ports:
+766|		var dest: StringName = dest_v
+767|		if String(dest) == String(from_port):
+768|			continue
+769|		if not _can_enter(acct, dest):
+770|			continue
+771|		if not _draft_ok(sid, dest):
+772|			continue
+773|		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+774|		if days < 1:
+775|			continue
+776|		var dest_had_intel := false
+777|		var dest_saw_good := false
+778|		for good_v in goods:
+779|			var good: StringName = good_v
+780|			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
+781|				continue
+782|			if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
+783|				continue
+784|			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
+785|			if market_qty < 1:
+786|				continue
+787|			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+788|			var mid: int = 0
+789|			var weeks_v: Variant = 0.0
+790|			if intel.is_empty() or intel.get("mid_li", null) == null:
+791|				## D-109(c)／F2: empty board → not a profit candidate.
+792|				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+793|				## catalog base_price_li as ranking stand-in only (profit gate skipped).
+794|				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+795|				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+796|				if not explore:
+797|					## excl_dests 語意不變：舊碼在 no_intel continue 前已要求 afford≥1。
+798|					## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：經區域快取取可負擔量。
+799|					var afford_excl: int = _afford_qty_cached(
+800|						afford_by_good, acct, from_port, good
+801|					)
+802|					if afford_excl >= 1:
+803|						dest_saw_good = true
+804|					continue
+805|				if not GoodCatalog.is_loaded():
+806|					continue
+807|				var gd_ex: GoodDef = GoodCatalog.get_good(good)
+808|				if gd_ex == null or gd_ex.base_price_li < 1:
+809|					continue
+810|				mid = gd_ex.base_price_li
+811|				weeks_v = 0.0
+812|			else:
+813|				dest_had_intel = true
+814|				mid = int(intel["mid_li"])
+815|				weeks_v = intel.get("weeks", 0.0)
+816|			var weekly: int = 0
+817|			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
+818|				weekly = DemandModel.weekly_potential_demand(dest, good)
+819|			if weekly < 1:
+820|				continue ## D-110(g)
+821|			## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：廉價判斷之後才取可負擔量（惰性）。
+822|			var afford: int = _afford_qty_cached(afford_by_good, acct, from_port, good)
+823|			if afford < 1:
+824|				continue
+825|			dest_saw_good = true
+826|			var q: int = mini(mini(afford, free_cap), market_qty)
+827|			if explore:
+828|				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+829|			if q < 1:
+830|				continue
+831|			var rough_buy: int = mid ## coarse; precise quote later
+832|			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
+833|			## FRM-SYS17-02／D-104(c)／SYS-04 純函數（17-88 A1）：本港 mid 經區域快取。
+834|			var origin_mid: float = _mid_price_cached(mid_by_good, from_port, good)
+835|			rough_buy = floori(origin_mid * float(q))
+836|			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
+837|			coarse.append({
+838|				"port_id": dest,
+839|				"good_id": good,
+840|				"qty": q,
+841|				"voyage_days": days,
+842|				"mid_li": mid,
+843|				"weeks": weeks_v,
+844|				"weekly": weekly,
+845|				"score": score,
+846|				"rough_buy": rough_buy,
+847|			})
+848|		if dest_saw_good and not dest_had_intel and not explore:
+849|			excl_dests[String(dest)] = true
+850|	stats["excl_dests"] = excl_dests
+851|	coarse.sort_custom(func(a, b):
+852|		if int(a["score"]) != int(b["score"]):
+853|			return int(a["score"]) > int(b["score"])
+854|		var ap := String(a["port_id"])
+855|		var bp := String(b["port_id"])
+856|		if ap != bp:
+857|			return ap < bp
+858|		return String(a["good_id"]) < String(b["good_id"])
+859|	)
+860|	var top_n: int = Params.get_int(StringName(PRM_TOP_N))
+861|	var top: Array = coarse.slice(0, mini(top_n, coarse.size()))
+862|	for c in top:
+863|		var dest2: StringName = c["port_id"]
+864|		var good2: StringName = c["good_id"]
+865|		var q2: int = int(c["qty"])
+866|		var days2: int = int(c["voyage_days"])
+867|		var buy_q: Dictionary = MarketPricer.quote(from_port, good2, MarketPricer.SIDE_BUY, q2)
+868|		if buy_q.has(MarketPricer.KEY_ERROR):
+869|			continue
+870|		var buy_cost: int = int(buy_q.get(MarketPricer.KEY_TOTAL_LI, 0))
+871|		## Recompute affordable with precise quote.
+872|		if buy_cost > CashLedger.balance(acct):
+873|			continue
+874|		var sell_rev: int = _estimate_sell_revenue(
+875|			dest2, good2, q2, int(c["mid_li"]), c.get("weeks", 0.0), int(c["weekly"])
+876|		)
+877|		var profit: int = TradeEvaluator.daily_marginal_profit(sell_rev, buy_cost, TAX_LI, days2)
+878|		candidates.append({
+879|			"port_id": dest2,
+880|			"good_id": good2,
+881|			"qty": q2,
+882|			"voyage_days": days2,
+883|			"daily_profit_li": profit,
+884|			"buy_cost_li": buy_cost,
+885|			"sell_revenue_li": sell_rev,
+886|		})
+887|	stats["evaluable"] = candidates.size()
+888|	## Explore: destinations with no offtake history preferred; skip profit gate later.
+889|	if explore:
+890|		candidates = _filter_explore_candidates(candidates, from_port)
+891|
+892|	var best: Dictionary = TradeEvaluator.pick_best_candidate(candidates)
+893|	var profit_min: int = Params.get_int(StringName(PRM_PROFIT_MIN))
+894|	var idle_max: int = Params.get_int(StringName(PRM_IDLE_MAX))
+895|	var loss_tol: int = Params.get_int(StringName(PRM_LOSS_TOL))
+896|	var ppm: int = Params.get_int(StringName(PRM_PPM))
+897|	if best.is_empty():
+898|		idle_map[String(sid)] = idle + 1
+899|		_clear_plan(t, sid)
+900|		return stats
+901|	var decision: Dictionary
+902|	if explore:
+903|		decision = {"sail": true, "idle_days_after": 0}
+904|	else:
+905|		decision = TradeEvaluator.decide_sail_or_idle(
+906|			int(best["daily_profit_li"]),
+907|			int(best["buy_cost_li"]),
+908|			int(best["sell_revenue_li"]),
+909|			idle,
+910|			profit_min,
+911|			idle_max,
+912|			loss_tol,
+913|			ppm
+914|		)
+915|	if not bool(decision["sail"]):
+916|		idle_map[String(sid)] = int(decision["idle_days_after"])
+917|		_clear_plan(t, sid)
+918|		return stats
+919|	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
+920|	var dest_f: StringName = best["port_id"]
+921|	var good_f: StringName = best["good_id"]
+922|	var qty_f: int = int(best["qty"])
+923|	var buy2: Dictionary = MarketPricer.quote(from_port, good_f, MarketPricer.SIDE_BUY, qty_f)
+924|	var preview: int = int(buy2.get(MarketPricer.KEY_TOTAL_LI, 0))
+925|	var seq: int = TradeDesk.execute_trade(
+926|		acct, hold_id, from_port, good_f, MarketPricer.SIDE_BUY, qty_f, preview
+927|	)
+928|	if seq < 1:
+929|		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+930|		_clear_plan(t, sid)
+931|		idle_map[String(sid)] = idle + 1
+932|		return stats
+933|	var arrival: int = ShipRegistry.sail(acct, sid, dest_f)
+934|	if arrival < 1:
+935|		## Rollback not available as single API — leave goods in hold; clear plan; record.
+936|		_day_errors.append(_err(ERR_SYS17_06, "sail", sid, "sail failed after buy"))
+937|		_clear_plan(t, sid)
+938|		return stats
+939|	var new_plan := {
+940|		"phase": TradeEvaluator.PHASE_OUTBOUND,
+941|		"from_port": from_port,
+942|		"to_port": dest_f,
+943|		"good_id": good_f,
+944|		"qty": qty_f,
+945|		"expected_profit_li": int(best["daily_profit_li"]),
+946|	}
+947|	(t["plans"] as Dictionary)[String(sid)] = new_plan
+948|	t["mode"] = MODE_SAILING
+949|	idle_map[String(sid)] = 0
+950|	_queue_signal("trader_plan_set", [tid, sid, new_plan])
+951|	_record_season_sail(from_port, good_f, qty_f, int(best["daily_profit_li"]))
+952|	stats["sailed"] = 1
+953|	return stats
+
+## autoload/trader_registry.gd:956-966  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_filter_explore_candidates  total_lines_this_func=11
+956|func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Array:
+957|	## Prefer destinations with empty offtake history for any candidate good.
+958|	var cold: Array = []
+959|	for c in candidates:
+960|		var dest: StringName = c["port_id"]
+961|		var good: StringName = c["good_id"]
+962|		var snap: Dictionary = GoodsLedger.offtake_snapshot(dest, good)
+963|		var wq: int = int(snap.get("window_qty", 0)) if not snap.is_empty() else 0
+964|		if wq == 0:
+965|			cold.append(c)
+966|	return cold if not cold.is_empty() else candidates
+
+# END_PART part=1/1 file_bytes=17703

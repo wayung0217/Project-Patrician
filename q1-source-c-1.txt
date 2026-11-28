@@ -1,0 +1,365 @@
+q1-source-c-1.txt
+# commit=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# part=1/1
+# source_body_total_lines=360
+2|## Autoload: GoodsLedger — SYS-03 ST-GOOD (TechSpec 3.4 / WP-05) + ST-OFFTAKE (WP-32 / 15.1).
+9|## D-20c／15.1: container registry stores owner_id／port_id; ST-OFFTAKE daily／pending／snapshot.
+18|const PRM_OFFTAKE_WINDOW_DAYS := "PRM-SYS03-OFFTAKE_WINDOW_DAYS"
+44|const FIELD_WINDOW_QTY := "window_qty"
+45|const FIELD_LOCAL_QTY := "local_qty"
+46|const FIELD_WINDOW_DAYS := "window_days"
+48|const FIELD_LOCAL := "local"
+49|const FIELD_EXPORT := "export"
+50|const FIELD_SELLIN := "sellin"
+52|const REASON_GENESIS := &"GENESIS"
+53|const REASON_PRODUCE := &"PRODUCE"
+54|const REASON_CONSUME := &"CONSUME"
+55|const REASON_TRADE := &"TRADE"
+56|const REASON_LOAD := &"LOAD"
+57|const REASON_UNLOAD := &"UNLOAD"
+58|const REASON_CONSTRUCT_USE := &"CONSTRUCT_USE"
+59|const REASON_CONFISCATE := &"CONFISCATE"
+60|const REASON_SEA_LOSS := &"SEA_LOSS"
+62|const REASON_EXCESS_CONSUME := &"EXCESS_CONSUME"
+64|const REASON_SIM_RELOCATE := &"SIM_RELOCATE"
+109|## ST-OFFTAKE (15.1 D): daily[port][good][day] = {local, export{owner}, sellin{owner}}
+110|var _offtake_daily: Dictionary = {}
+112|var _offtake_pending: Dictionary = {}
+114|var _offtake_snapshot: Dictionary = {}
+115|## First roll_offtake_snapshot day (window_days epoch); -1 = none yet.
+117|const DAY_SENTINEL_UNSET := -1
+118|var _offtake_epoch_day: int = DAY_SENTINEL_UNSET
+
+## transfer() offtake call site autoload/goods_ledger.gd:216-243
+216|func transfer(from: Variant, to: Variant, good: StringName, qty: Variant, reason: StringName, requester: StringName) -> int:
+217|	# FRM-SYS03-02: qty 整數且 > 0；from 餘額 ≥ qty；to 容量足夠；全有或全無
+218|	# D-04: success → seq≥1；fail → 0 + ErrorInfo in last_error()
+219|	assert(_loaded, "GoodsLedger.transfer before load_and_validate")
+220|	_clear_last_error()
+221|
+222|	var prep: Dictionary = _validate_transfer_preconditions(from, to, good, qty, reason, requester)
+223|	if not bool(prep.get("ok", false)):
+224|		return 0
+225|
+226|	var from_key: String = String(prep["from_key"])
+227|	var to_key: String = String(prep["to_key"])
+228|	var good_s: String = String(prep["good_s"])
+229|	var qty_i: int = int(prep["qty_i"])
+230|	var from_before: int = int(prep["from_before"])
+231|	var to_before: int = int(prep["to_before"])
+232|
+233|	# Apply (both sides); EXTERNAL 不記帳
+234|	if not _is_external_key(from_key):
+235|		_set_qty_by_key(from_key, good_s, from_before - qty_i)
+236|	if not _is_external_key(to_key):
+237|		_set_qty_by_key(to_key, good_s, to_before + qty_i)
+238|
+239|	# Update expected net for FRM-SYS03-01 (creation／destruction reasons only)
+240|	_apply_expected_delta(good_s, reason, from_key, to_key, qty_i)
+241|
+242|	# FRM-SYS03-05: offtake pending／daily in same atomic op as successful transfer.
+243|	_apply_offtake_on_transfer(from_key, to_key, good_s, qty_i, reason)
+
+## autoload/goods_ledger.gd:168-189  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=seed_offtake_snapshot  total_lines_this_func=22
+168|func seed_offtake_snapshot(
+169|	port_id: StringName,
+170|	good_id: StringName,
+171|	window_qty: int,
+172|	local_qty: int,
+173|	window_days: int,
+174|	day: int = 0
+175|) -> void:
+176|	## Test／fixture seed for previous-day offtake (F11); replaces writing `_offtake_snapshot`.
+177|	assert(_loaded, "GoodsLedger.seed_offtake_snapshot before load_and_validate")
+178|	var port_s: String = String(port_id)
+179|	var good_s: String = String(good_id)
+180|	if not _offtake_snapshot.has(port_s):
+181|		_offtake_snapshot[port_s] = {}
+182|	var by_good: Dictionary = _offtake_snapshot[port_s]
+183|	by_good[good_s] = {
+184|		FIELD_WINDOW_QTY: window_qty,
+185|		FIELD_LOCAL_QTY: local_qty,
+186|		FIELD_WINDOW_DAYS: window_days,
+187|		FIELD_DAY: day,
+188|	}
+189|	_offtake_snapshot[port_s] = by_good
+
+## autoload/goods_ledger.gd:476-490  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=offtake_snapshot  total_lines_this_func=15
+476|func offtake_snapshot(port_id: StringName, good_id: StringName) -> Dictionary:
+477|	# 15.1 H／ERR-SYS03-07: unknown port／good → empty Dictionary + last_error (D-08c).
+478|	assert(_loaded, "GoodsLedger.offtake_snapshot before load_and_validate")
+479|	_clear_last_error()
+480|	var port_s: String = String(port_id)
+481|	var good_s: String = String(good_id)
+482|	if not _is_known_port(port_s) or not _is_known_good(good_s):
+483|		_record_error(ERR_SYS03_07, FIELD_PORT_ID if not _is_known_port(port_s) else "good_id", port_s if not _is_known_port(port_s) else good_s, "offtake_snapshot unknown port_id or good_id")
+484|		return {}
+485|	if not _offtake_snapshot.has(port_s):
+486|		return {}
+487|	var by_good: Dictionary = _offtake_snapshot[port_s]
+488|	if not by_good.has(good_s):
+489|		return {}
+490|	return (by_good[good_s] as Dictionary).duplicate(true)
+
+## autoload/goods_ledger.gd:582-615  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=container_departed  total_lines_this_func=34
+582|func container_departed(container_id: StringName) -> int:
+583|	# FRM-SYS03-06／ERR-SYS03-08: berthed HOLD only; returns Σ pending counted as export.
+584|	assert(_loaded, "GoodsLedger.container_departed before load_and_validate")
+585|	_clear_last_error()
+586|	var cid: String = String(container_id)
+587|	if not _container_meta.has(cid):
+588|		_record_error(ERR_SYS03_08, "container_id", cid, "container_departed: not registered")
+589|		return 0
+590|	var kind: String = String(_kind_by_id.get(cid, ""))
+591|	if kind != KIND_HOLD:
+592|		_record_error(ERR_SYS03_08, FIELD_KIND, kind, "container_departed: not HOLD")
+593|		return 0
+594|	var meta: Dictionary = _container_meta[cid]
+595|	var port_s: String = String(meta.get(FIELD_PORT_ID, ""))
+596|	if port_s.is_empty():
+597|		_record_error(ERR_SYS03_08, FIELD_PORT_ID, cid, "container_departed: HOLD not in port")
+598|		return 0
+599|	var owner_s: String = String(meta.get(FIELD_OWNER_ID, ""))
+600|	var total_c: int = 0
+601|	var pending_bucket: Dictionary = _offtake_pending.get(cid, {})
+602|	var good_keys: Array = pending_bucket.keys()
+603|	good_keys.sort()
+604|	for g_variant in good_keys:
+605|		var good_s: String = String(g_variant)
+606|		var c: int = int(pending_bucket[good_s])
+607|		if c <= 0:
+608|			continue
+609|		_add_daily_owner_qty(port_s, good_s, FIELD_EXPORT, owner_s, c)
+610|		total_c = total_c + c
+611|		pending_bucket[good_s] = 0
+612|	_offtake_pending.erase(cid)
+613|	meta[FIELD_PORT_ID] = ""
+614|	_container_meta[cid] = meta
+615|	return total_c
+
+## autoload/goods_ledger.gd:618-667  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=roll_offtake_snapshot  total_lines_this_func=50
+618|func roll_offtake_snapshot(day: int) -> void:
+619|	# FRM-SYS03-07／08／09: SimLoop only; after conservation, before signals (15-07).
+620|	assert(_loaded, "GoodsLedger.roll_offtake_snapshot before load_and_validate")
+621|	var w: int = Params.get_int(PRM_OFFTAKE_WINDOW_DAYS)
+622|	if _offtake_epoch_day < 0:
+623|		_offtake_epoch_day = day
+624|	var record_days: int = day - _offtake_epoch_day + 1
+625|	if record_days < 1:
+626|		record_days = 1
+627|	var window_days: int = w if w < record_days else record_days
+628|	if window_days < 1:
+629|		window_days = 1
+630|
+631|	var ports: Array = []
+632|	if PortRegistry.is_loaded():
+633|		for p in PortRegistry.all_ids():
+634|			ports.append(String(p))
+635|	for p_existing in _offtake_daily.keys():
+636|		var ps: String = String(p_existing)
+637|		if not ports.has(ps):
+638|			ports.append(ps)
+639|	ports.sort()
+640|
+641|	var goods: Array = []
+642|	if GoodCatalog.is_loaded():
+643|		for g in GoodCatalog.all_ids():
+644|			goods.append(String(g))
+645|	for p_variant in _offtake_daily.keys():
+646|		var by_good: Dictionary = _offtake_daily[p_variant]
+647|		for g_variant in by_good.keys():
+648|			var gs: String = String(g_variant)
+649|			if not goods.has(gs):
+650|				goods.append(gs)
+651|	goods.sort()
+652|
+653|	for port_s in ports:
+654|		if not _offtake_snapshot.has(port_s):
+655|			_offtake_snapshot[port_s] = {}
+656|		var snap_port: Dictionary = _offtake_snapshot[port_s]
+657|		for good_s in goods:
+658|			var agg: Dictionary = _aggregate_window(port_s, good_s, day, w)
+659|			snap_port[good_s] = {
+660|				FIELD_WINDOW_QTY: int(agg[FIELD_WINDOW_QTY]),
+661|				FIELD_LOCAL_QTY: int(agg[FIELD_LOCAL_QTY]),
+662|				FIELD_WINDOW_DAYS: window_days,
+663|				FIELD_DAY: day,
+664|			}
+665|		_offtake_snapshot[port_s] = snap_port
+666|
+667|	_prune_daily(day, w)
+
+## autoload/goods_ledger.gd:670-693  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=debug_check_offtake_invariants  total_lines_this_func=24
+670|func debug_check_offtake_invariants() -> int:
+671|	# FRM-SYS03-10: 0 ≤ pending ≤ get_qty for every pending entry (debug).
+672|	assert(_loaded, "GoodsLedger.debug_check_offtake_invariants before load")
+673|	_clear_last_error()
+674|	var cids: Array = _offtake_pending.keys()
+675|	cids.sort()
+676|	for cid_variant in cids:
+677|		var cid: String = String(cid_variant)
+678|		var bucket: Dictionary = _offtake_pending[cid]
+679|		var gkeys: Array = bucket.keys()
+680|		gkeys.sort()
+681|		for g_variant in gkeys:
+682|			var good_s: String = String(g_variant)
+683|			var pending_q: int = int(bucket[good_s])
+684|			var qty: int = _get_qty_by_key(cid, good_s)
+685|			if pending_q < 0 or pending_q > qty:
+686|				_record_error(ERR_SYS03_05, "pending", {
+687|					"container": cid,
+688|					"good": good_s,
+689|					"pending": pending_q,
+690|					"qty": qty,
+691|				}, "offtake pending invariant violated")
+692|				return CODE_FAIL
+693|	return CODE_OK
+
+## autoload/goods_ledger.gd:922-979  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_apply_offtake_on_transfer  total_lines_this_func=58
+922|func _apply_offtake_on_transfer(
+923|	from_key: String, to_key: String, good_s: String, qty_i: int, reason: StringName
+924|) -> void:
+925|	# FRM-SYS03-05 (a)–(f). GENESIS／PRODUCE do not record.
+926|	# FRM-SYS07-16: EXCESS_CONSUME is not clearance／offtake (居民用得更寬裕).
+927|	if reason == REASON_GENESIS or reason == REASON_PRODUCE or reason == REASON_EXCESS_CONSUME:
+928|		return
+929|	var from_kind: String = String(_kind_by_id.get(from_key, ""))
+930|	var to_kind: String = String(_kind_by_id.get(to_key, ""))
+931|
+932|	# (a) TRADE MARKET:P → X：pending[X][g] ＋＝ q
+933|	if reason == REASON_TRADE and from_kind == KIND_MARKET and _is_owner_container_kind(to_kind):
+934|		_add_pending(to_key, good_s, qty_i)
+935|		return
+936|
+937|	# (b) TRADE X → MARKET:P：sellin＋＝q；pending −＝ MIN(pending, q)
+938|	if reason == REASON_TRADE and to_kind == KIND_MARKET and _is_owner_container_kind(from_kind):
+939|		var port_b: String = String((_container_meta.get(to_key, {}) as Dictionary).get(FIELD_PORT_ID, ""))
+940|		var owner_b: String = String((_container_meta.get(from_key, {}) as Dictionary).get(FIELD_OWNER_ID, ""))
+941|		if not port_b.is_empty() and not owner_b.is_empty():
+942|			_add_daily_owner_qty(port_b, good_s, FIELD_SELLIN, owner_b, qty_i)
+943|		_reduce_pending(from_key, good_s, qty_i)
+944|		return
+945|
+946|	# (c) CONSUME／CONSTRUCT_USE 自 MARKET:P：local ＋＝ q
+947|	if (reason == REASON_CONSUME or reason == REASON_CONSTRUCT_USE) and from_kind == KIND_MARKET:
+948|		var port_c: String = String((_container_meta.get(from_key, {}) as Dictionary).get(FIELD_PORT_ID, ""))
+949|		if not port_c.is_empty():
+950|			_add_daily_local(port_c, good_s, qty_i)
+951|		return
+952|
+953|	# (d) CONSUME／CONSTRUCT_USE 自 X：c＝MIN(pending,q)；local＋＝c；pending−＝c
+954|	if (reason == REASON_CONSUME or reason == REASON_CONSTRUCT_USE) and _is_owner_container_kind(from_kind):
+955|		var c: int = _peek_pending(from_key, good_s)
+956|		if c > qty_i:
+957|			c = qty_i
+958|		var port_d: String = String((_container_meta.get(from_key, {}) as Dictionary).get(FIELD_PORT_ID, ""))
+959|		if c > 0 and not port_d.is_empty():
+960|			_add_daily_local(port_d, good_s, c)
+961|		_reduce_pending(from_key, good_s, qty_i)
+962|		return
+963|
+964|	# (e) LOAD／UNLOAD X → Y（同港）：transfer pending first
+965|	if (reason == REASON_LOAD or reason == REASON_UNLOAD) and _is_owner_container_kind(from_kind) and _is_owner_container_kind(to_kind):
+966|		var m: int = _peek_pending(from_key, good_s)
+967|		if m > qty_i:
+968|			m = qty_i
+969|		if m > 0:
+970|			_reduce_pending(from_key, good_s, m)
+971|			_add_pending(to_key, good_s, m)
+972|		return
+973|
+974|	# (f) 其他使 X 減量：pending ＝ MIN(pending, 轉移後現量)
+975|	if not _is_external_key(from_key) and _is_owner_container_kind(from_kind):
+976|		var after: int = _get_qty_by_key(from_key, good_s)
+977|		var pend: int = _peek_pending(from_key, good_s)
+978|		if pend > after:
+979|			_set_pending(from_key, good_s, after)
+
+## autoload/goods_ledger.gd:1042-1044  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_add_daily_local  total_lines_this_func=3
+1042|func _add_daily_local(port_s: String, good_s: String, qty_i: int) -> void:
+1043|	var cell: Dictionary = _ensure_daily_cell(port_s, good_s)
+1044|	cell[FIELD_LOCAL] = int(cell.get(FIELD_LOCAL, 0)) + qty_i
+
+## autoload/goods_ledger.gd:1047-1053  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_add_daily_owner_qty  total_lines_this_func=7
+1047|func _add_daily_owner_qty(
+1048|	port_s: String, good_s: String, field: String, owner_s: String, qty_i: int
+1049|) -> void:
+1050|	var cell: Dictionary = _ensure_daily_cell(port_s, good_s)
+1051|	var owners: Dictionary = cell.get(field, {})
+1052|	owners[owner_s] = int(owners.get(owner_s, 0)) + qty_i
+1053|	cell[field] = owners
+
+## autoload/goods_ledger.gd:1056-1099  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_aggregate_window  total_lines_this_func=44
+1056|func _aggregate_window(port_s: String, good_s: String, day: int, w: int) -> Dictionary:
+1057|	# FRM-SYS03-07: local_W + Σ MAX(0, export_a − sellin_a) with owner_id ascending.
+1058|	var local_w: int = 0
+1059|	var export_by_owner: Dictionary = {}
+1060|	var sellin_by_owner: Dictionary = {}
+1061|	if _offtake_daily.has(port_s):
+1062|		var by_good: Dictionary = _offtake_daily[port_s]
+1063|		if by_good.has(good_s):
+1064|			var by_day: Dictionary = by_good[good_s]
+1065|			var day_keys: Array = by_day.keys()
+1066|			day_keys.sort()
+1067|			for day_key_variant in day_keys:
+1068|				var day_s: String = String(day_key_variant)
+1069|				var d_i: int = int(day_s)
+1070|				if d_i <= day - w:
+1071|					continue
+1072|				var cell: Dictionary = by_day[day_key_variant]
+1073|				local_w = local_w + int(cell.get(FIELD_LOCAL, 0))
+1074|				var ex: Dictionary = cell.get(FIELD_EXPORT, {})
+1075|				for a_variant in ex.keys():
+1076|					var a: String = String(a_variant)
+1077|					export_by_owner[a] = int(export_by_owner.get(a, 0)) + int(ex[a_variant])
+1078|				var si: Dictionary = cell.get(FIELD_SELLIN, {})
+1079|				for a_variant2 in si.keys():
+1080|					var a2: String = String(a_variant2)
+1081|					sellin_by_owner[a2] = int(sellin_by_owner.get(a2, 0)) + int(si[a_variant2])
+1082|	var owners: Dictionary = {}
+1083|	for a in export_by_owner.keys():
+1084|		owners[String(a)] = true
+1085|	for a in sellin_by_owner.keys():
+1086|		owners[String(a)] = true
+1087|	var owner_list: Array = owners.keys()
+1088|	owner_list.sort()
+1089|	var net_sum: int = 0
+1090|	for a_variant in owner_list:
+1091|		var a: String = String(a_variant)
+1092|		var net_a: int = int(export_by_owner.get(a, 0)) - int(sellin_by_owner.get(a, 0))
+1093|		if net_a < 0:
+1094|			net_a = 0
+1095|		net_sum = net_sum + net_a
+1096|	return {
+1097|		FIELD_WINDOW_QTY: local_w + net_sum,
+1098|		FIELD_LOCAL_QTY: local_w,
+1099|	}
+
+## autoload/goods_ledger.gd:1102-1126  commit=25a398492fa568a223fb4802adbb4f15bc40bcbb  func=_prune_daily  total_lines_this_func=25
+1102|func _prune_daily(day: int, w: int) -> void:
+1103|	# FRM-SYS03-09: drop day ≤ d − W.
+1104|	var ports: Array = _offtake_daily.keys()
+1105|	ports.sort()
+1106|	for port_variant in ports:
+1107|		var port_s: String = String(port_variant)
+1108|		var by_good: Dictionary = _offtake_daily[port_s]
+1109|		var goods: Array = by_good.keys()
+1110|		goods.sort()
+1111|		for good_variant in goods:
+1112|			var good_s: String = String(good_variant)
+1113|			var by_day: Dictionary = by_good[good_s]
+1114|			var day_keys: Array = by_day.keys()
+1115|			for day_key_variant in day_keys:
+1116|				var d_i: int = int(String(day_key_variant))
+1117|				if d_i <= day - w:
+1118|					by_day.erase(day_key_variant)
+1119|			if by_day.is_empty():
+1120|				by_good.erase(good_s)
+1121|			else:
+1122|				by_good[good_s] = by_day
+1123|		if by_good.is_empty():
+1124|			_offtake_daily.erase(port_s)
+1125|		else:
+1126|			_offtake_daily[port_s] = by_good
+
+# END_PART part=1/1 file_bytes=16585

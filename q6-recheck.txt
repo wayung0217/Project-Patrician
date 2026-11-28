@@ -1,0 +1,71 @@
+q6-recheck.txt
+# PACK=17-91 LANE=Q
+# commit_read=25a398492fa568a223fb4802adbb4f15bc40bcbb
+# ASOF_HKT=2026-11-28 14:19:47 Asia/Hong_Kong
+# SOURCE=review/overnight-17-90-P artifacts (store overnight-17-90-P/)
+# SOURCE_ORPHAN_SHA=8a3bc6812a7facee167d9e77106a5a2c62da72bb
+# FILES=artifacts/d360/trader_summary.csv ; p4-route-matrix.txt（彙總自 artifacts/d360/probe/diag_ports_route_matrix.txt）
+
+## Q6 抽驗已知事實 1
+
+### 已知事實 1（brief）
+五港出航 89／52／94／37／4（寧波／松江／雞籠／淡水／那霸）；
+開往五港 84／42／91／35／0。
+
+### A. trader_summary.csv 五港 sail_count 四季合計
+| port | name | sail_sum | known | MATCH |
+|------|------|----------|-------|-------|
+| PT-04 | 寧波 | 89 | 89 | yes |
+| PT-05 | 松江 | 52 | 52 | yes |
+| PT-08 | 雞籠 | 94 | 94 | yes |
+| PT-09 | 淡水 | 37 | 37 | yes |
+| PT-11 | 那霸 | 4 | 4 | yes |
+
+逐季 sail_count：
+season 0: PT-04=37, PT-05=51, PT-08=22, PT-09=5, PT-11=4
+season 1: PT-04=18, PT-05=1, PT-08=22, PT-09=13, PT-11=0
+season 2: PT-04=32, PT-05=0, PT-08=36, PT-09=19, PT-11=0
+season 3: PT-04=2, PT-05=0, PT-08=14, PT-09=0, PT-11=0
+
+### B. p4-route-matrix.txt 開往五港（Σ sailed where to_port∈五港，四季）
+| to_port | name | inbound_sailed | known | MATCH |
+|---------|------|----------------|-------|-------|
+| PT-04 | 寧波 | 84 | 84 | yes |
+| PT-05 | 松江 | 42 | 42 | yes |
+| PT-08 | 雞籠 | 91 | 91 | yes |
+| PT-09 | 淡水 | 35 | 35 | yes |
+| PT-11 | 那霸 | 0 | 0 | yes |
+
+矩陣中 from∈五港 的 Σ sailed（對照出航）：
+| from | matrix_outbound | trader_summary_sail_sum | MATCH |
+|------|-----------------|-------------------------|-------|
+| PT-04 | 89 | 89 | yes |
+| PT-05 | 52 | 52 | yes |
+| PT-08 | 94 | 94 | yes |
+| PT-09 | 37 | 37 | yes |
+| PT-11 | 4 | 4 | yes |
+
+其餘 11 港 Σ inbound sailed（矩陣 to_port）：
+  PT-01: 271
+  PT-02: 567
+  PT-03: 238
+  PT-06: 399
+  PT-07: 235
+  PT-10: 197
+  PT-12: 607
+  PT-13: 667
+  PT-14: 249
+  PT-15: 235
+  PT-16: 137
+
+### C. 與「開局船＋開往≈出航」數字並陳（brief 已知事實 1 附註；本線只重算已給數字）
+| port | 出航 | 開往 | 出航−開往 |
+|------|------|------|-----------|
+| PT-04 | 89 | 84 | 5 |
+| PT-05 | 52 | 42 | 10 |
+| PT-08 | 94 | 91 | 3 |
+| PT-09 | 37 | 35 | 2 |
+| PT-11 | 4 | 0 | 4 |
+
+### 結論（事實）
+A 與 B 各五港數字與已知事實 1 全部 MATCH=yes。
