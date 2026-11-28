@@ -83,20 +83,16 @@ MATCH=yes
 - Full SHA: 見 orphan_sha.txt
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-89-Q
 
-
 ## FILES_TOTAL
 
 ```
 lane.txt
+ls-tree.txt
 orphan_push.log
 orphan_sha.txt
 q1-source.txt
 q2-answers.txt
 q3-recompute.txt
 report.md
-FILES_TOTAL=7
+FILES_TOTAL=8
 ```
-
-### git ls-tree -r -l (after meta; tip may differ from orphan_sha.txt)
-
-見 orphan_sha.txt／orphan_push.log
