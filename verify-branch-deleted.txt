@@ -1,0 +1,6 @@
+verify-branch-deleted.txt
+BRANCH=diag-ports-1790
+WAS_SHA=c59170d30a2102788f23f2116c8006ca33f8a288
+=== git ls-remote origin diag-ports-1790 ===
+(empty = deleted)
+deleted_at_utc=2026-11-28T05:44:05Z

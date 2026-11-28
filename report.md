@@ -157,12 +157,12 @@ Authoritative failures: none. Retries: 0. See `failed-runs.txt`.
 ## Orphan delivery (S9d)
 
 - branch: `review/overnight-17-90-P`
-- full SHA: `52c316ee3db99d0718f28b0947568ec55bb49946`
+- full SHA: `b2e7ed2b1ed29e11797717d5bb3ba4a4af700d76`
 - see `orphan_sha.txt` / `orphan_push.log` / `ls-tree.txt`
 
 ## FILES_TOTAL
 
-FILES_TOTAL=37
+FILES_TOTAL=38
 
 - `artifacts/_scenarios/Za_G0_A0_d360_s1.json`
 - `artifacts/d360/baseline_trader_blob.txt`
@@ -201,3 +201,4 @@ FILES_TOTAL=37
 - `p4-route-matrix.txt`
 - `p5-explore.txt`
 - `report.md`
+- `verify-branch-deleted.txt`
