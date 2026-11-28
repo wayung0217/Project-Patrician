@@ -152,6 +152,13 @@ B2 無新增公開方法／信號／Autoload／project.godot。未新增公開�
 
 見報告末 FILES_TOTAL。
 
+## Orphan delivery (S9d / B-13)
+
+- branch: `review/overnight-17-88-B`
+- orphan_sha.txt: `958d7f4cb343fb8da60795350997298982590ec3`
+- branch tip (ls-remote): `14b79916a219492e3eace7219162a05a9226a88e`
+- report SHA citation: 見 orphan_sha.txt
+
 ## FILES_TOTAL
 b-blob-trader_registry.txt
 b-branches.txt
