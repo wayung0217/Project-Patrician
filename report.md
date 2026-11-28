@@ -116,13 +116,10 @@ V1 於 A tip 凍結＋CI 綠後啟動（coordinator SendToAgent）。
 - `orphan_push.log` / `orphan_sha.txt` (S9d)
 - store also: `artifacts/v1/`
 
-ORPHAN=`review/overnight-17-88-V` @ 見 orphan_sha.txt
+ORPHAN=`review/overnight-17-88-V` @ see orphan_sha.txt  
 VERIFY_BRANCH=`perf-verify-1788` @ `d9e0065c5eebe474c83fd1794625ed0f8f07613d` (retained until L done)
 
 ## FILES_TOTAL
-- `artifacts/v1/_scenarios/Za_G0_A0_d450_s1.json`
-- `artifacts/v1/_scenarios/Za_G0_A0_d720_s1.json`
-- `artifacts/v1/_scenarios/Za_G0_A0_d720_s2.json`
 - `artifacts/v1/Za_G0_A0_d450_s1/combos.csv`
 - `artifacts/v1/Za_G0_A0_d450_s1/commit_sha.txt`
 - `artifacts/v1/Za_G0_A0_d450_s1/obs_ext.csv`
@@ -168,12 +165,17 @@ VERIFY_BRANCH=`perf-verify-1788` @ `d9e0065c5eebe474c83fd1794625ed0f8f07613d` (r
 - `artifacts/v1/Za_G0_A0_d720_s2/timing.txt`
 - `artifacts/v1/Za_G0_A0_d720_s2/trader_summary.csv`
 - `artifacts/v1/Za_G0_A0_d720_s2/verify_side.txt`
+- `artifacts/v1/_scenarios/Za_G0_A0_d450_s1.json`
+- `artifacts/v1/_scenarios/Za_G0_A0_d720_s1.json`
+- `artifacts/v1/_scenarios/Za_G0_A0_d720_s2.json`
 - `dispatch-v1.txt`
 - `failed-runs.txt`
 - `lane.txt`
+- `orphan_push.log`
+- `orphan_sha.txt`
 - `report.md`
 - `v1-a-side.txt`
 - `v2-compare.txt`
 - `v3-met.txt`
 
-FILES_TOTAL=55
+FILES_TOTAL=57
