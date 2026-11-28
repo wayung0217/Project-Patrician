@@ -12,3 +12,11 @@ CANCEL_ATTEMPT=gh run cancel + REST POST → HTTP 403 Resource not accessible by
 CANCEL_RESULT=not cancelled by Lane L agent (needs Owner/V)
 ACTION=ignored; pack uses 46091383793 only
 NO_SHORTENED_RERUN=yes
+
+=== perf-verify-1788 delete (HKT) ===
+ASOF=2026-11-28 11:05:55 Asia/Hong_Kong
+RESULT=already absent (ls-remote empty before delete)
+DELETED_BY=Lane V
+FULL_SHA_BEFORE_DELETE=d9e0065c5eebe474c83fd1794625ed0f8f07613d
+L_CONFIRM_LS_REMOTE=empty
+SEE=verify-branch-deleted.txt

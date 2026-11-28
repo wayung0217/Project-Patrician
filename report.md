@@ -100,7 +100,7 @@ d3600: 1=44, 30=172, 90=313, 180=518, 360=940, 720=1728, 1080=2521, 1440=3218, 1
 
 - Lane: L LONG-RUN (orphan only; no product PR)
 - Product: `#105` tip `107c17f` tree `7b533dd` trader_registry blob `3df59445…`
-- Temp branch: `perf-verify-1788` @ L1 start `6d1ad73` (workflow-only; shared with V — not deleted by L)
+- Temp branch: `perf-verify-1788` @ L1 start `6d1ad73` (workflow-only; shared with V; deleted by V @ `d9e0065…`; L confirmed ls-remote empty)
 
 ## S9a B 變更清單
 
@@ -139,7 +139,7 @@ L∥B/Q at T0 on #105 tip. V later force-pushed same branch; L kept original run
 - per-season MET series: GAP (final only).
 - duplicate run 46096974533: cancel 403; ignored.
 - CPUs differ across the two jobs; no cross-CPU compare (B-11).
-- `perf-verify-1788` left for V (not deleted by L).
+- `perf-verify-1788` deleted by V @ `d9e0065c5eebe474c83fd1794625ed0f8f07613d`; L confirmed ls-remote empty (see `verify-branch-deleted.txt`).
 
 ## S9a I 格式／失敗執行
 
@@ -159,12 +159,12 @@ Authoritative failures: none. Retries: 0. Duplicate uncancellable by agent token
 - `orphan_push.log` / `orphan_sha.txt` (S9d)
 - store also: `dispatch-l1.txt`, `failed-runs.txt`, `artifacts/d1800/`, `artifacts/d3600/`, `artifacts/_scenarios/`
 
-ORPHAN=`review/overnight-17-88-L` @ `29472f3c367d770a03577797656b8df33d166f87` (B-13 orphan_sha.txt; branch tip `7e176ed9c53671d90fb3a86c8966d29417cd0123`)
-VERIFY_BRANCH: `perf-verify-1788` retained for Lane V (L did not delete).
+ORPHAN=`review/overnight-17-88-L` @ `29472f3c367d770a03577797656b8df33d166f87` (B-13 orphan_sha.txt; branch tip `d49f298d4c4a7326a5e415f8df17bd5f9221ec0e`)
+VERIFY_BRANCH_DELETED=`perf-verify-1788` was `d9e0065c5eebe474c83fd1794625ed0f8f07613d` (by V; L confirmed empty)
 
 ## FILES_TOTAL
 
-FILES_TOTAL=49
+FILES_TOTAL=50
 
 - `artifacts/_scenarios/Za_G0_A0_d1800_s1.json`
 - `artifacts/_scenarios/Za_G0_A0_d3600_s1.json`
@@ -215,3 +215,4 @@ FILES_TOTAL=49
 - `progress_timed_d1800.txt`
 - `progress_timed_d3600.txt`
 - `report.md`
+- `verify-branch-deleted.txt`

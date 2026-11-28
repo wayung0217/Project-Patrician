@@ -1,0 +1,10 @@
+verify-branch-deleted.txt
+VERIFY_BRANCH=perf-verify-1788
+FULL_SHA_BEFORE_DELETE=d9e0065c5eebe474c83fd1794625ed0f8f07613d
+SOURCE=Lane V pack overnight-17-88-V/verify-branch-deleted.txt (V deleted first)
+L_CHECK_ASOF_HKT=2026-11-28 11:05:55 Asia/Hong_Kong
+L_LS_REMOTE_BEFORE_DELETE=(empty)
+L_ACTION=no-op (already deleted by V)
+L_CONFIRM_LS_REMOTE=
+(empty = confirmed still deleted)
+CROSS_REF=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/overnight-17-88-V/verify-branch-deleted.txt
