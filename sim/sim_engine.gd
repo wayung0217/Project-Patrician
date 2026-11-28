@@ -208,6 +208,34 @@ func _run_one_job(
 	if BuildingEconomy.has_method("set_city_housing_layer"):
 		BuildingEconomy.set_city_housing_layer(city_housing)
 
+	## FRM-SYS07-18／D-109(g): layers.CLASS_CAP → PopulationModel（default off）.
+	## Owner 2026-11-26: after set, assert effective == requested; mismatch → refuse run.
+	var class_cap_requested: bool = bool(layers.get(SimScenarioValidator.KEY_CLASS_CAP, false))
+	if PopulationModel.has_method("set_class_cap_layer"):
+		PopulationModel.set_class_cap_layer(class_cap_requested)
+	var class_cap_effective: bool = (
+		PopulationModel.is_class_cap_on() if PopulationModel.has_method("is_class_cap_on") else false
+	)
+	## Diagnosis records 生效 state（not the request bit）.
+	diag_z.record_class_cap_effective(class_cap_effective)
+	if class_cap_effective != class_cap_requested:
+		diag_z.finish()
+		TraderRegistry.set_diag_z(null)
+		acc.disconnect_ledger()
+		sampler.disconnect_unmet()
+		var cap_err: Dictionary = PopulationModel.last_error()
+		var cap_detail: Dictionary = cap_err.get("detail", {}) as Dictionary
+		var cap_msg: String = str(cap_detail.get("message", "CLASS_CAP effective != requested"))
+		var cap_code: String = String(cap_err.get("code", "ERR-SYS07-10"))
+		var cap_reason: String = (
+			"%s: CLASS_CAP effective=%s requested=%s — %s"
+			% [cap_code, str(class_cap_effective), str(class_cap_requested), cap_msg]
+		)
+		return {
+			"summary": _abort_summary(run_id, combo_index, seed, combo, cap_reason, t0),
+			"sampler": sampler,
+		}
+
 	if relocate_on:
 		var conv: Dictionary = SimRelocator.f_to_ppm(
 			float(scenario[SimScenarioValidator.KEY_RELOCATE_F]),

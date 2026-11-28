@@ -24,9 +24,11 @@ const KEY_RELOCATE := "RELOCATE"
 const KEY_TRADERS := "TRADERS"
 const KEY_QUAL_OPEN := "QUAL_OPEN"
 const KEY_CITY_HOUSING := "CITY_HOUSING"
-## D-109(e)／D-110／D-115／17-55: optional sim switches; RELOCATE remains required.
+## FRM-SYS07-18／D-109(g): optional; default off＝黃金零差異.
+const KEY_CLASS_CAP := "CLASS_CAP"
+## D-109(e)／D-110／D-115／17-55／17-72: optional sim switches; RELOCATE remains required.
 const ALLOWED_LAYER_KEYS: PackedStringArray = [
-	KEY_RELOCATE, KEY_TRADERS, KEY_QUAL_OPEN, KEY_CITY_HOUSING
+	KEY_RELOCATE, KEY_TRADERS, KEY_QUAL_OPEN, KEY_CITY_HOUSING, KEY_CLASS_CAP
 ]
 
 const SCHEMA_PATH := "res://data/params/params_schema.json"
