@@ -17,3 +17,10 @@ To https://github.com/wayung0217/Project-Patrician
 branch_tip=3b1ff5f5ac759e35e75c2493d5ad7c9291410cde
 orphan_sha_txt=dad6dfb7b44bd725342f21fe9d18c833d7a4091f
 NOTE=B-13: report uses orphan_sha.txt content
+=== finalize 2026-11-28 11:05:00 Asia/Hong_Kong ===
+branch_tip=d49f298d4c4a7326a5e415f8df17bd5f9221ec0e
+orphan_sha_txt=29472f3c367d770a03577797656b8df33d166f87
+=== verify-branch note push 2026-11-28 11:06:38 Asia/Hong_Kong ===
+branch_tip=5101dcf5e034877239d0348dc14437e5447b9951
+orphan_sha_txt=29472f3c367d770a03577797656b8df33d166f87
+perf-verify-1788 deleted_by=V sha=d9e0065c5eebe474c83fd1794625ed0f8f07613d
