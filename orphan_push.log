@@ -1,17 +1,4 @@
 orphan_push.log
-=== orphan push review/overnight-17-90-Q 2026-11-28 13:21:05 Asia/Hong_Kong ===
+=== orphan fixup review/overnight-17-90-Q 2026-11-28 13:21:55 Asia/Hong_Kong ===
 orphan_sha.txt=61902437c5a958ffea7fae652ecb30eb72cf8e80
-branch_tip=43e120e4d02248d1b5ce35fabdbe01597c7d11c4
-43e120e4d02248d1b5ce35fabdbe01597c7d11c4	refs/heads/review/overnight-17-90-Q
-=== git ls-tree -r -l ===
-100644 blob 4677f4b676ecaec5c58a084e0f74471fa2e52e5f     640	lane.txt
-100644 blob 75d288b877e4e2bceba013716104afb86ce3d8e0     458	ls-tree.txt
-100644 blob 9890efbeb083d8f1c29669d03929c7aa78555293     213	orphan_push.log
-100644 blob afdf845947060ec09e7fe1b73a685287623453ff      56	orphan_sha.txt
-100644 blob 84e65aeeb67fdb07417a7732b5b94fdbadfdfe50   64934	q1-source.txt
-100644 blob 1401d19f1209b84838456bc2e5331da42f8c749b   15689	q2-answers.txt
-100644 blob e9fa7634835741746bcf9f31463afd1f6392c96f    3855	q3-recompute.txt
-100644 blob cc6db86d4c00bd37e0248958ce184aac35c07568    5035	report.md
-=== finalize 2026-11-28 13:21:07 Asia/Hong_Kong ===
-PUSHED=yes
-NO_PR=yes
+NOTE=fixed report Orphan/FILES_TOTAL and q3 SOURCE_ORPHAN_SHA parse

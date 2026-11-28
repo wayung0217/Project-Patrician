@@ -132,10 +132,21 @@ sim/sampler.gd:202-203
 
 ## Orphan (S9d)
 
-- Branch: 
-- Full SHA (orphan_sha.txt): 
+- Branch: `review/overnight-17-90-Q`
+- Full SHA (orphan_sha.txt): `61902437c5a958ffea7fae652ecb30eb72cf8e80`
+- Branch tip: see `orphan_push.log` / `git ls-remote`
 - URL: https://github.com/wayung0217/Project-Patrician/tree/review/overnight-17-90-Q
 
 ## FILES_TOTAL
 
-
+```
+lane.txt
+ls-tree.txt
+orphan_push.log
+orphan_sha.txt
+q1-source.txt
+q2-answers.txt
+q3-recompute.txt
+report.md
+FILES_TOTAL=8
+```
