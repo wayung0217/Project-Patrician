@@ -157,8 +157,47 @@ Authoritative failures: none. Retries: 0. See `failed-runs.txt`.
 ## Orphan delivery (S9d)
 
 - branch: `review/overnight-17-90-P`
-- see `orphan_sha.txt` / `orphan_push.log`
+- full SHA: `52c316ee3db99d0718f28b0947568ec55bb49946`
+- see `orphan_sha.txt` / `orphan_push.log` / `ls-tree.txt`
 
 ## FILES_TOTAL
 
-(filled after ls)
+FILES_TOTAL=37
+
+- `artifacts/_scenarios/Za_G0_A0_d360_s1.json`
+- `artifacts/d360/baseline_trader_blob.txt`
+- `artifacts/d360/combos.csv`
+- `artifacts/d360/commit_sha.txt`
+- `artifacts/d360/day_progress_tail.log`
+- `artifacts/d360/diag_ports_lines.txt`
+- `artifacts/d360/obs_ext.csv`
+- `artifacts/d360/probe/diag_ports_explore.txt`
+- `artifacts/d360/probe/diag_ports_idle_eval.txt`
+- `artifacts/d360/probe/diag_ports_job_totals.txt`
+- `artifacts/d360/probe/diag_ports_route_matrix.txt`
+- `artifacts/d360/probe/diag_ports_skip_reasons.txt`
+- `artifacts/d360/product_base_sha.txt`
+- `artifacts/d360/product_tree_sha.txt`
+- `artifacts/d360/progress_snip.log`
+- `artifacts/d360/progress_timed.txt`
+- `artifacts/d360/runner_specs.txt`
+- `artifacts/d360/scenario.json`
+- `artifacts/d360/season_cells.csv`
+- `artifacts/d360/season_ports.csv`
+- `artifacts/d360/sim_runner.log`
+- `artifacts/d360/summary.csv`
+- `artifacts/d360/timing.txt`
+- `artifacts/d360/trader_registry_blob.txt`
+- `artifacts/d360/trader_summary.csv`
+- `failed-runs.txt`
+- `lane.txt`
+- `ls-tree.txt`
+- `orphan_push.log`
+- `orphan_sha.txt`
+- `p0-baseline.txt`
+- `p1-probe-diff.txt`
+- `p2-determinism.txt`
+- `p3-skip-reasons.txt`
+- `p4-route-matrix.txt`
+- `p5-explore.txt`
+- `report.md`
