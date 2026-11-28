@@ -1,9 +1,9 @@
 orphan_push.log
-=== orphan push review/overnight-17-88-B 2026-11-28 10:18:31 Asia/Hong_Kong ===
-orphan_sha.txt=14b79916a219492e3eace7219162a05a9226a88e
-branch_tip=14b79916a219492e3eace7219162a05a9226a88e
-14b79916a219492e3eace7219162a05a9226a88e	refs/heads/review/overnight-17-88-B
-=== git ls-tree -r -l (pre-final-commit) ===
+=== orphan push review/overnight-17-88-B 2026-11-28 10:19:23 Asia/Hong_Kong ===
+orphan_sha.txt=0bf81b3cc2fc09216304aaddd0d0b169ab947de6
+branch_tip=0bf81b3cc2fc09216304aaddd0d0b169ab947de6
+0bf81b3cc2fc09216304aaddd0d0b169ab947de6	refs/heads/review/overnight-17-88-B
+=== git ls-tree -r -l ===
 100644 blob 6567fab1de615fafc7914352f2cb535280723db8     355	b-blob-trader_registry.txt
 100644 blob 880dea6700d29c541c612606e056fc9aec0d9353    4383	b-branches.txt
 100644 blob 94b69a58d35b7dcf7f1b07da90e5cc3de7f60ff4     917	b-ci.txt
@@ -14,6 +14,6 @@ branch_tip=14b79916a219492e3eace7219162a05a9226a88e
 100644 blob bb3c934c63ac804a0981a3983c0aab46abeb4f1e    1404	b-main-ci-last30.txt
 100644 blob 2d25a9420312b8bd699b9845b7c27fe32de14b04    3604	b-merge.txt
 100644 blob b3b3bb5f4be8a408d89b61cb3a6cd5685b5bc594       7	lane.txt
-100644 blob 9f7836e38aaf0f4c6471864375295c9bac3ca68e    1319	orphan_push.log
-100644 blob 9ede34c6f11bc1c1fbd71912fa263de929c072e1      41	orphan_sha.txt
-100644 blob 036076fdc2a01de3905301fe565284e7d21fd859    5614	report.md
+100644 blob 94fc5877a0947c3ac99400ef7f66ab6c78b27705    1338	orphan_push.log
+100644 blob 480d7cd26bdd806d8ade9af59026e4b534014e94      41	orphan_sha.txt
+100644 blob 375e3d47330efa17e68966dc8bf7c107dad59551    5857	report.md
