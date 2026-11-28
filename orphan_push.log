@@ -1,12 +1,12 @@
 orphan_push.log
 === orphan push review/overnight-17-91-Q 2026-11-28 14:25:48 Asia/Hong_Kong ===
 orphan_sha.txt=8bc13c44431f64fef741fe3e32f7d4436469f810
-branch_tip=8fc1c9a3ff3fb60cbebc2c80266ac213b8b8b391
-8fc1c9a3ff3fb60cbebc2c80266ac213b8b8b391	refs/heads/review/overnight-17-91-Q
+branch_tip=1ea6b2b0cda13e1b9c48554fbbe2b965740038e6
+1ea6b2b0cda13e1b9c48554fbbe2b965740038e6	refs/heads/review/overnight-17-91-Q
 === git ls-tree -r -l ===
-100644 blob c0f95abc7d5257da1f0eb9183ff911c740e1172f     585	lane.txt
-100644 blob 6493807aff289fed9fab990fb0b8e52e60381d80    1297	ls-tree.txt
-100644 blob ec8c91d411918afa6b0e82681253532358206971    1803	orphan_push.log
+100644 blob 4fd321a0c3fcecd017c0187fc583b521db1f91d5     585	lane.txt
+100644 blob 3869ca1f7f19003c57ee1d26d90f7878618c7998    1297	ls-tree.txt
+100644 blob a5cc92d62706fc7c989cba7b7dd7b05b47e99b16    1792	orphan_push.log
 100644 blob f12ede438450458cc317cf1c53d8e395a48a3d67      56	orphan_sha.txt
 100644 blob 5924e4fd9cc1a2d8835d69529e461ba77619529d   17742	q1-source-a-1.txt
 100644 blob b5a28445622ca1ddd9ddf1317ed80146bc9717c9   10682	q1-source-b-1.txt
@@ -19,7 +19,7 @@ branch_tip=8fc1c9a3ff3fb60cbebc2c80266ac213b8b8b391
 100644 blob 98e0d035d04dd2313ba21458e09a5e9b02202eb6    6731	q4-spec-vs-code.txt
 100644 blob 27e25cc06414a05449e11f7ce79b95721dbfc71d    7510	q5-draft.txt
 100644 blob e7b69c32824e3111f113c4ea2506e9b8a5e708a7    2422	q6-recheck.txt
-100644 blob ab855774b21f946701c38910dbd1565b12200d91    3906	report.md
+100644 blob 6fec875190f14ecd5da2f46ff6a739e20347f88b    3906	report.md
 NO_PR=yes
 NO_MERGE=yes
-NOTE=B-6: orphan_sha.txt=8bc13c44431f64fef741fe3e32f7d4436469f810 matches orphan_sha.txt. Pushed tip=8fc1c9a3ff3fb60cbebc2c80266ac213b8b8b391. Store meta synced; remote tip commit's embedded log may reference prior tip (17-90-Q pattern).
+NOTE=B-6: orphan_sha.txt=8bc13c44431f64fef741fe3e32f7d4436469f810 matches orphan_sha.txt. branch_tip=1ea6b2b0cda13e1b9c48554fbbe2b965740038e6.
