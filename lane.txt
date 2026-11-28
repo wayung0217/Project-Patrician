@@ -1,0 +1,13 @@
+lane.txt
+17-88 Lane V = VERIFY-LONG-2
+grade=L-甲
+no_product_PR=yes
+tip=59ae4cb8485805f4a717785f2a36bf7217a5c780
+tree=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+verify_branch=perf-verify-1788
+verify_sha=d9e0065c5eebe474c83fd1794625ed0f8f07613d
+run=46097057464
+v2=ALL_IDENTICAL CONTENT_DIFFS=0
+orphan=review/overnight-17-88-V
+pack=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/overnight-17-88-V/
+verify_branch_deleted=no (L still needs perf-verify-1788)

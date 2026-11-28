@@ -1,0 +1,15 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+sim_runner: scenario_id=Za_G0_A0 jobs=1 inline=true
+sim_runner_inline_job: user://sim_jobs/job_0.json
+PROGRESS pct=12 all_pct=12 group=1/1 Za_G0_A0 y=1 q=1 elapsed=0:06 eta=0:42 pop=34452 sails_cum=1010
+PROGRESS pct=25 all_pct=25 group=1/1 Za_G0_A0 y=1 q=2 elapsed=0:09 eta=0:29 pop=34460 sails_cum=2089
+PROGRESS pct=38 all_pct=38 group=1/1 Za_G0_A0 y=1 q=3 elapsed=0:13 eta=0:23 pop=34127 sails_cum=3120
+PROGRESS pct=50 all_pct=50 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:17 eta=0:17 pop=33760 sails_cum=4073
+PROGRESS pct=62 all_pct=62 group=1/1 Za_G0_A0 y=2 q=1 elapsed=0:21 eta=0:12 pop=33526 sails_cum=5117
+PROGRESS pct=75 all_pct=75 group=1/1 Za_G0_A0 y=2 q=2 elapsed=0:24 eta=0:08 pop=33340 sails_cum=6024
+PROGRESS pct=88 all_pct=88 group=1/1 Za_G0_A0 y=2 q=3 elapsed=0:28 eta=0:04 pop=33237 sails_cum=7012
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=2 q=4 elapsed=0:32 eta=0:00 pop=33195 sails_cum=7921
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=2 q=4 elapsed=0:32 eta=0:00 pop=33195 sails_cum=7921
+sim_runner: wrote outputs under user://sim_out/Za_G0_A0/
+sim_runner: copied outputs to /home/runner/work/Project-Patrician/Project-Patrician/out/m1b_verify/v1/Za_G0_A0_d720_s2

@@ -1,0 +1,15 @@
+commit_sha=d9e0065c5eebe474c83fd1794625ed0f8f07613d
+product_base_sha=59ae4cb8485805f4a717785f2a36bf7217a5c780
+product_tree_sha=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+a_pr=106
+verify_side=v1
+start=2026-11-28T02:14:30Z
+end=2026-11-28T02:46:36Z
+duration_s=1926
+status=ok
+exit_code=0
+days=720
+seed=2
+group=Za_G0_A0
+ELAPSED_MS(summary)=1923660
+aborted=0

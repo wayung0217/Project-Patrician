@@ -1,0 +1,59 @@
+v3-met.txt
+LANE=V VERIFY-LONG-2
+SOURCE=v1 summary.csv + season_ports season_index set
+PARALLEL=17-87 V3 values listed beside (facts only; no judgement)
+
+================================================================================
+LINE=d450_s1 days=450 seed=1
+v1_season_count=5 season_index_set=[0, 1, 2, 3, 4]
+v87_season_count=5
+
+=== summary.csv (full) ===
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06741573033708,0,0,1,0,1,0,1,0,1,1,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,765725
+
+=== MET-01..06 (v1 vs 17-87 V3) ===
+MET-01: v1=0.06741573033708  v87=0.06741573033708  pass_v1=0
+MET-02: v1=0  v87=0  pass_v1=1
+MET-03: v1=0  v87=0  pass_v1=1
+MET-04: v1=0  v87=0  pass_v1=1
+MET-05a: v1=0  v87=0  pass_v1=1
+MET-05b: v1=1  v87=1  pass_v1=N/A
+MET-06: v1=0  v87=0  pass_v1=1
+
+================================================================================
+LINE=d720_s1 days=720 seed=1
+v1_season_count=8 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7]
+v87_season_count=8
+
+=== summary.csv (full) ===
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,1,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06369785794814,0,0,1,0.07042253521127,0,218,0,0,1,2.05151648022107,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1464718
+
+=== MET-01..06 (v1 vs 17-87 V3) ===
+MET-01: v1=0.06369785794814  v87=0.06369785794814  pass_v1=0
+MET-02: v1=0  v87=0  pass_v1=1
+MET-03: v1=0.07042253521127  v87=0.07042253521127  pass_v1=0
+MET-04: v1=218  v87=218  pass_v1=0
+MET-05a: v1=0  v87=0  pass_v1=1
+MET-05b: v1=2.05151648022107  v87=2.05151648022107  pass_v1=N/A
+MET-06: v1=0  v87=0  pass_v1=1
+
+================================================================================
+LINE=d720_s2 days=720 seed=2
+v1_season_count=8 season_index_set=[0, 1, 2, 3, 4, 5, 6, 7]
+v87_season_count=8
+
+=== summary.csv (full) ===
+run_id,combo_index,seed,combo,aborted,abort_reason,MET-01,MET-01_pass,MET-02,MET-02_pass,MET-03,MET-03_pass,MET-04,MET-04_pass,MET-05a,MET-05a_pass,MET-05b,MET-05b_pass,MET-06,MET-06_pass,OBS-01,OBS-02,OBS-03,elapsed_ms
+0,0,2,"{""PRM-SYS07-ABUND_BONUS_MAX_PPM"":0.0}",0,,0.06937394247039,0,0,1,0.07042253521127,0,321,0,0,1,1.92736172213601,N/A,0,1,PT-01:;PT-02:;PT-03:;PT-04:;PT-05:;PT-06:;PT-07:7;PT-08:;PT-09:;PT-10:;PT-11:;PT-12:;PT-13:;PT-14:;PT-15:;PT-16:,0.17919075144509,,1923660
+
+=== MET-01..06 (v1 vs 17-87 V3) ===
+MET-01: v1=0.06937394247039  v87=0.06937394247039  pass_v1=0
+MET-02: v1=0  v87=0  pass_v1=1
+MET-03: v1=0.07042253521127  v87=0.07042253521127  pass_v1=0
+MET-04: v1=321  v87=321  pass_v1=0
+MET-05a: v1=0  v87=0  pass_v1=1
+MET-05b: v1=1.92736172213601  v87=1.92736172213601  pass_v1=N/A
+MET-06: v1=0  v87=0  pass_v1=1
+

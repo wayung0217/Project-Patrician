@@ -1,0 +1,6 @@
+PROGRESS pct=20 all_pct=20 group=1/1 Za_G0_A0 y=1 q=1 elapsed=0:03 eta=0:14 pop=34451 sails_cum=1024
+PROGRESS pct=40 all_pct=40 group=1/1 Za_G0_A0 y=1 q=2 elapsed=0:05 eta=0:08 pop=34429 sails_cum=1960
+PROGRESS pct=60 all_pct=60 group=1/1 Za_G0_A0 y=1 q=3 elapsed=0:08 eta=0:05 pop=34092 sails_cum=3109
+PROGRESS pct=80 all_pct=80 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:10 eta=0:02 pop=33717 sails_cum=4054
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=2 q=1 elapsed=0:12 eta=0:00 pop=33473 sails_cum=5054
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=2 q=1 elapsed=0:12 eta=0:00 pop=33473 sails_cum=5054

@@ -1,0 +1,20 @@
+failed-runs.txt
+D-120(e) failed executions
+
+1) run=46096973460
+   url=https://github.com/wayung0217/Project-Patrician/actions/runs/46096973460
+   head=e154ae8306b4f311aa1f5ad716ee8b4b46b31281
+   workflow=.github/workflows/m1b-verify-1788.yml
+   conclusion=failure (0s; workflow file issue)
+   cause=YAML ScannerError: multiline python -c lines under run:| lost indentation → block ended early
+   action=fixed in d9e0065c5eebe474c83fd1794625ed0f8f07613d (retry 1); re-ran as 46097057464
+   tip_invalidation=no (product tip unchanged 59ae4cb / adc21eb)
+
+NOTE: first push also re-fired M1b-Longrun-1788 (46096974533) and M1b-Afford-Timing-1788 (46096974557) because commit added those yml paths; cancel API 403; originals 46091383793 (L) and 46095496498 (A5) still in_progress.
+
+CANCEL_ATTEMPT (coordinator request):
+- targets: L dup 46096974533, A5 dup 46096974557
+- methods: gh run cancel, POST .../cancel, POST .../force-cancel
+- result: HTTP 403 Resource not accessible by integration (no actions:write on agent token)
+- originals left running: L 46091383793, A5 46095496498
+- Verify matrix continuing: 46097057464 (3 jobs in_progress)

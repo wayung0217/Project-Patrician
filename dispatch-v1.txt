@@ -1,0 +1,24 @@
+dispatch-v1.txt
+METHOD=push perf-verify-1788 (force onto A tip + workflow-only; paths filter on verify yml)
+A_PR=https://github.com/wayung0217/Project-Patrician/pull/106
+FROZEN_TIP_SHA=59ae4cb8485805f4a717785f2a36bf7217a5c780
+FROZEN_TREE_SHA=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+VERIFY_BRANCH=perf-verify-1788
+VERIFY_BRANCH_SHA=e154ae8306b4f311aa1f5ad716ee8b4b46b31281
+PRODUCT_BASE=A tip 59ae4cb + workflow-only commit
+VERIFY_SIDE=v1
+MATRIX=450/s1 720/s1 720/s2
+BASELINE=brief known-fact #4 (17-87 V; do not re-run main)
+CI_AT_FREEZE=coordinator confirmed all 10 checks green on 59ae4cb
+INVALIDATE_IF_TIP_CHANGES=yes (max 1 retry per line)
+TIP_AT_V1_START=59ae4cb8485805f4a717785f2a36bf7217a5c780
+COORD_NOTE=shared branch with L; do not delete while L needs it
+
+FAILED_RUN_1=46096973460
+RETRY_1_VERIFY_SHA=d9e0065c5eebe474c83fd1794625ed0f8f07613d
+RETRY_1_RUN=46097057464
+
+TIP_AT_V1_END=59ae4cb8485805f4a717785f2a36bf7217a5c780
+TIP_CHANGED_DURING_V1=no
+RUN_SUCCESS=46097057464
+CONCLUSION=success 3/3
