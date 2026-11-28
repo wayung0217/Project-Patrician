@@ -691,6 +691,12 @@ func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -
 		if stock_cap < 1:
 			return 0
 		abs_hi = stock_cap + 1
+		## FRM-SYS05-09／D-124（17-88 A2／H5）：
+		## abs_hi 已定且 s≥1 後，先單次 quote(q＝s) 取總額；總額有效且 ≤ 餘額 → 直接回 s。
+		## 否則（報價失敗或總額 > 餘額）走現行搜尋；結果與副作用不變；不以 q > s 呼叫 quote。
+		var t_stock: int = _quote_buy_total(port, good, stock_cap)
+		if t_stock >= 0 and t_stock <= bal:
+			return stock_cap
 	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到 s+1，永不 quote q>s）
 	var lo: int = 0
 	var hi: int = 1

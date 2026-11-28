@@ -757,6 +757,9 @@ func _evaluate_and_maybe_sail(
 	## 每次 eval_sail、每種貨最多呼叫 max_affordable_qty 一次；結果只存本評估區域字典
 	## （評估結束即丟棄；不得模組／成員層快取；不得跨船、跨日、跨評估）。
 	var afford_by_good: Dictionary = {}
+	## 17-88 A1／FRM-SYS17-02／D-104(c)／SYS-04 純函數：
+	## 每次評估、每種貨最多呼叫 mid_price(本港, good) 一次；區域字典，評估結束即丟棄。
+	var mid_by_good: Dictionary = {}
 	## Coarse pass then top-3 precise (D-104(c)⑤).
 	var coarse: Array = []
 	for dest_v in ports:
@@ -827,7 +830,8 @@ func _evaluate_and_maybe_sail(
 				continue
 			var rough_buy: int = mid ## coarse; precise quote later
 			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
-			var origin_mid: float = MarketPricer.mid_price(from_port, good)
+			## FRM-SYS17-02／D-104(c)／SYS-04 純函數（17-88 A1）：本港 mid 經區域快取。
+			var origin_mid: float = _mid_price_cached(mid_by_good, from_port, good)
 			rough_buy = floori(origin_mid * float(q))
 			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
 			coarse.append({
@@ -1055,6 +1059,19 @@ func _afford_qty_cached(
 	var qty: int = CashLedger.max_affordable_qty(actor, port, good)
 	cache[key] = qty
 	return qty
+
+
+func _mid_price_cached(cache: Dictionary, port: StringName, good: StringName) -> float:
+	## FRM-SYS17-02／D-104(c)／SYS-04 純函數（17-88 A1／H4）：
+	## 單次評估內每貨至多一次 mid_price(本港, good)；cache 必須是呼叫方區域字典。
+	## 鍵用 String(good) 查詢（C-08：不依 Dictionary 插入序遍歷）。
+	## 不改 MarketPricer；除呼叫次數外語意不變。
+	var key := String(good)
+	if cache.has(key):
+		return float(cache[key])
+	var mid: float = MarketPricer.mid_price(port, good)
+	cache[key] = mid
+	return mid
 
 
 func _clear_plan(t: Dictionary, sid: StringName) -> void:
