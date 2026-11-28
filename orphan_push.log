@@ -1,13 +1,9 @@
 orphan_push.log
-=== orphan push review/overnight-17-88-V 2026-11-28 10:53:38 Asia/Hong_Kong ===
-orphan_sha.txt=ad550067f76973d28799865ee763d50492480609
-branch_tip=7604a8780a47c61c62da53b9fc9856b1a147e249
+=== orphan push review/overnight-17-88-V 2026-11-28 10:53:41 Asia/Hong_Kong ===
+orphan_sha.txt=f067ae32e013439ab24c0e7144a21c812ac895eb
+branch_tip=f067ae32e013439ab24c0e7144a21c812ac895eb
 content_commit=ac004bff7703d7027eaa8f3ab8ddc906225e326d
-=== push ===
-To https://github.com/wayung0217/Project-Patrician.git
- + 87a0dee...7604a87 review/overnight-17-88-V -> review/overnight-17-88-V (forced update)
-branch 'review/overnight-17-88-V' set up to track 'origin/review/overnight-17-88-V'.
-=== git ls-remote ===
+=== git ls-remote (pre-final) ===
 7604a8780a47c61c62da53b9fc9856b1a147e249	refs/heads/review/overnight-17-88-V
 === git ls-tree -r -l ===
 100644 blob 8a4b5cc478eab5b80e028429e2302a2b05fea16f     399	artifacts/v1/Za_G0_A0_d450_s1/combos.csv
@@ -61,9 +57,9 @@ branch 'review/overnight-17-88-V' set up to track 'origin/review/overnight-17-88
 100644 blob 997223b9fbcd34bb26b304ca415ce8d3559852f9    1003	dispatch-v1.txt
 100644 blob 79b0ac259cdd93cf63defafeb77874370e1dc823    1139	failed-runs.txt
 100644 blob 0ab455610b552df3bb83efd243fdacacf3cb7911     460	lane.txt
-100644 blob 4ce3a96f92f2b937a53943a5a198a41e0e43c4af    6081	orphan_push.log
+100644 blob de6d9bc2b5317677db03d896495c48981ef7c0a4    6423	orphan_push.log
 100644 blob 8046b12b6ce9f7d4c815d8dbb70323484d756ba6      56	orphan_sha.txt
-100644 blob 69a4ca448f9df477f95fe7846b9eda65ee98f5c7    7082	report.md
+100644 blob 621fb811748eb2b2ca28d743433d01c1237eaf59    7123	report.md
 100644 blob 455ee6054011bfb2893c4fcf5af525c875233ed2    6430	v1-a-side.txt
 100644 blob 544343cb92bef0fac4ab68a6bc6b4d0ba0b417bf    4654	v2-compare.txt
 100644 blob d1c997e2eeb69c1c6f2f45f73714a88eff38666f    3217	v3-met.txt
