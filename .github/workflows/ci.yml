@@ -194,9 +194,11 @@ jobs:
           for t in "${TESTS[@]}"; do
             GTEST_ARGS+=("-gtest=${t}")
           done
+          # 17-75 C trial (draft only): per-script JUnit XML for timing analysis.
           ./godot --headless --path . -s addons/gut/gut_cmdln.gd \
             -gconfig= \
             "${GTEST_ARGS[@]}" \
+            -gjunit_xml_file=gut_unit_junit.xml \
             -gexit 2>&1 | tee gut_unit.log
           if grep -F "SCRIPT ERROR" gut_unit.log; then
             echo "::error::SCRIPT ERROR detected in GUT unit/property log (ci-script-error-gate)"
@@ -237,6 +239,7 @@ jobs:
             gut_unit.log
             gut_unit_passing.txt
             gut_unit_names.txt
+            gut_unit_junit.xml
           retention-days: 3
 
   # 17-69 2.4／Owner 追認(乙): ≥ baseline + name set-diff; print ADDED/REMOVED (or 無).
