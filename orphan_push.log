@@ -1,7 +1,25 @@
 orphan_push.log
 === orphan push review/overnight-17-91-Q 2026-11-28 14:25:48 Asia/Hong_Kong ===
 orphan_sha.txt=8bc13c44431f64fef741fe3e32f7d4436469f810
-branch_tip=PENDING
+branch_tip=8d7d6df4b412db3b09d4853c90614b7342b69657
+8d7d6df4b412db3b09d4853c90614b7342b69657	refs/heads/review/overnight-17-91-Q
+=== git ls-tree -r -l ===
+100644 blob c0f95abc7d5257da1f0eb9183ff911c740e1172f     585	lane.txt
+100644 blob e1ce4a3d8f5da5351684191cd28e93f25c525940    1125	ls-tree.txt
+100644 blob fd0971208e5881ac026dedee8aa359737212a967     292	orphan_push.log
+100644 blob f12ede438450458cc317cf1c53d8e395a48a3d67      56	orphan_sha.txt
+100644 blob 5924e4fd9cc1a2d8835d69529e461ba77619529d   17742	q1-source-a-1.txt
+100644 blob b5a28445622ca1ddd9ddf1317ed80146bc9717c9   10682	q1-source-b-1.txt
+100644 blob fe48d913cb26014a4ca8c0b6a12dc7e935c910db   16624	q1-source-c-1.txt
+100644 blob 189f4a10cd7ec7b8844f750fd9c79d2897ed7619   40667	q1-source-d-1.txt
+100644 blob 205226f9cca74472c53f231917f955e03a4f1d65   40849	q1-source-d-2.txt
+100644 blob b0b9a8113425952308cc14ec9b4ccda97661e20d   13422	q1-source-d-3.txt
+100644 blob fcfb18f041beb185a9a1312b4846b42e82c6e19e   14259	q2-answers.txt
+100644 blob 0aac161fa2fc03a408bbe65831553a5f135bf2d2   31229	q3-offtake.txt
+100644 blob 98e0d035d04dd2313ba21458e09a5e9b02202eb6    6731	q4-spec-vs-code.txt
+100644 blob 27e25cc06414a05449e11f7ce79b95721dbfc71d    7510	q5-draft.txt
+100644 blob e7b69c32824e3111f113c4ea2506e9b8a5e708a7    2422	q6-recheck.txt
+100644 blob ab855774b21f946701c38910dbd1565b12200d91    3906	report.md
 NO_PR=yes
 NO_MERGE=yes
-NOTE=B-6: orphan_sha.txt field matches orphan_sha.txt (8bc13c44431f64fef741fe3e32f7d4436469f810).
+NOTE=B-6: orphan_sha.txt field=8bc13c44431f64fef741fe3e32f7d4436469f810 matches orphan_sha.txt. branch_tip=8d7d6df4b412db3b09d4853c90614b7342b69657. Store log/ls-tree refreshed after push; remote blob may still say PENDING until optional sync push.
