@@ -1,17 +1,24 @@
 extends GutTest
-## 17-87 A3／PERF-AFFORD：候選迴圈 max_affordable_qty 惰性＋每貨一次。
-## Basis D-60e：測試名含 17_87；依據 FRM-SYS17-02、FRM-SYS05-09、D-104(c)④。
+## 17-87 A3／PERF-AFFORD（17-88 B2 D-128 重寫）：只用公開介面與正式注入。
+## Basis D-60e：測試名含 17_87；依據 FRM-SYS17-02、FRM-SYS05-09、D-124、D-128 甲。
 ## 期望值只取 frm_examples EX-05-09-01..03 與 EX-17-02-01（S9f；非產品公式鏡像）。
-## 凍結對照＝改前「每格都呼叫 afford」作法；註明為回歸對照，非公式鏡像。
+## ★ 缺口（無法在不碰 TraderRegistry _ 成員下保留；本 PR 新測不在 gut 基準，移除不觸發 REMOVED_NAMES）：
+##   - test_17_87_EX_05_09_01_cash_surplus_candidates_match_frozen：凍結舊／新 coarse 比對需 _voyage_days／_dest_intel／_afford_qty_cached
+##   - test_17_87_EX_05_09_02_cash_bottleneck_candidates_match_frozen：同上
+##   - test_17_87_EX_05_09_03_zero_stock_no_candidates_match_frozen：_evaluate_and_maybe_sail 與 coarse 私有路徑
+##   - test_17_87_EX_17_02_01_pick_B_matches_frozen 的 coarse 指紋段：同上（精確選 B 段改由下方公開測保留）
+## 等價性改由 golden-30d 與長跑（lane V／L）涵蓋；本檔只保留可公開斷言的 frm_examples 期望。
 
-const PARAMS_FIXTURE := "res://tests/fixtures/params_all_keys.json"
 const CURVE_FIXTURE := "res://tests/fixtures/price_curve.tres"
-const ROOT := "user://perf_afford_1787/"
+const GOODS_ROOT := "user://perf_afford_1787_goods/"
+const PORTS_ROOT := "user://perf_afford_1787_ports/"
 
+const REQUESTER_SYS04 := &"SYS-04"
+const REASON_OPEN := &"OPEN"
+
+const PORT := "PT-01"
 const GOOD := "GD-001"
-const PORT_A := "PT-01"
-const PORT_B := "PT-02"
-const PORT_C := "PT-03"
+const ACTOR := &"ACT-1787"
 
 ## frm_examples EX-05-09-01：現金足以買 500；s＝300 → q_afford＝300。
 const EX_05_09_01_CASH_Q := 500
@@ -36,35 +43,59 @@ const EX_17_02_01_Q := 200
 const EX_17_02_01_BUY_TOTAL := 200000
 const EX_17_02_01_PICK_PORT := "PT-02"
 
-## 凍結對照用固定週需求（非亂數；足以通過 skip.weekly）。
-const FIX_WEEKLY := 250
+const PRM_PORT_COUNT_MIN := "PRM-SYS02-PORT_COUNT_MIN"
+const PRM_GOOD_COUNT_MIN := "PRM-SYS01-GOOD_COUNT_MIN"
+const PRM_FREE_PORT_RATIO_MIN := "PRM-SYS02-FREE_PORT_RATIO_MIN"
+const PRM_FREE_PORT_RATIO_MAX := "PRM-SYS02-FREE_PORT_RATIO_MAX"
+const PRM_FREE_PORT_TIER_MAX := "PRM-SYS01-FREE_PORT_TIER_MAX"
+const PRM_TIER_MAX := "PRM-SYS01-TIER_MAX"
+const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+
+
+## D-128 甲：正式注入 weekly_potential_demand；禁止他模組 _ 成員。
+class _ZeroPotentialDemand extends RefCounted:
+	func weekly_potential_demand(_port_id: StringName, _good_id: StringName) -> int:
+		return 0
 
 
 func before_each() -> void:
-	_wipe_user()
+	_wipe_dir(GOODS_ROOT)
+	_wipe_dir(PORTS_ROOT)
+	## 公開清理：關閉層後 load_and_validate → _clear_runtime_keep_layers（測試不直呼 _）。
 	TraderRegistry.set_layers(false, false)
 	TraderRegistry.clear_intel_overrides()
-	TraderRegistry._clear_runtime()
-	DemandModel.clear_potential_demand_provider()
+	assert_eq(TraderRegistry.load_and_validate().size(), 0)
 
 
 func after_each() -> void:
 	DemandModel.clear_potential_demand_provider()
+	DemandModel.clear_queue_material_shortfall_provider()
 	TraderRegistry.set_layers(false, false)
 	TraderRegistry.clear_intel_overrides()
-	TraderRegistry._clear_runtime()
-	_wipe_user()
+	assert_eq(TraderRegistry.load_and_validate().size(), 0)
+	_wipe_dir(GOODS_ROOT)
+	_wipe_dir(PORTS_ROOT)
 
 
-func test_17_87_EX_05_09_01_cash_surplus_candidates_match_frozen() -> void:
-	## 現金有餘（EX-05-09-01）：庫存瓶頸 q_afford＝300；候選與 q 須與凍結舊作法逐筆相同。
-	## 先以 s≥500 觀測 quote(500) 設現金，再抽庫存至 s＝300（同 R972 整備）。
-	var ctx: Dictionary = _boot_two_dest(EX_05_09_01_CASH_Q)
-	_fund_actor_for_qty(ctx["acct"], EX_05_09_01_CASH_Q)
+func test_17_87_EX_05_09_01_cash_surplus_q_afford_300() -> void:
+	## EX-05-09-01／D-124：庫存瓶頸。期望 q＝300（frm_examples）。公開 CashLedger 路徑。
+	_boot_pricing_stack()
+	assert_true(PortRegistry.is_loaded())
+	assert_true(GoodsLedger.is_loaded())
+	_seed_market(EX_05_09_01_CASH_Q)
+	CashLedger.set_quote_provider(MarketPricer)
+	var q_setup: Dictionary = MarketPricer.quote(
+		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_01_CASH_Q
+	)
+	assert_false(q_setup.has(MarketPricer.KEY_ERROR), "setup quote q=500 must succeed at s>=500")
+	var cash_for_500: int = int(q_setup[MarketPricer.KEY_TOTAL_LI])
+	assert_gt(cash_for_500, 0)
+	_mark_errors_handled()
+	_fund_actor(cash_for_500)
 	var drain: int = EX_05_09_01_CASH_Q - EX_05_09_01_STOCK_S
 	assert_gt(
 		GoodsLedger.transfer(
-			GoodsLedger.make_market(PORT_A),
+			_market_dict(),
 			GoodsLedger.make_external(),
 			StringName(GOOD),
 			drain,
@@ -73,89 +104,51 @@ func test_17_87_EX_05_09_01_cash_surplus_candidates_match_frozen() -> void:
 		),
 		0
 	)
-	assert_eq(
-		GoodsLedger.get_qty(GoodsLedger.make_market(PORT_A), StringName(GOOD)),
-		EX_05_09_01_STOCK_S
-	)
-	assert_eq(
-		CashLedger.max_affordable_qty(ctx["acct"], StringName(PORT_A), StringName(GOOD)),
-		EX_05_09_01_EXPECT_Q
-	)
-	_assert_coarse_match_frozen(ctx)
+	assert_eq(_market_stock(), EX_05_09_01_STOCK_S)
+	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+	assert_eq(q, EX_05_09_01_EXPECT_Q)
 	_mark_errors_handled()
 
 
-func test_17_87_EX_05_09_02_cash_bottleneck_candidates_match_frozen() -> void:
-	## 現金為瓶頸（EX-05-09-02）：q_afford＝120；候選與 q 須與凍結舊作法逐筆相同。
-	var ctx: Dictionary = _boot_two_dest(EX_05_09_02_STOCK_S)
-	_fund_actor_for_qty(ctx["acct"], EX_05_09_02_CASH_Q)
-	assert_eq(
-		CashLedger.max_affordable_qty(ctx["acct"], StringName(PORT_A), StringName(GOOD)),
-		EX_05_09_02_EXPECT_Q
+func test_17_87_EX_05_09_02_cash_bottleneck_q_afford_120() -> void:
+	## EX-05-09-02／D-124：現金瓶頸。期望 q＝120（frm_examples）。
+	_boot_pricing_stack()
+	assert_true(PortRegistry.is_loaded())
+	assert_true(GoodsLedger.is_loaded())
+	_seed_market(EX_05_09_02_STOCK_S)
+	CashLedger.set_quote_provider(MarketPricer)
+	var q120: Dictionary = MarketPricer.quote(
+		StringName(PORT), StringName(GOOD), MarketPricer.SIDE_BUY, EX_05_09_02_CASH_Q
 	)
-	_assert_coarse_match_frozen(ctx)
+	assert_false(q120.has(MarketPricer.KEY_ERROR), "setup quote q=120 must succeed")
+	var cash_for_120: int = int(q120[MarketPricer.KEY_TOTAL_LI])
+	assert_gt(cash_for_120, 0)
+	_mark_errors_handled()
+	_fund_actor(cash_for_120)
+	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+	assert_eq(q, EX_05_09_02_EXPECT_Q)
 	_mark_errors_handled()
 
 
-func test_17_87_EX_05_09_03_zero_stock_no_candidates_match_frozen() -> void:
-	## 庫存為 0（EX-05-09-03）：q_afford＝0；舊／新皆無候選；產品評估不得出航。
-	var ctx: Dictionary = _boot_two_dest(0)
-	_fund_actor_li(ctx["acct"], EX_05_09_03_SEED_CASH)
-	assert_eq(
-		CashLedger.max_affordable_qty(ctx["acct"], StringName(PORT_A), StringName(GOOD)),
-		EX_05_09_03_EXPECT_Q
-	)
-	var old_c: Array = _frozen_old_coarse(ctx)
-	var new_c: Array = _frozen_new_coarse(ctx)
-	assert_eq(old_c.size(), 0)
-	assert_eq(new_c.size(), 0)
-	assert_eq(_coarse_fingerprint(old_c), _coarse_fingerprint(new_c))
-	var tid: StringName = ctx["tid"]
-	var sid: StringName = ctx["sid"]
-	var t: Dictionary = TraderRegistry.get_trader(tid)
-	var info: Dictionary = ShipRegistry.ship_info(sid)
-	var idle0: int = int((t["idle_days"] as Dictionary).get(String(sid), 0))
-	var st: Dictionary = TraderRegistry._evaluate_and_maybe_sail(tid, sid, t, info, false)
-	assert_eq(int(st.get("sailed", -1)), 0)
-	assert_eq(int(st.get("evaluable", -1)), 0)
-	t = TraderRegistry.get_trader(tid)
-	var idle1: int = int((t["idle_days"] as Dictionary).get(String(sid), 0))
-	assert_gte(idle1, idle0)
+func test_17_87_EX_05_09_03_zero_stock_q_afford_0() -> void:
+	## EX-05-09-03／D-124：s＝0 → q＝0；ERR-SYS04-06 增量＝0 ⇒ 未呼叫 quote。
+	_boot_pricing_stack()
+	assert_true(PortRegistry.is_loaded())
+	assert_true(GoodsLedger.is_loaded())
+	assert_eq(_market_stock(), 0)
+	_fund_actor(EX_05_09_03_SEED_CASH)
+	CashLedger.set_quote_provider(MarketPricer)
+	var before: int = _count_err_sys04_06()
+	var q: int = CashLedger.max_affordable_qty(ACTOR, StringName(PORT), StringName(GOOD))
+	var after: int = _count_err_sys04_06()
+	assert_eq(q, EX_05_09_03_EXPECT_Q)
+	assert_eq(after - before, 0, "ERR-SYS04-06 delta 0 ⇒ quote() never called (EX-05-09-03)")
 	_mark_errors_handled()
 
 
-func test_17_87_EX_17_02_01_pick_B_matches_frozen() -> void:
-	## EX-17-02-01 輸入（mid B/C、航程 8/20）餵入候選迴圈；
-	## 粗選用 origin mid_price 代理買入（產品既有），故港別未必等於例中「精確買入總額」選 B。
-	## 本測只斷言：凍結舊作法與 A1 新作法選出的 port/good/q 逐筆相同。
-	## 精確例選 B 已由 test_EX_17_02_01_daily_marginal_profit_picks_B（wp36）覆蓋。
-	var ctx: Dictionary = _boot_two_dest(EX_05_09_01_CASH_Q)
-	_fund_actor_for_qty(ctx["acct"], EX_05_09_01_CASH_Q)
-	var drain: int = EX_05_09_01_CASH_Q - EX_05_09_01_STOCK_S
-	assert_gt(
-		GoodsLedger.transfer(
-			GoodsLedger.make_market(PORT_A),
-			GoodsLedger.make_external(),
-			StringName(GOOD),
-			drain,
-			GoodsLedger.REASON_CONSUME,
-			&"TEST"
-		),
-		0
-	)
-	_assert_coarse_match_frozen(ctx)
-	var best_old: Dictionary = TradeEvaluator.pick_best_candidate(
-		_to_pick_rows(_frozen_old_coarse(ctx))
-	)
-	var best_new: Dictionary = TradeEvaluator.pick_best_candidate(
-		_to_pick_rows(_frozen_new_coarse(ctx))
-	)
-	assert_false(best_old.is_empty())
-	assert_false(best_new.is_empty())
-	assert_eq(String(best_old["port_id"]), String(best_new["port_id"]))
-	assert_eq(String(best_old["good_id"]), String(best_new["good_id"]))
-	assert_eq(int(best_old["qty"]), int(best_new["qty"]))
-	## EX-17-02-01 精確買入總額路徑（frm_examples 原文；非 coarse mid 代理）選 B。
+func test_17_87_EX_17_02_01_precise_pick_B() -> void:
+	## EX-17-02-01 精確買入總額路徑（frm_examples 原文）：公開 TradeEvaluator，選 B。
+	## coarse mid 代理選港等價性見缺口（需 TraderRegistry 私有成員）；本測只保留精確例。
 	var b := TradeEvaluator.daily_marginal_profit(
 		EX_17_02_01_MID_B * EX_17_02_01_Q, EX_17_02_01_BUY_TOTAL, 0, EX_17_02_01_DAYS_B
 	)
@@ -170,309 +163,14 @@ func test_17_87_EX_17_02_01_pick_B_matches_frozen() -> void:
 		])["port_id"]),
 		EX_17_02_01_PICK_PORT
 	)
-	_mark_errors_handled()
 
 
-# --- frozen regression helpers (改前作法；非公式鏡像) ---
-
-
-func _assert_coarse_match_frozen(ctx: Dictionary) -> void:
-	## A3：候選與 q 指紋須與凍結舊作法逐筆相同（不走買入出航，避免艙位副作用）。
-	var old_c: Array = _frozen_old_coarse(ctx)
-	var new_c: Array = _frozen_new_coarse(ctx)
-	assert_gt(old_c.size(), 0)
-	assert_eq(_coarse_fingerprint(old_c), _coarse_fingerprint(new_c))
-
-
-func _frozen_old_coarse(ctx: Dictionary) -> Array:
-	## 回歸對照：改前順序＝market → afford → intel → weekly → append（每格都呼叫 afford）。
-	var out: Array = []
-	var from_port: StringName = StringName(PORT_A)
-	var acct: StringName = ctx["acct"]
-	var free_cap: int = int(ctx["free_cap"])
-	var goods: Array = [StringName(GOOD)]
-	var ports: Array = [StringName(PORT_B), StringName(PORT_C)]
-	for dest_v in ports:
-		var dest: StringName = dest_v
-		var days: int = int(TraderRegistry._voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
-		if days < 1:
-			continue
-		for good_v in goods:
-			var good: StringName = good_v
-			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
-			if market_qty < 1:
-				continue
-			var afford: int = CashLedger.max_affordable_qty(acct, from_port, good)
-			if afford < 1:
-				continue
-			var intel: Dictionary = TraderRegistry._dest_intel(acct, from_port, dest, good)
-			if intel.is_empty() or intel.get("mid_li", null) == null:
-				continue
-			var mid: int = int(intel["mid_li"])
-			var weeks_v: Variant = intel.get("weeks", 0.0)
-			var weekly: int = DemandModel.weekly_potential_demand(dest, good)
-			if weekly < 1:
-				continue
-			var q: int = mini(mini(afford, free_cap), market_qty)
-			if q < 1:
-				continue
-			var origin_mid: float = MarketPricer.mid_price(from_port, good)
-			var rough_buy: int = floori(origin_mid * float(q))
-			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
-			out.append({
-				"port_id": dest,
-				"good_id": good,
-				"qty": q,
-				"voyage_days": days,
-				"mid_li": mid,
-				"weeks": weeks_v,
-				"weekly": weekly,
-				"score": score,
-				"rough_buy": rough_buy,
-				"daily_profit_li": score,
-			})
-	out.sort_custom(func(a, b):
-		if int(a["score"]) != int(b["score"]):
-			return int(a["score"]) > int(b["score"])
-		var ap := String(a["port_id"])
-		var bp := String(b["port_id"])
-		if ap != bp:
-			return ap < bp
-		return String(a["good_id"]) < String(b["good_id"])
-	)
-	return out
-
-
-func _frozen_new_coarse(ctx: Dictionary) -> Array:
-	## 與產品 A1 同序：market → intel → weekly → afford（區域快取每貨一次）。
-	var out: Array = []
-	var from_port: StringName = StringName(PORT_A)
-	var acct: StringName = ctx["acct"]
-	var free_cap: int = int(ctx["free_cap"])
-	var afford_by_good: Dictionary = {}
-	var goods: Array = [StringName(GOOD)]
-	var ports: Array = [StringName(PORT_B), StringName(PORT_C)]
-	for dest_v in ports:
-		var dest: StringName = dest_v
-		var days: int = int(TraderRegistry._voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
-		if days < 1:
-			continue
-		for good_v in goods:
-			var good: StringName = good_v
-			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
-			if market_qty < 1:
-				continue
-			var intel: Dictionary = TraderRegistry._dest_intel(acct, from_port, dest, good)
-			if intel.is_empty() or intel.get("mid_li", null) == null:
-				continue
-			var mid: int = int(intel["mid_li"])
-			var weeks_v: Variant = intel.get("weeks", 0.0)
-			var weekly: int = DemandModel.weekly_potential_demand(dest, good)
-			if weekly < 1:
-				continue
-			var afford: int = TraderRegistry._afford_qty_cached(afford_by_good, acct, from_port, good)
-			if afford < 1:
-				continue
-			var q: int = mini(mini(afford, free_cap), market_qty)
-			if q < 1:
-				continue
-			var origin_mid: float = MarketPricer.mid_price(from_port, good)
-			var rough_buy: int = floori(origin_mid * float(q))
-			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
-			out.append({
-				"port_id": dest,
-				"good_id": good,
-				"qty": q,
-				"voyage_days": days,
-				"mid_li": mid,
-				"weeks": weeks_v,
-				"weekly": weekly,
-				"score": score,
-				"rough_buy": rough_buy,
-				"daily_profit_li": score,
-			})
-	out.sort_custom(func(a, b):
-		if int(a["score"]) != int(b["score"]):
-			return int(a["score"]) > int(b["score"])
-		var ap := String(a["port_id"])
-		var bp := String(b["port_id"])
-		if ap != bp:
-			return ap < bp
-		return String(a["good_id"]) < String(b["good_id"])
-	)
-	return out
-
-
-func _coarse_fingerprint(rows: Array) -> String:
-	var parts: PackedStringArray = PackedStringArray()
-	for r_v in rows:
-		var r: Dictionary = r_v
-		parts.append(
-			"%s|%s|%d|%d|%d"
-			% [
-				String(r["port_id"]),
-				String(r["good_id"]),
-				int(r["qty"]),
-				int(r["score"]),
-				int(r["voyage_days"]),
-			]
-		)
-	return "|".join(parts)
-
-
-func _to_pick_rows(rows: Array) -> Array:
-	var out: Array = []
-	for r_v in rows:
-		var r: Dictionary = r_v
-		out.append({
-			"port_id": r["port_id"],
-			"good_id": r["good_id"],
-			"qty": r["qty"],
-			"daily_profit_li": r["score"],
-		})
-	return out
-
-
-# --- boot / money / stock ---
-
-
-func _boot_two_dest(stock_s: int) -> Dictionary:
-	assert_eq(Params.load_and_validate(PARAMS_FIXTURE).size(), 0)
-	assert_eq(GoodCatalog.load_and_validate(GoodCatalog.GOODS_DIR).size(), 0)
-	assert_eq(PortRegistry.load_and_validate(PortRegistry.PORTS_DIR).size(), 0)
-	assert_eq(SeaLanes.load_and_validate().size(), 0)
-	assert_eq(GoodsLedger.load_and_validate().size(), 0)
-	assert_eq(MarketPricer.load_and_validate(MarketPricer.CURVE_PATH).size(), 0)
-	assert_eq(CashLedger.load_and_validate().size(), 0)
-	CashLedger.set_quote_provider(MarketPricer)
-	assert_eq(TradeDesk.load_and_validate().size(), 0)
-	TradeDesk.mark_unloaded()
-	TradeDesk.set_qualification_provider(FixtureQualificationProvider.new())
-	TradeDesk.set_trade_observers([FixtureTradeObserver.new()])
-	assert_eq(TradeDesk.load_and_validate().size(), 0)
-	if not ShipRegistry.has_sailor_pool_provider():
-		ShipRegistry.set_sailor_pool_provider(_DummySailors.new())
-	assert_eq(ShipRegistry.load_and_validate().size(), 0)
-	assert_eq(IntelLedger.load_and_validate().size(), 0)
-	if not IntelLedger.has_broker_provider():
-		IntelLedger.set_broker_provider(SimBrokerFixture.new())
-	DemandModel.set_potential_demand_provider(_FixedWeekly.new(FIX_WEEKLY))
-	CashLedger.create_account(&"ACT-PLAYER", Account.Kind.ACTOR)
-	var start: int = Params.get_int("PRM-SYS05-START_CASH")
-	if start > 0:
-		assert_eq(CashLedger.genesis_grant(), OK)
-	else:
-		assert_eq(
-			CashLedger.post([
-				CashLedger.make_entry(CashLedger.ID_SOURCE, -150000),
-				CashLedger.make_entry(&"ACT-PLAYER", 150000),
-			], CashLedger.REASON_GENESIS_CASH, CashLedger.REQUESTER_GENESIS_GRANT),
-			OK
-		)
-	if stock_s > 0:
-		assert_gt(
-			GoodsLedger.transfer(
-				GoodsLedger.make_external(),
-				GoodsLedger.make_market(PORT_A),
-				StringName(GOOD),
-				stock_s,
-				GoodsLedger.REASON_GENESIS,
-				&"TEST"
-			),
-			0
-		)
-		GoodsLedger.seed_offtake_snapshot(StringName(PORT_A), StringName(GOOD), 50, 50, 7, 0)
-	TraderRegistry.set_layers(true, true)
-	TraderRegistry.set_rng_seed(1)
-	TraderRegistry._enabled = true
-	TraderRegistry._qual_open = true
-	TraderRegistry._loaded = true
-	TraderRegistry._genesis_granted = false
-	TraderRegistry._traders.clear()
-	TraderRegistry._load_curve()
-	for i in range(1, 3):
-		var tid0 := StringName("TR-%03d" % i)
-		var acct0 := CashLedger.make_actor_id("TR-%03d" % i)
-		assert_eq(CashLedger.create_account(acct0, Account.Kind.ACTOR, tid0), OK)
-		TraderRegistry._traders[String(tid0)] = {
-			"trader_id": tid0,
-			"account_id": acct0,
-			"ship_ids": [],
-			"ship_count_planned": 1,
-			"qualifications": {"tier": 1},
-			"mode": TraderRegistry.MODE_IDLE,
-			"plans": {},
-			"idle_days": {},
-			"retired": false,
-			"home_port": &"",
-		}
-	assert_eq(TraderRegistry.grant_genesis_cash(), OK)
-	var port := StringName(PORT_A)
-	var crew_map: Dictionary = Params.get_value("PRM-SYS13-CREW")
-	var crew_n: int = int(crew_map.get("SH-03", 8))
-	for tid2 in TraderRegistry.all_trader_ids():
-		var t2: Dictionary = TraderRegistry._traders[String(tid2)]
-		var sid2: StringName = ShipRegistry.spawn_docked_ship(
-			TraderRegistry.SHIP_TYPE, t2["account_id"], port, crew_n
-		)
-		(t2["ship_ids"] as Array).append(sid2)
-		(t2["plans"] as Dictionary)[String(sid2)] = TradeEvaluator.empty_plan()
-		(t2["idle_days"] as Dictionary)[String(sid2)] = 0
-		t2["home_port"] = port
-	TraderRegistry._build_voyage_matrix()
-	## EX-17-02-01 航程輸入：B／C 日數取自 frm_examples（覆蓋矩陣，固定 fixture、非亂數）。
-	TraderRegistry._voyage_days["%s|%s" % [PORT_A, PORT_B]] = EX_17_02_01_DAYS_B
-	TraderRegistry._voyage_days["%s|%s" % [PORT_A, PORT_C]] = EX_17_02_01_DAYS_C
-	## EX-17-02-01 mids on B／C（本港 A）。
-	TraderRegistry.set_intel_override(StringName(PORT_B), StringName(GOOD), EX_17_02_01_MID_B, 0.0)
-	TraderRegistry.set_intel_override(StringName(PORT_C), StringName(GOOD), EX_17_02_01_MID_C, 0.0)
-	var tid: StringName = TraderRegistry.all_trader_ids()[0]
-	var t: Dictionary = TraderRegistry.get_trader(tid)
-	var sid: StringName = t["ship_ids"][0]
-	var cap_map: Dictionary = Params.get_value("PRM-SYS13-CAPACITY")
-	var hold_cap: int = int(cap_map.get("SH-03", 0))
-	return {
-		"tid": tid,
-		"sid": sid,
-		"acct": t["account_id"],
-		"free_cap": hold_cap,
-	}
-
-
-func _fund_actor_for_qty(acct: StringName, qty: int) -> void:
-	## 整備：把餘額設成剛好能買 qty 擔（以當下 quote 計），對齊 EX-05-09 輸入語意。
-	var q: Dictionary = MarketPricer.quote(
-		StringName(PORT_A), StringName(GOOD), MarketPricer.SIDE_BUY, qty
-	)
-	assert_false(q.has(MarketPricer.KEY_ERROR), "setup quote must succeed")
-	var need: int = int(q[MarketPricer.KEY_TOTAL_LI])
-	assert_gt(need, 0)
-	_fund_actor_li(acct, need)
-
-
-func _fund_actor_li(acct: StringName, target: int) -> void:
-	var bal: int = CashLedger.balance(acct)
-	if bal == target:
-		return
-	if bal > target:
-		var drain: int = bal - target
-		assert_eq(
-			CashLedger.post([
-				CashLedger.make_entry(acct, 0 - drain),
-				CashLedger.make_entry(CashLedger.ID_SINK, drain),
-			], &"TEST_DRAIN", &"SYS-08"),
-			OK
-		)
-	else:
-		var add: int = target - bal
-		assert_eq(
-			CashLedger.post([
-				CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - add),
-				CashLedger.make_entry(acct, add),
-			], &"TEST_FUND", CashLedger.REQUESTER_GENESIS_GRANT),
-			OK
-		)
-	assert_eq(CashLedger.balance(acct), target)
+func _count_err_sys04_06() -> int:
+	var n: int = 0
+	for e in get_errors():
+		if e.contains_text("ERR-SYS04-06"):
+			n += 1
+	return n
 
 
 func _mark_errors_handled() -> void:
@@ -480,43 +178,155 @@ func _mark_errors_handled() -> void:
 		e.handled = true
 
 
-func _wipe_user() -> void:
-	var abs := ProjectSettings.globalize_path(ROOT)
-	if DirAccess.dir_exists_absolute(abs):
-		_rm_tree(abs)
+func _market_dict() -> Dictionary:
+	return {
+		GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
+		GoodsLedger.KEY_PORT: PORT,
+	}
 
 
-func _rm_tree(path: String) -> void:
-	var d := DirAccess.open(path)
-	if d == null:
-		return
-	d.list_dir_begin()
-	var n := d.get_next()
-	while n != "":
-		if n == "." or n == "..":
-			n = d.get_next()
-			continue
-		var p := path.path_join(n)
-		if d.current_is_dir():
-			_rm_tree(p)
-		else:
-			DirAccess.remove_absolute(p)
-		n = d.get_next()
-	DirAccess.remove_absolute(path)
+func _market_stock() -> int:
+	return GoodsLedger.get_qty(_market_dict(), StringName(GOOD))
 
 
-class _FixedWeekly extends RefCounted:
-	var _w: int = 0
-	func _init(w: int) -> void:
-		_w = w
-	func weekly_potential_demand(_port_id: StringName, _good_id: StringName) -> int:
-		return _w
+func _fund_actor(cash: int) -> void:
+	assert_eq(CashLedger.create_account(ACTOR, Account.Kind.ACTOR), OK)
+	assert_eq(
+		CashLedger.post([
+			CashLedger.make_entry(CashLedger.ID_SOURCE, 0 - cash),
+			CashLedger.make_entry(ACTOR, cash),
+		], REASON_OPEN, REQUESTER_SYS04),
+		OK
+	)
 
 
-class _DummySailors extends SailorPoolProvider:
-	func hire_sailors(_port_id: StringName, n: int) -> int:
-		return n
-	func release_sailors(_port_id: StringName, n: int) -> int:
-		return n
-	func beggars(_port_id: StringName) -> int:
-		return 0
+func _boot_pricing_stack() -> void:
+	assert_eq(Params.load_and_validate(ParamsFixtures.path_demo()).size(), 0)
+	## D-128 甲：正式 set_potential_demand_provider；不呼叫 DemandModel._clear_state。
+	DemandModel.clear_queue_material_shortfall_provider()
+	DemandModel.set_potential_demand_provider(_ZeroPotentialDemand.new())
+	var goods_dir := _build_goods(GOODS_ROOT)
+	assert_eq(GoodCatalog.load_and_validate(goods_dir).size(), 0)
+	var ports_dir := _build_ports(Params.get_int(PRM_PORT_COUNT_MIN), PORTS_ROOT)
+	assert_eq(PortRegistry.load_and_validate(ports_dir).size(), 0)
+	assert_eq(GoodsLedger.load_and_validate().size(), 0)
+	assert_eq(MarketPricer.load_and_validate(CURVE_FIXTURE).size(), 0)
+	assert_eq(CashLedger.load_and_validate().size(), 0)
+	var days_pw: int = Params.get_int("PRM-SYS04-DAYS_PER_WEEK")
+	GoodsLedger.seed_offtake_snapshot(
+		StringName(PORT), StringName(GOOD), 105, 105, days_pw, 0
+	)
+
+
+func _seed_market(stock: int) -> void:
+	assert_gt(
+		GoodsLedger.transfer(
+			GoodsLedger.make_external(),
+			_market_dict(),
+			StringName(GOOD),
+			stock,
+			GoodsLedger.REASON_GENESIS,
+			&"TEST"
+		),
+		0
+	)
+
+
+func _build_goods(dir: String) -> String:
+	_wipe_dir(dir)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var count: int = Params.get_int(PRM_GOOD_COUNT_MIN)
+	var staples: Array = [
+		{"id": GOOD, "name": "米", "build": false},
+		{"id": "GD-002", "name": "鹽", "build": false},
+		{"id": "GD-003", "name": "木材", "build": true},
+		{"id": "GD-004", "name": "魚乾", "build": false},
+	]
+	var free_max: int = Params.get_int(PRM_FREE_PORT_TIER_MAX)
+	var written: int = 0
+	for s in staples:
+		if written >= count:
+			break
+		var def := GoodDef.new()
+		def.good_id = String(s["id"])
+		def.name_zh = String(s["name"])
+		def.tier = 1
+		def.is_staple = true
+		def.is_build_material = bool(s["build"])
+		def.is_strategic = false
+		def.base_price_li = 1000
+		def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+		ResourceSaver.save(def, dir + "%s.tres" % def.good_id)
+		written += 1
+	var next_n: int = 5
+	while written < count:
+		var gid := "GD-%03d" % next_n
+		var def2 := GoodDef.new()
+		def2.good_id = gid
+		def2.name_zh = "填料%d" % next_n
+		def2.tier = mini((next_n % (free_max + 1)) + 1, Params.get_int(PRM_TIER_MAX))
+		def2.is_staple = false
+		def2.is_build_material = false
+		def2.is_strategic = false
+		def2.base_price_li = 1000
+		def2.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+		ResourceSaver.save(def2, dir + "%s.tres" % gid)
+		written += 1
+		next_n += 1
+	return dir
+
+
+func _build_ports(port_count: int, dir: String) -> String:
+	_wipe_dir(dir)
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(dir))
+	var free_count: int = _valid_free_count(port_count)
+	var good_ids: PackedStringArray = GoodCatalog.all_ids()
+	for i in range(port_count):
+		var n: int = i + 1
+		var port_id := "PT-%02d" % n
+		var def := PortDef.new()
+		def.port_id = port_id
+		def.name_zh = "港%d" % n
+		def.is_free_port = i < free_count
+		def.draft_limit_class = 0
+		def.regime_id = "RG-TEST"
+		def.role_cells = {}
+		for good_variant in good_ids:
+			var good_id: String = String(good_variant)
+			var cell := RoleCell.new()
+			if i == 0:
+				cell.role = PortRegistry.ROLE_PRODUCER
+				cell.base_output_per_season = 1
+				cell.downstream_terminals = PackedStringArray()
+			else:
+				cell.role = PortRegistry.ROLE_TERMINAL
+				cell.base_output_per_season = 0
+				cell.downstream_terminals = PackedStringArray()
+			def.role_cells[good_id] = cell
+		ResourceSaver.save(def, dir + "%s.tres" % port_id)
+	return dir
+
+
+func _valid_free_count(port_count: int) -> int:
+	var ratio_min: float = Params.get_float(PRM_FREE_PORT_RATIO_MIN)
+	var ratio_max: float = Params.get_float(PRM_FREE_PORT_RATIO_MAX)
+	var free_count: int = 0
+	while free_count <= port_count:
+		var ratio: float = float(free_count) / float(port_count)
+		if ratio >= ratio_min and ratio <= ratio_max:
+			return free_count
+		free_count += 1
+	return 0
+
+
+func _wipe_dir(dir: String) -> void:
+	var abs_path := ProjectSettings.globalize_path(dir)
+	if DirAccess.dir_exists_absolute(abs_path):
+		var d := DirAccess.open(dir)
+		if d:
+			d.list_dir_begin()
+			var fn := d.get_next()
+			while fn != "":
+				if fn != "." and fn != "..":
+					d.remove(fn)
+				fn := d.get_next()
