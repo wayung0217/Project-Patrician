@@ -1,0 +1,41 @@
+b-e-scan.txt
+## E(1) non-0/1 numeric literals in changed product .gd (trader_registry A1 region only; Lane B did not edit product in B2)
+CMD: (Lane B B2 product untouched; scan tests file for cross-module private)
+
+## E(2) cross-module _ member access in tests/unit/test_perf_afford_1787.gd (must be 無)
+CMD: rg -n '[A-Za-z][A-Za-z0-9]*\._[a-zA-Z]' tests/unit/test_perf_afford_1787.gd | rg -v '^\s*##|不呼叫'
+無
+
+## E(2b) TraderRegistry._ / CashLedger._ / DemandModel._ explicit
+CMD: rg -n 'TraderRegistry\._|CashLedger\._|GoodsLedger\._|ShipRegistry\._|IntelLedger\._|DemandModel\._|MarketPricer\._|TradeEvaluator\._' tests/unit/test_perf_afford_1787.gd
+205:	## D-128 甲：正式 set_potential_demand_provider；不呼叫 DemandModel._clear_state。
+
+## E(3) int(/round(/roundi( in test file
+91:	var cash_for_500: int = int(q_setup[MarketPricer.KEY_TOTAL_LI])
+124:	var cash_for_120: int = int(q120[MarketPricer.KEY_TOTAL_LI])
+
+## E(4) await/call_deferred/Timer/randi/randf/Time./OS.get_ticks
+無
+
+## E(5) Dictionary traversal
+170:	for e in get_errors():
+177:	for e in get_errors():
+247:	for s in staples:
+284:	for i in range(port_count):
+294:		for good_variant in good_ids:
+
+## E(6) FRM/ERR/PRM annotation presence in test header
+2:## 17-87 A3／PERF-AFFORD（17-88 B2 D-128 重寫）：只用公開介面與正式注入。
+3:## Basis D-60e：測試名含 17_87；依據 FRM-SYS17-02、FRM-SYS05-09、D-124、D-128 甲。
+4:## 期望值只取 frm_examples EX-05-09-01..03 與 EX-17-02-01（S9f；非產品公式鏡像）。
+23:## frm_examples EX-05-09-01：現金足以買 500；s＝300 → q_afford＝300。
+28:## frm_examples EX-05-09-02：現金僅足以買 120；s＝300 → q_afford＝120。
+33:## frm_examples EX-05-09-03：s＝0 → q_afford＝0。
+37:## frm_examples EX-17-02-01：B mid 1300／8 日；C mid 1600／20 日；q＝200；買入 200000；選 B。
+55:## D-128 甲：正式注入 weekly_potential_demand；禁止他模組 _ 成員。
+81:	## EX-05-09-01／D-124：庫存瓶頸。期望 q＝300（frm_examples）。公開 CashLedger 路徑。
+114:	## EX-05-09-02／D-124：現金瓶頸。期望 q＝120（frm_examples）。
+134:	## EX-05-09-03／D-124：s＝0 → q＝0；ERR-SYS04-06 增量＝0 ⇒ 未呼叫 quote。
+145:	assert_eq(after - before, 0, "ERR-SYS04-06 delta 0 ⇒ quote() never called (EX-05-09-03)")
+150:	## EX-17-02-01 精確買入總額路徑（frm_examples 原文）：公開 TradeEvaluator，選 B。
+205:	## D-128 甲：正式 set_potential_demand_provider；不呼叫 DemandModel._clear_state。

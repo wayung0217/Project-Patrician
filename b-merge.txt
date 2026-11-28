@@ -1,0 +1,94 @@
+b-merge.txt
+PRE_MAIN=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+PR_HEAD=112a47fd4310a6de9db87d403de0aae502ae9434
+MERGE_SHA=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+MAIN_TIP=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+method=gh pr merge 105 --merge (merge commit only)
+mergedAt=2026-11-28T01:51:42Z
+
+## parents
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+parents dcea87f338f3bea4b49197ce3cbb1c407a28a250 112a47fd4310a6de9db87d403de0aae502ae9434
+Merge pull request #105 from wayung0217/perf-afford-1787
+
+## trader_registry.gd blob
+main: 3df59445ae15ff5eee2f97a0e6d48d977c931352
+107c17f: 3df59445ae15ff5eee2f97a0e6d48d977c931352
+EQUAL=YES
+
+## git diff --stat PRE_MAIN..MERGE
+ autoload/trader_registry.gd             |  35 +++-
+ tests/unit/test_perf_afford_1787.gd     | 332 ++++++++++++++++++++++++++++++++
+ tests/unit/test_perf_afford_1787.gd.uid |   1 +
+ 3 files changed, 364 insertions(+), 4 deletions(-)
+
+## docs/spec version unchanged
+docs/spec tree PRE: cb4e2c04da3db42696644474f6c0d27c6b862c22
+docs/spec tree POST: cb4e2c04da3db42696644474f6c0d27c6b862c22
+B9=v6.99.293
+
+## delete perf-afford-1787
+git push origin --delete perf-afford-1787 → deleted
+git ls-remote --heads origin perf-afford-1787:
+(empty)
+git branch --list perf-afford-1787:
+(empty)
+
+## main post-merge CI
+run=46095216894
+url=https://github.com/wayung0217/Project-Patrician/actions/runs/46095216894
+headSha=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+conclusion=success
+success=7 skipped=3 failed=0
+(gut-unit 0..3, gut-ui, golden-30d-baseline, gut-unit-gate = success;
+ golden-30d-compare, m1b-h4-smoke, m1b-w4-inline-cmp = skipped)
+
+### gut-unit-gate summary (raw)
+file=shard_logs/gut-unit-logs-0/gut_unit_passing.txt passing=17
+file=shard_logs/gut-unit-logs-1/gut_unit_passing.txt passing=16
+file=shard_logs/gut-unit-logs-2/gut_unit_passing.txt passing=15
+file=shard_logs/gut-unit-logs-3/gut_unit_passing.txt passing=567
+TOTAL_PASSING=615
+BASELINE_COUNT=555
+SEEN_NAMES=615 BASELINE_NAMES=555
+REMOVED_NAMES:
+無
+ADDED_NAMES:
+test_17_87_EX_05_09_01_cash_surplus_q_afford_300
+test_17_87_EX_05_09_02_cash_bottleneck_q_afford_120
+test_17_87_EX_05_09_03_zero_stock_q_afford_0
+test_17_87_EX_17_02_01_precise_pick_B
+GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1
+GUT_UNIT_PROPERTY_COUNT_OK>=555 actual=615
+
+### last 30 lines (gate verify meaningful)
+test_K2_explore_sails_without_opening_board
+test_K4_f1_note_prior_green_used_intel_override
+test_K4_formal_boot_30d_sail_buy_sell_no_manual_board
+test_R972_EX_05_09_01_stock_bottleneck_q_300
+test_R972_EX_05_09_02_cash_bottleneck_q_120
+test_R972_EX_05_09_03_zero_stock_no_quote
+test_TST_SYS17_01_same_quote_path_player_and_trader
+test_TST_SYS17_02_decision_uses_override_not_foreign_stock
+test_TST_SYS17_03_qual_open_allows_ports
+test_TST_SYS17_04_insufficient_cash_rejects_whole
+test_TST_SYS17_05_deterministic_explore_pick
+test_TST_SYS17_06_genesis_twice_rejects
+test_TST_SYS17_07_ships_full_crew_no_beggar_drain
+test_TST_SYS17_08_retire_sets_retired_only
+test_TST_SYS17_09_genesis_entries_sum_zero
+test_TST_SYS17_10_explore_rate_positive_selects
+test_TST_SYS17_11_profit_below_min_stays_idle
+test_TST_SYS17_12_tie_breaks_port_good_asc
+test_W1_job_path_is_user_scheme_single_argv_elem
+test_W1_spaced_path_still_one_element
+test_W2_missing_args_exits_nonzero_with_reason
+test_W2_missing_job_file_reports_argv
+test_W3_log_file_tail_on_forced_fail
+test_W4_inline_flag_present_and_cli_cmp_contract
+test_W5_season_progress_print_only_source
+test_WP36_freeze_skip_daily
+test_WP36_idle_days_counter
+test_WP36_per_ship_plan_dictionary
+GUT_UNIT_PROPERTY_BASELINE_NAMES_OK=1
+GUT_UNIT_PROPERTY_COUNT_OK>=555 actual=615

@@ -1,0 +1,84 @@
+b-branches.txt
+# git branch -r (pre-merge)
+  origin/HEAD -> origin/main
+  origin/cursor/audit-17-76-0b7c
+  origin/cursor/class-cap-frm-sys07-18-97ab
+  origin/cursor/d136-m1b-abund-overrides-5981
+  origin/cursor/diag-c-pp217-5280
+  origin/cursor/e1-exp2-90d-smoke-9c88
+  origin/cursor/junit-xml-trial-5b41
+  origin/cursor/solo-wp26-a-24c7
+  origin/cursor/solo-wp26-b-24c7
+  origin/cursor/solo-wp26-hist-24c7
+  origin/cursor/ui-1755-debug-panels-ff98
+  origin/main
+  origin/met-lengths-1783
+  origin/perf-afford-1787
+  origin/review/1770-d130
+  origin/review/1770-evidence2
+  origin/review/1770-evidence3
+  origin/review/1770-merge1
+  origin/review/1770-t1
+  origin/review/1770-t2
+  origin/review/1770-t3
+  origin/review/1771-handoff
+  origin/review/1772-E
+  origin/review/evening-17-55
+  origin/review/evening-17-57
+  origin/review/evening-17-69-handoff
+  origin/review/evening-17-69-int
+  origin/review/evening-17-69-lane1
+  origin/review/evening-17-69-lane2
+  origin/review/evening-17-69-lane3
+  origin/review/evening-17-69-lane4
+  origin/review/evening-17-69-lane5
+  origin/tools-1758
+
+# authorized cleanup targets SHA
+cursor/d136-m1b-abund-overrides-5981 01adee0d01514e94f1c3fd7b296dcccf23f78e10
+met-lengths-1783 33bd59d198e52529629997133c9bb17522bbf50b
+perf-afford-1787 112a47fd4310a6de9db87d403de0aae502ae9434
+
+## B6 ancestor checks (must be 是) then delete
+cursor/d136-m1b-abund-overrides-5981 SHA=01adee0d01514e94f1c3fd7b296dcccf23f78e10
+git merge-base --is-ancestor origin/cursor/d136-m1b-abund-overrides-5981 origin/main → 是 (exit 0)
+met-lengths-1783 SHA=33bd59d198e52529629997133c9bb17522bbf50b
+git merge-base --is-ancestor origin/met-lengths-1783 origin/main → 是 (exit 0)
+deleted both remote heads
+
+## git ls-remote --heads origin (after B5+B6)
+5b8d9a02673adc160e27ea66780c2b937a83ed44	refs/heads/cursor/audit-17-76-0b7c
+86e0919c220bf52cf5e5a098a0ed68b64fcc0378	refs/heads/cursor/class-cap-frm-sys07-18-97ab
+0d152698c3a74f4ba1c0cc75d623b06a5cf5d8cb	refs/heads/cursor/diag-c-pp217-5280
+5478c190686a75e59f0014a60af27665d70f436f	refs/heads/cursor/e1-exp2-90d-smoke-9c88
+241b90bacb7745927e1222766d551a375b3811e2	refs/heads/cursor/junit-xml-trial-5b41
+9ba9f76fac148475d11a8947385680c32116764e	refs/heads/cursor/solo-wp26-a-24c7
+87962c51ebc1a49aa1611d81985734d5e3f18f33	refs/heads/cursor/solo-wp26-b-24c7
+e34ff80dbfd2eabe23360748b8731aca168a445d	refs/heads/cursor/solo-wp26-hist-24c7
+1fd181acf5012a49494b3084e4045202987e4507	refs/heads/cursor/ui-1755-debug-panels-ff98
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6	refs/heads/main
+6d1ad7331166f3a5eb366d7631f3f24bbccaa630	refs/heads/perf-verify-1788
+32f0a43c2d8c680178d610f907a8869d73f69598	refs/heads/review/1770-d130
+d52d92ac1909ae995b429e65e814774da83a1ab2	refs/heads/review/1770-evidence2
+0bcb548aaf78c5865ef784d421b581bc4fe5b523	refs/heads/review/1770-evidence3
+76bacbf848a7dc7d6220fa5f1818130254ec3c71	refs/heads/review/1770-merge1
+69a793a473bb8eb8c0696eb7a5944d34eb726228	refs/heads/review/1770-t1
+88da300c61dcf2c340e3bdd705b14307068b4af5	refs/heads/review/1770-t2
+40670fc03681a1b8eabee618eebf4401c7d5fdac	refs/heads/review/1770-t3
+df15b02262dcf63caf698a7be632bebb85b58dbf	refs/heads/review/1771-handoff
+ffc33ff2f02df608bce8080f88e03ea48ea5edb5	refs/heads/review/1772-E
+add25848677bf95be8e430ff9f6a8c1bcab977f9	refs/heads/review/evening-17-55
+85627c4576e1b96ba112187cb36eb57d2d8aa7d9	refs/heads/review/evening-17-57
+d834963e3903bad8461fa2ff74e2445d26bac515	refs/heads/review/evening-17-69-handoff
+7d8ece439134c109e5f8a112771f3c32029a91e4	refs/heads/review/evening-17-69-int
+c1fd855611cad108c5c03604f4e47b1e63c95dda	refs/heads/review/evening-17-69-lane1
+88fdddb3ed46c0b1ceb2fe73095447abd58c70e8	refs/heads/review/evening-17-69-lane2
+173d731beb2fbc1bdfca521abe8507bcad10297e	refs/heads/review/evening-17-69-lane3
+d789f0410feee33d1cd65c3ecd5df2cc919e8fa5	refs/heads/review/evening-17-69-lane4
+8468b864149604e8e6b2cb8acf060ced8b559e4e	refs/heads/review/evening-17-69-lane5
+2b1c2f6a539260fda30cedad67c07572a9635789	refs/heads/review/overnight-17-87-A
+b1cb5877f94101ae99c318df9e5e49f4e3bde9c9	refs/heads/review/overnight-17-87-P
+7523dca45d935c6189eaaa28845b251af84898cf	refs/heads/review/overnight-17-87-Q
+4ad8b60503c77058ce64379edfd47833fe0fa250	refs/heads/review/overnight-17-87-V
+59ab42aba29e2a94fca8d6bed784eb2c84e5b975	refs/heads/review/overnight-17-88-Q
+5478c190686a75e59f0014a60af27665d70f436f	refs/heads/tools-1758

@@ -1,0 +1,8 @@
+b-blob-trader_registry.txt
+git rev-parse HEAD:autoload/trader_registry.gd
+3df59445ae15ff5eee2f97a0e6d48d977c931352
+git rev-parse 107c17fea29da54363713e5896805a2ebd630a0e:autoload/trader_registry.gd
+3df59445ae15ff5eee2f97a0e6d48d977c931352
+git rev-parse origin/main:autoload/trader_registry.gd
+ea670fe909d785c86557c79c20288c63e6015282
+EQUAL_TO_107c17f=YES
