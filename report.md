@@ -96,7 +96,7 @@ V1 於 A tip 凍結＋CI 綠後啟動（coordinator SendToAgent）。
 - 首次 commit 同時加入 longrun/timing yml → 誤觸發 L/A5 重複 run；cancel 403（無 actions:write）；已請 Owner 取消。
 - 標準 runner CPU 不一；耗時僅作紀錄、不跨 CPU 比較（B-11）。
 - 缺口：無（比對 15/15 IDENTICAL）。
-- `perf-verify-1788` 尚未刪：L run 46091383793 仍 in_progress。
+- `perf-verify-1788` 已刪（L 完成後）；見 `verify-branch-deleted.txt`。
 
 ## S9a I 格式／失敗執行
 
@@ -116,8 +116,8 @@ V1 於 A tip 凍結＋CI 綠後啟動（coordinator SendToAgent）。
 - `orphan_push.log` / `orphan_sha.txt` (S9d)
 - store also: `artifacts/v1/`
 
-ORPHAN=`review/overnight-17-88-V` @ see orphan_sha.txt  
-VERIFY_BRANCH=`perf-verify-1788` @ `d9e0065c5eebe474c83fd1794625ed0f8f07613d` (retained until L done)
+ORPHAN=`review/overnight-17-88-V` @ 見 orphan_sha.txt  
+VERIFY_BRANCH_DELETED=`perf-verify-1788` was `d9e0065c5eebe474c83fd1794625ed0f8f07613d` (see verify-branch-deleted.txt for pre-delete SHA)
 
 ## FILES_TOTAL
 - `artifacts/v1/Za_G0_A0_d450_s1/combos.csv`
@@ -177,5 +177,6 @@ VERIFY_BRANCH=`perf-verify-1788` @ `d9e0065c5eebe474c83fd1794625ed0f8f07613d` (r
 - `v1-a-side.txt`
 - `v2-compare.txt`
 - `v3-met.txt`
+- `verify-branch-deleted.txt`
 
-FILES_TOTAL=57
+FILES_TOTAL=58

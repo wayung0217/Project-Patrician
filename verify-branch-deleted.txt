@@ -1,0 +1,8 @@
+verify-branch-deleted.txt
+VERIFY_BRANCH=perf-verify-1788
+FULL_SHA_BEFORE_DELETE=d9e0065c5eebe474c83fd1794625ed0f8f07613d
+DELETED_AT_HKT=2026-11-28 11:05:54 Asia/Hong_Kong
+L_RUN_DONE=46091383793 success (coordinator confirmed)
+DELETE_CMD=git push origin --delete perf-verify-1788
+=== git ls-remote --heads origin perf-verify-1788 ===
+(empty above = confirmed deleted)
