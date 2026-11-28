@@ -1,4 +1,63 @@
 orphan_push.log
 === orphan push review/overnight-17-88-V 2026-11-28 10:53:36 Asia/Hong_Kong ===
-orphan_sha.txt=ac004bff7703d7027eaa8f3ab8ddc906225e326d
+orphan_sha.txt=ad550067f76973d28799865ee763d50492480609
+branch_tip=ad550067f76973d28799865ee763d50492480609
 content_commit=ac004bff7703d7027eaa8f3ab8ddc906225e326d
+=== git ls-tree -r -l ===
+100644 blob 8a4b5cc478eab5b80e028429e2302a2b05fea16f     399	artifacts/v1/Za_G0_A0_d450_s1/combos.csv
+100644 blob a9ed3c908c0e0e4d02629d4241dcfe626e75712f      41	artifacts/v1/Za_G0_A0_d450_s1/commit_sha.txt
+100644 blob 3fd6c4e7be24db8a983e1a9e97248fa0de8df4a4    5228	artifacts/v1/Za_G0_A0_d450_s1/obs_ext.csv
+100644 blob f4209d50f8f1084776ab3c6591b8ae25e1bf2f58      41	artifacts/v1/Za_G0_A0_d450_s1/product_base_sha.txt
+100644 blob 219ad5828b4107b6aa52ab6cb6b7fb317c604c7c      41	artifacts/v1/Za_G0_A0_d450_s1/product_tree_sha.txt
+100644 blob 1af487f3c39dd0003519855180422ab0ec1d0710     610	artifacts/v1/Za_G0_A0_d450_s1/progress_snip.log
+100644 blob e1796aab4c2e3c3911be9e97d1715ae9a86398bb    3920	artifacts/v1/Za_G0_A0_d450_s1/runner_specs.txt
+100644 blob f113b7958db79a4864d55c896dd0bac359fd33eb    7580	artifacts/v1/Za_G0_A0_d450_s1/scenario.json
+100644 blob 926c49141500159a5f7c2d82c064c1acf9873136  109925	artifacts/v1/Za_G0_A0_d450_s1/season_cells.csv
+100644 blob cb04c7e86c39f02309ede4a3e0bbd295e799d701   22387	artifacts/v1/Za_G0_A0_d450_s1/season_ports.csv
+100644 blob 42387e41e3f59464bf3695fed56558b6f1a5e740     961	artifacts/v1/Za_G0_A0_d450_s1/sim_runner.log
+100644 blob 3c7ed0d8cfd60bcc723bcc49111a2c294d037442     453	artifacts/v1/Za_G0_A0_d450_s1/summary.csv
+100644 blob 3111a1693f0fcc06d938614e55515fca1929a0c4     349	artifacts/v1/Za_G0_A0_d450_s1/timing.txt
+100644 blob ff31462ec93293431f8b50582fcf7b528f343d96   14361	artifacts/v1/Za_G0_A0_d450_s1/trader_summary.csv
+100644 blob 626799f0f85326a8c1fc522db584e86cdfccd51f       3	artifacts/v1/Za_G0_A0_d450_s1/verify_side.txt
+100644 blob c6a40b134c6dcc32b875a5d90d1790cf33c43020     495	artifacts/v1/Za_G0_A0_d720_s1/combos.csv
+100644 blob a9ed3c908c0e0e4d02629d4241dcfe626e75712f      41	artifacts/v1/Za_G0_A0_d720_s1/commit_sha.txt
+100644 blob 549e568f224d19372702c60cb41b7a4e58b78514   17907	artifacts/v1/Za_G0_A0_d720_s1/obs_ext.csv
+100644 blob f4209d50f8f1084776ab3c6591b8ae25e1bf2f58      41	artifacts/v1/Za_G0_A0_d720_s1/product_base_sha.txt
+100644 blob 219ad5828b4107b6aa52ab6cb6b7fb317c604c7c      41	artifacts/v1/Za_G0_A0_d720_s1/product_tree_sha.txt
+100644 blob d8680a0052c443dcc6f7d01dd4bddf69648cb5a1     913	artifacts/v1/Za_G0_A0_d720_s1/progress_snip.log
+100644 blob ce1f226bb50041e900fe29d1f3e95a143b21ab20    3897	artifacts/v1/Za_G0_A0_d720_s1/runner_specs.txt
+100644 blob f113b7958db79a4864d55c896dd0bac359fd33eb    7580	artifacts/v1/Za_G0_A0_d720_s1/scenario.json
+100644 blob 9e3e5d11d7f676176de1e3ddf2e47cef2f490943  174641	artifacts/v1/Za_G0_A0_d720_s1/season_cells.csv
+100644 blob 45953cbbe287f9c68a6039df8bb44762708509b1   35671	artifacts/v1/Za_G0_A0_d720_s1/season_ports.csv
+100644 blob abb552f2688ab97b1cdc63b0268f73ba5f4b5721    1264	artifacts/v1/Za_G0_A0_d720_s1/sim_runner.log
+100644 blob 7564f5387c7a1a4ec8a47941981ded51752ac6fe     487	artifacts/v1/Za_G0_A0_d720_s1/summary.csv
+100644 blob 32be5b1294b6cd26f5db05526a55acaec4d06cdd     351	artifacts/v1/Za_G0_A0_d720_s1/timing.txt
+100644 blob 04cd30fdb8635af04330d93e6e5b2d0bc9edcd73   21973	artifacts/v1/Za_G0_A0_d720_s1/trader_summary.csv
+100644 blob 626799f0f85326a8c1fc522db584e86cdfccd51f       3	artifacts/v1/Za_G0_A0_d720_s1/verify_side.txt
+100644 blob 1407b49316ba98ea9c63bda520626fefdeafe52f     495	artifacts/v1/Za_G0_A0_d720_s2/combos.csv
+100644 blob a9ed3c908c0e0e4d02629d4241dcfe626e75712f      41	artifacts/v1/Za_G0_A0_d720_s2/commit_sha.txt
+100644 blob 9984cde2d2ac2d0254946b88fd5e162ad0bdacc3   17906	artifacts/v1/Za_G0_A0_d720_s2/obs_ext.csv
+100644 blob f4209d50f8f1084776ab3c6591b8ae25e1bf2f58      41	artifacts/v1/Za_G0_A0_d720_s2/product_base_sha.txt
+100644 blob 219ad5828b4107b6aa52ab6cb6b7fb317c604c7c      41	artifacts/v1/Za_G0_A0_d720_s2/product_tree_sha.txt
+100644 blob 6cf08eb1d915844d50d475c530d2cb1936cec08f     913	artifacts/v1/Za_G0_A0_d720_s2/progress_snip.log
+100644 blob 6921297dcb461f2ca340086029e5af4940126192    3747	artifacts/v1/Za_G0_A0_d720_s2/runner_specs.txt
+100644 blob c7ec6e4ceed47338fd73ae33d5288aaf0b67b95e    7580	artifacts/v1/Za_G0_A0_d720_s2/scenario.json
+100644 blob 2d98eb3f2ce77d2d86f628a8d1b510b8ee39454c  174807	artifacts/v1/Za_G0_A0_d720_s2/season_cells.csv
+100644 blob cb15e6ddf9d36dc31cf76fd1af0aebc44747ed59   35707	artifacts/v1/Za_G0_A0_d720_s2/season_ports.csv
+100644 blob 857713a14b0dace2f1ba04a6570a6efda0db07d6    1264	artifacts/v1/Za_G0_A0_d720_s2/sim_runner.log
+100644 blob fe37a9db311b442bb831d15fcefcbd2a2d68ccb1     487	artifacts/v1/Za_G0_A0_d720_s2/summary.csv
+100644 blob 6b8348b71a83c58b13c32994751fde50c25d748a     351	artifacts/v1/Za_G0_A0_d720_s2/timing.txt
+100644 blob d901227c1b5c6f0dd42a304cef4315796423dbed   22854	artifacts/v1/Za_G0_A0_d720_s2/trader_summary.csv
+100644 blob 626799f0f85326a8c1fc522db584e86cdfccd51f       3	artifacts/v1/Za_G0_A0_d720_s2/verify_side.txt
+100644 blob f113b7958db79a4864d55c896dd0bac359fd33eb    7580	artifacts/v1/_scenarios/Za_G0_A0_d450_s1.json
+100644 blob f113b7958db79a4864d55c896dd0bac359fd33eb    7580	artifacts/v1/_scenarios/Za_G0_A0_d720_s1.json
+100644 blob c7ec6e4ceed47338fd73ae33d5288aaf0b67b95e    7580	artifacts/v1/_scenarios/Za_G0_A0_d720_s2.json
+100644 blob 997223b9fbcd34bb26b304ca415ce8d3559852f9    1003	dispatch-v1.txt
+100644 blob 79b0ac259cdd93cf63defafeb77874370e1dc823    1139	failed-runs.txt
+100644 blob 0ab455610b552df3bb83efd243fdacacf3cb7911     460	lane.txt
+100644 blob d83592f975c50ad5dc6ed48f4857cb11f40509cb     208	orphan_push.log
+100644 blob 732bbe04df63405f12cc280f4a8474cd487bc67c      56	orphan_sha.txt
+100644 blob 69a4ca448f9df477f95fe7846b9eda65ee98f5c7    7082	report.md
+100644 blob 455ee6054011bfb2893c4fcf5af525c875233ed2    6430	v1-a-side.txt
+100644 blob 544343cb92bef0fac4ab68a6bc6b4d0ba0b417bf    4654	v2-compare.txt
+100644 blob d1c997e2eeb69c1c6f2f45f73714a88eff38666f    3217	v3-met.txt
