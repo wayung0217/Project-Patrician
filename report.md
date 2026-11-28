@@ -159,12 +159,12 @@ Authoritative failures: none. Retries: 0. Duplicate uncancellable by agent token
 - `orphan_push.log` / `orphan_sha.txt` (S9d)
 - store also: `dispatch-l1.txt`, `failed-runs.txt`, `artifacts/d1800/`, `artifacts/d3600/`, `artifacts/_scenarios/`
 
-ORPHAN=`review/overnight-17-88-L` — see `orphan_sha.txt`  
+ORPHAN=`review/overnight-17-88-L` @ `dad6dfb7b44bd725342f21fe9d18c833d7a4091f`  
 VERIFY_BRANCH: `perf-verify-1788` retained for Lane V (L did not delete).
 
 ## FILES_TOTAL
 
-FILES_TOTAL=46
+FILES_TOTAL=49
 
 - `artifacts/_scenarios/Za_G0_A0_d1800_s1.json`
 - `artifacts/_scenarios/Za_G0_A0_d3600_s1.json`
@@ -209,6 +209,9 @@ FILES_TOTAL=46
 - `l1-d3600.txt`
 - `l3-curve.txt`
 - `lane.txt`
+- `ls-tree.txt`
+- `orphan_push.log`
+- `orphan_sha.txt`
 - `progress_timed_d1800.txt`
 - `progress_timed_d3600.txt`
 - `report.md`
