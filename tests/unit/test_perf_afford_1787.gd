@@ -329,4 +329,4 @@ func _wipe_dir(dir: String) -> void:
 			while fn != "":
 				if fn != "." and fn != "..":
 					d.remove(fn)
-				fn := d.get_next()
+				fn = d.get_next()
