@@ -1,0 +1,17 @@
+orphan_push.log
+=== orphan push review/overnight-17-88-B 2026-11-28 10:15:14 Asia/Hong_Kong ===
+orphan_sha.txt=e5f68b78e193e125f89fd9526e71bf8b28c3a549
+branch_tip=e5f68b78e193e125f89fd9526e71bf8b28c3a549
+e5f68b78e193e125f89fd9526e71bf8b28c3a549	refs/heads/review/overnight-17-88-B
+=== git ls-tree -r -l ===
+100644 blob 6567fab1de615fafc7914352f2cb535280723db8     355	b-blob-trader_registry.txt
+100644 blob 880dea6700d29c541c612606e056fc9aec0d9353    4383	b-branches.txt
+100644 blob 94b69a58d35b7dcf7f1b07da90e5cc3de7f60ff4     917	b-ci.txt
+100644 blob fb25a01cd8c7164aae9f30aac9a06b208eb81775   12849	b-diff-tests.txt
+100644 blob 44a27381e2f7b095dd8cd1a8c2df27a667005be6    3377	b-diff-trader_registry.txt
+100644 blob 9539c28fff6ac090d7c5a07acbf968ce31c32b76    5632	b-diff-workflow-removed.txt
+100644 blob 6ed52aa0c6238fe39302026ad12aefe373bfdbfa    2541	b-e-scan.txt
+100644 blob bb3c934c63ac804a0981a3983c0aab46abeb4f1e    1404	b-main-ci-last30.txt
+100644 blob 2d25a9420312b8bd699b9845b7c27fe32de14b04    3604	b-merge.txt
+100644 blob b3b3bb5f4be8a408d89b61cb3a6cd5685b5bc594       7	lane.txt
+100644 blob 0be6ede555274a0809539544fec8e177eccaecb2    5614	report.md

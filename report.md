@@ -163,7 +163,7 @@ b-e-scan.txt
 b-main-ci-last30.txt
 b-merge.txt
 lane.txt
-report.md
 orphan_push.log
 orphan_sha.txt
+report.md
 FILES_TOTAL=13
