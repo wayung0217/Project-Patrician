@@ -1,0 +1,350 @@
+q2-answers.txt
+PACK=17-90 LANE=Q QA-READONLY-4
+READ_COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+ASOF_HKT=2026-11-28 13:20:01 Asia/Hong_Kong
+FORMAT=答案＋原文; 不下判斷
+
+########## Q2(a) 排除目的港 D（貨 g）的條件 ##########
+SCOPE=停在出發港 P 的閒置船進入 _evaluate_and_maybe_sail 後，使 (D,g) 無法成為候選／被 continue 的條件（檔:行＋條件原文）。
+前置（非 dest 剔除，但使評估不開始）：
+A0 daily_step 跳過 frozen／retired — autoload/trader_registry.gd:382-385
+382|		if bool(t.get("retired", false)) or t.get("mode") == MODE_RETIRED:
+383|			continue
+384|		if is_frozen(t["account_id"]):
+385|			continue
+A0b _process_ship_day 僅 STATE_DOCKED 且非卡住 OUTBOUND 才評估 — :670-692
+670|func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool) -> Dictionary:
+671|	var empty := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
+672|	var t: Dictionary = _traders[String(tid)]
+673|	var info: Dictionary = ShipRegistry.ship_info(sid)
+674|	if info.is_empty():
+675|		return empty
+676|	var plans: Dictionary = t["plans"]
+677|	var plan: Dictionary = plans.get(String(sid), TradeEvaluator.empty_plan())
+678|	var state: StringName = StringName(info.get("state", &""))
+679|	## FRM-SYS17-05: arrival day → sell.
+680|	if state == Ship.STATE_DOCKED and StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+681|		_try_sell(tid, sid, t, plan, info)
+682|		plan = plans.get(String(sid), TradeEvaluator.empty_plan())
+683|		info = ShipRegistry.ship_info(sid)
+684|		state = StringName(info.get("state", &""))
+685|	if state != Ship.STATE_DOCKED:
+686|		return empty
+687|	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
+688|		## Still holding outbound goods that failed to sell — wait.
+689|		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+690|			return empty
+691|	## Idle docked → evaluate.
+692|	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
+A0c free_cap<1 → return — :739-741
+739|	if free_cap < 1:
+740|		idle_map[String(sid)] = idle + 1
+741|		return stats
+
+逐條 dest/good 排除：
+--- dest==from_port → continue ---
+FILE=autoload/trader_registry.gd LINES=764-765
+764|		if String(dest) == String(from_port):
+765|			continue
+
+--- not _can_enter(acct, dest) → continue ---
+FILE=autoload/trader_registry.gd LINES=766-767
+766|		if not _can_enter(acct, dest):
+767|			continue
+
+--- not _draft_ok(sid, dest) → continue ---
+FILE=autoload/trader_registry.gd LINES=768-769
+768|		if not _draft_ok(sid, dest):
+769|			continue
+
+--- voyage days <1（無路徑／不在 _voyage_days）→ continue ---
+FILE=autoload/trader_registry.gd LINES=770-772
+770|		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+771|		if days < 1:
+772|			continue
+
+--- not _can_trade_good(acct, from_port, good, BUY) → continue ---
+FILE=autoload/trader_registry.gd LINES=777-778
+777|			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
+778|				continue
+
+--- not _can_trade_good(acct, dest, good, SELL) → continue ---
+FILE=autoload/trader_registry.gd LINES=779-780
+779|			if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
+780|				continue
+
+--- market_qty < 1 at origin → continue ---
+FILE=autoload/trader_registry.gd LINES=781-783
+781|			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
+782|			if market_qty < 1:
+783|				continue
+
+--- intel empty/null mid 且 not explore → continue（可記 dest_saw_good） ---
+FILE=autoload/trader_registry.gd LINES=787-801
+787|			if intel.is_empty() or intel.get("mid_li", null) == null:
+788|				## D-109(c)／F2: empty board → not a profit candidate.
+789|				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+790|				## catalog base_price_li as ranking stand-in only (profit gate skipped).
+791|				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+792|				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+793|				if not explore:
+794|					## excl_dests 語意不變：舊碼在 no_intel continue 前已要求 afford≥1。
+795|					## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：經區域快取取可負擔量。
+796|					var afford_excl: int = _afford_qty_cached(
+797|						afford_by_good, acct, from_port, good
+798|					)
+799|					if afford_excl >= 1:
+800|						dest_saw_good = true
+801|					continue
+
+--- explore 且 GoodCatalog 無貨或 base_price_li<1 → continue ---
+FILE=autoload/trader_registry.gd LINES=802-806
+802|				if not GoodCatalog.is_loaded():
+803|					continue
+804|				var gd_ex: GoodDef = GoodCatalog.get_good(good)
+805|				if gd_ex == null or gd_ex.base_price_li < 1:
+806|					continue
+
+--- weekly_potential_demand < 1 → continue ---
+FILE=autoload/trader_registry.gd LINES=816-817
+816|			if weekly < 1:
+817|				continue ## D-110(g)
+
+--- afford < 1 → continue ---
+FILE=autoload/trader_registry.gd LINES=819-821
+819|			var afford: int = _afford_qty_cached(afford_by_good, acct, from_port, good)
+820|			if afford < 1:
+821|				continue
+
+--- q=min(afford,free_cap,market_qty[,EXPLORE_QTY]) < 1 → continue ---
+FILE=autoload/trader_registry.gd LINES=823-827
+823|			var q: int = mini(mini(afford, free_cap), market_qty)
+824|			if explore:
+825|				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+826|			if q < 1:
+827|				continue
+
+--- precise buy quote KEY_ERROR → continue（僅 top_n） ---
+FILE=autoload/trader_registry.gd LINES=864-865
+864|		if buy_q.has(MarketPricer.KEY_ERROR):
+865|			continue
+
+--- buy_cost > CashLedger.balance → continue（僅 top_n） ---
+FILE=autoload/trader_registry.gd LINES=868-869
+868|		if buy_cost > CashLedger.balance(acct):
+869|			continue
+
+相關 callee 原文：
+--- _can_enter ---
+1012|func _can_enter(actor: StringName, port: StringName) -> bool:
+1013|	if _qual_open:
+1014|		return true
+1015|	if TradeDesk.has_method("has_qualification_provider") and TradeDesk.has_qualification_provider():
+1016|		## Use injected provider via a soft path: TradeDesk doesn't expose can_enter;
+1017|		## call through QualificationProvider if accessible — tests inject allow-all.
+1018|		pass
+1019|	## Without TierRegistry, QUAL_OPEN is the M1b path (D-109(e)).
+1020|	return _qual_open
+--- _can_trade_good ---
+1023|func _can_trade_good(actor: StringName, port: StringName, good: StringName, side: int) -> bool:
+1024|	if _qual_open:
+1025|		return true
+1026|	return _qual_open
+--- _draft_ok ---
+1029|func _draft_ok(ship_id: StringName, dest: StringName) -> bool:
+1030|	var info: Dictionary = ShipRegistry.ship_info(ship_id)
+1031|	if info.is_empty():
+1032|		return false
+1033|	var type_s: String = String(info.get("type", ""))
+1034|	## F4②／C-06: unknown ship type → error, no silent default draft.
+1035|	if not ShipRegistry.SHIP_DRAFT.has(type_s):
+1036|		_day_errors.append(
+1037|			_err(ERR_SYS17_04, "ship_type", type_s, "SHIP_DRAFT missing type (C-06; no default)")
+1038|		)
+1039|		push_error("TraderRegistry: SHIP_DRAFT missing type %s (C-06)" % type_s)
+1040|		return false
+1041|	var ship_draft: int = int(ShipRegistry.SHIP_DRAFT[type_s])
+1042|	return ship_draft <= ShipRegistry.port_draft(dest)
+--- _dest_intel empty paths ---
+984|func _dest_intel(
+985|	actor: StringName, present_port: StringName, dest: StringName, good: StringName
+986|) -> Dictionary:
+987|	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
+988|	var key := "%s|%s" % [String(dest), String(good)]
+989|	if _intel_override.has(key):
+990|		return (_intel_override[key] as Dictionary).duplicate(true)
+991|	if IntelLedger.is_loaded():
+992|		var board: Dictionary = IntelLedger.board_for(actor, present_port, dest, good)
+993|		if board.is_empty():
+994|			return {}
+995|		if int(board.get(IntelLedger.KEY_N, 0)) == 0:
+996|			return {}
+997|		if board.get(IntelLedger.KEY_CONSENSUS_MID, null) == null:
+998|			return {}
+999|		var weeks_x = board.get(IntelLedger.KEY_CONSENSUS_WEEKS, null)
+1000|		var weeks_f: Variant = null
+1001|		if weeks_x != null and typeof(weeks_x) == TYPE_INT and Params.has_prm("PRM-SYS15-WEEKS_SCALE"):
+1002|			var scale: int = Params.get_int("PRM-SYS15-WEEKS_SCALE")
+1003|			if scale > 0:
+1004|				weeks_f = float(int(weeks_x)) / float(scale)
+1005|		return {
+1006|			"mid_li": int(board[IntelLedger.KEY_CONSENSUS_MID]),
+1007|			"weeks": weeks_f if weeks_f != null else 0.0,
+1008|		}
+1009|	return {}
+
+NOTE: explore 時 _filter_explore_candidates 可把有 offtake 的 (D,g) 從最終 candidates 去掉（若存在 cold 候選）— :885-886 / :952-962；此為探索偏好過濾，非上述 coarse continue。
+952|func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Array:
+953|	## Prefer destinations with empty offtake history for any candidate good.
+954|	var cold: Array = []
+955|	for c in candidates:
+956|		var dest: StringName = c["port_id"]
+957|		var good: StringName = c["good_id"]
+958|		var snap: Dictionary = GoodsLedger.offtake_snapshot(dest, good)
+959|		var wq: int = int(snap.get("window_qty", 0)) if not snap.is_empty() else 0
+960|		if wq == 0:
+961|			cold.append(c)
+962|	return cold if not cold.is_empty() else candidates
+
+########## Q2(b) Za_G0_A0 EXPLORE_RATE / EXPLORE_QTY ##########
+答案：
+PRM-SYS17-EXPLORE_RATE = 0.05
+PRM-SYS17-EXPLORE_QTY = 50
+位置：情境檔 docs/spec/scenario_M1b_G0.json overrides（Za_G0_A0 由 tools/m1b_prepare_scenario.py 從此檔產生；L d1800/scenario.json 同值）。
+data/params/params.json 無 EXPLORE 鍵（無預設值於此檔）。
+params_schema.json 僅型別約束，無 default 數值。
+原文：
+--- docs/spec/scenario_M1b_G0.json:267-268 ---
+267|    "PRM-SYS17-EXPLORE_QTY": 50,
+268|    "PRM-SYS17-EXPLORE_RATE": 0.05,
+--- tools/m1b_prepare_scenario.py:11 Za_G0_A0 mapping ---
+11|    "Za_G0_A0": ("docs/spec/scenario_M1b_G0.json", 0, True, 1, False),
+--- L artifacts d1800/scenario.json EXPLORE ---
+266|    "PRM-SYS17-EXPLORE_QTY": 50,
+267|    "PRM-SYS17-EXPLORE_RATE": 0.05,
+
+########## Q2(c) 五港：吃水／入港資格／商品准入是否擋散商船型或貨 ##########
+情境：Za_G0_A0 layers.QUAL_OPEN=true；散商船型常數 SHIP_TYPE=SH-03。
+
+### 吃水（ShipRegistry.port_draft／_draft_ok）
+答案：碼上不會（散商僅 SH-03；SH-03 draft=1；五港 port_draft（dock_lv=0）皆 ≥1）。
+原文 SHIP_TYPE：
+40|const MODE_RETIRED := &"RETIRED"
+原文 SHIP_DRAFT：
+71|## UNIT-DRAFT ints (fixtures use 0=淺; TST-SYS13-14 ladder).
+72|const DRAFT_SHALLOW := 0
+73|const DRAFT_MEDIUM := 1
+74|const DRAFT_DEEP := 2
+75|
+76|const SHIP_DRAFT := {
+77|	"SH-01": DRAFT_SHALLOW,
+78|	"SH-02": DRAFT_MEDIUM,
+79|	"SH-03": DRAFT_MEDIUM,
+原文 port_draft：
+465|func port_draft(port_id: StringName) -> int:
+466|	## FRM-SYS13-11.
+467|	assert(_loaded, "ShipRegistry.port_draft before load")
+468|	var port: PortDef = PortRegistry.get_port(String(port_id))
+469|	if port == null:
+470|		_record(ERR_SYS13_01, "port_id", port_id, "unknown port")
+471|		return HOLD_CHECK_FAILURE
+472|	var base: int = int(port.draft_limit_class)
+473|	var dock_lv: int = 0
+474|	if BuildingEconomy.is_loaded():
+475|		dock_lv = BuildingEconomy.public_level(port_id, CB_DOCK)
+476|	var boosted: int = base + maxi(0, dock_lv - 1)
+原文 _draft_ok：
+1029|func _draft_ok(ship_id: StringName, dest: StringName) -> bool:
+1030|	var info: Dictionary = ShipRegistry.ship_info(ship_id)
+1031|	if info.is_empty():
+1032|		return false
+1033|	var type_s: String = String(info.get("type", ""))
+1034|	## F4②／C-06: unknown ship type → error, no silent default draft.
+1035|	if not ShipRegistry.SHIP_DRAFT.has(type_s):
+1036|		_day_errors.append(
+1037|			_err(ERR_SYS17_04, "ship_type", type_s, "SHIP_DRAFT missing type (C-06; no default)")
+1038|		)
+1039|		push_error("TraderRegistry: SHIP_DRAFT missing type %s (C-06)" % type_s)
+1040|		return false
+1041|	var ship_draft: int = int(ShipRegistry.SHIP_DRAFT[type_s])
+1042|	return ship_draft <= ShipRegistry.port_draft(dest)
+五港 data/ports/*.tres draft_limit_class／is_free_port：
+PT-04.tres:155|port_id = "PT-04"
+PT-04.tres:156|name_zh = "寧波"
+PT-04.tres:157|is_free_port = true
+PT-04.tres:158|draft_limit_class = 2
+PT-05.tres:155|port_id = "PT-05"
+PT-05.tres:156|name_zh = "松江"
+PT-05.tres:157|is_free_port = true
+PT-05.tres:158|draft_limit_class = 1
+PT-08.tres:151|port_id = "PT-08"
+PT-08.tres:152|name_zh = "雞籠"
+PT-08.tres:153|draft_limit_class = 3
+PT-09.tres:150|port_id = "PT-09"
+PT-09.tres:151|name_zh = "淡水"
+PT-09.tres:152|draft_limit_class = 2
+PT-11.tres:153|port_id = "PT-11"
+PT-11.tres:154|name_zh = "那霸"
+PT-11.tres:155|is_free_port = true
+PT-11.tres:156|draft_limit_class = 2
+推算 port_draft(dock_lv=0)=mini(2, draft_limit_class)：PT-04→2, PT-05→1, PT-08→2, PT-09→2, PT-11→2；SH-03=1 → 1≤各值。
+
+### 入港資格（_can_enter）
+答案：碼上不會（QUAL_OPEN 路徑 _can_enter 恒 true）。
+原文 _can_enter：
+1012|func _can_enter(actor: StringName, port: StringName) -> bool:
+1013|	if _qual_open:
+1014|		return true
+1015|	if TradeDesk.has_method("has_qualification_provider") and TradeDesk.has_qualification_provider():
+1016|		## Use injected provider via a soft path: TradeDesk doesn't expose can_enter;
+1017|		## call through QualificationProvider if accessible — tests inject allow-all.
+1018|		pass
+1019|	## Without TierRegistry, QUAL_OPEN is the M1b path (D-109(e)).
+1020|	return _qual_open
+原文 Za layers QUAL_OPEN：
+scenario_M1b_G0.json:11|    "QUAL_OPEN": true,
+
+### 商品准入（_can_trade_good）
+答案：碼上不會（QUAL_OPEN 路徑 _can_trade_good 恒 true）。
+原文：
+1023|func _can_trade_good(actor: StringName, port: StringName, good: StringName, side: int) -> bool:
+1024|	if _qual_open:
+1025|		return true
+1026|	return _qual_open
+NOTE: is_free_port 未出現在 _evaluate_and_maybe_sail／_can_enter／_can_trade_good 路徑。
+
+########## Q2(d) 開局五港散商船數 ##########
+答案（依碼＋opening_population＋Za SHIP_MIX 可答，無需執行模擬）：
+PT-04 寧波 = 9
+PT-05 松江 = 10
+PT-08 雞籠 = 3
+PT-09 淡水 = 2
+PT-11 那霸 = 4
+依據：_largest_remainder_ports(pop, total_ships=sum(SHIP_MIX)=83) 後 _step_assign_ships 按 trader 打包；本組 SHIP_MIX 打包結果與 LR 槽位一致。
+opening pops (poor+citizen+rich)：PT-04=3600, PT-05=4000, PT-08=1000, PT-09=1000, PT-11=1800
+原文分配：
+465|func _step_assign_ships() -> Array:
+466|	## D-109(a): ships by opening pop largest-remainder; same trader → same port; ties port_id asc.
+467|	var errors: Array = []
+468|	if not ShipRegistry.is_loaded():
+469|		errors.append(_err(ERR_SYS17_04, "ShipRegistry", null, "ShipRegistry required for ships"))
+470|		return errors
+471|	var ports: Array = _opening_port_pops()
+472|	if ports.is_empty():
+473|		errors.append(_err(ERR_SYS17_04, "ports", null, "no ports for ship allocation"))
+474|		return errors
+475|	var total_ships: int = 0
+476|	for tid in all_trader_ids():
+477|		total_ships += int((_traders[String(tid)] as Dictionary).get("ship_count_planned", 0))
+478|	if total_ships < 1:
+479|		errors.append(_err(ERR_SYS17_04, PRM_SHIP_MIX, total_ships, "NO_SHIP"))
+480|		return errors
+557|func _largest_remainder_ports(ports: Array, total_ships: int) -> Array:
+558|	## D-109(a): quota = floor(pop／Σpop × N); remainders fill; ties port_id asc (already sorted).
+559|	var sum_pop: int = 0
+560|	for p in ports:
+561|		sum_pop += int(p["pop"])
+562|	var result: Array = []
+SHIP_MIX sum from scenario_M1b_G0.json overrides PRM-SYS17-SHIP_MIX length 48 sum 83；MERCHANT_COUNT_MAX=48。
+scenario_M1b_G0.json:272|"PRM-SYS17-MERCHANT_COUNT_MAX": 48,
+scenario_M1b_G0.json:274|"PRM-SYS17-SHIP_MIX": [

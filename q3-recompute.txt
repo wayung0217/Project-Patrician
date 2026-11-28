@@ -1,0 +1,75 @@
+q3-recompute.txt
+PACK=17-90 LANE=Q
+READ_COMMIT_FOR_CODE=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+SOURCE_ORPHAN_BRANCH=review/overnight-17-88-L
+SOURCE_ORPHAN_SHA=orphan_sha.txt
+29472f3c367d770a03577797656b8df33d166f87
+SOURCE_ARTIFACT=artifacts/d1800/trader_summary.csv
+SOURCE_PRODUCT_COMMIT=6d1ad7331166f3a5eb366d7631f3f24bbccaa630
+SOURCE_PRODUCT_TREE=7b533dd0b03b885aefcc357465dea8be06892a52
+STORE_PATH=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/overnight-17-88-L/artifacts/d1800/trader_summary.csv
+ASOF_HKT=2026-11-28 13:20:01 Asia/Hong_Kong
+METHOD=sum sail_count over season_index 0..19 per port_id; count seasons where sail_count==0; list ships_in_port per season
+
+## All 16 ports — 20-season sail_count sum / zero-season count
+port_id	name	sail_sum_20	zero_seasons	ships_in_port_by_season(0..19)
+PT-01	月港	1363	0	4,6,6,5,7,2,6,8,3,3,4,9,2,4,2,9,2,2,2,4
+PT-02	安海	2673	0	27,21,15,16,18,13,16,17,14,10,18,11,12,9,7,7,2,12,7,11
+PT-03	福州	1056	0	4,5,7,4,1,0,4,2,0,0,0,0,1,4,3,0,8,4,3,0
+PT-04	寧波	124	14	0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+PT-05	松江	90	16	0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+PT-06	澎湖	1840	0	3,6,2,1,0,2,1,0,3,0,0,0,3,0,5,4,6,0,9,4
+PT-07	大員	1378	0	1,2,3,0,4,12,7,1,4,14,8,3,4,2,6,2,11,9,6,6
+PT-08	雞籠	97	15	0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+PT-09	淡水	37	17	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+PT-10	魍港	911	0	0,0,3,7,3,1,0,0,0,1,0,0,1,0,3,5,1,2,1,0
+PT-11	那霸	4	19	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+PT-12	長崎	2886	0	12,5,15,14,19,20,17,20,16,19,13,6,15,15,15,15,14,6,14,12
+PT-13	平戶	4258	0	9,13,7,9,10,11,16,15,19,8,20,24,20,19,20,24,19,18,18,19
+PT-14	博多	1846	0	0,0,1,4,1,1,3,5,6,3,4,6,0,2,4,1,6,9,6,4
+PT-15	鹿兒島	554	3	4,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1
+PT-16	釜山倭館	1124	0	0,2,1,2,0,4,1,0,0,2,0,1,2,5,5,5,5,7,5,9
+
+GRAND_TOTAL_SAILS_ALL_PORTS=20241
+KNOWN_FACT_1_GRAND_TOTAL=20241
+DIFF_GRAND_TOTAL=0
+
+## Five ports vs 已知事實 1
+port_id	name	recompute_sail_sum	known_sail_sum	diff_sail	recompute_zero_seasons	known_zero_seasons	diff_zero
+PT-04	寧波	124	124	0	14	14	0
+PT-05	松江	90	90	0	16	16	0
+PT-08	雞籠	97	97	0	15	15	0
+PT-09	淡水	37	37	0	17	17	0
+PT-11	那霸	4	4	0	19	19	0
+
+## Five ports — ships_in_port per season (recompute)
+PT-04 寧波 ships_in_port: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  seasons_with_ships_in_port_eq_0=19
+PT-05 松江 ships_in_port: [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  seasons_with_ships_in_port_eq_0=19
+PT-08 雞籠 ships_in_port: [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  seasons_with_ships_in_port_eq_0=19
+PT-09 淡水 ships_in_port: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  seasons_with_ships_in_port_eq_0=20
+PT-11 那霸 ships_in_port: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  seasons_with_ships_in_port_eq_0=20
+
+## Season 0 (first 90d) sail_count for five (fact note)
+PT-04 season0_sail_count=37
+PT-05 season0_sail_count=51
+PT-08 season0_sail_count=22
+PT-09 season0_sail_count=5
+PT-11 season0_sail_count=4
+
+## Other 11 ports sail_sum range
+other11_min=554 other11_max=4258
+KNOWN_other_range=554 to 4258
+DIFF_other_min=0 DIFF_other_max=0
+
+## MISMATCH_VS_KNOWN_FACT_1 (list only; no judgment)
+NUMERIC_SAIL_AND_ZERO: no differences vs 已知事實 1 sail_sum / zero_seasons / grand_total / other11 range
+- ships_in_port_zero_seasons PT-04: 19/20 (fact phrasing: 幾乎全為 0 — numeric not given)
+- ships_in_port_zero_seasons PT-05: 19/20 (fact phrasing: 幾乎全為 0 — numeric not given)
+- ships_in_port_zero_seasons PT-08: 19/20 (fact phrasing: 幾乎全為 0 — numeric not given)
+- ships_in_port_zero_seasons PT-09: 20/20 (fact phrasing: 幾乎全為 0 — numeric not given)
+- ships_in_port_zero_seasons PT-11: 20/20 (fact phrasing: 幾乎全為 0 — numeric not given)

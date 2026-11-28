@@ -1,0 +1,1118 @@
+q1-source.txt
+PACK=17-90 LANE=Q QA-READONLY-4
+READ_COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+ASOF_HKT=2026-11-28 13:18:05 Asia/Hong_Kong
+NOTE=Full source excerpts; no truncation within listed ranges.
+
+########## Q1(a) _evaluate_and_maybe_sail + candidate-rejection callees ##########
+===== FILE=autoload/trader_registry.gd LINES=721-949 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=229 LABEL=_evaluate_and_maybe_sail =====
+func _evaluate_and_maybe_sail(
+	tid: StringName, sid: StringName, t: Dictionary, info: Dictionary, explore: bool
+) -> Dictionary:
+	var stats := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
+	var from_port: StringName = StringName(info.get("port_id", &""))
+	var acct: StringName = t["account_id"]
+	var idle_map: Dictionary = t["idle_days"]
+	var idle: int = int(idle_map.get(String(sid), 0))
+	var cap_map: Dictionary = Params.get_value(StringName(PRM_CAPACITY))
+	var hold_cap: int = int(cap_map.get(String(SHIP_TYPE), 0))
+	var hold_id: StringName = StringName(GoodsLedger.CONTAINER_ID_FMT_HOLD % String(sid))
+	var hold_dict: Dictionary = GoodsLedger.make_hold(String(sid), String(acct))
+	## Free hold space.
+	var used: int = 0
+	if GoodCatalog.is_loaded():
+		for g in GoodCatalog.all_ids():
+			used += GoodsLedger.get_qty(hold_dict, g)
+	var free_cap: int = hold_cap - used
+	if free_cap < 1:
+		idle_map[String(sid)] = idle + 1
+		return stats
+	var goods: Array = []
+	if GoodCatalog.is_loaded():
+		for g in GoodCatalog.all_ids():
+			goods.append(g)
+	goods.sort_custom(func(a, b): return String(a) < String(b))
+	var ports: Array = []
+	if PortRegistry.is_loaded():
+		for p in PortRegistry.all_ids():
+			ports.append(p)
+	ports.sort_custom(func(a, b): return String(a) < String(b))
+
+	var candidates: Array = []
+	## Dest ports excluded because board_for / dest intel empty (F2 "no market").
+	var excl_dests: Dictionary = {}
+	## 17-87 A1／FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：
+	## 每次 eval_sail、每種貨最多呼叫 max_affordable_qty 一次；結果只存本評估區域字典
+	## （評估結束即丟棄；不得模組／成員層快取；不得跨船、跨日、跨評估）。
+	var afford_by_good: Dictionary = {}
+	## Coarse pass then top-3 precise (D-104(c)⑤).
+	var coarse: Array = []
+	for dest_v in ports:
+		var dest: StringName = dest_v
+		if String(dest) == String(from_port):
+			continue
+		if not _can_enter(acct, dest):
+			continue
+		if not _draft_ok(sid, dest):
+			continue
+		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
+		if days < 1:
+			continue
+		var dest_had_intel := false
+		var dest_saw_good := false
+		for good_v in goods:
+			var good: StringName = good_v
+			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
+				continue
+			if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
+				continue
+			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
+			if market_qty < 1:
+				continue
+			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+			var mid: int = 0
+			var weeks_v: Variant = 0.0
+			if intel.is_empty() or intel.get("mid_li", null) == null:
+				## D-109(c)／F2: empty board → not a profit candidate.
+				## D-123(b)／FRM-SYS17-04: explore must still sail without board — use
+				## catalog base_price_li as ranking stand-in only (profit gate skipped).
+				## D-126（補正三甲／v6.99.222）：規格未定義「無 mid 時如何排序」；
+				## base_price_li 為 Owner 核准試驗值（非正式 FRM 數值），邏輯不變。
+				if not explore:
+					## excl_dests 語意不變：舊碼在 no_intel continue 前已要求 afford≥1。
+					## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：經區域快取取可負擔量。
+					var afford_excl: int = _afford_qty_cached(
+						afford_by_good, acct, from_port, good
+					)
+					if afford_excl >= 1:
+						dest_saw_good = true
+					continue
+				if not GoodCatalog.is_loaded():
+					continue
+				var gd_ex: GoodDef = GoodCatalog.get_good(good)
+				if gd_ex == null or gd_ex.base_price_li < 1:
+					continue
+				mid = gd_ex.base_price_li
+				weeks_v = 0.0
+			else:
+				dest_had_intel = true
+				mid = int(intel["mid_li"])
+				weeks_v = intel.get("weeks", 0.0)
+			var weekly: int = 0
+			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
+				weekly = DemandModel.weekly_potential_demand(dest, good)
+			if weekly < 1:
+				continue ## D-110(g)
+			## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：廉價判斷之後才取可負擔量（惰性）。
+			var afford: int = _afford_qty_cached(afford_by_good, acct, from_port, good)
+			if afford < 1:
+				continue
+			dest_saw_good = true
+			var q: int = mini(mini(afford, free_cap), market_qty)
+			if explore:
+				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+			if q < 1:
+				continue
+			var rough_buy: int = mid ## coarse; precise quote later
+			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
+			var origin_mid: float = MarketPricer.mid_price(from_port, good)
+			rough_buy = floori(origin_mid * float(q))
+			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
+			coarse.append({
+				"port_id": dest,
+				"good_id": good,
+				"qty": q,
+				"voyage_days": days,
+				"mid_li": mid,
+				"weeks": weeks_v,
+				"weekly": weekly,
+				"score": score,
+				"rough_buy": rough_buy,
+			})
+		if dest_saw_good and not dest_had_intel and not explore:
+			excl_dests[String(dest)] = true
+	stats["excl_dests"] = excl_dests
+	coarse.sort_custom(func(a, b):
+		if int(a["score"]) != int(b["score"]):
+			return int(a["score"]) > int(b["score"])
+		var ap := String(a["port_id"])
+		var bp := String(b["port_id"])
+		if ap != bp:
+			return ap < bp
+		return String(a["good_id"]) < String(b["good_id"])
+	)
+	var top_n: int = Params.get_int(StringName(PRM_TOP_N))
+	var top: Array = coarse.slice(0, mini(top_n, coarse.size()))
+	for c in top:
+		var dest2: StringName = c["port_id"]
+		var good2: StringName = c["good_id"]
+		var q2: int = int(c["qty"])
+		var days2: int = int(c["voyage_days"])
+		var buy_q: Dictionary = MarketPricer.quote(from_port, good2, MarketPricer.SIDE_BUY, q2)
+		if buy_q.has(MarketPricer.KEY_ERROR):
+			continue
+		var buy_cost: int = int(buy_q.get(MarketPricer.KEY_TOTAL_LI, 0))
+		## Recompute affordable with precise quote.
+		if buy_cost > CashLedger.balance(acct):
+			continue
+		var sell_rev: int = _estimate_sell_revenue(
+			dest2, good2, q2, int(c["mid_li"]), c.get("weeks", 0.0), int(c["weekly"])
+		)
+		var profit: int = TradeEvaluator.daily_marginal_profit(sell_rev, buy_cost, TAX_LI, days2)
+		candidates.append({
+			"port_id": dest2,
+			"good_id": good2,
+			"qty": q2,
+			"voyage_days": days2,
+			"daily_profit_li": profit,
+			"buy_cost_li": buy_cost,
+			"sell_revenue_li": sell_rev,
+		})
+	stats["evaluable"] = candidates.size()
+	## Explore: destinations with no offtake history preferred; skip profit gate later.
+	if explore:
+		candidates = _filter_explore_candidates(candidates, from_port)
+
+	var best: Dictionary = TradeEvaluator.pick_best_candidate(candidates)
+	var profit_min: int = Params.get_int(StringName(PRM_PROFIT_MIN))
+	var idle_max: int = Params.get_int(StringName(PRM_IDLE_MAX))
+	var loss_tol: int = Params.get_int(StringName(PRM_LOSS_TOL))
+	var ppm: int = Params.get_int(StringName(PRM_PPM))
+	if best.is_empty():
+		idle_map[String(sid)] = idle + 1
+		_clear_plan(t, sid)
+		return stats
+	var decision: Dictionary
+	if explore:
+		decision = {"sail": true, "idle_days_after": 0}
+	else:
+		decision = TradeEvaluator.decide_sail_or_idle(
+			int(best["daily_profit_li"]),
+			int(best["buy_cost_li"]),
+			int(best["sell_revenue_li"]),
+			idle,
+			profit_min,
+			idle_max,
+			loss_tol,
+			ppm
+		)
+	if not bool(decision["sail"]):
+		idle_map[String(sid)] = int(decision["idle_days_after"])
+		_clear_plan(t, sid)
+		return stats
+	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
+	var dest_f: StringName = best["port_id"]
+	var good_f: StringName = best["good_id"]
+	var qty_f: int = int(best["qty"])
+	var buy2: Dictionary = MarketPricer.quote(from_port, good_f, MarketPricer.SIDE_BUY, qty_f)
+	var preview: int = int(buy2.get(MarketPricer.KEY_TOTAL_LI, 0))
+	var seq: int = TradeDesk.execute_trade(
+		acct, hold_id, from_port, good_f, MarketPricer.SIDE_BUY, qty_f, preview
+	)
+	if seq < 1:
+		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+		_clear_plan(t, sid)
+		idle_map[String(sid)] = idle + 1
+		return stats
+	var arrival: int = ShipRegistry.sail(acct, sid, dest_f)
+	if arrival < 1:
+		## Rollback not available as single API — leave goods in hold; clear plan; record.
+		_day_errors.append(_err(ERR_SYS17_06, "sail", sid, "sail failed after buy"))
+		_clear_plan(t, sid)
+		return stats
+	var new_plan := {
+		"phase": TradeEvaluator.PHASE_OUTBOUND,
+		"from_port": from_port,
+		"to_port": dest_f,
+		"good_id": good_f,
+		"qty": qty_f,
+		"expected_profit_li": int(best["daily_profit_li"]),
+	}
+	(t["plans"] as Dictionary)[String(sid)] = new_plan
+	t["mode"] = MODE_SAILING
+	idle_map[String(sid)] = 0
+	_queue_signal("trader_plan_set", [tid, sid, new_plan])
+	_record_season_sail(from_port, good_f, qty_f, int(best["daily_profit_li"]))
+	stats["sailed"] = 1
+	return stats
+===== FILE=autoload/trader_registry.gd LINES=670-692 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=23 LABEL=_process_ship_day (caller) =====
+func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool) -> Dictionary:
+	var empty := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
+	var t: Dictionary = _traders[String(tid)]
+	var info: Dictionary = ShipRegistry.ship_info(sid)
+	if info.is_empty():
+		return empty
+	var plans: Dictionary = t["plans"]
+	var plan: Dictionary = plans.get(String(sid), TradeEvaluator.empty_plan())
+	var state: StringName = StringName(info.get("state", &""))
+	## FRM-SYS17-05: arrival day → sell.
+	if state == Ship.STATE_DOCKED and StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+		_try_sell(tid, sid, t, plan, info)
+		plan = plans.get(String(sid), TradeEvaluator.empty_plan())
+		info = ShipRegistry.ship_info(sid)
+		state = StringName(info.get("state", &""))
+	if state != Ship.STATE_DOCKED:
+		return empty
+	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
+		## Still holding outbound goods that failed to sell — wait.
+		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+			return empty
+	## Idle docked → evaluate.
+	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
+===== FILE=autoload/trader_registry.gd LINES=984-1009 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=26 LABEL=_dest_intel =====
+func _dest_intel(
+	actor: StringName, present_port: StringName, dest: StringName, good: StringName
+) -> Dictionary:
+	## F2／FRM-SYS15-06 (2026-11-24): board_for(actor, 本港 P, 目的港 O, g).
+	var key := "%s|%s" % [String(dest), String(good)]
+	if _intel_override.has(key):
+		return (_intel_override[key] as Dictionary).duplicate(true)
+	if IntelLedger.is_loaded():
+		var board: Dictionary = IntelLedger.board_for(actor, present_port, dest, good)
+		if board.is_empty():
+			return {}
+		if int(board.get(IntelLedger.KEY_N, 0)) == 0:
+			return {}
+		if board.get(IntelLedger.KEY_CONSENSUS_MID, null) == null:
+			return {}
+		var weeks_x = board.get(IntelLedger.KEY_CONSENSUS_WEEKS, null)
+		var weeks_f: Variant = null
+		if weeks_x != null and typeof(weeks_x) == TYPE_INT and Params.has_prm("PRM-SYS15-WEEKS_SCALE"):
+			var scale: int = Params.get_int("PRM-SYS15-WEEKS_SCALE")
+			if scale > 0:
+				weeks_f = float(int(weeks_x)) / float(scale)
+		return {
+			"mid_li": int(board[IntelLedger.KEY_CONSENSUS_MID]),
+			"weeks": weeks_f if weeks_f != null else 0.0,
+		}
+	return {}
+===== FILE=autoload/trader_registry.gd LINES=1012-1020 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=9 LABEL=_can_enter =====
+func _can_enter(actor: StringName, port: StringName) -> bool:
+	if _qual_open:
+		return true
+	if TradeDesk.has_method("has_qualification_provider") and TradeDesk.has_qualification_provider():
+		## Use injected provider via a soft path: TradeDesk doesn't expose can_enter;
+		## call through QualificationProvider if accessible — tests inject allow-all.
+		pass
+	## Without TierRegistry, QUAL_OPEN is the M1b path (D-109(e)).
+	return _qual_open
+===== FILE=autoload/trader_registry.gd LINES=1023-1026 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=4 LABEL=_can_trade_good =====
+func _can_trade_good(actor: StringName, port: StringName, good: StringName, side: int) -> bool:
+	if _qual_open:
+		return true
+	return _qual_open
+===== FILE=autoload/trader_registry.gd LINES=1029-1042 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=14 LABEL=_draft_ok =====
+func _draft_ok(ship_id: StringName, dest: StringName) -> bool:
+	var info: Dictionary = ShipRegistry.ship_info(ship_id)
+	if info.is_empty():
+		return false
+	var type_s: String = String(info.get("type", ""))
+	## F4②／C-06: unknown ship type → error, no silent default draft.
+	if not ShipRegistry.SHIP_DRAFT.has(type_s):
+		_day_errors.append(
+			_err(ERR_SYS17_04, "ship_type", type_s, "SHIP_DRAFT missing type (C-06; no default)")
+		)
+		push_error("TraderRegistry: SHIP_DRAFT missing type %s (C-06)" % type_s)
+		return false
+	var ship_draft: int = int(ShipRegistry.SHIP_DRAFT[type_s])
+	return ship_draft <= ShipRegistry.port_draft(dest)
+===== FILE=autoload/trader_registry.gd LINES=1045-1057 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=13 LABEL=_afford_qty_cached =====
+func _afford_qty_cached(
+	cache: Dictionary, actor: StringName, port: StringName, good: StringName
+) -> int:
+	## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④（17-87 A1）：
+	## 單次評估內每貨至多一次 max_affordable_qty；cache 必須是呼叫方區域字典。
+	## 鍵用 String(good) 查詢（C-08：不依 Dictionary 插入序遍歷）。
+	## 不改 CashLedger.max_affordable_qty 本體與簽名。
+	var key := String(good)
+	if cache.has(key):
+		return int(cache[key])
+	var qty: int = CashLedger.max_affordable_qty(actor, port, good)
+	cache[key] = qty
+	return qty
+===== FILE=autoload/trader_registry.gd LINES=965-981 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=17 LABEL=_estimate_sell_revenue =====
+func _estimate_sell_revenue(
+	dest: StringName, good: StringName, qty: int, mid_li: int, weeks_v: Variant, weekly: int
+) -> int:
+	## D-110(g)／F4③: MarketPricer.batch_area is the single trapezoid site (N-04).
+	if weekly < 1 or not MarketPricer.is_loaded():
+		return mid_li * qty
+	var anchor: int = 0
+	if GoodCatalog.is_loaded():
+		var gd: GoodDef = GoodCatalog.get_good(good)
+		if gd != null:
+			anchor = gd.base_price_li
+	if anchor <= 0:
+		return mid_li * qty
+	var w0: float = 0.0
+	if weeks_v != null and typeof(weeks_v) in [TYPE_FLOAT, TYPE_INT]:
+		w0 = float(weeks_v)
+	return TradeEvaluator.estimate_sell_revenue_li(anchor, float(weekly), w0, qty)
+===== FILE=autoload/ship_registry.gd LINES=76-79 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=4 LABEL=SHIP_DRAFT const =====
+const SHIP_DRAFT := {
+	"SH-01": DRAFT_SHALLOW,
+	"SH-02": DRAFT_MEDIUM,
+	"SH-03": DRAFT_MEDIUM,
+===== FILE=autoload/ship_registry.gd LINES=465-476 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=12 LABEL=port_draft =====
+func port_draft(port_id: StringName) -> int:
+	## FRM-SYS13-11.
+	assert(_loaded, "ShipRegistry.port_draft before load")
+	var port: PortDef = PortRegistry.get_port(String(port_id))
+	if port == null:
+		_record(ERR_SYS13_01, "port_id", port_id, "unknown port")
+		return HOLD_CHECK_FAILURE
+	var base: int = int(port.draft_limit_class)
+	var dock_lv: int = 0
+	if BuildingEconomy.is_loaded():
+		dock_lv = BuildingEconomy.public_level(port_id, CB_DOCK)
+	var boosted: int = base + maxi(0, dock_lv - 1)
+===== FILE=core/trade_evaluator.gd LINES=1-115 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=115 LABEL=TradeEvaluator full file =====
+class_name TradeEvaluator
+extends RefCounted
+## D-44g／FRM-SYS17-02／FRM-SYS18-02: pure trade evaluation core (SYS-17／18 shared).
+## No Autoload module state except F4③ sell-revenue → MarketPricer.batch_area (N-04／D-120(b)④).
+
+const PHASE_NONE := &"NONE"
+const PHASE_OUTBOUND := &"OUTBOUND"
+const PHASE_SELL := &"SELL"
+
+
+## FRM-SYS17-02／EX-17-02-01: daily marginal profit (li／day), floori.
+## sell_revenue_li = estimated sell income (D-110(g) depth area, or mid×q for EX-17-02-01).
+## tax_li = 0 until WP-39 (D-109(b)). voyage_days ≥ 1.
+static func daily_marginal_profit(
+	sell_revenue_li: int, buy_cost_li: int, tax_li: int, voyage_days: int
+) -> int:
+	if voyage_days < 1:
+		return 0
+	return floori((sell_revenue_li - buy_cost_li - tax_li) / float(voyage_days))
+
+
+## D-110(g)／EX-17-02-02／03／F4③: estimated sell revenue via MarketPricer.batch_area.
+## w0 = destination board consensus weeks; weekly_potential > 0; q > 0.
+## stock_before = roundi(w0 × weekly); stock_after = stock_before + qty (sell into market).
+static func estimate_sell_revenue_li(
+	anchor_li: int,
+	weekly_potential: float,
+	w0: float,
+	qty: int
+) -> int:
+	if qty <= 0 or weekly_potential <= 0.0 or anchor_li <= 0:
+		return 0
+	if not MarketPricer.is_loaded():
+		return 0
+	var stock_before: int = roundi(w0 * weekly_potential)
+	if stock_before < 0:
+		stock_before = 0
+	var stock_after: int = stock_before + qty
+	return floori(MarketPricer.batch_area(anchor_li, weekly_potential, stock_before, stock_after))
+
+
+## FRM-SYS17-03／EX-17-03-*: decide sail vs idle given best candidate profit and idle streak.
+## Returns {sail: bool, idle_days_after: int}.
+static func decide_sail_or_idle(
+	best_daily_profit_li: int,
+	best_buy_cost_li: int,
+	best_sell_revenue_li: int,
+	idle_days: int,
+	profit_min_li: int,
+	idle_days_max: int,
+	loss_tol_ppm: int,
+	ppm_scale: int
+) -> Dictionary:
+	var sail := false
+	if best_daily_profit_li >= profit_min_li:
+		sail = true
+	elif idle_days >= idle_days_max and best_buy_cost_li > 0:
+		var expected_loss: int = best_buy_cost_li - best_sell_revenue_li
+		if expected_loss < 0:
+			expected_loss = 0
+		## F4① (ppm path): integer multiply then floori divide (no float(n)*rate+1e-9).
+		var tol: int = 0
+		if ppm_scale > 0:
+			tol = floori(float(best_buy_cost_li * loss_tol_ppm) / float(ppm_scale))
+		if expected_loss <= tol:
+			sail = true
+	var idle_after: int = 0 if sail else idle_days + 1
+	return {"sail": sail, "idle_days_after": idle_after}
+
+
+## FRM-SYS17-09: pick best candidate; ties → (port_id, good_id) ascending.
+## candidates: Array[{port_id, good_id, daily_profit_li, ...}]
+static func pick_best_candidate(candidates: Array) -> Dictionary:
+	if candidates.is_empty():
+		return {}
+	var best: Dictionary = candidates[0]
+	for i in range(1, candidates.size()):
+		var c: Dictionary = candidates[i]
+		var bp: int = int(best.get("daily_profit_li", 0))
+		var cp: int = int(c.get("daily_profit_li", 0))
+		if cp > bp:
+			best = c
+			continue
+		if cp < bp:
+			continue
+		var bport := String(best.get("port_id", ""))
+		var cport := String(c.get("port_id", ""))
+		if cport < bport:
+			best = c
+			continue
+		if cport > bport:
+			continue
+		var bgood := String(best.get("good_id", ""))
+		var cgood := String(c.get("good_id", ""))
+		if cgood < bgood:
+			best = c
+	return best
+
+
+## Coarse rank key for D-104(c)⑤ mid×q − rough buy; higher is better.
+static func coarse_score(mid_li: int, qty: int, rough_buy_li: int, voyage_days: int) -> int:
+	if voyage_days < 1 or qty < 1:
+		return -9223372036854775807
+	return floori((float(mid_li) * float(qty) - float(rough_buy_li)) / float(voyage_days))
+
+
+static func empty_plan() -> Dictionary:
+	return {
+		"phase": PHASE_NONE,
+		"from_port": &"",
+		"to_port": &"",
+		"good_id": &"",
+		"qty": 0,
+		"expected_profit_li": 0,
+	}
+
+########## Q1(b) explore lottery + explore dest selection ##########
+===== FILE=autoload/trader_registry.gd LINES=643-667 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=25 LABEL=_pick_explore_traders =====
+func _pick_explore_traders(day: int) -> Dictionary:
+	var out: Dictionary = {}
+	var rate: float = Params.get_float(StringName(PRM_EXPLORE_RATE))
+	if rate <= 0.0:
+		return out
+	var ids: PackedStringArray = all_trader_ids()
+	## F4① GAP: EXPLORE_RATE is 定點數 0..1 (not ppm); FRM-SYS17-04 writes no integer
+	## precision for n×rate — do not invent ppm conversion (dispatch: 列缺口停該項).
+	var n_pick: int = int(floor(float(ids.size()) * rate + 1e-9))
+	if n_pick < 1 and rate > 0.0 and not ids.is_empty():
+		n_pick = 1
+	## Deterministic: score each trader by SplitMix output; take lowest n_pick ids by score then id.
+	var scored: Array = []
+	for tid in ids:
+		var seed: int = Rng.derive_seed(_rng_seed, day, String(tid), "", PURPOSE_EXPLORE)
+		var step: Array = Rng.next(seed)
+		scored.append({"id": String(tid), "r": int(step[1])})
+	scored.sort_custom(func(a, b):
+		if int(a["r"]) != int(b["r"]):
+			return int(a["r"]) < int(b["r"])
+		return String(a["id"]) < String(b["id"])
+	)
+	for i in range(mini(n_pick, scored.size())):
+		out[String(scored[i]["id"])] = true
+	return out
+===== FILE=autoload/trader_registry.gd LINES=952-962 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=11 LABEL=_filter_explore_candidates =====
+func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Array:
+	## Prefer destinations with empty offtake history for any candidate good.
+	var cold: Array = []
+	for c in candidates:
+		var dest: StringName = c["port_id"]
+		var good: StringName = c["good_id"]
+		var snap: Dictionary = GoodsLedger.offtake_snapshot(dest, good)
+		var wq: int = int(snap.get("window_qty", 0)) if not snap.is_empty() else 0
+		if wq == 0:
+			cold.append(c)
+	return cold if not cold.is_empty() else candidates
+===== FILE=autoload/trader_registry.gd LINES=369-420 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=52 LABEL=daily_step (explore_set wiring) =====
+func daily_step(day: int) -> Array:
+	## FRM-SYS17-01／03／05；D-104(c)⑤ perf. Insert after IntelLedger (17.1 F／25.1).
+	_day_errors.clear()
+	if not _enabled or not _loaded:
+		return _day_errors
+	_refresh_freeze_from_arrears()
+	_build_board_cache_day()
+	## Explore lottery once per day (FRM-SYS17-04).
+	var explore_set: Dictionary = _pick_explore_traders(day)
+	## Process (trader_id, ship_id) ascending (D-109 plan-per-ship).
+	var pairs: Array = []
+	for tid in all_trader_ids():
+		var t: Dictionary = _traders[String(tid)]
+		if bool(t.get("retired", false)) or t.get("mode") == MODE_RETIRED:
+			continue
+		if is_frozen(t["account_id"]):
+			continue
+		var sids: Array = t["ship_ids"]
+		var sorted_ships: Array = sids.duplicate()
+		sorted_ships.sort_custom(func(a, b): return String(a) < String(b))
+		for sid in sorted_ships:
+			pairs.append([tid, sid])
+	pairs.sort_custom(func(a, b):
+		var ta := String(a[0])
+		var tb := String(b[0])
+		if ta != tb:
+			return ta < tb
+		return String(a[1]) < String(b[1])
+	)
+	var diag_eval := 0
+	var diag_excl_ports: Dictionary = {}
+	var diag_sails := 0
+	for pair in pairs:
+		var tid: StringName = pair[0]
+		var sid: StringName = pair[1]
+		var st: Dictionary = _process_ship_day(tid, sid, day, explore_set.has(String(tid)))
+		diag_eval += int(st.get("evaluable", 0))
+		diag_sails += int(st.get("sailed", 0))
+		var excl_v: Variant = st.get("excl_dests", {})
+		if typeof(excl_v) == TYPE_DICTIONARY:
+			for dk in (excl_v as Dictionary).keys():
+				diag_excl_ports[String(dk)] = true
+	if _diag_z != null and _diag_z.has_method("note_day_eval"):
+		_diag_z.call(
+			"note_day_eval",
+			day,
+			diag_eval,
+			diag_excl_ports.size(),
+			explore_set.size(),
+			diag_sails
+		)
+	return _day_errors
+===== FILE=autoload/goods_ledger.gd LINES=476-487 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=12 LABEL=offtake_snapshot (data used by explore filter) =====
+func offtake_snapshot(port_id: StringName, good_id: StringName) -> Dictionary:
+	# 15.1 H／ERR-SYS03-07: unknown port／good → empty Dictionary + last_error (D-08c).
+	assert(_loaded, "GoodsLedger.offtake_snapshot before load_and_validate")
+	_clear_last_error()
+	var port_s: String = String(port_id)
+	var good_s: String = String(good_id)
+	if not _is_known_port(port_s) or not _is_known_good(good_s):
+		_record_error(ERR_SYS03_07, FIELD_PORT_ID if not _is_known_port(port_s) else "good_id", port_s if not _is_known_port(port_s) else good_s, "offtake_snapshot unknown port_id or good_id")
+		return {}
+	if not _offtake_snapshot.has(port_s):
+		return {}
+	var by_good: Dictionary = _offtake_snapshot[port_s]
+ANSWER_NOTE_Q1b:
+- Explore lottery: _pick_explore_traders uses Params.get_float(PRM-SYS17-EXPLORE_RATE); n=ceil(rate*active); RNG seeded (_rng_seed*100003+day).
+- Explore dest filter: _filter_explore_candidates keeps candidates where GoodsLedger.offtake_snapshot(dest, good).window_qty==0 (or empty snap→wq=0); if none cold, keeps all candidates.
+- Granularity in code: (dest port, good) via offtake_snapshot(dest, good) — not port-only.
+
+########## Q1(c) opening ship allocation + idle definition ##########
+===== FILE=autoload/trader_registry.gd LINES=438-462 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=25 LABEL=_step_create_roster =====
+func _step_create_roster() -> Array:
+	var errors: Array = []
+	var n: int = Params.get_int(StringName(PRM_COUNT))
+	var mix: Array = _to_int_array(Params.get_value(StringName(PRM_SHIP_MIX)))
+	var tiers: Array = _to_int_array(Params.get_value(StringName(PRM_TIER_MIX)))
+	for i in range(n):
+		var idx: int = i + 1
+		var tid := StringName(TRADER_ID_FMT % idx)
+		var acct := CashLedger.make_actor_id(ACCOUNT_TOKEN_FMT % idx)
+		if CashLedger.create_account(acct, Account.Kind.ACTOR, tid) != OK:
+			errors.append(CashLedger.last_error())
+			continue
+		_traders[String(tid)] = {
+			"trader_id": tid,
+			"account_id": acct,
+			"ship_ids": [],
+			"ship_count_planned": int(mix[i]),
+			"qualifications": {"tier": int(tiers[i])},
+			"mode": MODE_IDLE,
+			"plans": {}, ## ship_id → plan
+			"idle_days": {}, ## ship_id → int
+			"retired": false,
+			"home_port": &"",
+		}
+	return errors
+===== FILE=autoload/trader_registry.gd LINES=465-539 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=75 LABEL=_step_assign_ships =====
+func _step_assign_ships() -> Array:
+	## D-109(a): ships by opening pop largest-remainder; same trader → same port; ties port_id asc.
+	var errors: Array = []
+	if not ShipRegistry.is_loaded():
+		errors.append(_err(ERR_SYS17_04, "ShipRegistry", null, "ShipRegistry required for ships"))
+		return errors
+	var ports: Array = _opening_port_pops()
+	if ports.is_empty():
+		errors.append(_err(ERR_SYS17_04, "ports", null, "no ports for ship allocation"))
+		return errors
+	var total_ships: int = 0
+	for tid in all_trader_ids():
+		total_ships += int((_traders[String(tid)] as Dictionary).get("ship_count_planned", 0))
+	if total_ships < 1:
+		errors.append(_err(ERR_SYS17_04, PRM_SHIP_MIX, total_ships, "NO_SHIP"))
+		return errors
+	var alloc: Array = _largest_remainder_ports(ports, total_ships)
+	## Assign traders in id order into port buckets (ships of one trader stay together).
+	var port_slots: Dictionary = {} ## port → remaining capacity
+	for row in alloc:
+		port_slots[String(row["port_id"])] = int(row["ships"])
+	var port_order: Array = port_slots.keys()
+	port_order.sort()
+	var crew_map: Dictionary = Params.get_value(StringName(PRM_CREW))
+	var crew_n: int = int(crew_map.get(String(SHIP_TYPE), 0))
+	if crew_n < 1:
+		errors.append(_err(ERR_SYS17_04, PRM_CREW, crew_n, "CREW[SH-03] required"))
+		return errors
+	for tid in all_trader_ids():
+		var t: Dictionary = _traders[String(tid)]
+		var need: int = int(t["ship_count_planned"])
+		var chosen := &""
+		for p in port_order:
+			if int(port_slots.get(p, 0)) >= need:
+				chosen = StringName(p)
+				port_slots[p] = int(port_slots[p]) - need
+				break
+		if chosen == &"":
+			## Fallback: any port with remaining, even if < need (should not happen with LR).
+			for p in port_order:
+				if int(port_slots.get(p, 0)) > 0:
+					chosen = StringName(p)
+					port_slots[p] = maxi(0, int(port_slots[p]) - need)
+					break
+		if chosen == &"":
+			chosen = StringName(port_order[0])
+		t["home_port"] = chosen
+		var beggars_before: int = 0
+		if PopulationModel.is_loaded():
+			beggars_before = PopulationModel.beggars(chosen)
+		for _s in range(need):
+			var sid: StringName = ShipRegistry.spawn_docked_ship(
+				SHIP_TYPE, t["account_id"], chosen, crew_n
+			)
+			if sid == &"":
+				errors.append(_err(ERR_SYS17_04, "spawn", tid, "ship spawn failed"))
+				continue
+			(t["ship_ids"] as Array).append(sid)
+			(t["plans"] as Dictionary)[String(sid)] = TradeEvaluator.empty_plan()
+			(t["idle_days"] as Dictionary)[String(sid)] = 0
+		if PopulationModel.is_loaded():
+			var beggars_after: int = PopulationModel.beggars(chosen)
+			if beggars_after < beggars_before:
+				errors.append(
+					_err(ERR_SYS17_04, "sailors", chosen, "opening crew must not reduce beggars (D-23e)")
+				)
+	## Verify at least one ship.
+	var any_ship := false
+	for tid2 in all_trader_ids():
+		if not (_traders[String(tid2)]["ship_ids"] as Array).is_empty():
+			any_ship = true
+			break
+	if not any_ship:
+		errors.append(_err(ERR_SYS17_04, "ships", 0, "NO_SHIP"))
+	return errors
+===== FILE=autoload/trader_registry.gd LINES=542-554 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=13 LABEL=_opening_port_pops =====
+func _opening_port_pops() -> Array:
+	## [{port_id, pop}] sorted port_id asc.
+	var out: Array = []
+	if not PortRegistry.is_loaded():
+		return out
+	for pid_v in PortRegistry.all_ids():
+		var pid: StringName = pid_v
+		var pop: int = 0
+		if PopulationModel.is_loaded():
+			pop = PopulationModel.population(pid)
+		out.append({"port_id": pid, "pop": pop})
+	out.sort_custom(func(a, b): return String(a["port_id"]) < String(b["port_id"]))
+	return out
+===== FILE=autoload/trader_registry.gd LINES=557-588 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=32 LABEL=_largest_remainder_ports =====
+func _largest_remainder_ports(ports: Array, total_ships: int) -> Array:
+	## D-109(a): quota = floor(pop／Σpop × N); remainders fill; ties port_id asc (already sorted).
+	var sum_pop: int = 0
+	for p in ports:
+		sum_pop += int(p["pop"])
+	var result: Array = []
+	var assigned: int = 0
+	var fracs: Array = []
+	for p in ports:
+		var pop: int = int(p["pop"])
+		var exact: float = 0.0
+		if sum_pop > 0:
+			exact = float(pop) * float(total_ships) / float(sum_pop)
+		var base: int = floori(exact)
+		result.append({"port_id": p["port_id"], "ships": base, "frac": exact - float(base)})
+		assigned += base
+	var remain: int = total_ships - assigned
+	fracs = result.duplicate()
+	fracs.sort_custom(func(a, b):
+		if float(a["frac"]) != float(b["frac"]):
+			return float(a["frac"]) > float(b["frac"])
+		return String(a["port_id"]) < String(b["port_id"])
+	)
+	for i in range(remain):
+		if i >= fracs.size():
+			break
+		var pid := String(fracs[i]["port_id"])
+		for row in result:
+			if String(row["port_id"]) == pid:
+				row["ships"] = int(row["ships"]) + 1
+				break
+	return result
+===== FILE=autoload/trader_registry.gd LINES=40-40 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=1 LABEL=SHIP_TYPE const line =====
+const MODE_RETIRED := &"RETIRED"
+===== FILE=autoload/trader_registry.gd LINES=40-41 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=2 LABEL=SHIP_TYPE =====
+const MODE_RETIRED := &"RETIRED"
+
+===== FILE=autoload/trader_registry.gd LINES=670-692 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=23 LABEL=_process_ship_day idle gate =====
+func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool) -> Dictionary:
+	var empty := {"evaluable": 0, "excl_dests": {}, "sailed": 0}
+	var t: Dictionary = _traders[String(tid)]
+	var info: Dictionary = ShipRegistry.ship_info(sid)
+	if info.is_empty():
+		return empty
+	var plans: Dictionary = t["plans"]
+	var plan: Dictionary = plans.get(String(sid), TradeEvaluator.empty_plan())
+	var state: StringName = StringName(info.get("state", &""))
+	## FRM-SYS17-05: arrival day → sell.
+	if state == Ship.STATE_DOCKED and StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+		_try_sell(tid, sid, t, plan, info)
+		plan = plans.get(String(sid), TradeEvaluator.empty_plan())
+		info = ShipRegistry.ship_info(sid)
+		state = StringName(info.get("state", &""))
+	if state != Ship.STATE_DOCKED:
+		return empty
+	if StringName(plan.get("phase", &"")) != TradeEvaluator.PHASE_NONE:
+		## Still holding outbound goods that failed to sell — wait.
+		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
+			return empty
+	## Idle docked → evaluate.
+	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
+===== FILE=autoload/trader_registry.gd LINES=695-718 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=24 LABEL=_try_sell resets idle_days =====
+func _try_sell(tid: StringName, sid: StringName, t: Dictionary, plan: Dictionary, info: Dictionary) -> void:
+	var good: StringName = plan.get("good_id", &"")
+	var port: StringName = StringName(info.get("port_id", &""))
+	var acct: StringName = t["account_id"]
+	var hold_id: StringName = StringName(GoodsLedger.CONTAINER_ID_FMT_HOLD % String(sid))
+	var hold_dict: Dictionary = GoodsLedger.make_hold(String(sid), String(acct))
+	var qty: int = GoodsLedger.get_qty(hold_dict, good)
+	if qty <= 0:
+		_note_plan_inconsistent(tid, sid, "OUTBOUND but hold empty")
+		_clear_plan(t, sid)
+		t["mode"] = MODE_IDLE
+		return
+	var quote: Dictionary = MarketPricer.quote(port, good, MarketPricer.SIDE_SELL, qty)
+	var preview: int = int(quote.get(MarketPricer.KEY_TOTAL_LI, 0))
+	var seq: int = TradeDesk.execute_trade(
+		acct, hold_id, port, good, MarketPricer.SIDE_SELL, qty, preview
+	)
+	if seq < 1:
+		## Stay; retry next day (FRM-SYS17-05).
+		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+		return
+	_clear_plan(t, sid)
+	t["mode"] = MODE_IDLE
+	(t["idle_days"] as Dictionary)[String(sid)] = 0
+ANSWER_NOTE_Q1c:
+- Per-port initial ship count: D-109(a) largest-remainder of PopulationModel.population(port) × total ships from sum(PRM-SYS17-SHIP_MIX); traders packed so one trader's ships share a port (_step_assign_ships).
+- Idle: docked ship with plan phase NONE enters _evaluate_and_maybe_sail; idle_days increments on freeze/no-cap/no-candidate/decide stay; reset to 0 on sail or successful sell.
+
+########## Q1(d) trader_summary field computation ##########
+===== FILE=sim/sampler.gd LINES=28-31 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=4 LABEL=HDR_TRADER_SUMMARY =====
+## D-110(d): trader_summary（Lane A fills TraderRegistry; zeros until then）.
+const HDR_TRADER_SUMMARY := (
+	"run_id,seed,season_index,port_id,sail_count,ships_in_port,frozen_traders,"
+	+ "cargo_dan_json,avg_daily_margin_li"
+===== FILE=sim/sampler.gd LINES=191-223 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=33 LABEL=_sample_trader_row =====
+func _sample_trader_row(run_id: int, seed: int, season_index: int, port_s: String) -> void:
+	## D-110(d) trader_summary — TraderRegistry public queries when Lane A present.
+	var sail := 0
+	var in_port := 0
+	var frozen := 0
+	var cargo_json := "{}"
+	var avg_margin := 0
+	var tre: Object = _trader_registry()
+	if tre != null:
+		if tre.has_method("season_sail_count"):
+			sail = int(tre.call("season_sail_count", StringName(port_s), season_index))
+		if tre.has_method("ships_in_port_count"):
+			in_port = int(tre.call("ships_in_port_count", StringName(port_s)))
+		if tre.has_method("frozen_trader_count"):
+			frozen = int(tre.call("frozen_trader_count", StringName(port_s)))
+		if tre.has_method("season_cargo_dan"):
+			var cargo: Variant = tre.call("season_cargo_dan", StringName(port_s), season_index)
+			if typeof(cargo) == TYPE_DICTIONARY:
+				var cd: Dictionary = cargo
+				cargo_json = "{}" if cd.is_empty() else JSON.stringify(cd)
+		if tre.has_method("season_avg_daily_margin_li"):
+			avg_margin = int(tre.call("season_avg_daily_margin_li", StringName(port_s), season_index))
+	trader_summary_rows.append({
+		"run_id": run_id,
+		"seed": seed,
+		"season_index": season_index,
+		"port_id": port_s,
+		"sail_count": sail,
+		"ships_in_port": in_port,
+		"frozen_traders": frozen,
+		"cargo_dan_json": cargo_json,
+		"avg_daily_margin_li": avg_margin,
+	})
+===== FILE=autoload/trader_registry.gd LINES=82-84 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=3 LABEL=season_sail_count =====
+func season_sail_count(port_id: StringName, season_index: int) -> int:
+	## D-123(c): sails departed from port_id during season_index.
+	return int(_season_sails.get(_season_port_key(season_index, port_id), 0))
+===== FILE=autoload/trader_registry.gd LINES=103-120 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=18 LABEL=ships_in_port_count =====
+func ships_in_port_count(port_id: StringName) -> int:
+	## Docked trader ships currently at port_id.
+	if not _enabled or not _loaded or not ShipRegistry.is_loaded():
+		return 0
+	var n := 0
+	for tid in all_trader_ids():
+		var t: Dictionary = _traders[String(tid)]
+		if bool(t.get("retired", false)):
+			continue
+		for sid_v in t["ship_ids"]:
+			var info: Dictionary = ShipRegistry.ship_info(sid_v)
+			if info.is_empty():
+				continue
+			if StringName(info.get("state", &"")) != Ship.STATE_DOCKED:
+				continue
+			if String(info.get("port_id", "")) == String(port_id):
+				n += 1
+	return n
+===== FILE=autoload/trader_registry.gd LINES=123-142 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=20 LABEL=frozen_trader_count =====
+func frozen_trader_count(port_id: StringName) -> int:
+	## Frozen traders that have at least one ship at port_id (docked or any).
+	if not _enabled or not _loaded:
+		return 0
+	var n := 0
+	for tid in all_trader_ids():
+		var t: Dictionary = _traders[String(tid)]
+		if not is_frozen(t["account_id"]):
+			continue
+		var at_port := false
+		for sid_v in t["ship_ids"]:
+			var info: Dictionary = ShipRegistry.ship_info(sid_v)
+			if info.is_empty():
+				continue
+			if String(info.get("port_id", "")) == String(port_id):
+				at_port = true
+				break
+		if at_port:
+			n += 1
+	return n
+===== FILE=autoload/trader_registry.gd LINES=149-161 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=13 LABEL=_record_season_sail =====
+func _record_season_sail(
+	from_port: StringName, good_id: StringName, qty: int, daily_margin_li: int
+) -> void:
+	var si: int = Clock.season_index if Clock != null else 0
+	var key := _season_port_key(si, from_port)
+	_season_sails[key] = int(_season_sails.get(key, 0)) + 1
+	if not _season_cargo.has(key):
+		_season_cargo[key] = {}
+	var cargo: Dictionary = _season_cargo[key]
+	var g_s := String(good_id)
+	cargo[g_s] = int(cargo.get(g_s, 0)) + qty
+	_season_margin_sum[key] = int(_season_margin_sum.get(key, 0)) + daily_margin_li
+	_season_margin_n[key] = int(_season_margin_n.get(key, 0)) + 1
+===== FILE=sim/csv_out.gd LINES=150-175 COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6 TOTAL_LINES_IN_CHUNK=26 LABEL=trader_summary CSV write (context) =====
+	return _store(path, lines)
+
+
+static func _write_trader_summary(path: String, rows: Array) -> bool:
+	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_TRADER_SUMMARY])
+	for r_v in rows:
+		var r: Dictionary = r_v
+		lines.append(
+			"%s,%s,%s,%s,%s,%s,%s,%s,%s"
+			% [
+				_fmt(r.get("run_id", 0)),
+				_fmt(r.get("seed", 0)),
+				_fmt(r.get("season_index", 0)),
+				_csv_escape(String(r.get("port_id", ""))),
+				_fmt(r.get("sail_count", 0)),
+				_fmt(r.get("ships_in_port", 0)),
+				_fmt(r.get("frozen_traders", 0)),
+				_csv_escape(String(r.get("cargo_dan_json", "{}"))),
+				_fmt(r.get("avg_daily_margin_li", 0)),
+			]
+		)
+	return _store(path, lines)
+
+
+static func _write_daily(path: String, rows: Array) -> bool:
+	var lines: PackedStringArray = PackedStringArray([SimSampler.HDR_DAILY])
+
+########## Q1(e) git grep -n full output ##########
+COMMAND: git grep -n -E '185' — see attached listing (PIN=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:31:## 15.1 附錄 C: offtake_snapshot unknown port／good.
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:114:var _offtake_snapshot: Dictionary = {}
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:115:## First roll_offtake_snapshot day (window_days epoch); -1 = none yet.
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:168:func seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:176:	## Test／fixture seed for previous-day offtake (F11); replaces writing `_offtake_snapshot`.
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:177:	assert(_loaded, "GoodsLedger.seed_offtake_snapshot before load_and_validate")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:180:	if not _offtake_snapshot.has(port_s):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:181:		_offtake_snapshot[port_s] = {}
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:182:	var by_good: Dictionary = _offtake_snapshot[port_s]
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:189:	_offtake_snapshot[port_s] = by_good
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:476:func offtake_snapshot(port_id: StringName, good_id: StringName) -> Dictionary:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:478:	assert(_loaded, "GoodsLedger.offtake_snapshot before load_and_validate")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:483:		_record_error(ERR_SYS03_07, FIELD_PORT_ID if not _is_known_port(port_s) else "good_id", port_s if not _is_known_port(port_s) else good_s, "offtake_snapshot unknown port_id or good_id")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:485:	if not _offtake_snapshot.has(port_s):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:487:	var by_good: Dictionary = _offtake_snapshot[port_s]
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:618:func roll_offtake_snapshot(day: int) -> void:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:620:	assert(_loaded, "GoodsLedger.roll_offtake_snapshot before load_and_validate")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:654:		if not _offtake_snapshot.has(port_s):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:655:			_offtake_snapshot[port_s] = {}
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:656:		var snap_port: Dictionary = _offtake_snapshot[port_s]
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:665:		_offtake_snapshot[port_s] = snap_port
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/goods_ledger.gd:916:	_offtake_snapshot = {}
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/market_pricer.gd:5:## WP-32／15.1: denominator from GoodsLedger.offtake_snapshot (previous-day); anchor = base_price_li.
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/market_pricer.gd:82:const FIELD_OFFTAKE := "offtake_snapshot"
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/market_pricer.gd:317:	var snap: Dictionary = GoodsLedger.offtake_snapshot(port_id, good_id)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/ship_registry.gd:299:	var dest_draft: int = port_draft(dest_port)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/ship_registry.gd:301:		_record(ERR_SYS14_02, "draft", ship_draft, "ship draft exceeds dest port_draft")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/ship_registry.gd:350:	if ship_draft > port_draft(dest_port):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/ship_registry.gd:351:		_record(ERR_SYS14_02, "draft", ship_draft, "ship draft exceeds dest port_draft")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/ship_registry.gd:465:func port_draft(port_id: StringName) -> int:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/ship_registry.gd:467:	assert(_loaded, "ShipRegistry.port_draft before load")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/sim_loop.gd:302:	GoodsLedger.roll_offtake_snapshot(Clock.day)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:26:const PRM_EXPLORE_RATE := "PRM-SYS17-EXPLORE_RATE"
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:27:const PRM_EXPLORE_QTY := "PRM-SYS17-EXPLORE_QTY"
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:82:func season_sail_count(port_id: StringName, season_index: int) -> int:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:103:func ships_in_port_count(port_id: StringName) -> int:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:123:func frozen_trader_count(port_id: StringName) -> int:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:288:	errors.append_array(_step_assign_ships())
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:377:	var explore_set: Dictionary = _pick_explore_traders(day)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:404:		var st: Dictionary = _process_ship_day(tid, sid, day, explore_set.has(String(tid)))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:465:func _step_assign_ships() -> Array:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:481:	var alloc: Array = _largest_remainder_ports(ports, total_ships)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:557:func _largest_remainder_ports(ports: Array, total_ships: int) -> Array:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:643:func _pick_explore_traders(day: int) -> Dictionary:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:670:func _process_ship_day(tid: StringName, sid: StringName, day: int, explore: bool) -> Dictionary:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:692:	return _evaluate_and_maybe_sail(tid, sid, t, info, explore)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:721:func _evaluate_and_maybe_sail(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:766:		if not _can_enter(acct, dest):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:768:		if not _draft_ok(sid, dest):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:777:			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:779:			if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:784:			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:796:					var afford_excl: int = _afford_qty_cached(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:819:			var afford: int = _afford_qty_cached(afford_by_good, acct, from_port, good)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:886:		candidates = _filter_explore_candidates(candidates, from_port)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:888:	var best: Dictionary = TradeEvaluator.pick_best_candidate(candidates)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:901:		decision = TradeEvaluator.decide_sail_or_idle(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:952:func _filter_explore_candidates(candidates: Array, from_port: StringName) -> Array:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:958:		var snap: Dictionary = GoodsLedger.offtake_snapshot(dest, good)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:984:func _dest_intel(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:1012:func _can_enter(actor: StringName, port: StringName) -> bool:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:1023:func _can_trade_good(actor: StringName, port: StringName, good: StringName, side: int) -> bool:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:1029:func _draft_ok(ship_id: StringName, dest: StringName) -> bool:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:1042:	return ship_draft <= ShipRegistry.port_draft(dest)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:autoload/trader_registry.gd:1045:func _afford_qty_cached(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:core/trade_evaluator.gd:44:static func decide_sail_or_idle(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:core/trade_evaluator.gd:73:static func pick_best_candidate(candidates: Array) -> Dictionary:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:data/params/params_schema.json:637:  "PRM-SYS17-EXPLORE_RATE": {
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:data/params/params_schema.json:642:  "PRM-SYS17-EXPLORE_QTY": {
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:docs/spec/scenario_M1b_G0.json:267:    "PRM-SYS17-EXPLORE_QTY": 50,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:docs/spec/scenario_M1b_G0.json:268:    "PRM-SYS17-EXPLORE_RATE": 0.05,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/csv_out.gd:164:				_fmt(r.get("sail_count", 0)),
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/csv_out.gd:165:				_fmt(r.get("ships_in_port", 0)),
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/csv_out.gd:166:				_fmt(r.get("frozen_traders", 0)),
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/m1b_diag_z.gd:88:	sail_count: int
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/m1b_diag_z.gd:92:	_sails_total += sail_count
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/m1b_diag_z.gd:98:		"sail_count": sail_count,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/m1b_diag_z.gd:103:		% [day, evaluable_candidates, dest_excluded_no_market, explore_hit_traders, sail_count]
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:30:	"run_id,seed,season_index,port_id,sail_count,ships_in_port,frozen_traders,"
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:200:		if tre.has_method("season_sail_count"):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:201:			sail = int(tre.call("season_sail_count", StringName(port_s), season_index))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:202:		if tre.has_method("ships_in_port_count"):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:203:			in_port = int(tre.call("ships_in_port_count", StringName(port_s)))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:204:		if tre.has_method("frozen_trader_count"):
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:205:			frozen = int(tre.call("frozen_trader_count", StringName(port_s)))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:218:		"sail_count": sail,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:219:		"ships_in_port": in_port,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sampler.gd:220:		"frozen_traders": frozen,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:sim/sim_engine.gd:454:		sails_cum += int((row_v3 as Dictionary).get("sail_count", 0))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/fixtures/params_all_keys.json:377:  "PRM-SYS17-EXPLORE_RATE": 0.05,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/fixtures/params_all_keys.json:378:  "PRM-SYS17-EXPLORE_QTY": 50,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/property/test_PROP_market_quote_bounds.gd:116:	## D-32b／F11: public seed_offtake_snapshot（不再寫 _offtake_snapshot）.
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/property/test_PROP_market_quote_bounds.gd:119:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_d110_lane_c_queue_outputs.gd:119:	assert_true(SimSampler.HDR_TRADER_SUMMARY.find("sail_count") >= 0)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_d110_lane_c_queue_outputs.gd:146:		"sail_count": 0, "ships_in_port": 0, "frozen_traders": 0,
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_d123_opening_board_1766.gd:147:	assert_gt(Params.get_float("PRM-SYS17-EXPLORE_RATE"), 0.0)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_d123_opening_board_1766.gd:155:	var st: Dictionary = TraderRegistry._process_ship_day(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_d123_opening_board_1766.gd:211:				var st: Dictionary = TraderRegistry._process_ship_day(tid, sid, day, false)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_intel_ledger_wp40.gd:651:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_b_pop_demand_1755.gd:186:func test_abund_03_excess_not_in_offtake_snapshot() -> void:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_b_pop_demand_1755.gd:198:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_b_pop_demand_1755.gd:199:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD_RICE))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:80:func test_F2_dest_intel_uses_board_for_present_port_origin() -> void:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:90:	var empty: Dictionary = TraderRegistry._dest_intel(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:96:	var hit: Dictionary = TraderRegistry._dest_intel(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:131:	var a: Dictionary = TraderRegistry._pick_explore_traders(5)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:132:	var b: Dictionary = TraderRegistry._pick_explore_traders(5)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:142:		var a: Dictionary = TraderRegistry._pick_explore_traders(day)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:144:		var b: Dictionary = TraderRegistry._pick_explore_traders(day)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_lane_f_wp36_1758.gd:182:	assert_false(TraderRegistry._draft_ok(sid, StringName(PORT_B)))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_market_pricer.gd:411:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_market_pricer.gd:417:			GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_market_pricer.gd:421:	var snap: Dictionary = GoodsLedger.offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_market_pricer.gd:457:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_market_pricer.gd:485:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:75:	var snap: Dictionary = GoodsLedger.offtake_snapshot(&"PT-99", StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:78:	var snap2: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), &"GD-999")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:118:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:119:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:131:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:132:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:156:		GoodsLedger.roll_offtake_snapshot(GoodsLedger.current_day())
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:157:		var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:172:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:173:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:175:	GoodsLedger.roll_offtake_snapshot(2)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:176:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:182:	GoodsLedger.roll_offtake_snapshot(3)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:183:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 100)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:196:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:197:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:217:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:218:	var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:235:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:236:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 50)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:239:	GoodsLedger.roll_offtake_snapshot(8)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:240:	assert_eq(int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0)), 0)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:251:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:252:	var before: int = int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:266:	GoodsLedger.roll_offtake_snapshot(2)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:267:	var after: int = int(GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD)).get("window_qty", 0))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:318:	GoodsLedger.roll_offtake_snapshot(1)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:319:	var snap_after_depart: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:340:	GoodsLedger.roll_offtake_snapshot(2)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:341:	var snap_after_sellin: Dictionary = GoodsLedger.offtake_snapshot(StringName(PORT), StringName(GOOD))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:372:	GoodsLedger.roll_offtake_snapshot(3)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_offtake_wp32.gd:426:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_perf_afford_1787.gd:6:##   - test_17_87_EX_05_09_01_cash_surplus_candidates_match_frozen：凍結舊／新 coarse 比對需 _voyage_days／_dest_intel／_afford_qty_cached
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_perf_afford_1787.gd:8:##   - test_17_87_EX_05_09_03_zero_stock_no_candidates_match_frozen：_evaluate_and_maybe_sail 與 coarse 私有路徑
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_perf_afford_1787.gd:160:		String(TradeEvaluator.pick_best_candidate([
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_perf_afford_1787.gd:216:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_r972_cash_stock_cap_1769.gd:191:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_ship_registry_wp30.gd:287:	assert_eq(ShipRegistry.port_draft(StringName(PT_SONG)), ShipRegistry.DRAFT_SHALLOW)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_ship_registry_wp30.gd:289:	assert_eq(ShipRegistry.port_draft(StringName(PT_SONG)), ShipRegistry.DRAFT_SHALLOW)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_ship_registry_wp30.gd:291:	assert_eq(ShipRegistry.port_draft(StringName(PT_SONG)), ShipRegistry.DRAFT_MEDIUM)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_ship_registry_wp30.gd:293:	assert_eq(ShipRegistry.port_draft(StringName(PT_SONG)), ShipRegistry.DRAFT_DEEP)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trade_desk_wp33.gd:283:func test_TST_SYS05_17_can_enter_denied() -> void:
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trade_desk_wp33.gd:598:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:42:	var best := TradeEvaluator.pick_best_candidate([
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:64:	var d := TradeEvaluator.decide_sail_or_idle(-500, 200000, 192000, 3, 0, 5, 50000, 1000000)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:71:	var d := TradeEvaluator.decide_sail_or_idle(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:80:	var d := TradeEvaluator.decide_sail_or_idle(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:125:	var d := TradeEvaluator.decide_sail_or_idle(-1, 1000, 900, 0, 0, 5, 50000, 1000000)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:131:	var best := TradeEvaluator.pick_best_candidate([
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:152:	var d1 := TradeEvaluator.decide_sail_or_idle(-10, 100, 50, 0, 0, 5, 50000, 1000000)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:154:	var d2 := TradeEvaluator.decide_sail_or_idle(-10, 100, 50, 4, 0, 5, 50000, 1000000)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:208:	var a: Dictionary = TraderRegistry._dest_intel(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:216:	var b: Dictionary = TraderRegistry._dest_intel(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:225:	assert_true(TraderRegistry._can_enter(&"ACT-TR-001", StringName(PORT_A)))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:242:	var a: Dictionary = TraderRegistry._pick_explore_traders(3)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:243:	var b: Dictionary = TraderRegistry._pick_explore_traders(3)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:270:	assert_gt(Params.get_float("PRM-SYS17-EXPLORE_RATE"), 0.0)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_trader_registry_wp36.gd:315:	GoodsLedger.seed_offtake_snapshot(StringName(PORT_A), StringName(GOOD), 50, 50, 7, 0)
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tests/unit/test_wp56_cash_market_trade.gd:299:	GoodsLedger.seed_offtake_snapshot(
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/golden_harness.gd:316:		var snap: Dictionary = goods.call("offtake_snapshot", StringName(port_s), StringName(gid))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:168:	## 17-69 5.2: season_sail_count / season_cargo_dan columns — N/A if missing (T3; never PASS/FAIL).
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:169:	lines.append("## ⑥ season_sail_count / season_cargo_dan (column present?)")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:171:	lines.append("| Group | status | season_sail_count | season_cargo_dan |")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:179:				st6["season_sail_count"],
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:242:		"season_sail_count": "N/A",
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:407:			var sc: int = _as_int(td.get("sail_count", 0))
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:422:		## 5.2: only exact column names season_sail_count / season_cargo_dan (not sail_count).
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:423:		out["season_sail_count"] = _column_sum_or_na(traders, "season_sail_count")
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:432:	if out["season_sail_count"] == "N/A":
+aa098a8425a4c9d3e10a860a77a40c3f9b3878a6:tools/run_m1b_report.gd:433:		out["season_sail_count"] = _column_sum_or_na(ports, "season_sail_count")
+
+GREP_MATCH_LINES=185
