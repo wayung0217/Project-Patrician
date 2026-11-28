@@ -122,6 +122,8 @@ DIFF_CELLS=0
 d30: 256700/226067/202008 ; 255521/224302/200380 ; 253792/223289/200041
 d10: 114998/106012/99502
 
+Orphan SHA: 见 orphan_sha.txt（B-13）
+
 ## 分支衛生（S9i）
 
 - 本包新增非 review: `perf-afford-1788`、`perf-verify-1788`（shared）
@@ -133,9 +135,9 @@ d10: 114998/106012/99502
 見報告末 `ls` 與 `manifest.txt`（pack 完成後更新）。
 
 ## ls pack
+A-readcode.txt
 a4-golden.txt
 a5-timing.txt
-A-readcode.txt
 ci-gate.txt
 diff-cash_ledger.txt
 diff-tests.txt
