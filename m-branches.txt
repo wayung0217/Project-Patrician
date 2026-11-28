@@ -1,0 +1,92 @@
+m-branches.txt
+# M6 S9i ③ — git branch -r after git fetch --prune (pre-merge snapshot, first segment of report)
+
+## A) After fetch --prune, BEFORE merge (2026-11-28 Asia/Hong_Kong)
+  origin/HEAD -> origin/main
+  origin/cursor/audit-17-76-0b7c
+  origin/cursor/class-cap-frm-sys07-18-97ab
+  origin/cursor/diag-c-pp217-5280
+  origin/cursor/e1-exp2-90d-smoke-9c88
+  origin/cursor/junit-xml-trial-5b41
+  origin/cursor/solo-wp26-a-24c7
+  origin/cursor/solo-wp26-b-24c7
+  origin/cursor/solo-wp26-hist-24c7
+  origin/cursor/ui-1755-debug-panels-ff98
+  origin/main
+  origin/perf-afford-1788
+  origin/review/1770-d130
+  origin/review/1770-evidence2
+  origin/review/1770-evidence3
+  origin/review/1770-merge1
+  origin/review/1770-t1
+  origin/review/1770-t2
+  origin/review/1770-t3
+  origin/review/1771-handoff
+  origin/review/1772-E
+  origin/review/evening-17-55
+  origin/review/evening-17-57
+  origin/review/evening-17-69-handoff
+  origin/review/evening-17-69-int
+  origin/review/evening-17-69-lane1
+  origin/review/evening-17-69-lane2
+  origin/review/evening-17-69-lane3
+  origin/review/evening-17-69-lane4
+  origin/review/evening-17-69-lane5
+  origin/review/overnight-17-87-A
+  origin/review/overnight-17-87-P
+  origin/review/overnight-17-87-Q
+  origin/review/overnight-17-87-V
+  origin/review/overnight-17-88-A
+  origin/review/overnight-17-88-B
+  origin/review/overnight-17-88-L
+  origin/review/overnight-17-88-Q
+  origin/review/overnight-17-88-V
+  origin/tools-1758
+
+fetch notes: deleted origin/perf-verify-1788; new origin/review/overnight-17-88-A|L|V
+origin/main=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+origin/perf-afford-1788=59ae4cb8485805f4a717785f2a36bf7217a5c780
+
+## B) After merge + delete perf-afford-1788 + fetch --prune
+  origin/HEAD -> origin/main
+  origin/cursor/audit-17-76-0b7c
+  origin/cursor/class-cap-frm-sys07-18-97ab
+  origin/cursor/diag-c-pp217-5280
+  origin/cursor/e1-exp2-90d-smoke-9c88
+  origin/cursor/junit-xml-trial-5b41
+  origin/cursor/solo-wp26-a-24c7
+  origin/cursor/solo-wp26-b-24c7
+  origin/cursor/solo-wp26-hist-24c7
+  origin/cursor/ui-1755-debug-panels-ff98
+  origin/main
+  origin/review/1770-d130
+  origin/review/1770-evidence2
+  origin/review/1770-evidence3
+  origin/review/1770-merge1
+  origin/review/1770-t1
+  origin/review/1770-t2
+  origin/review/1770-t3
+  origin/review/1771-handoff
+  origin/review/1772-E
+  origin/review/evening-17-55
+  origin/review/evening-17-57
+  origin/review/evening-17-69-handoff
+  origin/review/evening-17-69-int
+  origin/review/evening-17-69-lane1
+  origin/review/evening-17-69-lane2
+  origin/review/evening-17-69-lane3
+  origin/review/evening-17-69-lane4
+  origin/review/evening-17-69-lane5
+  origin/review/overnight-17-87-A
+  origin/review/overnight-17-87-P
+  origin/review/overnight-17-87-Q
+  origin/review/overnight-17-87-V
+  origin/review/overnight-17-88-A
+  origin/review/overnight-17-88-B
+  origin/review/overnight-17-88-L
+  origin/review/overnight-17-88-Q
+  origin/review/overnight-17-88-V
+  origin/tools-1758
+
+origin/main=25a398492fa568a223fb4802adbb4f15bc40bcbb
+perf-afford-1788 deleted only; others untouched.
