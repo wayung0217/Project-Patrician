@@ -1,1 +1,6 @@
-PENDING
+branch=review/overnight-17-90-P
+sha=e43cd113d0964a2c49e6199b6f420f28904d00b5
+date_utc=2026-11-28T05:43:17Z
+=== git ls-tree -r --name-only HEAD ===
+orphan_push.log
+orphan_sha.txt
