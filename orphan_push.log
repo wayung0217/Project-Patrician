@@ -1,6 +1,8 @@
 branch=review/overnight-17-90-P
-sha=39ef86690713561be796b872104c70f658c2d4e6
-date_utc=2026-11-28T05:43:40Z
+sha=f6071d7b8fe41b7490a71107fceb3d39409bfc0c
+date_utc=2026-11-28T05:44:46Z
+=== git ls-remote origin diag-ports-1790 ===
+(empty = deleted)
 === git ls-tree -r --name-only HEAD ===
 artifacts/_scenarios/Za_G0_A0_d360_s1.json
 artifacts/d360/baseline_trader_blob.txt
@@ -39,3 +41,4 @@ p3-skip-reasons.txt
 p4-route-matrix.txt
 p5-explore.txt
 report.md
+verify-branch-deleted.txt
