@@ -1,10 +1,7 @@
 orphan_push.log
-=== orphan push review/overnight-17-88-V 2026-11-28 10:53:41 Asia/Hong_Kong ===
-orphan_sha.txt=f067ae32e013439ab24c0e7144a21c812ac895eb
-branch_tip=f067ae32e013439ab24c0e7144a21c812ac895eb
-content_commit=ac004bff7703d7027eaa8f3ab8ddc906225e326d
-=== git ls-remote (pre-final) ===
-7604a8780a47c61c62da53b9fc9856b1a147e249	refs/heads/review/overnight-17-88-V
+=== orphan update after verify-branch delete 2026-11-28 11:06:15 Asia/Hong_Kong ===
+orphan_sha.txt=8a6ea163ed7d6e014eba5e2c8cf6cf84483ebec3
+branch_tip=8a6ea163ed7d6e014eba5e2c8cf6cf84483ebec3
 === git ls-tree -r -l ===
 100644 blob 8a4b5cc478eab5b80e028429e2302a2b05fea16f     399	artifacts/v1/Za_G0_A0_d450_s1/combos.csv
 100644 blob a9ed3c908c0e0e4d02629d4241dcfe626e75712f      41	artifacts/v1/Za_G0_A0_d450_s1/commit_sha.txt
@@ -56,10 +53,11 @@ content_commit=ac004bff7703d7027eaa8f3ab8ddc906225e326d
 100644 blob c7ec6e4ceed47338fd73ae33d5288aaf0b67b95e    7580	artifacts/v1/_scenarios/Za_G0_A0_d720_s2.json
 100644 blob 997223b9fbcd34bb26b304ca415ce8d3559852f9    1003	dispatch-v1.txt
 100644 blob 79b0ac259cdd93cf63defafeb77874370e1dc823    1139	failed-runs.txt
-100644 blob 0ab455610b552df3bb83efd243fdacacf3cb7911     460	lane.txt
-100644 blob de6d9bc2b5317677db03d896495c48981ef7c0a4    6423	orphan_push.log
-100644 blob 8046b12b6ce9f7d4c815d8dbb70323484d756ba6      56	orphan_sha.txt
-100644 blob 621fb811748eb2b2ca28d743433d01c1237eaf59    7123	report.md
+100644 blob fa96c08662108d5c138952f3bf641b16dbf2cc32     565	lane.txt
+100644 blob 14b97564639447b674420a25252ff52806bab361    6192	orphan_push.log
+100644 blob 11f92ad05f9d68533d6547b540a87c009ebf4142      56	orphan_sha.txt
+100644 blob bcf11afdc30f18d0401256b1fcc4b1303d2c3944    7202	report.md
 100644 blob 455ee6054011bfb2893c4fcf5af525c875233ed2    6430	v1-a-side.txt
 100644 blob 544343cb92bef0fac4ab68a6bc6b4d0ba0b417bf    4654	v2-compare.txt
 100644 blob d1c997e2eeb69c1c6f2f45f73714a88eff38666f    3217	v3-met.txt
+100644 blob 5b4edc24563da4bfc41a0691ac643c89b5ff46e8     367	verify-branch-deleted.txt
