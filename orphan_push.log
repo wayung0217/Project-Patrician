@@ -1,8 +1,7 @@
 orphan_push.log
 === orphan push review/overnight-17-88-B 2026-11-28 10:15:14 Asia/Hong_Kong ===
-orphan_sha.txt=e5f68b78e193e125f89fd9526e71bf8b28c3a549
-branch_tip=e5f68b78e193e125f89fd9526e71bf8b28c3a549
-e5f68b78e193e125f89fd9526e71bf8b28c3a549	refs/heads/review/overnight-17-88-B
+orphan_sha.txt=5a98575a65132e1c02054762271d406253da6eee
+branch_tip=5a98575a65132e1c02054762271d406253da6eee
 === git ls-tree -r -l ===
 100644 blob 6567fab1de615fafc7914352f2cb535280723db8     355	b-blob-trader_registry.txt
 100644 blob 880dea6700d29c541c612606e056fc9aec0d9353    4383	b-branches.txt
@@ -14,4 +13,6 @@ e5f68b78e193e125f89fd9526e71bf8b28c3a549	refs/heads/review/overnight-17-88-B
 100644 blob bb3c934c63ac804a0981a3983c0aab46abeb4f1e    1404	b-main-ci-last30.txt
 100644 blob 2d25a9420312b8bd699b9845b7c27fe32de14b04    3604	b-merge.txt
 100644 blob b3b3bb5f4be8a408d89b61cb3a6cd5685b5bc594       7	lane.txt
-100644 blob 0be6ede555274a0809539544fec8e177eccaecb2    5614	report.md
+100644 blob ec98445e366c84881e3998a214398ea3f4d93d48    1166	orphan_push.log
+100644 blob f6ae28e1a6dda61a2e46513d0554ff4625d2d689      41	orphan_sha.txt
+100644 blob 036076fdc2a01de3905301fe565284e7d21fd859    5614	report.md
