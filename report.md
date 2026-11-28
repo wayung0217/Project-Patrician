@@ -112,10 +112,10 @@ Last 30 lines / full gate：`m-main-post.txt`。
 
 ## Orphan 交付（S9d）
 
-- branch: 
-- orphan_sha.txt: （B-8）
-- branch tip (ls-remote): 
-- pack path:
+- branch: `review/overnight-17-89-M`
+- orphan_sha.txt: `1c52fe8a081d30b351011e3d9b6c2b5d07720d2b`（B-8）
+- branch tip (ls-remote): `55c112dca8b306294a3e04adaf4058359a96847b`
+- pack path: `/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/overnight-17-89-M/`
 
 ## FILES_TOTAL
 lane.txt
