@@ -1,16 +1,15 @@
 orphan_push.log
 === orphan push review/overnight-17-90-Q 2026-11-28 13:21:55 Asia/Hong_Kong ===
 orphan_sha.txt=61902437c5a958ffea7fae652ecb30eb72cf8e80
-branch_tip=80359f26b9fa232433799bab20d00f870bc6c70f
+branch_tip=26e10a1eb37b8c298bd0508fa34144f82dde734f
+26e10a1eb37b8c298bd0508fa34144f82dde734f	refs/heads/review/overnight-17-90-Q
 === git ls-tree -r -l ===
 100644 blob 471f0265eb61459fb79ee1d2f60c0510732c9e56     625	lane.txt
-100644 blob 75a4b8011f5453ac79bdf3345fd1944a571ae4c2     608	ls-tree.txt
-100644 blob b3c23bfa03148f38d36d8344a6bca53c983fb774     221	orphan_push.log
+100644 blob 8587750da84cf8e13d3ab4f2d160d87eddabc302     608	ls-tree.txt
+100644 blob ecd8f4abf97ea83ca01410065b157d866baaaf4b     902	orphan_push.log
 100644 blob afdf845947060ec09e7fe1b73a685287623453ff      56	orphan_sha.txt
 100644 blob 84e65aeeb67fdb07417a7732b5b94fdbadfdfe50   64934	q1-source.txt
 100644 blob 1401d19f1209b84838456bc2e5331da42f8c749b   15689	q2-answers.txt
 100644 blob 112f5ce148dcb4d73bfe01aea03dc3aa3dd9292f    3840	q3-recompute.txt
 100644 blob e30baef475bbdd9508abc964fa02b4950c6714e9    5286	report.md
 NO_PR=yes
-NO_MERGE=yes
-READ_COMMIT=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
