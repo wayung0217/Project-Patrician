@@ -1,0 +1,9 @@
+failed-runs.txt
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+Lane A failed product/CI executions (D-120(e)):
+無
+
+Operational notes (not product failures):
+1) Cannot cancel duplicate A5 timing run 46096974557 — gh/API HTTP 403 Resource not accessible by integration.
+   Primary A5 run 46095496498 still in_progress with hardcoded tip SHAs.
+2) V force-pushed perf-verify-1788 ba3594e→e154ae8; timing workflow file retained with same JIA/YI/BING SHAs.

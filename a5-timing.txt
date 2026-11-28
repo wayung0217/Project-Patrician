@@ -1,0 +1,46 @@
+a5-timing.txt
+ASOF_HKT=2026-11-28 10:48:10 Asia/Hong_Kong
+status=DONE
+product_tip_frozen=59ae4cb8485805f4a717785f2a36bf7217a5c780
+run=https://github.com/wayung0217/Project-Patrician/actions/runs/46095496498
+conclusion=success
+cpu_model=INTEL(R) XEON(R) PLATINUM 8573C
+JIA_SHA=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+YI_SHA=e2f1053ed00c73f9216c8c45fe92b79e5055b253
+BING_SHA=59ae4cb8485805f4a717785f2a36bf7217a5c780
+duplicate_ignored=46096974557 (still/was in_progress after V force-push; primary used)
+
+--- ELAPSED_MS numbers only (summary.csv elapsed_ms) ---
+days=30 round=1 甲=256700 乙=226067 丙=202008
+days=30 round=2 甲=255521 乙=224302 丙=200380
+days=30 round=3 甲=253792 乙=223289 丙=200041
+days=10 round=1 甲=114998 乙=106012 丙=99502
+
+--- a5_elapsed_ms.txt verbatim ---
+label=jia_base	days=30	round=1	elapsed_ms=256700	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+summary_csv_elapsed_ms_raw=256700
+label=yi_a1	days=30	round=1	elapsed_ms=226067	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=e2f1053ed00c73f9216c8c45fe92b79e5055b253
+summary_csv_elapsed_ms_raw=226067
+label=bing_tip	days=30	round=1	elapsed_ms=202008	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=59ae4cb8485805f4a717785f2a36bf7217a5c780
+summary_csv_elapsed_ms_raw=202008
+label=jia_base	days=30	round=2	elapsed_ms=255521	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+summary_csv_elapsed_ms_raw=255521
+label=yi_a1	days=30	round=2	elapsed_ms=224302	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=e2f1053ed00c73f9216c8c45fe92b79e5055b253
+summary_csv_elapsed_ms_raw=224302
+label=bing_tip	days=30	round=2	elapsed_ms=200380	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=59ae4cb8485805f4a717785f2a36bf7217a5c780
+summary_csv_elapsed_ms_raw=200380
+label=jia_base	days=30	round=3	elapsed_ms=253792	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+summary_csv_elapsed_ms_raw=253792
+label=yi_a1	days=30	round=3	elapsed_ms=223289	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=e2f1053ed00c73f9216c8c45fe92b79e5055b253
+summary_csv_elapsed_ms_raw=223289
+label=bing_tip	days=30	round=3	elapsed_ms=200041	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=59ae4cb8485805f4a717785f2a36bf7217a5c780
+summary_csv_elapsed_ms_raw=200041
+label=jia_base	days=10	round=1	elapsed_ms=114998	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+summary_csv_elapsed_ms_raw=114998
+label=yi_a1	days=10	round=1	elapsed_ms=106012	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=e2f1053ed00c73f9216c8c45fe92b79e5055b253
+summary_csv_elapsed_ms_raw=106012
+label=bing_tip	days=10	round=1	elapsed_ms=99502	cpu_model=INTEL(R) XEON(R) PLATINUM 8573C	commit=59ae4cb8485805f4a717785f2a36bf7217a5c780
+summary_csv_elapsed_ms_raw=99502
+
+--- runner cpu ---
+cpu_model=INTEL(R) XEON(R) PLATINUM 8573C

@@ -1,0 +1,293 @@
+A-readcode.txt
+17-88 Lane A — A0 readcode (before any product edit)
+ASOF_HKT=2026-11-28 09:05 Asia/Hong_Kong
+main_tip=dcea87f338f3bea4b49197ce3cbb1c407a28a250
+branch=perf-afford-1788
+worktree=/tmp/wt-perf-afford-1788
+blobs_at_tip:
+  trader_registry.gd=ea670fe909d785c86557c79c20288c63e6015282
+  cash_ledger.gd=3dd7f5aa406adbd9ef0680285fe66d06f4842948
+  market_pricer.gd=6c87f8ef4045b6cdc58b46f01ec1816a86f660a3
+note_105_tip_for_crosscheck=107c17fea29da54363713e5896805a2ebd630a0e
+  (#105 already caches max_affordable_qty; mid_price call site still per-cell; cash_ledger.gd blob identical to main)
+
+================================================================================
+(a) MarketPricer.mid_price call sites inside candidate loop — each site, args, dest-dependent?
+================================================================================
+
+ONLY call site in candidate / coarse loop (product code, origin/main tip dcea87f):
+
+File: autoload/trader_registry.gd
+Line: 818
+Function: _evaluate_and_maybe_sail (starts line 721)
+Original line:
+			var origin_mid: float = MarketPricer.mid_price(from_port, good)
+
+Actual arguments:
+  port_id = from_port   ← info.port_id of the ship’s present port (fixed for this eval_sail)
+  good_id = good        ← inner-loop good_v
+
+Depends on destination port?
+  NO. dest is in scope but is NOT passed. Signature is mid_price(port_id, good_id);
+  port is 本港 (from_port), not 目的港.
+
+Surrounding context (verbatim lines 816–820 tip dcea87f):
+			var rough_buy: int = mid ## coarse; precise quote later
+			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
+			var origin_mid: float = MarketPricer.mid_price(from_port, good)
+			rough_buy = floori(origin_mid * float(q))
+			var score: int = TradeEvaluator.coarse_score(mid, q, rough_buy, days)
+
+Same call on #105 tip 107c17f (after afford reorder/cache): still
+			var origin_mid: float = MarketPricer.mid_price(from_port, good)
+  (line ~830 on that tip; args unchanged; still once per coarse.append cell).
+
+Other mid_price call sites in repo (NOT this candidate loop; git grep):
+  autoload/trade_desk.gd:220
+  autoload/intel_ledger.gd:216, 283
+  autoload/market_pricer.gd:158 definition
+  sim/sampler.gd:293
+  tools/golden_harness.gd:296
+  ui/* ; tests/*
+
+================================================================================
+(b) mid_price full text + callees — writes inventory
+================================================================================
+
+--- mid_price verbatim (market_pricer.gd 158–172) ---
+func mid_price(port_id: StringName, good_id: StringName) -> float:
+	# FRM-SYS04-03: mid = anchor × m(w); w via single weeks formula (D-34d／N-04).
+	assert(_loaded, "MarketPricer.mid_price before load_and_validate")
+	_clear_last_error()
+	var ctx: Dictionary = _resolve_context(port_id, good_id)
+	if ctx.has(KEY_ERROR):
+		_fail_from_ctx(ctx)
+		return 0.0
+	var anchor: int = int(ctx[FIELD_ANCHOR])
+	# stock／weekly_offtake written as int／float in _context（C-09: no float→int via int()）.
+	var stock_mid: int = ctx["stock"]
+	var weekly_mid: float = ctx["weekly_offtake"]
+	var w: Variant = _stock_weeks_raw(stock_mid, weekly_mid)
+	var m: float = _floor_mult() if w == null else _m_of_w(float(w))
+	return float(anchor) * m
+
+Callees on success path: _clear_last_error → _resolve_context → _stock_weeks_raw → (_floor_mult | _m_of_w).
+Error path also: _fail_from_ctx → _record_error.
+
+--- Write inventory per callee (帳本／庫存／快取／計數／成員) ---
+
+1) MarketPricer._clear_last_error (530–531):
+   WRITE: _last_error = {}
+   帳本／庫存／價格結果：無
+
+2) MarketPricer._resolve_context (272–370):
+   Local Dictionary only on return.
+   Reads: PortRegistry.get_port, GoodCatalog.*, GoodsLedger.offtake_snapshot,
+          Params.get_int, DemandModel.weekly_potential_demand / has_potential_demand_provider,
+          GoodsLedger.make_market + get_qty.
+   Direct member writes inside _resolve_context itself: 無
+   (Downstream side effects listed in 2a–2c.)
+
+2a) GoodsLedger.offtake_snapshot (476–490):
+   WRITE on unknown port/good: GoodsLedger._last_error via _clear_last_error / _record_error
+   On hit: returns duplicate of existing snapshot cell — no stock / offtake mutation
+   帳本／庫存：無
+
+2b) GoodsLedger.make_market (445–446):
+   Returns {kind, port} Dictionary only — 無成員寫入
+
+2c) GoodsLedger.get_qty → _container_key for KIND_MARKET (819–828):
+   WRITE: _kind_by_id[cid_m] = kind
+          _container_meta[cid_m] = {owner="", port=port_m, ship=""}
+   Idempotent re-register of MARKET:from_port meta (same values).
+   庫存 _stock / 現金：無
+
+2d) DemandModel.weekly_potential_demand (core/demand_model.gd 149–161):
+   Provider or weekly_demand + _queue_mat_demand_addon — read path.
+   帳本／庫存／DemandModel 狀態寫入：無（正常路徑）
+
+3) MarketPricer._stock_weeks_raw (373–381): 純計算，無寫入
+
+4) MarketPricer._m_of_w (384–399): 讀 _curve，無寫入
+
+5) MarketPricer._floor_mult (402–404): 讀 _curve，無寫入
+
+6) MarketPricer._fail_from_ctx / _record_error (534–545):
+   WRITE: _last_error = info; push_error(...)
+   帳本／庫存：無
+
+Summary for (b) — mid_price path writes that affect return float for same args:
+  無（return 只依 anchor×m(w)；inputs 來自 catalog／ledger 讀取）
+Diagnostic / registry meta writes exist (_last_error; MARKET container meta re-register).
+
+================================================================================
+(c) Writes between two adjacent mid_price calls inside one eval_sail
+================================================================================
+
+Between two successive executions of line 818 inside the same _evaluate_and_maybe_sail
+invocation (remainder of current good-iteration + prefix of next cell that reaches mid_price):
+
+Ledger / stock / cash writes that change mid_price(from_port, good) inputs:
+  無
+  (buy+sail only after the coarse/top loops; not between adjacent mid_price in coarse loop)
+
+Member / module caches that change those inputs (anchor, MARKET stock at 本港×good,
+offtake snapshot, weekly_basis):
+  無
+
+Local-only writes (do not change mid_price return):
+  - dest_saw_good / dest_had_intel locals
+  - mid, weeks_v, weekly, afford, q, rough_buy, score locals
+  - coarse.append(...) (local Array)
+  - excl_dests[String(dest)] after inner good loop (local Dictionary)
+  - on #105 tip: afford_by_good[key]=qty (local Dictionary; not mid_price input)
+
+Diagnostic / meta writes (do not change mid_price float for same args):
+  - MarketPricer._last_error cleared/set by each mid_price
+  - GoodsLedger._last_error may be touched via offtake_snapshot error path
+  - GoodsLedger._kind_by_id / _container_meta re-set for MARKET:from_port (idempotent)
+  - CashLedger.max_affordable_qty → quote may touch MarketPricer/CashLedger last_error
+    (on main tip, afford runs before mid_price; on #105 tip, afford may run before mid_price
+     on the cand_ok path)
+
+Reads only between cells (not writes of sim state): _can_trade_good, get_qty market,
+_dest_intel → board_for, DemandModel.weekly_potential_demand(dest, good),
+TradeEvaluator.coarse_score, Params.get_int(explore).
+
+Conclusion for (c): no balance / MARKET stock / offtake-snapshot mutation between adjacent
+mid_price calls. Diagnostic last_error and idempotent MARKET meta may be rewritten.
+
+================================================================================
+(d) max_affordable_qty full text + step-through when quote(s) ≤ balance
+================================================================================
+
+--- max_affordable_qty verbatim (cash_ledger.gd 659–727) ---
+func max_affordable_qty(actor: StringName, port: StringName, good: StringName) -> int:
+	# FRM-SYS05-09／D-124（Owner 2026-11-24；docs/spec v6.99.220；03_Systems r574）：
+	# q_afford = 最大 q 同時滿足 buy_total(q) ≤ balance 且 q ≤ s
+	# ＝ MIN(現金可負擔量, s)；s = 該港該貨 MARKET 庫存。
+	# s = 0 → 回 0，不以 q = 1 試探；倍增／二分不得以 q > s 呼叫 quote()
+	# （r451：買量須 ≤ s，否則 ERR-SYS04-06；收斂上界＝回到 quote 定義域，非 C-06 clamp）。
+	# A18：quote 失敗不得當 total＝0；視為該 q 不可買。
+	# 數值例：frm_examples EX-05-09-01 至 03。庫存不再於 FRM-SYS05-10 重做。
+	assert(_loaded, "CashLedger.max_affordable_qty before load")
+	var bal: int = balance(actor)
+	if bal <= 0:
+		return 0
+	if _quote_provider == null:
+		_record_error(ERR_SYS05_04, "quote_provider", null, "quote provider missing (MarketPricer WP-06 gap)")
+		return 0
+	## FRM-SYS05-09／D-124／D-125 甲（Owner 2026-11-25；v6.99.222）：
+	## 庫存上界無條件適用（不限 MarketPricer／DemoQuoteProvider）；
+	## exclusive upper = s+1；s = MARKET 庫存。舊測 Given 須先種足量庫存。
+	## abs_hi sentinel -1 =「尚未設庫存上界」(AI_README 6.2 EX-02；不得輸出／存檔)。
+	## D-08d：容器地址字串只由 GoodsLedger.container_id 產生；KIND+PORT Dictionary
+	## → get_qty → _container_key → container_id（不用 make_market）。
+	## 2.8：GoodsLedger.is_loaded 未見 03_Systems H → 缺口見 evening-17-69-lane2
+	## （is_loaded 沿用既有 Autoload 慣例）。
+	var abs_hi: int = -1
+	if GoodsLedger.is_loaded():
+		var port_s: String = String(port)
+		var market: Dictionary = {
+			GoodsLedger.KEY_KIND: GoodsLedger.KIND_MARKET,
+			GoodsLedger.KEY_PORT: port_s,
+		}
+		var stock_cap: int = GoodsLedger.get_qty(market, good)
+		## D-124／EX-05-09-03：s = 0 → 0；不得以 q = 1 呼叫 quote()。
+		if stock_cap < 1:
+			return 0
+		abs_hi = stock_cap + 1
+	# 擴張上界：hi 倍增直到 total > bal 或 quote 失敗（或碰到 s+1，永不 quote q>s）
+	var lo: int = 0
+	var hi: int = 1
+	while true:
+		if abs_hi > 0 and hi >= abs_hi:
+			hi = abs_hi
+			break
+		var t_hi: int = _quote_buy_total(port, good, hi)
+		if t_hi < 0 or t_hi > bal:
+			break
+		lo = hi
+		# hi = hi * 2 without literal 2
+		var next_hi: int = hi + hi
+		if next_hi <= hi:
+			# overflow / cap
+			break
+		if abs_hi > 0 and next_hi >= abs_hi:
+			hi = abs_hi
+			break
+		hi = next_hi
+	# 二分
+	while lo + 1 < hi:
+		var mid: int = floori((lo + hi) / INT_DIV_MID_DENOM)
+		var t_mid: int = _quote_buy_total(port, good, mid)
+		if t_mid < 0 or t_mid > bal:
+			hi = mid
+		else:
+			lo = mid
+	# 整數 quote 校正：確認 lo 可負擔、lo+1 不可
+	if lo > 0:
+		var t_lo: int = _quote_buy_total(port, good, lo)
+		if t_lo < 0 or t_lo > bal:
+			lo = lo - 1
+	return lo
+
+_quote_buy_total (842–857): calls _quote_provider.quote(port, good, SIDE_BUY, qty);
+returns KEY_TOTAL_LI or INT_API_FAILURE (−1) on error / missing keys.
+
+--- Step-through when quote(s) ≤ bal (GoodsLedger loaded, s≥1, provider present) ---
+
+Given: stock_cap = s ≥ 1, abs_hi = s + 1, and for all q in 1..s, _quote_buy_total(port,good,q) ≥ 0 and ≤ bal.
+(Premise of H5: in particular quote(s) ≤ bal; buy_total monotone nondecreasing ⇒ all q≤s also ≤ bal.)
+
+Expansion:
+  lo=0, hi=1
+  Loop: quote(hi) succeeds and ≤ bal → lo=hi; next_hi=hi+hi
+  While next_hi < abs_hi: hi=next_hi and continue
+  When next_hi ≥ abs_hi: set hi=abs_hi (=s+1), break WITHOUT quoting hi=s+1
+  (Never quotes q > s. May never have quoted q=s yet if s is not a power-of-two stop.)
+
+Binary search (lo is last affordable power-of-two ≤ s; hi = s+1):
+  Invariant: lo affordable, hi not-yet-proven / exclusive upper (=s+1, never quoted as buy qty)
+  while lo + 1 < hi:
+    mid = floori((lo + hi) / 2)   ## INT_DIV_MID_DENOM = 2
+    ## mid ∈ (lo, hi) ⊂ [1, s]
+    if quote(mid) fails or > bal: hi = mid
+    else: lo = mid
+  Because all q≤s are affordable, every mid ≤ s succeeds → lo climbs to s
+  Terminates with lo = s, hi = s + 1
+
+Correction:
+  lo = s > 0 → quote(s); by premise ≤ bal → lo unchanged
+  return lo = s
+
+Concrete numeric sketch (s=300, abs_hi=301, all quotes ≤ bal):
+  expand: 1→2→4→…→256 affordable; next 512≥301 → hi=301, lo=256
+  binary mids: 278,289,295,298,299,300 → lo=300
+  correct quote(300) ok → return 300 = s
+
+Therefore: when quote(s) ≤ bal (and s≥1, provider ok), current search returns s.
+A2 fast-path (single quote(q=s) then return s) matches that result; on failure or total>bal,
+fall through to the same expansion/binary/correction (unchanged).
+
+================================================================================
+(e) H4 / H5 verdicts
+================================================================================
+
+H4: 候選迴圈內 MarketPricer.mid_price(本港, good) 的實參與目的港無關，同一次評估內無寫入，結果必相同
+  → 成立（回傳值）；「完全無任何寫入」字面 → 部分（last_error／MARKET meta）
+  Evidence (a): line 818 args (from_port, good); dest not passed.
+  Evidence (b)(c): no stock/balance/offtake mutation between adjacent calls; same
+  (from_port, good) ⇒ same float return inside one eval_sail.
+  Strict「無寫入」fails only on diagnostic _last_error and idempotent _kind_by_id/_container_meta.
+
+H5: max_affordable_qty 在 s≥1、餘額>0、報價提供者存在時，若 quote(q＝s) 的總額 ≤ 餘額，則結果必為 s
+  （二分在 buy_total 單調下收斂到 s）
+  → 成立
+  Evidence (d): with abs_hi=s+1 and all q≤s affordable, binary leaves lo=s; correction keeps s.
+  Monotone premise is FRM-SYS05-09 / brief (a): buy_total 對 q 單調不減.
+  Early exits (bal≤0 / provider null / s<1) are outside H5’s stated premises.
+
+A0 decision: H4 成立 → do A1 (per-eval local mid_price cache keyed by String(good)).
+             H5 成立 → do A2 (quote(s) fast-path inside max_affordable_qty after abs_hi set).
+Product edits WAIT for coordinator confirm of B-merged main tip (or B-failed → #105 tip).

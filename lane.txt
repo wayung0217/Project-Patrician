@@ -1,0 +1,13 @@
+lane.txt
+17-88 Lane A = PERF-PRICE-AFFORD
+grade=L-丙
+PR=https://github.com/wayung0217/Project-Patrician/pull/106
+branch=perf-afford-1788
+tip_FROZEN=59ae4cb8485805f4a717785f2a36bf7217a5c780
+tree=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+base=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+CI=46095438765 GREEN
+A5=46095496498 success (dup 46096974557 ignored)
+DO_NOT_MERGE=C-15
+orphan=review/overnight-17-88-A
+pack=/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/overnight-17-88-A/

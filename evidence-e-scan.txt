@@ -1,0 +1,35 @@
+evidence-e-scan.txt
+S9a E self-scan 17-88 Lane A
+tip=59ae4cb8485805f4a717785f2a36bf7217a5c780
+base=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+
+E(1) C-03 non-0/1 literals in added product executable lines:
+無
+
+E(2) cross-module _ member access in new/edited tests (must be 無):
+無
+
+E(2b) product added lines foreign _ access:
+無
+
+E(3) git diff --stat:
+ autoload/cash_ledger.gd                 |   6 +
+ autoload/trader_registry.gd             |  19 +-
+ tests/unit/test_perf_afford_1788.gd     | 391 ++++++++++++++++++++++++++++++++
+ tests/unit/test_perf_afford_1788.gd.uid |   1 +
+ 4 files changed, 416 insertions(+), 1 deletion(-)
+
+E(4) name-only:
+autoload/cash_ledger.gd
+autoload/trader_registry.gd
+tests/unit/test_perf_afford_1788.gd
+tests/unit/test_perf_afford_1788.gd.uid
+
+E(5) forbidden paths:
+無
+
+E(6) new test names + 17_88:
+  test_17_88_EX_05_09_01_stock_bottleneck_quote_once yes
+  test_17_88_EX_05_09_02_cash_bottleneck_q_120 yes
+  test_17_88_EX_05_09_03_zero_stock_no_quote yes
+  test_17_88_brute_cash_levels_match_max_affordable yes

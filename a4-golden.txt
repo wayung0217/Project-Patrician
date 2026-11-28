@@ -1,0 +1,22 @@
+a4-golden.txt
+ASOF_HKT=2026-11-28 Asia/Hong_Kong
+tip=59ae4cb8485805f4a717785f2a36bf7217a5c780
+tree=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+ci_run=46095438765
+job=golden-30d-compare
+expected_sha256=cb4288967c1ef79844c672a906b1ddfd02843d841b1710517c39e2e733167bf7
+
+--- CI log verbatim (30d golden gated sha256sum) ---
+cb4288967c1ef79844c672a906b1ddfd02843d841b1710517c39e2e733167bf7  out/golden/30d.csv
+
+--- artifact 30d.sha256 ---
+cb4288967c1ef79844c672a906b1ddfd02843d841b1710517c39e2e733167bf7  out/golden/30d.csv
+
+--- local sha256sum of downloaded artifact 30d.csv ---
+cb4288967c1ef79844c672a906b1ddfd02843d841b1710517c39e2e733167bf7  30d.csv
+
+DIFF_CELLS=0
+GOLDEN_CELLS_IDENTICAL=1
+GOLDEN_BOOTSTRAP=0
+GOLDEN_BASE_RUN_ID=46095216894
+MATCH_EXPECTED=YES
