@@ -1,0 +1,27 @@
+p11-skip-and-routes.txt
+PACK=overnight-17-91-P
+P1-H skip.* + no_intel n0/n_ge1 + five-port route counts (seed1)
+=== skip job totals ===
+diag_info_skip_totals.txt
+skip.afford=3299
+skip.decide_idle=22183
+skip.market_qty=5868735
+skip.no_intel=3369603
+skip.other=47
+skip.weekly_demand=168924
+skip.no_intel.n0=3369603
+skip.no_intel.n_ge1=0
+## season|from|to n0 counts
+=== FIVE route ===
+FIVE_OUT,PT-04,89
+FIVE_IN,PT-04,84
+FIVE_OUT,PT-05,52
+FIVE_IN,PT-05,42
+FIVE_OUT,PT-08,94
+FIVE_IN,PT-08,91
+FIVE_OUT,PT-09,37
+FIVE_IN,PT-09,35
+FIVE_OUT,PT-11,4
+FIVE_IN,PT-11,0
+raw_skip=artifacts/d360_s1/probe/diag_info_skip_totals.txt
+raw_route=artifacts/d360_s1/probe/diag_info_route_sailed.txt

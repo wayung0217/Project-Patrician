@@ -1,0 +1,19 @@
+p2-determinism.txt
+PACK=overnight-17-91-P
+LANE=P DIAG-INFO
+SEED=1
+BASELINE=review/overnight-17-90-P artifacts/d360
+EXPECTED_PROGRESS=34451/1024, 34429/1960, 34092/3109, 33717/4054
+=== progress_snip (this run) ===
+PROGRESS pct=25 all_pct=25 group=1/1 Za_G0_A0 y=1 q=1 elapsed=0:05 eta=0:16 pop=34451 sails_cum=1024
+PROGRESS pct=50 all_pct=50 group=1/1 Za_G0_A0 y=1 q=2 elapsed=0:09 eta=0:09 pop=34429 sails_cum=1960
+PROGRESS pct=75 all_pct=75 group=1/1 Za_G0_A0 y=1 q=3 elapsed=0:12 eta=0:04 pop=34092 sails_cum=3109
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:16 eta=0:00 pop=33717 sails_cum=4054
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:16 eta=0:00 pop=33717 sails_cum=4054
+=== byte compare ===
+season_ports.csv byte_identical=True
+trader_summary.csv byte_identical=True
+md5_season_ports=3a794537203bae10c8d27170cde904f3
+md5_trader_summary=cb19afbbaa79c5602a1a756e920d8b0e
+P2_DETERMINISM=PASS
+PROBE_CHANGED_OUTPUT=no

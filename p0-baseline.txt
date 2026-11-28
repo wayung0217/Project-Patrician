@@ -1,0 +1,23 @@
+p0-baseline.txt
+PACK=overnight-17-91-P
+LANE=P DIAG-INFO
+PRODUCT_BASE=25a398492fa568a223fb4802adbb4f15bc40bcbb
+PRODUCT_TREE=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+TRADER_REGISTRY_BLOB_AT_BASE=bdb1601f212a2f286033596cddc2d0fbd5a1819c
+INTEL_LEDGER_BLOB_AT_BASE=bf057cf9551c155b6117425e30fb572a3e0d28d8
+GOODS_LEDGER_BLOB_AT_BASE=c41cd983db11cf280a6939cd14a0dcfdbadc6bb1
+BLOB_MATCH_TRADER=yes
+BLOB_MATCH_INTEL=yes
+BLOB_MATCH_GOODS=yes
+PROBE_BRANCH=diag-info-1791
+PROBE_SHA=2e5e7ecbbe51f988be04a879238bd5c29bbe51b4
+PROBE_TRADER_REGISTRY_BLOB=98e7a302fbe24883feab25455d1b63c74835b552
+PROBE_INTEL_LEDGER_BLOB=e90e3478ebb4b1c0f41c10e0b42dad043a23cb3d
+PROBE_GOODS_LEDGER_BLOB=c41cd983db11cf280a6939cd14a0dcfdbadc6bb1
+WORKTREE=/tmp/diag-info-1791
+=== git ls-tree product base autoload blobs ===
+100644 blob bdb1601f212a2f286033596cddc2d0fbd5a1819c	autoload/trader_registry.gd
+100644 blob bf057cf9551c155b6117425e30fb572a3e0d28d8	autoload/intel_ledger.gd
+100644 blob c41cd983db11cf280a6939cd14a0dcfdbadc6bb1	autoload/goods_ledger.gd
+=== git rev-parse product tree ===
+adc21ebce033a02bd00f5225dca1d5a717fe0dc9

@@ -1,0 +1,71 @@
+p10-seeds-2-3.txt
+PACK=overnight-17-91-P
+P2 seeds 2/3 (no determinism baseline)
+=== seed1 five-port OUT / IN (ref; matches 17-90) ===
+OUT={'PT-04': 89, 'PT-05': 52, 'PT-08': 94, 'PT-09': 37, 'PT-11': 4}
+IN={'PT-04': 84, 'PT-05': 42, 'PT-08': 91, 'PT-09': 35, 'PT-11': 0}
+=== seed2 timing ===
+commit_sha=2e5e7ecbbe51f988be04a879238bd5c29bbe51b4
+product_base_sha=25a398492fa568a223fb4802adbb4f15bc40bcbb
+product_tree_sha=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+trader_registry_blob=98e7a302fbe24883feab25455d1b63c74835b552
+intel_ledger_blob=e90e3478ebb4b1c0f41c10e0b42dad043a23cb3d
+goods_ledger_blob=c41cd983db11cf280a6939cd14a0dcfdbadc6bb1
+baseline_trader_blob=bdb1601f212a2f286033596cddc2d0fbd5a1819c
+baseline_intel_blob=bf057cf9551c155b6117425e30fb572a3e0d28d8
+baseline_goods_blob=c41cd983db11cf280a6939cd14a0dcfdbadc6bb1
+lane=P
+start=2026-11-28T06:23:16Z
+end=2026-11-28T06:42:34Z
+duration_s=1158
+status=ok
+exit_code=0
+days=360
+seed=2
+group=Za_G0_A0
+cpu_model=AMD EPYC 7763 64-Core Processor
+m1b_diag_info=1
+
+=== seed2 progress ===
+PROGRESS pct=25 all_pct=25 group=1/1 Za_G0_A0 y=1 q=1 elapsed=0:06 eta=0:19 pop=34452 sails_cum=1010
+PROGRESS pct=50 all_pct=50 group=1/1 Za_G0_A0 y=1 q=2 elapsed=0:10 eta=0:10 pop=34460 sails_cum=2089
+PROGRESS pct=75 all_pct=75 group=1/1 Za_G0_A0 y=1 q=3 elapsed=0:15 eta=0:05 pop=34127 sails_cum=3120
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:19 eta=0:00 pop=33760 sails_cum=4073
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:19 eta=0:00 pop=33760 sails_cum=4073
+
+=== seed2 five-port OUT / IN ===
+OUT={'PT-04': 136, 'PT-05': 213, 'PT-08': 142, 'PT-09': 100, 'PT-11': 4}
+IN={'PT-04': 133, 'PT-05': 205, 'PT-08': 139, 'PT-09': 101, 'PT-11': 0}
+=== seed3 timing ===
+commit_sha=2e5e7ecbbe51f988be04a879238bd5c29bbe51b4
+product_base_sha=25a398492fa568a223fb4802adbb4f15bc40bcbb
+product_tree_sha=adc21ebce033a02bd00f5225dca1d5a717fe0dc9
+trader_registry_blob=98e7a302fbe24883feab25455d1b63c74835b552
+intel_ledger_blob=e90e3478ebb4b1c0f41c10e0b42dad043a23cb3d
+goods_ledger_blob=c41cd983db11cf280a6939cd14a0dcfdbadc6bb1
+baseline_trader_blob=bdb1601f212a2f286033596cddc2d0fbd5a1819c
+baseline_intel_blob=bf057cf9551c155b6117425e30fb572a3e0d28d8
+baseline_goods_blob=c41cd983db11cf280a6939cd14a0dcfdbadc6bb1
+lane=P
+start=2026-11-28T06:23:22Z
+end=2026-11-28T06:38:15Z
+duration_s=893
+status=ok
+exit_code=0
+days=360
+seed=3
+group=Za_G0_A0
+cpu_model=AMD EPYC 9V74 80-Core Processor
+m1b_diag_info=1
+
+=== seed3 progress ===
+PROGRESS pct=25 all_pct=25 group=1/1 Za_G0_A0 y=1 q=1 elapsed=0:05 eta=0:15 pop=34451 sails_cum=1070
+PROGRESS pct=50 all_pct=50 group=1/1 Za_G0_A0 y=1 q=2 elapsed=0:08 eta=0:08 pop=34446 sails_cum=2225
+PROGRESS pct=75 all_pct=75 group=1/1 Za_G0_A0 y=1 q=3 elapsed=0:11 eta=0:03 pop=34131 sails_cum=3156
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:14 eta=0:00 pop=33759 sails_cum=4079
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:14 eta=0:00 pop=33759 sails_cum=4079
+
+=== seed3 five-port OUT / IN ===
+OUT={'PT-04': 136, 'PT-05': 110, 'PT-08': 80, 'PT-09': 103, 'PT-11': 4}
+IN={'PT-04': 129, 'PT-05': 102, 'PT-08': 77, 'PT-09': 101, 'PT-11': 0}
+NOTE=trader_summary.csv seeds 2/3 at artifacts/d360_s2|s3/trader_summary.csv

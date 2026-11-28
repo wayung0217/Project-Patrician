@@ -1,0 +1,1112 @@
+p1-probe-diff.txt
+PACK=overnight-17-91-P
+LANE=P DIAG-INFO
+DIFF_RANGE=25a398492fa568a223fb4802adbb4f15bc40bcbb..2e5e7ecbbe51f988be04a879238bd5c29bbe51b4
+=== git diff --stat ===
+ .github/workflows/diag-info-1791.yml | 184 +++++++++
+ autoload/intel_ledger.gd             |  74 ++++
+ autoload/trader_registry.gd          |  88 +++-
+ sim/m1b_diag_info.gd                 | 769 +++++++++++++++++++++++++++++++++++
+ sim/m1b_diag_info.gd.uid             |   1 +
+ sim/sim_engine.gd                    |   5 +
+ 6 files changed, 1118 insertions(+), 3 deletions(-)
+=== git diff (full) PART 1/2 ===
+diff --git a/.github/workflows/diag-info-1791.yml b/.github/workflows/diag-info-1791.yml
+new file mode 100644
+index 0000000..5630508
+--- /dev/null
++++ b/.github/workflows/diag-info-1791.yml
+@@ -0,0 +1,184 @@
++# 17-91 Lane P DIAG-INFO: Za_G0_A0 360×s1/s2/s3 probe (temp; branch diag-info-1791).
++# Product base = 25a398492fa568a223fb4802adbb4f15bc40bcbb. Paths filter → this file only.
++# Matrix seeds 1/2/3. No secrets. No PR. No force-push. Delete branch after pack.
++# Max 1 retry → new filename (e.g. diag-info-1791b.yml).
++name: M1b-Diag-Info-1791
++
++on:
++  push:
++    branches:
++      - diag-info-1791
++    paths:
++      - ".github/workflows/diag-info-1791.yml"
++
++jobs:
++  za-g0-a0-diag-info:
++    runs-on: ubuntu-latest
++    timeout-minutes: 180
++    strategy:
++      fail-fast: false
++      matrix:
++        seed: [1, 2, 3]
++    env:
++      LANE: P
++      PRODUCT_BASE_SHA: 25a398492fa568a223fb4802adbb4f15bc40bcbb
++      PRODUCT_TREE_SHA: adc21ebce033a02bd00f5225dca1d5a717fe0dc9
++      BASELINE_TRADER_BLOB: bdb1601f212a2f286033596cddc2d0fbd5a1819c
++      BASELINE_INTEL_BLOB: bf057cf9551c155b6117425e30fb572a3e0d28d8
++      BASELINE_GOODS_BLOB: c41cd983db11cf280a6939cd14a0dcfdbadc6bb1
++      M1B_DIAG_INFO: "1"
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v7
++
++      - name: Record runner specs
++        run: |
++          set -euo pipefail
++          {
++            echo "=== runner specs ==="
++            echo "os=$(uname -s) $(uname -r) $(uname -m)"
++            echo "pretty=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || true)"
++            echo "nproc=$(nproc)"
++            echo "cpu_model=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ //')"
++            echo "mem_total_kb=$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
++            echo "lane=${LANE}"
++            echo "product_base_sha=${PRODUCT_BASE_SHA}"
++            echo "product_tree_sha=${PRODUCT_TREE_SHA}"
++            echo "baseline_trader_blob=${BASELINE_TRADER_BLOB}"
++            echo "baseline_intel_blob=${BASELINE_INTEL_BLOB}"
++            echo "baseline_goods_blob=${BASELINE_GOODS_BLOB}"
++            echo "workflow_head_sha=$(git rev-parse HEAD)"
++            echo "trader_registry_blob=$(git rev-parse HEAD:autoload/trader_registry.gd)"
++            echo "intel_ledger_blob=$(git rev-parse HEAD:autoload/intel_ledger.gd)"
++            echo "goods_ledger_blob=$(git rev-parse HEAD:autoload/goods_ledger.gd)"
++            echo "diag_info_script_blob=$(git rev-parse HEAD:sim/m1b_diag_info.gd)"
++            echo "matrix_seed=${{ matrix.seed }}"
++            free -h || true
++            lscpu || true
++          } | tee out_runner_specs.txt
++          mkdir -p "out/m1b_diag_info/Za_G0_A0_d360_s${{ matrix.seed }}"
++          cp out_runner_specs.txt "out/m1b_diag_info/Za_G0_A0_d360_s${{ matrix.seed }}/runner_specs.txt"
++
++      - name: Download Godot 4.7.2-stable
++        run: |
++          set -euo pipefail
++          curl -fsSL -o godot.zip \
++            "https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip"
++          unzip -q godot.zip
++          chmod +x Godot_v4.7.2-stable_linux.x86_64
++          mv Godot_v4.7.2-stable_linux.x86_64 godot
++          ./godot --version
++
++      - name: Import project
++        run: ./godot --headless --path . --import
++
++      - name: Run Za_G0_A0 DIAG-INFO 360d
++        timeout-minutes: 160
++        env:
++          M1B_GROUP_NAME: Za_G0_A0
++          M1B_GROUP_I: "1"
++          M1B_GROUP_N: "1"
++          M1B_DAYS: "360"
++          M1B_SEED: "${{ matrix.seed }}"
++          M1B_DIAG_INFO: "1"
++          M1B_DIAG_INFO_OUT: out/m1b_diag_info/Za_G0_A0_d360_s${{ matrix.seed }}/probe
++        run: |
++          set -euo pipefail
++          G=Za_G0_A0
++          DAYS="${M1B_DAYS}"
++          SEED="${M1B_SEED}"
++          OUT="out/m1b_diag_info/${G}_d${DAYS}_s${SEED}"
++          mkdir -p "$OUT" "$OUT/probe" "out/m1b_diag_info/_scenarios"
++          python3 tools/m1b_prepare_scenario.py --group "$G" --out "out/m1b_diag_info/_scenarios/${G}_d${DAYS}_s${SEED}.json"
++          python3 - <<PY
++          import json
++          from pathlib import Path
++          p = Path("out/m1b_diag_info/_scenarios/${G}_d${DAYS}_s${SEED}.json")
++          obj = json.loads(p.read_text(encoding="utf-8"))
++          obj["seeds"] = [int("${SEED}")]
++          p.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
++          print("scenario_id", obj.get("scenario_id"), "seeds", obj["seeds"], "years", obj.get("years"), "warmup_years", obj.get("warmup_years"))
++          print("years_x_360", int(obj.get("years", 0)) * 360)
++          PY
++          cp "out/m1b_diag_info/_scenarios/${G}_d${DAYS}_s${SEED}.json" "$OUT/scenario.json"
++          START_EPOCH=$(date -u +%s)
++          START=$(date -u -d "@${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${START_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
++          SHA=$(git rev-parse HEAD)
++          echo "$SHA" > "$OUT/commit_sha.txt"
++          echo "$PRODUCT_BASE_SHA" > "$OUT/product_base_sha.txt"
++          echo "$PRODUCT_TREE_SHA" > "$OUT/product_tree_sha.txt"
++          git rev-parse HEAD:autoload/trader_registry.gd > "$OUT/trader_registry_blob.txt"
++          git rev-parse HEAD:autoload/intel_ledger.gd > "$OUT/intel_ledger_blob.txt"
++          git rev-parse HEAD:autoload/goods_ledger.gd > "$OUT/goods_ledger_blob.txt"
++          echo "$BASELINE_TRADER_BLOB" > "$OUT/baseline_trader_blob.txt"
++          echo "$BASELINE_INTEL_BLOB" > "$OUT/baseline_intel_blob.txt"
++          echo "$BASELINE_GOODS_BLOB" > "$OUT/baseline_goods_blob.txt"
++          {
++            echo "progress_timed.txt"
++            echo "START utc=$START epoch=$START_EPOCH days=$DAYS seed=$SEED commit=$SHA"
++          } > "$OUT/progress_timed.txt"
++          set +e
++          ./godot --headless --path . -s res://sim/sim_runner.gd -- \
++            --scenario "$(pwd)/out/m1b_diag_info/_scenarios/${G}_d${DAYS}_s${SEED}.json" \
++            --inline --season-progress --day-progress --days "$DAYS" \
++            --out-dir "$(pwd)/$OUT" \
++            2>&1 | tee "$OUT/sim_runner.log" | while IFS= read -r l; do
++              printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$l"
++            done >> "$OUT/progress_timed.txt"
++          RC=${PIPESTATUS[0]}
++          set -e
++          END_EPOCH=$(date -u +%s)
++          END=$(date -u -d "@${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -r "${END_EPOCH}" +%Y-%m-%dT%H:%M:%SZ)
++          DUR_S=$((END_EPOCH - START_EPOCH))
++          STATUS=ok
++          if [[ "$RC" -ne 0 ]]; then STATUS=fail; fi
++          CPU=$(grep -m1 '^model name' /proc/cpuinfo | cut -d: -f2- | sed 's/^ //')
++          {
++            echo "commit_sha=$SHA"
++            echo "product_base_sha=${PRODUCT_BASE_SHA}"
++            echo "product_tree_sha=${PRODUCT_TREE_SHA}"
++            echo "trader_registry_blob=$(cat "$OUT/trader_registry_blob.txt")"
++            echo "intel_ledger_blob=$(cat "$OUT/intel_ledger_blob.txt")"
++            echo "goods_ledger_blob=$(cat "$OUT/goods_ledger_blob.txt")"
++            echo "baseline_trader_blob=${BASELINE_TRADER_BLOB}"
++            echo "baseline_intel_blob=${BASELINE_INTEL_BLOB}"
++            echo "baseline_goods_blob=${BASELINE_GOODS_BLOB}"
++            echo "lane=${LANE}"
++            echo "start=$START"
++            echo "end=$END"
++            echo "duration_s=${DUR_S}"
++            echo "status=$STATUS"
++            echo "exit_code=$RC"
++            echo "days=$DAYS"
++            echo "seed=$SEED"
++            echo "group=$G"
++            echo "cpu_model=$CPU"
++            echo "m1b_diag_info=1"
++          } > "$OUT/timing.txt"
++          grep -E '^PROGRESS ' "$OUT/sim_runner.log" | tee "$OUT/progress_snip.log" || true
++          grep -E '^DAY_PROGRESS ' "$OUT/sim_runner.log" | tail -n 5 | tee "$OUT/day_progress_tail.log" || true
++          grep -E '^DIAG_INFO' "$OUT/sim_runner.log" | tee "$OUT/diag_info_lines.txt" || true
++          ls -la "$OUT" "$OUT/probe" || true
++          if [[ "$STATUS" != "ok" ]]; then
++            echo "::error::DIAG-INFO days=$DAYS seed=$SEED failed exit=$RC"
++            grep -E 'DAY_PROGRESS' "$OUT/progress_timed.txt" | tail -n 3 || true
++            exit "$RC"
++          fi
++          test -f "$OUT/summary.csv"
++          test -f "$OUT/season_ports.csv"
++          test -f "$OUT/trader_summary.csv"
++          test -f "$OUT/probe/diag_info_intel_coverage.csv"
++          test -f "$OUT/probe/diag_info_publish_events.csv"
++          test -f "$OUT/probe/diag_info_explore_joined.csv"
++          test -f "$OUT/probe/diag_info_skip_totals.txt"
++          test -f "$OUT/probe/diag_info_route_sailed.txt"
++          echo "DIAG_INFO_DONE days=$DAYS seed=$SEED duration_s=$DUR_S cpu_model=$CPU"
++
++      - name: Upload diag-info artifact
++        if: always()
++        uses: actions/upload-artifact@v7
++        with:
++          name: m1b-diag-info-d360-s${{ matrix.seed }}
++          path: out/m1b_diag_info/
++          retention-days: 14
++          if-no-files-found: warn
+diff --git a/autoload/intel_ledger.gd b/autoload/intel_ledger.gd
+index bf057cf..e90e347 100644
+--- a/autoload/intel_ledger.gd
++++ b/autoload/intel_ledger.gd
+@@ -331,6 +331,15 @@ func on_arrivals(tick: int, arrivals: Array) -> void:
+ 		var port_id: StringName = item.get(KEY_PORT_ID, &"")
+ 		var from_port: StringName = item.get(KEY_FROM_PORT_ID, &"")
+ 		_bump_contact(owner_id, port_id)
++		## 17-91 DIAG-INFO: observe arrive (no state change).
++		if M1bDiagInfo.is_active():
++			M1bDiagInfo.note_arrive(
++				Clock.day if Clock != null else 0,
++				tick,
++				String(sid),
++				String(port_id),
++				String(from_port)
++			)
+ 		var snap: Variant = _ship_snap.get(String(sid), null)
+ 		if typeof(snap) != TYPE_DICTIONARY:
+ 			continue
+@@ -338,7 +347,24 @@ func on_arrivals(tick: int, arrivals: Array) -> void:
+ 		if bool(snap_d.get(KEY_PUBLISHED, false)):
+ 			continue
+ 		var origin: StringName = snap_d.get(KEY_ORIGIN_PORT, &"")
++		var goods_n: int = 0
++		var goods_v: Variant = snap_d.get(KEY_GOODS, {})
++		if typeof(goods_v) == TYPE_DICTIONARY:
++			goods_n = (goods_v as Dictionary).size()
+ 		if String(origin) == String(port_id):
++			## 17-91 DIAG-INFO: same-port skip (no publish).
++			if M1bDiagInfo.is_active():
++				M1bDiagInfo.note_publish(
++					Clock.day if Clock != null else 0,
++					tick,
++					String(sid),
++					String(owner_id),
++					String(origin),
++					String(port_id),
++					goods_n,
++					false,
++					true
++				)
+ 			continue
+ 		var port_s: String = String(port_id)
+ 		if not _rec.has(port_s):
+@@ -351,6 +377,18 @@ func on_arrivals(tick: int, arrivals: Array) -> void:
+ 		snap_d[KEY_PUBLISHED] = true
+ 		_ship_snap[String(sid)] = snap_d
+ 		ports_touched[port_s] = true
++		if M1bDiagInfo.is_active():
++			M1bDiagInfo.note_publish(
++				Clock.day if Clock != null else 0,
++				tick,
++				String(sid),
++				String(owner_id),
++				String(origin),
++				String(port_id),
++				goods_n,
++				true,
++				false
++			)
+ 	var port_keys: Array = ports_touched.keys()
+ 	port_keys.sort()
+ 	for p in port_keys:
+@@ -434,6 +472,42 @@ func diag_recorded_report_count(port_id: StringName) -> int:
+ 	return (board_v as Dictionary).size()
+ 
+ 
++func diag_origin_board_stats(port_id: StringName, origin: StringName) -> Dictionary:
++	## 17-91 DIAG-INFO read-only: reports on board P with origin_port=D.
++	## Returns {n, newest_age_days, has_opening}. Does not mutate state.
++	var out := {"n": 0, "newest_age_days": -1, "has_opening": false}
++	var board_v: Variant = _rec.get(String(port_id), {})
++	if typeof(board_v) != TYPE_DICTIONARY:
++		return out
++	var origin_s: String = String(origin)
++	var today: int = Clock.day if Clock != null else 0
++	var newest_age := -1
++	var n := 0
++	var has_opening := false
++	for pair_v in (board_v as Dictionary).keys():
++		var entry_v: Variant = (board_v as Dictionary)[pair_v]
++		if typeof(entry_v) != TYPE_DICTIONARY:
++			continue
++		var entry: Dictionary = entry_v
++		var snap_v: Variant = entry.get(KEY_SNAPSHOT, {})
++		if typeof(snap_v) != TYPE_DICTIONARY:
++			continue
++		var snap: Dictionary = snap_v
++		if String(snap.get(KEY_ORIGIN_PORT, "")) != origin_s:
++			continue
++		n += 1
++		var day_taken: int = _dict_int(snap, KEY_DAY_TAKEN, 0)
++		var age: int = today - day_taken
++		if newest_age < 0 or age < newest_age:
++			newest_age = age
++		if String(snap.get(KEY_SHIP_ID, "")) == String(OPENING_SHIP_ID):
++			has_opening = true
++	out["n"] = n
++	out["newest_age_days"] = newest_age
++	out["has_opening"] = has_opening
++	return out
++
++
+ func board_samples(
+ 	actor_id: StringName,
+ 	port_id: StringName,
+diff --git a/autoload/trader_registry.gd b/autoload/trader_registry.gd
+index bdb1601..98e7a30 100644
+--- a/autoload/trader_registry.gd
++++ b/autoload/trader_registry.gd
+@@ -373,8 +373,15 @@ func daily_step(day: int) -> Array:
+ 		return _day_errors
+ 	_refresh_freeze_from_arrears()
+ 	_build_board_cache_day()
++	## 17-91 DIAG-INFO: day stamp only (no state change).
++	M1bDiagInfo.set_day(day)
+ 	## Explore lottery once per day (FRM-SYS17-04).
+ 	var explore_set: Dictionary = _pick_explore_traders(day)
++	if M1bDiagInfo.is_active():
++		var idle_by_tid: Dictionary = {}
++		for tid_v in explore_set.keys():
++			idle_by_tid[String(tid_v)] = _diag_count_idle_docked(StringName(tid_v))
++		M1bDiagInfo.note_explore_picks(day, explore_set, idle_by_tid)
+ 	## Process (trader_id, ship_id) ascending (D-109 plan-per-ship).
+ 	var pairs: Array = []
+ 	for tid in all_trader_ids():
+@@ -408,6 +415,16 @@ func daily_step(day: int) -> Array:
+ 		if typeof(excl_v) == TYPE_DICTIONARY:
+ 			for dk in (excl_v as Dictionary).keys():
+ 				diag_excl_ports[String(dk)] = true
++		if M1bDiagInfo.is_active() and explore_set.has(String(tid)):
++			var reason := "ok" if int(st.get("sailed", 0)) > 0 else "no_sail"
++			M1bDiagInfo.note_explore_eval_outcome(
++				String(tid),
++				String(sid),
++				true,
++				int(st.get("evaluable", 0)),
++				int(st.get("sailed", 0)),
++				reason
++			)
+ 	if _diag_z != null and _diag_z.has_method("note_day_eval"):
+ 		_diag_z.call(
+ 			"note_day_eval",
+@@ -420,6 +437,27 @@ func daily_step(day: int) -> Array:
+ 	return _day_errors
+ 
+ 
++func _diag_count_idle_docked(tid: StringName) -> int:
++	## 17-91 DIAG-INFO read-only: docked ships not holding OUTBOUND plan.
++	if not _traders.has(String(tid)):
++		return 0
++	var t: Dictionary = _traders[String(tid)]
++	var n := 0
++	var plans: Dictionary = t.get("plans", {})
++	for sid_v in t.get("ship_ids", []):
++		var sid: StringName = sid_v
++		var info: Dictionary = ShipRegistry.ship_info(sid)
++		if info.is_empty():
++			continue
++		if StringName(info.get("state", &"")) != Ship.STATE_DOCKED:
++			continue
++		var plan: Dictionary = plans.get(String(sid), TradeEvaluator.empty_plan())
++		if StringName(plan.get("phase", &"")) == TradeEvaluator.PHASE_OUTBOUND:
++			continue
++		n += 1
++	return n
++
++
+ func flush_signals() -> void:
+ 	for item_v in _pending_signals:
+ 		var item: Dictionary = item_v
+@@ -703,6 +741,7 @@ func _try_sell(tid: StringName, sid: StringName, t: Dictionary, plan: Dictionary
+ 		_note_plan_inconsistent(tid, sid, "OUTBOUND but hold empty")
+ 		_clear_plan(t, sid)
+ 		t["mode"] = MODE_IDLE
++		M1bDiagInfo.note_sell(String(sid), String(tid), String(port), true, "hold_empty")
+ 		return
+ 	var quote: Dictionary = MarketPricer.quote(port, good, MarketPricer.SIDE_SELL, qty)
+ 	var preview: int = int(quote.get(MarketPricer.KEY_TOTAL_LI, 0))
+@@ -712,10 +751,12 @@ func _try_sell(tid: StringName, sid: StringName, t: Dictionary, plan: Dictionary
+ 	if seq < 1:
+ 		## Stay; retry next day (FRM-SYS17-05).
+ 		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
++		M1bDiagInfo.note_sell(String(sid), String(tid), String(port), false, "sell_reject")
+ 		return
+ 	_clear_plan(t, sid)
+ 	t["mode"] = MODE_IDLE
+ 	(t["idle_days"] as Dictionary)[String(sid)] = 0
++	M1bDiagInfo.note_sell(String(sid), String(tid), String(port), true, "sold")
+ 
+ 
+ func _evaluate_and_maybe_sail(
+@@ -736,8 +777,10 @@ func _evaluate_and_maybe_sail(
+ 		for g in GoodCatalog.all_ids():
+ 			used += GoodsLedger.get_qty(hold_dict, g)
+ 	var free_cap: int = hold_cap - used
++	var from_s: String = String(from_port)
+ 	if free_cap < 1:
+ 		idle_map[String(sid)] = idle + 1
++		M1bDiagInfo.note_skip(from_s, "-", M1bDiagInfo.R_HOLD_FULL)
+ 		return stats
+ 	var goods: Array = []
+ 	if GoodCatalog.is_loaded():
+@@ -764,25 +807,32 @@ func _evaluate_and_maybe_sail(
+ 	var coarse: Array = []
+ 	for dest_v in ports:
+ 		var dest: StringName = dest_v
+-		if String(dest) == String(from_port):
++		var dest_s: String = String(dest)
++		if dest_s == from_s:
+ 			continue
+ 		if not _can_enter(acct, dest):
++			M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_ENTRY)
+ 			continue
+ 		if not _draft_ok(sid, dest):
++			M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_DRAFT)
+ 			continue
+-		var days: int = int(_voyage_days.get("%s|%s" % [String(from_port), String(dest)], 0))
++		var days: int = int(_voyage_days.get("%s|%s" % [from_s, dest_s], 0))
+ 		if days < 1:
++			M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_NO_VOYAGE)
+ 			continue
+ 		var dest_had_intel := false
+ 		var dest_saw_good := false
+ 		for good_v in goods:
+ 			var good: StringName = good_v
+ 			if not _can_trade_good(acct, from_port, good, MarketPricer.SIDE_BUY):
++				M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_GOOD_ADMIT)
+ 				continue
+ 			if not _can_trade_good(acct, dest, good, MarketPricer.SIDE_SELL):
++				M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_GOOD_ADMIT)
+ 				continue
+-			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(String(from_port)), good)
++			var market_qty: int = GoodsLedger.get_qty(GoodsLedger.make_market(from_s), good)
+ 			if market_qty < 1:
++				M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_MARKET_QTY)
+ 				continue
+ 			var intel: Dictionary = _dest_intel(acct, from_port, dest, good)
+ 			var mid: int = 0
+@@ -801,11 +851,14 @@ func _evaluate_and_maybe_sail(
+ 					)
+ 					if afford_excl >= 1:
+ 						dest_saw_good = true
++					M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_NO_INTEL)
+ 					continue
+ 				if not GoodCatalog.is_loaded():
++					M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_OTHER)
+ 					continue
+ 				var gd_ex: GoodDef = GoodCatalog.get_good(good)
+ 				if gd_ex == null or gd_ex.base_price_li < 1:
++					M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_OTHER)
+ 					continue
+ 				mid = gd_ex.base_price_li
+ 				weeks_v = 0.0
+@@ -817,16 +870,19 @@ func _evaluate_and_maybe_sail(
+ 			if DemandModel.is_loaded() or DemandModel.has_potential_demand_provider():
+ 				weekly = DemandModel.weekly_potential_demand(dest, good)
+ 			if weekly < 1:
++				M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_WEEKLY)
+ 				continue ## D-110(g)
+ 			## FRM-SYS17-02／FRM-SYS05-09／D-104(c)④：廉價判斷之後才取可負擔量（惰性）。
+ 			var afford: int = _afford_qty_cached(afford_by_good, acct, from_port, good)
+ 			if afford < 1:
++				M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_AFFORD)
+ 				continue
+ 			dest_saw_good = true
+ 			var q: int = mini(mini(afford, free_cap), market_qty)
+ 			if explore:
+ 				q = mini(q, Params.get_int(StringName(PRM_EXPLORE_QTY)))
+ 			if q < 1:
++				M1bDiagInfo.note_skip(from_s, dest_s, M1bDiagInfo.R_Q_LT1)
+ 				continue
+ 			var rough_buy: int = mid ## coarse; precise quote later
+ 			## Prefer 1-担 mid as rough unit cost proxy via MarketPricer.mid at origin (public).
+@@ -866,10 +922,12 @@ func _evaluate_and_maybe_sail(
+ 		var days2: int = int(c["voyage_days"])
+ 		var buy_q: Dictionary = MarketPricer.quote(from_port, good2, MarketPricer.SIDE_BUY, q2)
+ 		if buy_q.has(MarketPricer.KEY_ERROR):
++			M1bDiagInfo.note_skip(from_s, String(dest2), M1bDiagInfo.R_QUOTE_ERR)
+ 			continue
+ 		var buy_cost: int = int(buy_q.get(MarketPricer.KEY_TOTAL_LI, 0))
+ 		## Recompute affordable with precise quote.
+ 		if buy_cost > CashLedger.balance(acct):
++			M1bDiagInfo.note_skip(from_s, String(dest2), M1bDiagInfo.R_BUY_COST)
+ 			continue
+ 		var sell_rev: int = _estimate_sell_revenue(
+ 			dest2, good2, q2, int(c["mid_li"]), c.get("weeks", 0.0), int(c["weekly"])
+@@ -897,6 +955,10 @@ func _evaluate_and_maybe_sail(
+ 	if best.is_empty():
+ 		idle_map[String(sid)] = idle + 1
+ 		_clear_plan(t, sid)
++		M1bDiagInfo.note_skip(from_s, "-", M1bDiagInfo.R_OTHER)
++		M1bDiagInfo.note_candidates(
++			from_s, String(tid), String(sid), explore, candidates, {}, false
++		)
+ 		return stats
+ 	var decision: Dictionary
+ 	if explore:
+@@ -915,6 +977,10 @@ func _evaluate_and_maybe_sail(
+ 	if not bool(decision["sail"]):
+ 		idle_map[String(sid)] = int(decision["idle_days_after"])
+ 		_clear_plan(t, sid)
++		M1bDiagInfo.note_skip(from_s, String(best["port_id"]), M1bDiagInfo.R_DECIDE_IDLE)
++		M1bDiagInfo.note_candidates(
++			from_s, String(tid), String(sid), explore, candidates, best, false
++		)
+ 		return stats
+ 	## Execute buy + sail (FRM-SYS17-03 via TradeDesk).
+ 	var dest_f: StringName = best["port_id"]
+@@ -929,12 +995,20 @@ func _evaluate_and_maybe_sail(
+ 		_day_errors.append(_wrap_trade_reject(tid, TradeDesk.last_error()))
+ 		_clear_plan(t, sid)
+ 		idle_map[String(sid)] = idle + 1
++		M1bDiagInfo.note_skip(from_s, String(dest_f), M1bDiagInfo.R_BUY_FAIL)
++		M1bDiagInfo.note_candidates(
++			from_s, String(tid), String(sid), explore, candidates, best, false
++		)
+ 		return stats
+ 	var arrival: int = ShipRegistry.sail(acct, sid, dest_f)
+ 	if arrival < 1:
+ 		## Rollback not available as single API — leave goods in hold; clear plan; record.
+ 		_day_errors.append(_err(ERR_SYS17_06, "sail", sid, "sail failed after buy"))
+ 		_clear_plan(t, sid)
++		M1bDiagInfo.note_skip(from_s, String(dest_f), M1bDiagInfo.R_SAIL_FAIL)
++		M1bDiagInfo.note_candidates(
++			from_s, String(tid), String(sid), explore, candidates, best, false
++		)
+ 		return stats
+ 	var new_plan := {
+ 		"phase": TradeEvaluator.PHASE_OUTBOUND,
+@@ -950,6 +1024,14 @@ func _evaluate_and_maybe_sail(
+ 	_queue_signal("trader_plan_set", [tid, sid, new_plan])
+ 	_record_season_sail(from_port, good_f, qty_f, int(best["daily_profit_li"]))
+ 	stats["sailed"] = 1
++	## 17-91 DIAG-INFO: close prior explore stay, then record this depart (observe only).
++	M1bDiagInfo.mark_explore_depart_chain(String(sid), from_s, String(dest_f), explore)
++	M1bDiagInfo.note_sailed(
++		from_s, String(dest_f), String(good_f), qty_f, explore, String(tid), String(sid)
++	)
++	M1bDiagInfo.note_candidates(
++		from_s, String(tid), String(sid), explore, candidates, best, true
++	)
+ 	return stats
+ 
+ 
+diff --git a/sim/m1b_diag_info.gd b/sim/m1b_diag_info.gd
+new file mode 100644
+index 0000000..d56cef2
+--- /dev/null
++++ b/sim/m1b_diag_info.gd
+@@ -0,0 +1,769 @@
++class_name M1bDiagInfo
++extends RefCounted
++## 17-91 Lane P DIAG-INFO: gated probe (env M1B_DIAG_INFO=1).
++## Count + record only. Must not change decisions, sort, RNG, or existing CSVs.
++## Probe files only under M1B_DIAG_INFO_OUT. Delete with diag-info-1791.
++
++
++const ENV_FLAG := "M1B_DIAG_INFO"
++const ENV_OUT := "M1B_DIAG_INFO_OUT"
++
++const R_MARKET_QTY := "skip.market_qty"
++const R_AFFORD := "skip.afford"
++const R_NO_INTEL := "skip.no_intel"
++const R_WEEKLY := "skip.weekly_demand"
++const R_DRAFT := "skip.draft"
++const R_ENTRY := "skip.entry"
++const R_GOOD_ADMIT := "skip.good_admit"
++const R_OTHER := "skip.other"
++const R_NO_VOYAGE := "skip.no_voyage"
++const R_HOLD_FULL := "skip.hold_full"
++const R_Q_LT1 := "skip.q_lt1"
++const R_QUOTE_ERR := "skip.quote_err"
++const R_BUY_COST := "skip.buy_cost"
++const R_DECIDE_IDLE := "skip.decide_idle"
++const R_BUY_FAIL := "skip.buy_fail"
++const R_SAIL_FAIL := "skip.sail_fail"
++
++const FIVE := ["PT-04", "PT-05", "PT-08", "PT-09", "PT-11"]
++const FOCUS_STAY := ["PT-04", "PT-05", "PT-08", "PT-09", "PT-11", "PT-12", "PT-13"]
++
++static var _checked: bool = false
++static var _active: bool = false
++static var _out_dir: String = ""
++static var _day: int = 0
++static var _season: int = 0
++static var _tick: int = 0
++
++## ship_id → true if last depart was explore
++static var _explore_ship: Dictionary = {}
++## ship_id → pending explore voyage dict (open until next-publish check)
++static var _explore_pending: Dictionary = {}
++## ship_id → joined row awaiting next-voyage publish of origin=D onto arrive port
++static var _explore_await_publish: Dictionary = {}
++## ship_id → last arrive {day, port}
++static var _last_arrive: Dictionary = {}
++## ship_id → last depart day/port for stay calc
++static var _docked_since: Dictionary = {}
++
++static var _intel_sample_lines: Array = []
++static var _intel_zero_lines: Array = []
++static var _publish_lines: Array = []
++static var _publish_season_origin: Dictionary = {} ## season|O → count
++static var _arrive_lines: Array = []
++static var _depart_lines: Array = []
++static var _stay_samples: Array = [] ## {port, days}
++static var _explore_events: Array = []
++static var _explore_joined: Array = []
++static var _cand_lines: Array = []
++static var _pick_lines: Array = []
++static var _pick_no_idle_days: int = 0
++static var _pick_no_idle_traders: int = 0
++static var _offtake_lines: Array = []
++static var _offtake_zero_lines: Array = []
++static var _job_skip_totals: Dictionary = {}
++static var _no_intel_n0: int = 0
++static var _no_intel_n1: int = 0
++static var _season_no_intel_n0: Dictionary = {} ## season|from|to → n
++static var _season_no_intel_n1: Dictionary = {}
++static var _route_sailed: Dictionary = {} ## from|to → count (job)
++static var _port_sail_out: Dictionary = {} ## port → departures
++static var _sampled_days: Dictionary = {}
++
++
++static func is_active() -> bool:
++	if not _checked:
++		_checked = true
++		_active = OS.get_environment(ENV_FLAG) == "1"
++		_out_dir = String(OS.get_environment(ENV_OUT)).strip_edges()
++		if _active:
++			print(
++				"DIAG_INFO: enabled out=%s"
++				% (_out_dir if not _out_dir.is_empty() else "(stdout-only)")
++			)
++	return _active
++
++
++static func reset() -> void:
++	_checked = false
++	_active = false
++	_out_dir = ""
++	_day = 0
++	_season = 0
++	_tick = 0
++	_explore_ship.clear()
++	_explore_pending.clear()
++	_explore_await_publish.clear()
++	_last_arrive.clear()
++	_docked_since.clear()
++	_intel_sample_lines.clear()
++	_intel_zero_lines.clear()
++	_publish_lines.clear()
++	_publish_season_origin.clear()
++	_arrive_lines.clear()
++	_depart_lines.clear()
++	_stay_samples.clear()
++	_explore_events.clear()
++	_explore_joined.clear()
++	_cand_lines.clear()
++	_pick_lines.clear()
++	_pick_no_idle_days = 0
++	_pick_no_idle_traders = 0
++	_offtake_lines.clear()
++	_offtake_zero_lines.clear()
++	_job_skip_totals.clear()
++	_no_intel_n0 = 0
++	_no_intel_n1 = 0
++	_season_no_intel_n0.clear()
++	_season_no_intel_n1.clear()
++	_route_sailed.clear()
++	_port_sail_out.clear()
++	_sampled_days.clear()
++
++
++static func begin_from_env() -> void:
++	reset()
++	_checked = false
++	is_active()
++
++
++static func set_day(day: int) -> void:
++	if not is_active():
++		return
++	_day = day
++	if Clock != null:
++		_season = int(Clock.season_index)
++		_tick = int(Clock.tick)
++	## P1-A sample days: day 1, every 5, season ends (90/180/270/360).
++	if _should_sample_intel(day):
++		_sample_intel_coverage(day)
++	## P1-G season-end offtake (days_per_season=90 assumed via day%90==0).
++	if day > 0 and day % 90 == 0:
++		_sample_offtake(day)
++
++
++static func _should_sample_intel(day: int) -> bool:
++	if day < 1:
++		return false
++	if day == 1:
++		return true
++	if day % 5 == 0:
++		return true
++	if day % 90 == 0:
++		return true
++	return false
++
++
++static func _sample_intel_coverage(day: int) -> void:
++	var key := str(day)
++	if _sampled_days.has(key):
++		return
++	_sampled_days[key] = true
++	if not PortRegistry.is_loaded() or not IntelLedger.has_method("diag_origin_board_stats"):
++		return
++	var ports: Array = []
++	for p in PortRegistry.all_ids():
++		ports.append(String(p))
++	ports.sort()
++	var zero_n := 0
++	for p in ports:
++		for d in ports:
++			if p == d:
++				continue
++			var st: Dictionary = IntelLedger.diag_origin_board_stats(StringName(p), StringName(d))
++			var n: int = int(st.get("n", 0))
++			var age: int = int(st.get("newest_age_days", -1))
++			var opening: int = 1 if bool(st.get("has_opening", false)) else 0
++			_intel_sample_lines.append(
++				"%d,%d,%s,%s,%d,%d,%d" % [day, _season, p, d, n, age, opening]
++			)
++			if n == 0:
++				zero_n += 1
++	_intel_zero_lines.append("%d,%d,%d" % [day, _season, zero_n])
++	print("DIAG_INFO_INTEL_ZERO day=%d season=%d n0_pairs=%d" % [day, _season, zero_n])
++
++
++static func _sample_offtake(day: int) -> void:
++	if not PortRegistry.is_loaded() or not GoodCatalog.is_loaded():
++		return
++	var ports: Array = []
++	for p in PortRegistry.all_ids():
++		ports.append(String(p))
++	ports.sort()
++	var goods: Array = []
++	for g in GoodCatalog.all_ids():
++		goods.append(String(g))
++	goods.sort()
++	for p in ports:
++		var zero_goods := 0
++		for g in goods:
++			var snap: Dictionary = GoodsLedger.offtake_snapshot(StringName(p), StringName(g))
++			var wq: int = int(snap.get("window_qty", 0)) if not snap.is_empty() else 0
++			_offtake_lines.append("%d,%d,%s,%s,%d" % [day, _season, p, g, wq])
++			if wq == 0:
++				zero_goods += 1
++		_offtake_zero_lines.append("%d,%d,%s,%d" % [day, _season, p, zero_goods])
++
++
++static func note_explore_picks(day: int, explore_set: Dictionary, idle_by_tid: Dictionary) -> void:
++	if not is_active():
++		return
++	var ids: Array = explore_set.keys()
++	ids.sort()
++	var day_no_idle := 0
++	for tid in ids:
++		var idle_n: int = int(idle_by_tid.get(String(tid), 0))
++		_pick_lines.append("%d,%d,%s,%d" % [day, _season, String(tid), idle_n])
++		if idle_n < 1:
++			day_no_idle += 1
++			_pick_no_idle_traders += 1
++	if day_no_idle > 0:
++		_pick_no_idle_days += 1
++	print("DIAG_INFO_EXPLORE_PICK day=%d n=%d no_idle=%d" % [day, ids.size(), day_no_idle])
++
++
++static func note_explore_eval_outcome(
++	tid: String, sid: String, explore: bool, evaluable: int, sailed: int, reason: String
++) -> void:
++	if not is_active() or not explore:
++		return
++	_pick_lines.append(
++		"OUT,%d,%d,%s,%s,eval=%d,sailed=%d,reason=%s"
++		% [_day, _season, tid, sid, evaluable, sailed, reason]
++	)
++
++
++static func note_skip(from_port: String, dest: String, reason: String) -> void:
++	if not is_active():
++		return
++	_inc(_job_skip_totals, reason, 1)
++	if reason == R_NO_INTEL and dest != "-" and from_port != "-":
++		var n := 0
++		if IntelLedger.has_method("diag_origin_board_stats"):
++			var st: Dictionary = IntelLedger.diag_origin_board_stats(
++				StringName(from_port), StringName(dest)
++			)
++			n = int(st.get("n", 0))
++		if n < 1:
++			_no_intel_n0 += 1
++			_inc(_season_no_intel_n0, "%d|%s|%s" % [_season, from_port, dest], 1)
++		else:
++			_no_intel_n1 += 1
++			_inc(_season_no_intel_n1, "%d|%s|%s" % [_season, from_port, dest], 1)
++
++
++static func note_candidates(
++	from_port: String,
++	tid: String,
++	sid: String,
++	explore: bool,
++	candidates: Array,
++	best: Dictionary,
++	decision_sail: bool
++) -> void:
++	if not is_active():
++		return
++	var record := false
++	if explore:
++		record = true
++	elif FIVE.has(from_port):
++		record = true
++	elif _day % 5 == 0:
++		record = true
++	if not record:
++		return
++	var top: Array = []
++	var sorted: Array = candidates.duplicate()
++	sorted.sort_custom(func(a, b):
++		if int(a.get("daily_profit_li", 0)) != int(b.get("daily_profit_li", 0)):
++			return int(a.get("daily_profit_li", 0)) > int(b.get("daily_profit_li", 0))
++		var ap := String(a.get("port_id", ""))
++		var bp := String(b.get("port_id", ""))
++		if ap != bp:
++			return ap < bp
++		return String(a.get("good_id", "")) < String(b.get("good_id", ""))
++	)
++	for i in range(mini(3, sorted.size())):
++		var c: Dictionary = sorted[i]
++		top.append(
++			"%s/%s/%d/%d"
++			% [
++				String(c.get("port_id", "")),
++				String(c.get("good_id", "")),
++				int(c.get("daily_profit_li", 0)),
++				int(c.get("qty", 0)),
++			]
++		)
++	var chosen := "-"
++	if not best.is_empty():
++		chosen = "%s/%s/%d/%d" % [
++			String(best.get("port_id", "")),
++			String(best.get("good_id", "")),
++			int(best.get("daily_profit_li", 0)),
++			int(best.get("qty", 0)),
++		]
++	var dec := "sail" if decision_sail else "idle"
++	_cand_lines.append(
++		"%d,%d,%s,%s,%s,%d,%d,%s,%s,%s"
++		% [
++			_day,
++			_season,
++			from_port,
++			tid,
++			sid,
++			1 if explore else 0,
++			candidates.size(),
++			"|".join(top) if not top.is_empty() else "-",
++			chosen,
++			dec,
++		]
++	)
++
++
++static func note_sailed(
++	from_port: String,
++	dest: String,
++	good: String,
++	qty: int,
++	explore: bool,
++	tid: String,
++	sid: String
++) -> void:
++	if not is_active():
++		return
++	_inc(_route_sailed, "%s|%s" % [from_port, dest], 1)
++	_inc(_port_sail_out, from_port, 1)
++	_explore_ship[sid] = explore
++	## Stay: if we knew docked_since, compute stay days.
++	if _docked_since.has(sid):
++		var ds: Dictionary = _docked_since[sid]
++		var stay_port: String = String(ds.get("port", ""))
++		var since: int = int(ds.get("day", _day))
++		var stay_days: int = _day - since
++		if stay_days >= 0:
++			_stay_samples.append({"port": stay_port, "days": stay_days})
++		_docked_since.erase(sid)
++	_depart_lines.append(
++		"%d,%d,%s,%s,%s,%s,%d,%d"
++		% [_day, _tick, sid, from_port, dest, tid, 1 if explore else 0, qty]
++	)
++	if explore:
++		_explore_pending[sid] = {
++			"tid": tid,
++			"from": from_port,
++			"to": dest,
++			"good": good,
++			"qty": qty,
++			"depart_day": _day,
++			"arrive_day": -1,
++			"sell_ok": -1,
++			"sell_reason": "",
++			"next_depart_day": -1,
++			"next_from": "",
++			"next_to": "",
++			"d_on_next_board": -1,
++		}
++		_explore_events.append(
++			"DEPART day=%d sid=%s tid=%s from=%s to=%s good=%s qty=%d"
++			% [_day, sid, tid, from_port, dest, good, qty]
++		)
++
++
++static func note_arrive(day: int, tick: int, sid: String, port: String, from_port: String) -> void:
++	if not is_active():
++		return
++	_arrive_lines.append("%d,%d,%s,%s,%s" % [day, tick, sid, port, from_port])
++	_last_arrive[sid] = {"day": day, "port": port}
++	_docked_since[sid] = {"day": day, "port": port}
++	if _explore_pending.has(sid):
++		var pe: Dictionary = _explore_pending[sid]
++		pe["arrive_day"] = day
++		_explore_pending[sid] = pe
++		_explore_events.append("ARRIVE day=%d sid=%s port=%s from=%s" % [day, sid, port, from_port])
++
++
++static func note_publish(
++	day: int,
++	tick: int,
++	sid: String,
++	tid: String,
++	origin: String,
++	port: String,
++	goods_n: int,
++	published: bool,
++	same_port_skip: bool
++) -> void:
++	if not is_active():
++		return
++	var explore := 1 if bool(_explore_ship.get(sid, false)) else 0
++	_publish_lines.append(
++		"%d,%d,%s,%s,%s,%s,%d,%d,%d,%d"
++		% [
++			day,
++			tick,
++			sid,
++			tid,
++			origin,
++			port,
++			explore,
++			goods_n,
++			1 if published else 0,
++			1 if same_port_skip else 0,
++		]
++	)
++	if published:
++		_inc(_publish_season_origin, "%d|%s" % [_season, origin], 1)
++	## P1-D: after next voyage publishes, check whether explore dest D is on arrive board.
++	if _explore_await_publish.has(sid):
++		var aw: Dictionary = _explore_await_publish[sid]
++		var d_port: String = String(aw.get("d_port", ""))
++		if published and origin == d_port and port == String(aw.get("next_to", "")):
++			var n := 0
++			if IntelLedger.has_method("diag_origin_board_stats"):
++				var st: Dictionary = IntelLedger.diag_origin_board_stats(
++					StringName(port), StringName(d_port)
++				)
++				n = int(st.get("n", 0))
++			aw["d_on_next_board"] = n
++			_explore_joined.append(_fmt_joined(aw, sid))
++			_explore_events.append(
++				"PUBLISH_CHECK day=%d sid=%s arrive=%s origin_d=%s n=%d"
++				% [day, sid, port, d_port, n]
++			)
++			_explore_await_publish.erase(sid)
++		elif same_port_skip and origin == d_port:
++			aw["d_on_next_board"] = 0
++			_explore_joined.append(_fmt_joined(aw, sid))
++			_explore_events.append(
++				"PUBLISH_SKIP_SAME day=%d sid=%s port=%s" % [day, sid, port]
++			)
++			_explore_await_publish.erase(sid)
++
++
++static func note_sell(sid: String, tid: String, port: String, ok: bool, reason: String) -> void:
++	if not is_active():
++		return
++	if not _explore_pending.has(sid):
++		return
++	var pe: Dictionary = _explore_pending[sid]
++	pe["sell_ok"] = 1 if ok else 0
++	pe["sell_reason"] = reason
++	_explore_pending[sid] = pe
++	_explore_events.append(
++		"SELL day=%d sid=%s tid=%s port=%s ok=%d reason=%s"
++		% [_day, sid, tid, port, 1 if ok else 0, reason]
++	)
++
++
++static func note_post_explore_depart(sid: String, from_port: String, dest: String) -> void:
++	## Called on first depart after an explore arrival; await publish of origin=D onto dest.
++	if not is_active():
++		return
++	if not _explore_pending.has(sid):
++		return
++	var pe: Dictionary = _explore_pending[sid]
++	if int(pe.get("arrive_day", -1)) < 0:
++		return
++	if int(pe.get("next_depart_day", -1)) >= 0:
++		return
++	pe["next_depart_day"] = _day
++	pe["next_from"] = from_port
++	pe["next_to"] = dest
++	pe["d_port"] = String(pe.get("to", ""))
++	pe["d_on_next_board"] = -1
++	_explore_await_publish[sid] = pe.duplicate(true)
++	_explore_events.append(
++		"NEXT_DEPART day=%d sid=%s from=%s to=%s await_publish_d=%s"
++		% [_day, sid, from_port, dest, String(pe.get("to", ""))]
++	)
++	_explore_pending.erase(sid)
++
++
++static func _fmt_joined(pe: Dictionary, sid: String) -> String:
++	return "%s,%s,%s,%s,%s,%d,%d,%d,%d,%s,%d,%s,%s,%d" % [
++		sid,
++		String(pe.get("tid", "")),
++		String(pe.get("from", "")),
++		String(pe.get("to", "")),
++		String(pe.get("good", "")),
++		int(pe.get("qty", 0)),
++		int(pe.get("depart_day", -1)),
++		int(pe.get("arrive_day", -1)),
++		int(pe.get("sell_ok", -1)),
++		String(pe.get("sell_reason", "")),
++		int(pe.get("next_depart_day", -1)),
++		String(pe.get("next_from", "")),
++		String(pe.get("next_to", "")),
++		int(pe.get("d_on_next_board", -1)),
++	]
++
++
++static func mark_explore_depart_chain(
++	sid: String, from_port: String, dest: String, _explore: bool
++) -> void:
++	## If this depart closes a prior explore stay, move to await-publish.
++	if not is_active():
++		return
++	if _explore_pending.has(sid) and int(_explore_pending[sid].get("arrive_day", -1)) >= 0:
++		note_post_explore_depart(sid, from_port, dest)
++
++
++static func finish() -> void:
++	if not is_active():
++		return
++	## Flush unfinished explore pending / await-publish as open joined rows.
++	var open_keys: Array = _explore_pending.keys()
++	open_keys.sort()
++	for sid in open_keys:
++		var pe: Dictionary = _explore_pending[sid]
++		_explore_joined.append(_fmt_joined(pe, String(sid)))
++	var aw_keys: Array = _explore_await_publish.keys()
++	aw_keys.sort()
++	for sid2 in aw_keys:
++		var aw: Dictionary = _explore_await_publish[sid2]
++		_explore_joined.append(_fmt_joined(aw, String(sid2)))
++	print(
++		"DIAG_INFO: writing probe files day_max=%d publish=%d explore_joined=%d"
++		% [_day, _publish_lines.size(), _explore_joined.size()]
++	)
++	_emit_job_totals()
++	if _out_dir.is_empty():
++		return
++	var abs_dir: String = _out_dir
++	if not abs_dir.is_absolute_path():
++		abs_dir = ProjectSettings.globalize_path("res://").trim_suffix("/").path_join(_out_dir)
++	DirAccess.make_dir_recursive_absolute(abs_dir)
++	_write_text(abs_dir.path_join("diag_info_intel_coverage.csv"), _fmt_intel())
++	_write_text(abs_dir.path_join("diag_info_intel_zero.csv"), _fmt_intel_zero())
++	_write_text(abs_dir.path_join("diag_info_publish_events.csv"), _fmt_publish())
++	_write_text(abs_dir.path_join("diag_info_publish_by_origin.txt"), _fmt_publish_origin())
++	_write_text(abs_dir.path_join("diag_info_arrivals.csv"), _fmt_arrivals())
++	_write_text(abs_dir.path_join("diag_info_departures.csv"), _fmt_departures())
++	_write_text(abs_dir.path_join("diag_info_stays.txt"), _fmt_stays())
++	_write_text(abs_dir.path_join("diag_info_explore_events.txt"), _fmt_explore_events())
++	_write_text(abs_dir.path_join("diag_info_explore_joined.csv"), _fmt_explore_joined())
++	_write_text(abs_dir.path_join("diag_info_candidates.csv"), _fmt_candidates())
++	_write_text(abs_dir.path_join("diag_info_explore_picks.txt"), _fmt_picks())
++	_write_text(abs_dir.path_join("diag_info_offtake.csv"), _fmt_offtake())
++	_write_text(abs_dir.path_join("diag_info_offtake_zero.csv"), _fmt_offtake_zero())
++	_write_text(abs_dir.path_join("diag_info_skip_totals.txt"), _fmt_skip_totals())
++	_write_text(abs_dir.path_join("diag_info_route_sailed.txt"), _fmt_route_sailed())
++	print("DIAG_INFO: wrote under %s" % abs_dir)
++
++
++static func _emit_job_totals() -> void:
++	var keys: Array = _job_skip_totals.keys()
++	keys.sort()
++	for k in keys:

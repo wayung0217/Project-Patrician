@@ -1,0 +1,259 @@
+p1-probe-diff-2.txt
+PACK=overnight-17-91-P
+PART=2/2 LINES=256
++		print("DIAG_INFO_JOB_SKIP reason=%s n=%d" % [String(k), int(_job_skip_totals[k])])
++	print("DIAG_INFO_NO_INTEL n0=%d n_ge1=%d" % [_no_intel_n0, _no_intel_n1])
++	print(
++		"DIAG_INFO_PICK_NO_IDLE days=%d trader_hits=%d"
++		% [_pick_no_idle_days, _pick_no_idle_traders]
++	)
++
++
++static func _fmt_intel() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("day,season,port_p,origin_d,n,newest_age_days,has_opening")
++	for L in _intel_sample_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_intel_zero() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("day,season,n0_pairs")
++	for L in _intel_zero_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_publish() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append(
++		"day,tick,ship_id,trader_id,origin_o,arrive_p,explore,goods_n,published,same_port_skip"
++	)
++	for L in _publish_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_publish_origin() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("diag_info_publish_by_origin.txt")
++	lines.append("season,origin,publish_count")
++	var keys: Array = _publish_season_origin.keys()
++	keys.sort()
++	for k in keys:
++		var parts: PackedStringArray = String(k).split("|")
++		lines.append("%s,%s,%d" % [parts[0], parts[1], int(_publish_season_origin[k])])
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_arrivals() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("day,tick,ship_id,port,from_port")
++	for L in _arrive_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_departures() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("day,tick,ship_id,from_port,dest,trader_id,explore,qty")
++	for L in _depart_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_stays() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("diag_info_stays.txt")
++	lines.append("## arrive→depart days distribution by port (focus ports)")
++	var by_port: Dictionary = {}
++	for s in _stay_samples:
++		var p: String = String(s["port"])
++		var d: int = int(s["days"])
++		if not by_port.has(p):
++			by_port[p] = []
++		(by_port[p] as Array).append(d)
++	var ports: Array = by_port.keys()
++	ports.sort()
++	lines.append("port,n,min,p50,p90,max,mean")
++	for p in ports:
++		if not FOCUS_STAY.has(String(p)) and not FIVE.has(String(p)):
++			## still include all for completeness but mark
++			pass
++		var arr: Array = by_port[p]
++		arr.sort()
++		var n: int = arr.size()
++		if n < 1:
++			continue
++		var mn: int = int(arr[0])
++		var mx: int = int(arr[n - 1])
++		var p50: int = int(arr[int((n - 1) * 0.5)])
++		var p90: int = int(arr[int((n - 1) * 0.9)])
++		var sum := 0
++		for v in arr:
++			sum += int(v)
++		var mean: float = float(sum) / float(n)
++		lines.append("%s,%d,%d,%d,%d,%d,%.2f" % [p, n, mn, p50, p90, mx, mean])
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_explore_events() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("diag_info_explore_events.txt")
++	for L in _explore_events:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_explore_joined() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append(
++		"ship_id,tid,from,to,good,qty,depart_day,arrive_day,sell_ok,sell_reason,next_depart_day,next_from,next_to,d_on_next_board_n"
++	)
++	for L in _explore_joined:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_candidates() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append(
++		"day,season,from_port,tid,sid,explore,cand_n,top3,chosen,decision"
++	)
++	for L in _cand_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_picks() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("diag_info_explore_picks.txt")
++	lines.append(
++		"pick_no_idle_days=%d pick_no_idle_trader_hits=%d" % [_pick_no_idle_days, _pick_no_idle_traders]
++	)
++	lines.append("## day,season,tid,idle_docked_n  OR  OUT,... eval outcomes")
++	for L in _pick_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_offtake() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("day,season,port,good,window_qty")
++	for L in _offtake_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_offtake_zero() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("day,season,port,zero_good_count")
++	for L in _offtake_zero_lines:
++		lines.append(String(L))
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_skip_totals() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("diag_info_skip_totals.txt")
++	var keys: Array = _job_skip_totals.keys()
++	keys.sort()
++	for k in keys:
++		lines.append("%s=%d" % [String(k), int(_job_skip_totals[k])])
++	lines.append("skip.no_intel.n0=%d" % _no_intel_n0)
++	lines.append("skip.no_intel.n_ge1=%d" % _no_intel_n1)
++	lines.append("## season|from|to n0 counts")
++	var k0: Array = _season_no_intel_n0.keys()
++	k0.sort()
++	for k in k0:
++		lines.append("n0,%s,%d" % [String(k), int(_season_no_intel_n0[k])])
++	lines.append("## season|from|to n_ge1 counts")
++	var k1: Array = _season_no_intel_n1.keys()
++	k1.sort()
++	for k in k1:
++		lines.append("n_ge1,%s,%d" % [String(k), int(_season_no_intel_n1[k])])
++	return "\n".join(lines) + "\n"
++
++
++static func _fmt_route_sailed() -> String:
++	var lines: PackedStringArray = PackedStringArray()
++	lines.append("diag_info_route_sailed.txt")
++	lines.append("## from|to sailed counts (job)")
++	var keys: Array = _route_sailed.keys()
++	keys.sort()
++	for k in keys:
++		lines.append("%s,%d" % [String(k), int(_route_sailed[k])])
++	lines.append("## port departures (job)")
++	var pk: Array = _port_sail_out.keys()
++	pk.sort()
++	for k in pk:
++		lines.append("OUT,%s,%d" % [String(k), int(_port_sail_out[k])])
++	## five-port focus numbers
++	for p in FIVE:
++		var out_n: int = int(_port_sail_out.get(p, 0))
++		var in_n := 0
++		for k in keys:
++			var parts: PackedStringArray = String(k).split("|")
++			if parts.size() == 2 and parts[1] == p:
++				in_n += int(_route_sailed[k])
++		lines.append("FIVE_OUT,%s,%d" % [p, out_n])
++		lines.append("FIVE_IN,%s,%d" % [p, in_n])
++	return "\n".join(lines) + "\n"
++
++
++static func _inc(store: Dictionary, key: String, n: int) -> void:
++	store[key] = int(store.get(key, 0)) + n
++
++
++static func _write_text(path: String, body: String) -> void:
++	var f: FileAccess = FileAccess.open(path, FileAccess.WRITE)
++	if f == null:
++		print("DIAG_INFO: write failed path=%s err=%s" % [path, FileAccess.get_open_error()])
++		return
++	f.store_string(body)
++	f.close()
+diff --git a/sim/m1b_diag_info.gd.uid b/sim/m1b_diag_info.gd.uid
+new file mode 100644
+index 0000000..97f7d99
+--- /dev/null
++++ b/sim/m1b_diag_info.gd.uid
+@@ -0,0 +1 @@
++uid://cm1bdiaginfo1791
+diff --git a/sim/sim_engine.gd b/sim/sim_engine.gd
+index 72ae877..2c57c92 100644
+--- a/sim/sim_engine.gd
++++ b/sim/sim_engine.gd
+@@ -158,6 +158,8 @@ func _run_one_job(
+ 	var diag_z := M1bDiagZ.new()
+ 	diag_z.begin_from_env()
+ 	TraderRegistry.set_diag_z(diag_z if diag_z.is_active() else null)
++	## 17-91 DIAG-INFO: gated probe (env M1B_DIAG_INFO=1); no behaviour change when off.
++	M1bDiagInfo.begin_from_env()
+ 
+ 	# D-60f／D-63b: sim expects successful boot → inject fixtures（not formal always-allow）.
+ 	# D-120(f): QUAL_OPEN＝1 → SimQualificationOpenFixture (sim/ only); else deny-all.
+@@ -193,6 +195,7 @@ func _run_one_job(
+ 	if not boot_errors.is_empty() or not SimLoop.is_booted():
+ 		diag_z.record_roster_after_boot()
+ 		diag_z.finish()
++		M1bDiagInfo.finish()
+ 		TraderRegistry.set_diag_z(null)
+ 		acc.disconnect_ledger()
+ 		sampler.disconnect_unmet()
+@@ -216,6 +219,7 @@ func _run_one_job(
+ 		)
+ 		if not bool(conv.get("ok", false)):
+ 			diag_z.finish()
++			M1bDiagInfo.finish()
+ 			TraderRegistry.set_diag_z(null)
+ 			acc.disconnect_ledger()
+ 			sampler.disconnect_unmet()
+@@ -294,6 +298,7 @@ func _run_one_job(
+ 		var si_final: int = int(Clock.season_index) if Clock != null else 0
+ 		_emit_season_progress(si_final, total_days, days_per_season, seasons_y, sampler)
+ 	diag_z.finish()
++	M1bDiagInfo.finish()
+ 	TraderRegistry.set_diag_z(null)
+ 	acc.disconnect_ledger()
+ 	sampler.disconnect_unmet()
