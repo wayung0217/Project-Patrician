@@ -1,0 +1,133 @@
+q3-recompute.txt
+ASOF_HKT=2026-11-28 13:07:12 Asia/Hong_Kong
+READ_COMMIT_SHA_FOR_WINDOWS=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+L_ARTIFACTS=store path overnight-17-88-L/artifacts/{d1800,d3600} (orphan review/overnight-17-88-L SHA 29472f3c367d770a03577797656b8df33d166f87)
+L_PRODUCT_SHA=107c17fea29da54363713e5896805a2ebd630a0e
+metrics.gd identical between L product SHA and read SHA (git diff --stat empty).
+INDICATORS=MET-01 (all eval seasons), MET-04 (last year sat span)
+
+======== SCRIPT (Python only; not committed to product repo) ========
+---BEGIN q3_recompute_1789.py---
+#!/usr/bin/env python3
+"""17-89-Q Q3: recompute MET-01 / MET-04 from overnight-17-88-L CSVs (not in repo)."""
+import csv
+from pathlib import Path
+
+ART = Path("/cursor/stores/bc-384468d1-b190-4297-a5ea-281d48ea7ac0/overnight-17-88-L/artifacts")
+WARMUP_SEASONS = 1 * 4  # warmup_years=1, SEASONS_PER_YEAR=4
+SEASONS_Y = 4
+BAND_EQ = 2  # MarketPricer.Band.EQUILIBRIUM
+
+def load_csv(path: Path):
+    with path.open(newline="") as f:
+        return list(csv.DictReader(f))
+
+def met01(cells):
+    total = eq = 0
+    for c in cells:
+        if int(float(c["season_index"])) < WARMUP_SEASONS:
+            continue
+        if str(c["stock_weeks"]) == "":
+            continue
+        total += 1
+        if int(float(c["band"])) == BAND_EQ:
+            eq += 1
+    if total == 0:
+        return None, total, eq
+    return eq / total, total, eq
+
+def met04(ports):
+    by = {}
+    for r in ports:
+        si = int(float(r["season_index"]))
+        if si < WARMUP_SEASONS:
+            continue
+        by.setdefault(r["port_id"], []).append(r)
+    worst = None
+    for _pid, rows in by.items():
+        rows.sort(key=lambda r: int(float(r["season_index"])))
+        last_si = int(float(rows[-1]["season_index"]))
+        year_start = last_si - SEASONS_Y + 1
+        sats = [
+            int(float(r["sat_weighted"]))
+            for r in rows
+            if int(float(r["season_index"])) >= year_start
+        ]
+        if not sats:
+            continue
+        span = float(max(sats) - min(sats))
+        if worst is None or span > worst:
+            worst = span
+    return worst
+
+EXPECTED = {
+    "d1800": {"MET-01": "0.06144306651635", "MET-04": "235"},
+    "d3600": {"MET-01": "0.05948653725736", "MET-04": "202"},
+}
+
+for label in ("d1800", "d3600"):
+    cells = load_csv(ART / label / "season_cells.csv")
+    ports = load_csv(ART / label / "season_ports.csv")
+    summary = load_csv(ART / label / "summary.csv")[0]
+    sis_c = sorted({int(float(c["season_index"])) for c in cells})
+    eval_c = [s for s in sis_c if s >= WARMUP_SEASONS]
+    last_year = list(range(eval_c[-1] - SEASONS_Y + 1, eval_c[-1] + 1))
+    ratio, total, eq = met01(cells)
+    m04 = met04(ports)
+    s01 = summary["MET-01"]
+    s04 = summary["MET-04"]
+    e01 = EXPECTED[label]["MET-01"]
+    e04 = EXPECTED[label]["MET-04"]
+    ratio_s14 = f"{ratio:.14f}" if ratio is not None else ""
+    print(f"=== {label} ===")
+    print(f"season_index {sis_c[0]}..{sis_c[-1]} n={len(sis_c)}")
+    print(f"eval_seasons {eval_c[0]}..{eval_c[-1]} n={len(eval_c)}; last_year={last_year}")
+    print(f"summary.csv MET-01={s01} MET-04={s04}")
+    print(f"brief_expected MET-01={e01} MET-04={e04}")
+    print(f"recompute MET-01_raw={ratio!r} MET-01_fmt14={ratio_s14} (eq={eq} total={total})")
+    print(f"recompute MET-04={m04!r}")
+    mismatches = []
+    if ratio_s14 != s01:
+        mismatches.append(f"MET-01 fmt14={ratio_s14!r} summary={s01!r} raw={ratio!r}")
+    if str(int(m04)) if m04 is not None and m04 == int(m04) else str(m04) != s04:
+        # MET-04 summary is integer string
+        m04_s = str(int(m04)) if m04 is not None and float(m04) == int(m04) else repr(m04)
+        if m04_s != s04:
+            mismatches.append(f"MET-04 recompute={m04_s!r} summary={s04!r}")
+    if ratio is not None and ratio != float(s01):
+        mismatches.append(
+            f"MET-01 raw_float_ne_summary_float raw={ratio!r} float(summary)={float(s01)!r} delta={ratio - float(s01)!r}"
+        )
+    if mismatches:
+        print("MISMATCH_VS_SUMMARY:")
+        for m in mismatches:
+            print(f"  {m}")
+    else:
+        print("MISMATCH_VS_SUMMARY: none")
+    print(f"vs_brief fmt14_MET-01_eq={ratio_s14 == e01} MET-04_eq={(str(int(m04)) if m04 is not None else '') == e04}")
+    print()
+---END q3_recompute_1789.py---
+
+======== OUTPUT ========
+=== d1800 ===
+season_index 0..19 n=20
+eval_seasons 4..19 n=16; last_year=[16, 17, 18, 19]
+summary.csv MET-01=0.06144306651635 MET-04=235
+brief_expected MET-01=0.06144306651635 MET-04=235
+recompute MET-01_raw=0.06144306651634724 MET-01_fmt14=0.06144306651635 (eq=436 total=7096)
+recompute MET-04=235.0
+MISMATCH_VS_SUMMARY:
+  MET-01 raw_float_ne_summary_float raw=0.06144306651634724 float(summary)=0.06144306651635 delta=-2.761679773755077e-15
+vs_brief fmt14_MET-01_eq=True MET-04_eq=True
+
+=== d3600 ===
+season_index 0..39 n=40
+eval_seasons 4..39 n=36; last_year=[36, 37, 38, 39]
+summary.csv MET-01=0.05948653725736 MET-04=202
+brief_expected MET-01=0.05948653725736 MET-04=202
+recompute MET-01_raw=0.059486537257357544 MET-01_fmt14=0.05948653725736 (eq=950 total=15970)
+recompute MET-04=202.0
+MISMATCH_VS_SUMMARY:
+  MET-01 raw_float_ne_summary_float raw=0.059486537257357544 float(summary)=0.05948653725736 delta=-2.456368441983159e-15
+vs_brief fmt14_MET-01_eq=True MET-04_eq=True
+

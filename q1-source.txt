@@ -1,0 +1,1097 @@
+q1-source.txt
+READ_COMMIT_SHA=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+ONELINE=aa098a8 Merge pull request #105 from wayung0217/perf-afford-1787
+ASOF_HKT=2026-11-28 13:05:55 Asia/Hong_Kong
+
+======== Q1(a) MET-01..06 compute path — full functions (sim/metrics.gd) ========
+FILE=sim/metrics.gd
+LINE_RANGE=1-759 (entire file; MET helpers + constants PASS_NA / PRM_SEASONS_PER_YEAR / OBS02_ZERO_STREAK_WARN)
+TOTAL_LINES=759
+---BEGIN sim/metrics.gd---
+     1	class_name SimMetrics
+     2	extends RefCounted
+     3	## FRM-SYS23-07／08／09 — MET-01..06, OBS-01..03 (WP-26); OBS-02／04／05＋TH-01b (WP-27／D-93).
+     4	## Missing threshold → pass N/A. MET-02 stock_weeks already MARKET-only (D-52b／D-93).
+     5	
+     6	
+     7	const PASS_NA := "N/A"
+     8	const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+     9	## D-93／OBS-02: consecutive zero-beggar seasons ≥ this → labour-shortage warning (record only).
+    10	const OBS02_ZERO_STREAK_WARN := 4
+    11	
+    12	
+    13	static func compute(
+    14		sampler: SimSampler,
+    15		warmup_years: int,
+    16		years: int,
+    17		thresholds: Dictionary,
+    18		aborted: bool,
+    19		abort_reason: String,
+    20		elapsed_ms: int,
+    21		run_id: int,
+    22		combo_index: int,
+    23		seed: int,
+    24		combo: Dictionary,
+    25		scenario_id: String = ""
+    26	) -> Dictionary:
+    27		var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+    28		var warmup_seasons: int = warmup_years * seasons_y
+    29		var eval_cells: Array = []
+    30		for row_v in sampler.season_cells:
+    31			var row: Dictionary = row_v
+    32			if _json_int(row["season_index"]) >= warmup_seasons:
+    33				eval_cells.append(row)
+    34		var eval_ports: Array = []
+    35		for row_v in sampler.season_ports:
+    36			var row2: Dictionary = row_v
+    37			if _json_int(row2["season_index"]) >= warmup_seasons:
+    38				eval_ports.append(row2)
+    39	
+    40		var met01: Dictionary = _met01(eval_cells, thresholds)
+    41		var met02: Dictionary = _met02(eval_cells, thresholds, seasons_y)
+    42		var met03: Dictionary = _met03(eval_ports, thresholds, seasons_y)
+    43		var met04: Dictionary = _met04(eval_ports, thresholds, seasons_y)
+    44		var met05: Dictionary = _met05(eval_ports, thresholds, seasons_y)
+    45		var met06: Dictionary = _met06(sampler.conservation_hits, aborted)
+    46		var obs01: String = _obs01(eval_ports)
+    47		var obs02_pack: Dictionary = _obs02(eval_ports)
+    48		var obs02: Variant = obs02_pack["max_ratio"]
+    49		## OBS-03 precise lock definition pending WP-21 (9.5 K) — no value → blank, not "0".
+    50		var obs03: String = ""
+    51		var obs_ext: Array = []
+    52		if not aborted:
+    53			obs_ext.append_array(
+    54				_obs02_ext_rows(
+    55					scenario_id, combo_index, seed, obs02_pack.get("streaks", {})
+    56				)
+    57			)
+    58			obs_ext.append_array(
+    59				_obs04_rows(
+    60					scenario_id,
+    61					combo_index,
+    62					seed,
+    63					eval_cells,
+    64					met02.get("diverged_keys", []),
+    65					thresholds,
+    66					seasons_y
+    67				)
+    68			)
+    69			obs_ext.append_array(
+    70				_obs05_rows(scenario_id, combo_index, seed, eval_ports)
+    71			)
+    72			sampler.obs_ext_rows.append_array(obs_ext)
+    73	
+    74		## Abort path: MET-01..05b no value → blank + pass N/A; MET-06 only if measured hits.
+    75		var met01_v: Variant = met01["value"]
+    76		var met01_p: String = String(met01["pass"])
+    77		var met02_v: Variant = met02["value"]
+    78		var met02_p: String = String(met02["pass"])
+    79		var met03_v: Variant = met03["value"]
+    80		var met03_p: String = String(met03["pass"])
+    81		var met04_v: Variant = met04["value"]
+    82		var met04_p: String = String(met04["pass"])
+    83		var met05a_v: Variant = met05["a"]
+    84		var met05a_p: String = String(met05["a_pass"])
+    85		var met05b_v: Variant = met05["b"]
+    86		var met05b_p: String = String(met05["b_pass"])
+    87		var met06_v: Variant = met06["value"]
+    88		var met06_p: String = String(met06["pass"])
+    89		if aborted:
+    90			met01_v = ""
+    91			met01_p = PASS_NA
+    92			met02_v = ""
+    93			met02_p = PASS_NA
+    94			met03_v = ""
+    95			met03_p = PASS_NA
+    96			met04_v = ""
+    97			met04_p = PASS_NA
+    98			met05a_v = ""
+    99			met05a_p = PASS_NA
+   100			met05b_v = ""
+   101			met05b_p = PASS_NA
+   102			if sampler.conservation_hits > 0:
+   103				met06_v = float(sampler.conservation_hits)
+   104				met06_p = "0"
+   105			else:
+   106				met06_v = ""
+   107				met06_p = PASS_NA
+   108	
+   109		return {
+   110			"run_id": run_id,
+   111			"combo_index": combo_index,
+   112			"seed": seed,
+   113			"combo": JSON.stringify(combo),
+   114			"aborted": 1 if aborted else 0,
+   115			"abort_reason": abort_reason,
+   116			"MET-01": met01_v,
+   117			"MET-01_pass": met01_p,
+   118			"MET-02": met02_v,
+   119			"MET-02_pass": met02_p,
+   120			"MET-03": met03_v,
+   121			"MET-03_pass": met03_p,
+   122			"MET-04": met04_v,
+   123			"MET-04_pass": met04_p,
+   124			"MET-05a": met05a_v,
+   125			"MET-05a_pass": met05a_p,
+   126			"MET-05b": met05b_v,
+   127			"MET-05b_pass": met05b_p,
+   128			"MET-06": met06_v,
+   129			"MET-06_pass": met06_p,
+   130			"OBS-01": obs01,
+   131			"OBS-02": obs02,
+   132			"OBS-03": obs03,
+   133			"elapsed_ms": elapsed_ms,
+   134			"obs_ext": obs_ext,
+   135		}
+   136	
+   137	
+   138	static func aggregate_combos(summaries: Array) -> Array:
+   139		## FRM-SYS23-09 — per combo_index: MET avg／min／max + combo_pass.
+   140		## Aborted runs excluded from avg／min／max; all-aborted → blanks (not 0).
+   141		var by_combo: Dictionary = {}
+   142		for s_v in summaries:
+   143			var s: Dictionary = s_v
+   144			var ci: int = _json_int(s["combo_index"])
+   145			if not by_combo.has(ci):
+   146				by_combo[ci] = []
+   147			(by_combo[ci] as Array).append(s)
+   148		var keys: Array = by_combo.keys()
+   149		keys.sort()
+   150		var rows: Array = []
+   151		for ci_v in keys:
+   152			var ci2: int = _json_int(ci_v)
+   153			var group: Array = by_combo[ci2]
+   154			var combo_s: String = String((group[0] as Dictionary)["combo"])
+   155			var row := {
+   156				"combo_index": ci2,
+   157				"combo": combo_s,
+   158			}
+   159			var all_pass := true
+   160			var any_na := false
+   161			var any_alive := false
+   162			for met_id in ["MET-01", "MET-02", "MET-03", "MET-04", "MET-05a", "MET-05b", "MET-06"]:
+   163				var vals: Array = []
+   164				for g in group:
+   165					var gd: Dictionary = g as Dictionary
+   166					if _json_int(gd.get("aborted", 0)) == 1:
+   167						continue
+   168					any_alive = true
+   169					var raw: Variant = gd[met_id]
+   170					if typeof(raw) == TYPE_STRING and String(raw) == "":
+   171						continue
+   172					vals.append(float(raw))
+   173				if vals.is_empty():
+   174					row["%s_avg" % met_id] = ""
+   175					row["%s_min" % met_id] = ""
+   176					row["%s_max" % met_id] = ""
+   177				else:
+   178					row["%s_avg" % met_id] = _avg(vals)
+   179					row["%s_min" % met_id] = _minv(vals)
+   180					row["%s_max" % met_id] = _maxv(vals)
+   181				## D-93／WP-27: MET-05b never judges pass — exclude from combo_pass.
+   182				if met_id == "MET-05b":
+   183					continue
+   184				for g2 in group:
+   185					var gd2: Dictionary = g2 as Dictionary
+   186					if _json_int(gd2.get("aborted", 0)) == 1:
+   187						continue
+   188					var p: String = String(gd2.get("%s_pass" % met_id, PASS_NA))
+   189					if p == PASS_NA:
+   190						any_na = true
+   191					elif p != "1":
+   192						all_pass = false
+   193			if not any_alive:
+   194				row["combo_pass"] = PASS_NA
+   195			elif any_na:
+   196				row["combo_pass"] = PASS_NA
+   197			elif all_pass:
+   198				row["combo_pass"] = "1"
+   199			else:
+   200				row["combo_pass"] = "0"
+   201			rows.append(row)
+   202		return rows
+   203	
+   204	
+   205	static func _json_int(v: Variant) -> int:
+   206		## C-06：JSON／Variant 整數還原；非整數報錯（不靜默 floori）。
+   207		return SimJsonInt.as_int(v, "metrics_json_int")
+   208	
+   209	
+   210	static func _met01(cells: Array, th: Dictionary) -> Dictionary:
+   211		## 9.8 分母＝weekly_offtake>0 的 (港,貨)×評估季格數；無樣本 → 空白（D-52c）。
+   212		## D-93／WP-27: TH-01 ≤ ratio ≤ TH-01b.
+   213		var total: int = 0
+   214		var eq: int = 0
+   215		for c_v in cells:
+   216			var c: Dictionary = c_v
+   217			## weekly_consumption proxy: stock_weeks blank ⇒ weekly was 0 (skip).
+   218			if String(c["stock_weeks"]) == "":
+   219				continue
+   220			total = total + 1
+   221			if _json_int(c["band"]) == MarketPricer.BAND_EQUILIBRIUM:
+   222				eq = eq + 1
+   223		if total == 0:
+   224			return {"value": "", "pass": PASS_NA}
+   225		var ratio: float = float(eq) / float(total)
+   226		return _pass_between(ratio, th, "TH-01", "TH-01b")
+   227	
+   228	
+   229	static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+   230		## 9.8 分母＝可算比值的 (港,貨) 格（第一評估年平均週數≠0）；無樣本 → 空白（D-52c）。
+   231		## D-93: stock_weeks from MARKET only (sampler／MarketPricer already MARKET).
+   232		## Group by port|good; first eval year avg weeks vs last year.
+   233		var by_cell: Dictionary = {}
+   234		for c_v in cells:
+   235			var c: Dictionary = c_v
+   236			if String(c["stock_weeks"]) == "":
+   237				continue
+   238			var k: String = "%s|%s" % [c["port_id"], c["good_id"]]
+   239			if not by_cell.has(k):
+   240				by_cell[k] = []
+   241			(by_cell[k] as Array).append(c)
+   242		var diverged: int = 0
+   243		var diverged_keys: Array = []
+   244		var sampled: int = 0
+   245		var th02: Variant = th.get("TH-02", null)
+   246		var cell_keys: Array = by_cell.keys()
+   247		cell_keys.sort()
+   248		for k_v in cell_keys:
+   249			var rows: Array = by_cell[k_v]
+   250			rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+   251				return _json_int(a["season_index"]) < _json_int(b["season_index"])
+   252			)
+   253			if rows.is_empty():
+   254				continue
+   255			var first_si: int = _json_int((rows[0] as Dictionary)["season_index"])
+   256			var last_si: int = _json_int((rows[rows.size() - 1] as Dictionary)["season_index"])
+   257			var first_year_end: int = first_si + seasons_y
+   258			var last_year_start: int = last_si - seasons_y + 1
+   259			var first_sum: float = 0.0
+   260			var first_n: int = 0
+   261			var last_sum: float = 0.0
+   262			var last_n: int = 0
+   263			for r_v in rows:
+   264				var r: Dictionary = r_v
+   265				var si: int = _json_int(r["season_index"])
+   266				var w: float = float(r["stock_weeks"])
+   267				if si < first_year_end:
+   268					first_sum = first_sum + w
+   269					first_n = first_n + 1
+   270				if si >= last_year_start:
+   271					last_sum = last_sum + w
+   272					last_n = last_n + 1
+   273			var first_avg: float = 0.0
+   274			if first_n > 0:
+   275				first_avg = first_sum / float(first_n)
+   276			var last_avg: float = 0.0
+   277			if last_n > 0:
+   278				last_avg = last_sum / float(last_n)
+   279			if first_avg == 0.0:
+   280				continue ## 「由零起」— excluded from > TH-02 count per 9.8
+   281			sampled = sampled + 1
+   282			var ratio: float = last_avg / first_avg
+   283			if th02 != null and ratio > float(th02):
+   284				diverged = diverged + 1
+   285				diverged_keys.append(String(k_v))
+   286		if sampled == 0:
+   287			return {"value": "", "pass": PASS_NA, "diverged_keys": []}
+   288		var pass_s := PASS_NA
+   289		if th.has("TH-02"):
+   290			pass_s = "1" if diverged == 0 else "0"
+   291		return {"value": float(diverged), "pass": pass_s, "diverged_keys": diverged_keys}
+   292	
+   293	
+   294	static func _met03(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+   295		## 9.8 分母＝最後一年第一季總人口>0 的港；無樣本 → 空白（D-52c）。
+   296		var by_port: Dictionary = _group_ports(ports)
+   297		var worst: float = 0.0
+   298		var sampled: int = 0
+   299		for pid_v in by_port.keys():
+   300			var rows: Array = by_port[pid_v]
+   301			rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+   302				return _json_int(a["season_index"]) < _json_int(b["season_index"])
+   303			)
+   304			if rows.is_empty():
+   305				continue
+   306			var last: Dictionary = rows[rows.size() - 1]
+   307			var last_si: int = _json_int(last["season_index"])
+   308			var year_start_si: int = last_si - seasons_y + 1
+   309			var first_of_last_year: Dictionary = last
+   310			for r_v in rows:
+   311				var r: Dictionary = r_v
+   312				if _json_int(r["season_index"]) == year_start_si:
+   313					first_of_last_year = r
+   314					break
+   315			var pop_last: int = _total_pop(last)
+   316			var pop_first: int = _total_pop(first_of_last_year)
+   317			if pop_first <= 0:
+   318				continue
+   319			sampled = sampled + 1
+   320			var delta: float = absf(float(pop_last - pop_first)) / float(pop_first)
+   321			if delta > worst:
+   322				worst = delta
+   323		if sampled == 0:
+   324			return {"value": "", "pass": PASS_NA}
+   325		return _pass_le(worst, th, "TH-03")
+   326	
+   327	
+   328	static func _met04(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+   329		## 9.8 分母＝最後一年有 sat 樣本的港；無樣本 → 空白（D-52c）。
+   330		var by_port: Dictionary = _group_ports(ports)
+   331		var worst: float = 0.0
+   332		var sampled: int = 0
+   333		for pid_v in by_port.keys():
+   334			var rows: Array = by_port[pid_v]
+   335			rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+   336				return _json_int(a["season_index"]) < _json_int(b["season_index"])
+   337			)
+   338			if rows.is_empty():
+   339				continue
+   340			var last_si: int = _json_int((rows[rows.size() - 1] as Dictionary)["season_index"])
+   341			var year_start: int = last_si - seasons_y + 1
+   342			var mn: int = 0
+   343			var mx: int = 0
+   344			var init := false
+   345			for r_v in rows:
+   346				var r: Dictionary = r_v
+   347				if _json_int(r["season_index"]) < year_start:
+   348					continue
+   349				var sat: int = _json_int(r["sat_weighted"])
+   350				if not init:
+   351					mn = sat
+   352					mx = sat
+   353					init = true
+   354				else:
+   355					if sat < mn:
+   356						mn = sat
+   357					if sat > mx:
+   358						mx = sat
+   359			if not init:
+   360				continue
+   361			sampled = sampled + 1
+   362			var span: float = float(mx - mn)
+   363			if span > worst:
+   364				worst = span
+   365		if sampled == 0:
+   366			return {"value": "", "pass": PASS_NA}
+   367		return _pass_le(worst, th, "TH-04")
+   368	
+   369	
+   370	static func _met05(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+   371		## 9.8 分母＝有季表的 CITY／港；無港樣本 → a／b 空白（D-52c）。實測 0 保留。
+   372		var by_port: Dictionary = _group_ports(ports)
+   373		if by_port.is_empty():
+   374			return {"a": "", "a_pass": PASS_NA, "b": "", "b_pass": PASS_NA}
+   375		var longest_zero: int = 0
+   376		var worst_growth: float = 0.0
+   377		for pid_v in by_port.keys():
+   378			var rows: Array = by_port[pid_v]
+   379			rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+   380				return _json_int(a["season_index"]) < _json_int(b["season_index"])
+   381			)
+   382			var streak: int = 0
+   383			var best_streak: int = 0
+   384			for r_v in rows:
+   385				var bal: int = _json_int((r_v as Dictionary)["city_balance_li"])
+   386				if bal == 0:
+   387					streak = streak + 1
+   388					if streak > best_streak:
+   389						best_streak = streak
+   390				else:
+   391					streak = 0
+   392			if best_streak > longest_zero:
+   393				longest_zero = best_streak
+   394			if rows.is_empty():
+   395				continue
+   396			var last: Dictionary = rows[rows.size() - 1]
+   397			var last_si: int = _json_int(last["season_index"])
+   398			var year_start: int = last_si - seasons_y + 1
+   399			var first: Dictionary = last
+   400			for r2_v in rows:
+   401				var r2: Dictionary = r2_v
+   402				if _json_int(r2["season_index"]) == year_start:
+   403					first = r2
+   404					break
+   405			var b0: int = _json_int(first["city_balance_li"])
+   406			var b1: int = _json_int(last["city_balance_li"])
+   407			var growth: float = 0.0
+   408			if b0 != 0:
+   409				growth = float(b1) / float(b0)
+   410			if growth > worst_growth:
+   411				worst_growth = growth
+   412		var a_pass := PASS_NA
+   413		## D-93／WP-27 MET-05(b): value only, never judge pass (TH-05b cancelled).
+   414		var b_pass := PASS_NA
+   415		if th.has("TH-05a"):
+   416			a_pass = "1" if longest_zero <= _json_int(th["TH-05a"]) else "0"
+   417		return {
+   418			"a": float(longest_zero),
+   419			"a_pass": a_pass,
+   420			"b": worst_growth,
+   421			"b_pass": b_pass,
+   422		}
+   423	
+   424	
+   425	static func _met06(hits: int, aborted: bool) -> Dictionary:
+   426		## Hard: pass iff hits == 0 (and not aborted for conservation).
+   427		var ok: bool = hits == 0
+   428		return {"value": float(hits), "pass": "1" if ok else "0"}
+   429	
+   430	
+   431	static func _obs01(ports: Array) -> String:
+   432		## First season_index per port where city_balance >= any public L2 fee; blank if never.
+   433		## Requires BuildingEconomy loaded (public_upgrade_fee assert); else blank per port.
+   434		var by_port: Dictionary = _group_ports(ports)
+   435		var parts: PackedStringArray = PackedStringArray()
+   436		var pids: Array = by_port.keys()
+   437		pids.sort()
+   438		var be_ready: bool = BuildingEconomy.is_loaded()
+   439		for pid_v in pids:
+   440			var pid: String = String(pid_v)
+   441			var rows: Array = by_port[pid]
+   442			rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+   443				return _json_int(a["season_index"]) < _json_int(b["season_index"])
+   444			)
+   445			var found := ""
+   446			if be_ready:
+   447				for r_v in rows:
+   448					var r: Dictionary = r_v
+   449					var fee: Dictionary = BuildingEconomy.public_upgrade_fee(
+   450						StringName(pid), BuildingEconomy.BUILDING_LEVEL_MIN + 1
+   451					) ## EX-03 first upgrade target L2
+   452					var need: int = _json_int(fee.get("CASH_LI", 0))
+   453					if need > 0 and _json_int(r["city_balance_li"]) >= need:
+   454						found = str(_json_int(r["season_index"]))
+   455						break
+   456			parts.append("%s:%s" % [pid, found])
+   457		return ";".join(parts)
+   458	
+   459	
+   460	static func _obs02(ports: Array) -> Dictionary:
+   461		## 9.8：評估期每港每季乞丐÷總人口之最大值。無港／無有效人口樣本 → 空白（D-52c）。
+   462		## D-93／WP-27: also longest consecutive zero-beggar seasons per port.
+   463		var by_port: Dictionary = _group_ports(ports)
+   464		var worst: float = 0.0
+   465		var sampled: int = 0
+   466		var streaks: Dictionary = {}
+   467		var pids: Array = by_port.keys()
+   468		pids.sort()
+   469		for pid_v in pids:
+   470			var pid: String = String(pid_v)
+   471			var rows: Array = by_port[pid]
+   472			rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+   473				return _json_int(a["season_index"]) < _json_int(b["season_index"])
+   474			)
+   475			var streak: int = 0
+   476			var best_streak: int = 0
+   477			for r_v in rows:
+   478				var r: Dictionary = r_v
+   479				var beggar: int = _json_int(r["beggar"])
+   480				var tot: int = _total_pop(r) + beggar
+   481				if tot > 0:
+   482					sampled = sampled + 1
+   483					var ratio: float = float(beggar) / float(tot)
+   484					if ratio > worst:
+   485						worst = ratio
+   486				if beggar == 0:
+   487					streak = streak + 1
+   488					if streak > best_streak:
+   489						best_streak = streak
+   490				else:
+   491					streak = 0
+   492			streaks[pid] = best_streak
+   493		if sampled == 0:
+   494			return {"max_ratio": "", "streaks": streaks}
+   495		return {"max_ratio": worst, "streaks": streaks}
+   496	
+   497	
+   498	static func _obs02_ext_rows(
+   499		scenario_id: String, combo_index: int, seed: int, streaks: Dictionary
+   500	) -> Array:
+   501		var rows: Array = []
+   502		var pids: Array = streaks.keys()
+   503		pids.sort()
+   504		for pid_v in pids:
+   505			var pid: String = String(pid_v)
+   506			var streak_i: int = _json_int(streaks[pid])
+   507			rows.append(_obs_ext_row(
+   508				scenario_id, combo_index, seed, -1, pid, "",
+   509				"OBS-02", "longest_zero_beggar_streak", streak_i
+   510			))
+   511			if streak_i >= OBS02_ZERO_STREAK_WARN:
+   512				rows.append(_obs_ext_row(
+   513					scenario_id, combo_index, seed, -1, pid, "",
+   514					"OBS-02", "zero_beggar_warn", 1
+   515				))
+   516		return rows
+   517	
+   518	
+   519	static func _obs04_rows(
+   520		scenario_id: String,
+   521		combo_index: int,
+   522		seed: int,
+   523		cells: Array,
+   524		diverged_keys: Array,
+   525		th: Dictionary,
+   526		seasons_y: int
+   527	) -> Array:
+   528		## D-93 OBS-04: for each MET-02 diverged (p,g), classify by global R_g vs TH-02.
+   529		if diverged_keys.is_empty():
+   530			return []
+   531		var th02: float = float(th.get("TH-02", 0))
+   532		## Build per-good per-season S／W from MARKET stock + sampled potential.
+   533		var by_good_season: Dictionary = {} ## good -> season -> {S, W}
+   534		for c_v in cells:
+   535			var c: Dictionary = c_v
+   536			var gid: String = String(c["good_id"])
+   537			var si: int = _json_int(c["season_index"])
+   538			if not by_good_season.has(gid):
+   539				by_good_season[gid] = {}
+   540			var by_si: Dictionary = by_good_season[gid]
+   541			if not by_si.has(si):
+   542				by_si[si] = {"S": 0, "W": 0}
+   543			var bucket: Dictionary = by_si[si]
+   544			bucket["S"] = _json_int(bucket["S"]) + _json_int(c["stock"])
+   545			bucket["W"] = _json_int(bucket["W"]) + _json_int(c.get("_weekly_potential", 0))
+   546			by_si[si] = bucket
+   547			by_good_season[gid] = by_si
+   548	
+   549		var rows: Array = []
+   550		var keys_sorted: Array = diverged_keys.duplicate()
+   551		keys_sorted.sort()
+   552		for k_v in keys_sorted:
+   553			var k: String = String(k_v)
+   554			var parts: PackedStringArray = k.split("|")
+   555			if parts.size() != 2:
+   556				continue
+   557			var pid: String = parts[0]
+   558			var gid2: String = parts[1]
+   559			var by_si2: Dictionary = by_good_season.get(gid2, {})
+   560			var seasons: Array = by_si2.keys()
+   561			seasons.sort()
+   562			if seasons.is_empty():
+   563				continue
+   564			var first_si: int = _json_int(seasons[0])
+   565			var last_si: int = _json_int(seasons[seasons.size() - 1])
+   566			var first_year_end: int = first_si + seasons_y
+   567			var last_year_start: int = last_si - seasons_y + 1
+   568			var first_sum: float = 0.0
+   569			var first_n: int = 0
+   570			var last_sum: float = 0.0
+   571			var last_n: int = 0
+   572			for si_v in seasons:
+   573				var si2: int = _json_int(si_v)
+   574				var b: Dictionary = by_si2[si2]
+   575				var W: int = _json_int(b["W"])
+   576				if W <= 0:
+   577					continue
+   578				var weeks_g: float = float(_json_int(b["S"])) / float(W)
+   579				if si2 < first_year_end:
+   580					first_sum = first_sum + weeks_g
+   581					first_n = first_n + 1
+   582				if si2 >= last_year_start:
+   583					last_sum = last_sum + weeks_g
+   584					last_n = last_n + 1
+   585			## R9-65 B3／OBS-04: cannot compute R_g → reason「無法判定」, never default「分配不足」.
+   586			var cause: String = "無法判定"
+   587			var r_g: float = 0.0
+   588			if first_n > 0 and last_n > 0:
+   589				var first_avg: float = first_sum / float(first_n)
+   590				if first_avg > 0.0:
+   591					r_g = (last_sum / float(last_n)) / first_avg
+   592					if r_g > th02:
+   593						cause = "供給過剩"
+   594					else:
+   595						cause = "分配不足（運力或路線）"
+   596			rows.append(_obs_ext_row(
+   597				scenario_id, combo_index, seed, -1, pid, gid2,
+   598				"OBS-04", "cause", cause
+   599			))
+   600			rows.append(_obs_ext_row(
+   601				scenario_id, combo_index, seed, -1, pid, gid2,
+   602				"OBS-04", "R_g", r_g
+   603			))
+   604		return rows
+   605	
+   606	
+   607	static func _obs05_rows(
+   608		scenario_id: String, combo_index: int, seed: int, ports: Array
+   609	) -> Array:
+   610		## D-93／WP-67 OBS-05: land rent, vacancy tax, spend categories via public queries.
+   611		var rows: Array = []
+   612		var by_port: Dictionary = _group_ports(ports)
+   613		var pids: Array = by_port.keys()
+   614		pids.sort()
+   615		for pid_v in pids:
+   616			var pid: String = String(pid_v)
+   617	
+   618			var port_rows: Array = by_port[pid]
+   619			port_rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+   620				return _json_int(a["season_index"]) < _json_int(b["season_index"])
+   621			)
+   622			for r_v in port_rows:
+   623				var r: Dictionary = r_v
+   624				var season_i: int = _json_int(r["season_index"])
+   625				rows.append(_obs_ext_row(
+   626					scenario_id, combo_index, seed, season_i, pid, "",
+   627					"OBS-05", "city_balance_li", _json_int(r["city_balance_li"])
+   628				))
+   629				## Prefer sampler-filled columns; fall back to live public queries.
+   630				var rent_v: int = _json_int(r.get("land_rent_li", -1))
+   631				var vac_v: int = _json_int(r.get("vacancy_tax_li", -1))
+   632				var spend_s: String = String(r.get("city_spend_json", ""))
+   633				if (
+   634					BuildingEconomy.is_loaded()
+   635					and (rent_v < 0 or vac_v < 0 or spend_s.is_empty() or spend_s == "{}")
+   636				):
+   637					var sn: StringName = StringName(pid)
+   638					if rent_v < 0:
+   639						rent_v = BuildingEconomy.season_land_rent_li(sn, season_i)
+   640					if vac_v < 0:
+   641						vac_v = BuildingEconomy.season_vacancy_tax_li(sn, season_i)
+   642					if spend_s.is_empty() or spend_s == "{}":
+   643						var spend: Dictionary = BuildingEconomy.city_spend_by_category(sn, season_i)
+   644						spend_s = "{}" if spend.is_empty() else JSON.stringify(spend)
+   645				rows.append(_obs_ext_row(
+   646					scenario_id, combo_index, seed, season_i, pid, "",
+   647					"OBS-05", "land_rent_li", rent_v
+   648				))
+   649				rows.append(_obs_ext_row(
+   650					scenario_id, combo_index, seed, season_i, pid, "",
+   651					"OBS-05", "vacancy_tax_li", vac_v
+   652				))
+   653				rows.append(_obs_ext_row(
+   654					scenario_id, combo_index, seed, season_i, pid, "",
+   655					"OBS-05", "city_spend_json", spend_s
+   656				))
+   657		return rows
+   658	
+   659	
+   660	static func _obs_ext_row(
+   661		scenario_id: String,
+   662		combo_index: int,
+   663		seed: int,
+   664		season_index: int,
+   665		port_id: String,
+   666		good_id: String,
+   667		obs_id: String,
+   668		key: String,
+   669		value: Variant
+   670	) -> Dictionary:
+   671		return {
+   672			"scenario_id": scenario_id,
+   673			"combo_index": combo_index,
+   674			"seed": seed,
+   675			"season_index": season_index,
+   676			"port_id": port_id,
+   677			"good_id": good_id,
+   678			"obs_id": obs_id,
+   679			"key": key,
+   680			"value": value,
+   681		}
+   682	
+   683	
+   684	static func _group_ports(ports: Array) -> Dictionary:
+   685		var by_port: Dictionary = {}
+   686		for r_v in ports:
+   687			var r: Dictionary = r_v
+   688			var pid: String = String(r["port_id"])
+   689			if not by_port.has(pid):
+   690				by_port[pid] = []
+   691			(by_port[pid] as Array).append(r)
+   692		return by_port
+   693	
+   694	
+   695	static func _total_pop(r: Dictionary) -> int:
+   696		return _json_int(r["poor"]) + _json_int(r["citizen"]) + _json_int(r["rich"])
+   697	
+   698	
+   699	static func _pass_ge(value: float, th: Dictionary, key: String) -> Dictionary:
+   700		var pass_s := PASS_NA
+   701		if th.has(key):
+   702			pass_s = "1" if value >= float(th[key]) else "0"
+   703		return {"value": value, "pass": pass_s}
+   704	
+   705	
+   706	static func _pass_between(
+   707		value: float, th: Dictionary, lo_key: String, hi_key: String
+   708	) -> Dictionary:
+   709		## D-93 MET-01: TH-01 ≤ value ≤ TH-01b. Missing either bound → N/A for that side.
+   710		var pass_s := PASS_NA
+   711		var has_lo: bool = th.has(lo_key)
+   712		var has_hi: bool = th.has(hi_key)
+   713		if has_lo or has_hi:
+   714			var ok := true
+   715			if has_lo and value < float(th[lo_key]):
+   716				ok = false
+   717			if has_hi and value > float(th[hi_key]):
+   718				ok = false
+   719			pass_s = "1" if ok else "0"
+   720		return {"value": value, "pass": pass_s}
+   721	
+   722	
+   723	static func _pass_le(value: float, th: Dictionary, key: String) -> Dictionary:
+   724		var pass_s := PASS_NA
+   725		if th.has(key):
+   726			pass_s = "1" if value <= float(th[key]) else "0"
+   727		return {"value": value, "pass": pass_s}
+   728	
+   729	
+   730	static func _avg(vals: Array) -> float:
+   731		if vals.is_empty():
+   732			return 0.0
+   733		var s: float = 0.0
+   734		for v in vals:
+   735			s = s + float(v)
+   736		return s / float(vals.size())
+   737	
+   738	
+   739	static func _minv(vals: Array) -> float:
+   740		if vals.is_empty():
+   741			return 0.0
+   742		var m: float = float(vals[0])
+   743		for v in vals:
+   744			var f: float = float(v)
+   745			if f < m:
+   746				m = f
+   747		return m
+   748	
+   749	
+   750	static func _maxv(vals: Array) -> float:
+   751		if vals.is_empty():
+   752			return 0.0
+   753		var m: float = float(vals[0])
+   754		for v in vals:
+   755			var f: float = float(v)
+   756			if f > m:
+   757				m = f
+   758		return m
+---END sim/metrics.gd---
+
+======== Q1(a) helper constants referenced — MarketPricer.BAND_EQUILIBRIUM ========
+FILE=autoload/market_pricer.gd
+LINE_RANGE=26-38
+---BEGIN---
+    26	enum Band {
+    27		VERY_LOW,
+    28		LOW,
+    29		EQUILIBRIUM,
+    30		HIGH,
+    31		VERY_HIGH,
+    32	}
+    33	
+    34	const BAND_VERY_LOW := Band.VERY_LOW
+    35	const BAND_LOW := Band.LOW
+    36	const BAND_EQUILIBRIUM := Band.EQUILIBRIUM
+    37	const BAND_HIGH := Band.HIGH
+    38	const BAND_VERY_HIGH := Band.VERY_HIGH
+---END---
+NOTE: Band.EQUILIBRIUM ordinal = 2 (VERY_LOW=0, LOW=1, EQUILIBRIUM=2).
+
+======== Q1(b) 評估季／最後一年 — FRM-SYS23-07 code path ========
+FILE=sim/metrics.gd
+LINE_RANGE_EVAL=27-38 (warmup_seasons filter → eval_cells / eval_ports)
+LINE_RANGE_LAST_YEAR_MET02=255-272 (first_si/last_si → first_year_end / last_year_start)
+LINE_RANGE_LAST_YEAR_MET03=306-314
+LINE_RANGE_LAST_YEAR_MET04=340-348
+LINE_RANGE_LAST_YEAR_MET05b=396-404
+PARAM_years: accepted by compute() at L16 but NEVER referenced in function body (only warmup_years used for filter).
+
+---BEGIN Q1(b) eval filter L13-45---
+    13	static func compute(
+    14		sampler: SimSampler,
+    15		warmup_years: int,
+    16		years: int,
+    17		thresholds: Dictionary,
+    18		aborted: bool,
+    19		abort_reason: String,
+    20		elapsed_ms: int,
+    21		run_id: int,
+    22		combo_index: int,
+    23		seed: int,
+    24		combo: Dictionary,
+    25		scenario_id: String = ""
+    26	) -> Dictionary:
+    27		var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+    28		var warmup_seasons: int = warmup_years * seasons_y
+    29		var eval_cells: Array = []
+    30		for row_v in sampler.season_cells:
+    31			var row: Dictionary = row_v
+    32			if _json_int(row["season_index"]) >= warmup_seasons:
+    33				eval_cells.append(row)
+    34		var eval_ports: Array = []
+    35		for row_v in sampler.season_ports:
+    36			var row2: Dictionary = row_v
+    37			if _json_int(row2["season_index"]) >= warmup_seasons:
+    38				eval_ports.append(row2)
+    39	
+    40		var met01: Dictionary = _met01(eval_cells, thresholds)
+    41		var met02: Dictionary = _met02(eval_cells, thresholds, seasons_y)
+    42		var met03: Dictionary = _met03(eval_ports, thresholds, seasons_y)
+    43		var met04: Dictionary = _met04(eval_ports, thresholds, seasons_y)
+    44		var met05: Dictionary = _met05(eval_ports, thresholds, seasons_y)
+    45		var met06: Dictionary = _met06(sampler.conservation_hits, aborted)
+---END---
+
+======== Q1(c) sim_engine total_days / days_override — line refs only (17-88 Q4(b) already pasted) ========
+FILE=sim/sim_engine.gd
+LINE_RANGE=233-241 (years → total_days; days_override absolute cap)
+LINE_RANGE_CALL=307-320 (SimMetrics.compute receives years + warmup)
+LINE_RANGE_LOOP=256 (for day_i in range(total_days))
+
+======== Q1(d) git grep -n full outputs ========
+
+### grep: static func compute / SimMetrics.compute
+sim/metrics.gd:13:static func compute(
+sim/sim_engine.gd:307:	var summary: Dictionary = SimMetrics.compute(
+tests/unit/test_sys23_wp26_a.gd:141:	var summary: Dictionary = SimMetrics.compute(
+tests/unit/test_sys23_wp26_a.gd:160:	var summary: Dictionary = SimMetrics.compute(
+tests/unit/test_sys23_wp26_a.gd:204:	var summary: Dictionary = SimMetrics.compute(
+tests/unit/test_sys23_wp26_b.gd:266:	var alive: Dictionary = SimMetrics.compute(SimSampler.new(), 0, 1, {}, false, "", 1, 0, 0, 1, {})
+tests/unit/test_sys23_wp26_b.gd:528:	var summary: Dictionary = SimMetrics.compute(
+tests/unit/test_sys23_wp27.gd:191:	var summary: Dictionary = SimMetrics.compute(
+tests/unit/test_sys23_wp27.gd:215:	var summary: Dictionary = SimMetrics.compute(
+tests/unit/test_sys23_wp27.gd:237:	var summary: Dictionary = SimMetrics.compute(
+
+### grep: _met01
+sim/metrics.gd:40:	var met01: Dictionary = _met01(eval_cells, thresholds)
+sim/metrics.gd:210:static func _met01(cells: Array, th: Dictionary) -> Dictionary:
+
+### grep: _met02
+sim/metrics.gd:41:	var met02: Dictionary = _met02(eval_cells, thresholds, seasons_y)
+sim/metrics.gd:229:static func _met02(cells: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+
+### grep: _met03
+sim/metrics.gd:42:	var met03: Dictionary = _met03(eval_ports, thresholds, seasons_y)
+sim/metrics.gd:294:static func _met03(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+
+### grep: _met04
+sim/metrics.gd:43:	var met04: Dictionary = _met04(eval_ports, thresholds, seasons_y)
+sim/metrics.gd:328:static func _met04(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+
+### grep: _met05
+sim/metrics.gd:44:	var met05: Dictionary = _met05(eval_ports, thresholds, seasons_y)
+sim/metrics.gd:370:static func _met05(ports: Array, th: Dictionary, seasons_y: int) -> Dictionary:
+
+### grep: _met06
+sim/metrics.gd:45:	var met06: Dictionary = _met06(sampler.conservation_hits, aborted)
+sim/metrics.gd:425:static func _met06(hits: int, aborted: bool) -> Dictionary:
+
+### grep: PASS_NA
+sim/metrics.gd:7:const PASS_NA := "N/A"
+sim/metrics.gd:91:		met01_p = PASS_NA
+sim/metrics.gd:93:		met02_p = PASS_NA
+sim/metrics.gd:95:		met03_p = PASS_NA
+sim/metrics.gd:97:		met04_p = PASS_NA
+sim/metrics.gd:99:		met05a_p = PASS_NA
+sim/metrics.gd:101:		met05b_p = PASS_NA
+sim/metrics.gd:107:			met06_p = PASS_NA
+sim/metrics.gd:188:				var p: String = String(gd2.get("%s_pass" % met_id, PASS_NA))
+sim/metrics.gd:189:				if p == PASS_NA:
+sim/metrics.gd:194:			row["combo_pass"] = PASS_NA
+sim/metrics.gd:196:			row["combo_pass"] = PASS_NA
+sim/metrics.gd:224:		return {"value": "", "pass": PASS_NA}
+sim/metrics.gd:287:		return {"value": "", "pass": PASS_NA, "diverged_keys": []}
+sim/metrics.gd:288:	var pass_s := PASS_NA
+sim/metrics.gd:324:		return {"value": "", "pass": PASS_NA}
+sim/metrics.gd:366:		return {"value": "", "pass": PASS_NA}
+sim/metrics.gd:374:		return {"a": "", "a_pass": PASS_NA, "b": "", "b_pass": PASS_NA}
+sim/metrics.gd:412:	var a_pass := PASS_NA
+sim/metrics.gd:414:	var b_pass := PASS_NA
+sim/metrics.gd:700:	var pass_s := PASS_NA
+sim/metrics.gd:710:	var pass_s := PASS_NA
+sim/metrics.gd:724:	var pass_s := PASS_NA
+sim/sim_engine.gd:336:		"MET-01_pass": SimMetrics.PASS_NA,
+sim/sim_engine.gd:338:		"MET-02_pass": SimMetrics.PASS_NA,
+sim/sim_engine.gd:340:		"MET-03_pass": SimMetrics.PASS_NA,
+sim/sim_engine.gd:342:		"MET-04_pass": SimMetrics.PASS_NA,
+sim/sim_engine.gd:344:		"MET-05a_pass": SimMetrics.PASS_NA,
+sim/sim_engine.gd:346:		"MET-05b_pass": SimMetrics.PASS_NA,
+sim/sim_engine.gd:348:		"MET-06_pass": SimMetrics.PASS_NA,
+tests/unit/test_sys23_wp26_a.gd:144:	assert_eq(String(summary["MET-03_pass"]), SimMetrics.PASS_NA)
+tests/unit/test_sys23_wp26_b.gd:254:		assert_eq(String(s[k]), SimMetrics.PASS_NA)
+tests/unit/test_sys23_wp26_b.gd:264:	assert_eq(String(row["combo_pass"]), SimMetrics.PASS_NA)
+tests/unit/test_sys23_wp26_b.gd:536:		assert_eq(String(summary["%s_pass" % k]), SimMetrics.PASS_NA)
+tests/unit/test_sys23_wp27.gd:218:	assert_eq(String(summary["MET-05b_pass"]), SimMetrics.PASS_NA)
+
+### grep: PRM_SEASONS_PER_YEAR / PRM-SYS00-SEASONS_PER_YEAR
+autoload/building_economy.gd:92:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+autoload/building_economy.gd:2682:	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+autoload/building_economy.gd:3076:	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+autoload/good_catalog.gd:18:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+autoload/good_catalog.gd:167:	# D-08a: year-full mask from PRM-SYS00-SEASONS_PER_YEAR — never a literal like 15.
+autoload/good_catalog.gd:168:	var seasons_per_year: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+core/types/good_def.gd:13:## Bitmask; D-08a MVP must be year-full = 2^PRM-SYS00-SEASONS_PER_YEAR − 1 (validated by GoodCatalog).
+sim/metrics.gd:8:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+sim/metrics.gd:27:	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+sim/sim_engine.gd:10:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+sim/sim_engine.gd:235:	var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+tests/helpers/fixture_builders.gd:9:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/helpers/fixture_builders.gd:108:	## D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
+tests/helpers/fixture_builders.gd:109:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/property/test_PROP_determinism.gd:290:	def.season_mask = (1 << Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")) - 1
+tests/property/test_PROP_goods_conservation.gd:226:	def.season_mask = (1 << Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")) - 1
+tests/property/test_PROP_market_quote_bounds.gd:221:	def.season_mask = (1 << Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")) - 1
+tests/property/test_PROP_transfer_all_or_nothing.gd:235:	def.season_mask = (1 << Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")) - 1
+tests/unit/test_building_economy_wp18.gd:14:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_building_economy_wp18.gd:519:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp19.gd:9:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_building_economy_wp19.gd:886:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp20.gd:9:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_building_economy_wp20.gd:643:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp23.gd:16:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_building_economy_wp23.gd:324:		Params.get_int("PRM-SYS00-SEASONS_PER_YEAR"),
+tests/unit/test_building_economy_wp23.gd:1075:		g.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp23.gd:1090:		g2.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp23.gd:1105:		gx.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp63.gd:16:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_building_economy_wp63.gd:426:	gx.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp63.gd:500:		g.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp63.gd:515:		g2.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_building_economy_wp63.gd:529:		gx.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_demand_model_wp22.gd:27:const PRM_SEASONS := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_good_catalog.gd:15:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_good_catalog.gd:230:	# D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
+tests/unit/test_good_catalog.gd:231:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_goods_ledger.gd:22:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_goods_ledger.gd:852:	# D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
+tests/unit/test_goods_ledger.gd:853:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_intel_ledger_wp40.gd:32:const PRM_SEASONS := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_market_pricer.gd:21:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_market_pricer.gd:735:	# D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
+tests/unit/test_market_pricer.gd:736:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_offtake_wp32.gd:25:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_offtake_wp32.gd:589:	var seasons: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+tests/unit/test_opening_wp24.gd:32:const PRM_SEASONS := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_perf_afford_1787.gd:52:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_perf_afford_1787.gd:258:		def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_perf_afford_1787.gd:272:		def2.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_population_model_wp21.gd:18:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_population_model_wp21.gd:790:	g.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_population_model_wp51.gd:17:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_population_model_wp51.gd:419:	g.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_population_model_wp55.gd:17:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_population_model_wp55.gd:343:	g.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_port_registry.gd:12:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_r972_cash_stock_cap_1769.gd:40:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_r972_cash_stock_cap_1769.gd:233:		def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_r972_cash_stock_cap_1769.gd:247:		def2.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_sea_lanes_wp29.gd:14:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_ship_registry_wp30.gd:32:const PRM_SEASONS := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_sim_loop.gd:17:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_sim_loop.gd:947:	# D-08a: year-full from PRM-SYS00-SEASONS_PER_YEAR (never literal 15).
+tests/unit/test_sim_loop.gd:948:	def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_sys23_wp26_a.gd:574:	def.season_mask = (1 << Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")) - 1
+tests/unit/test_sys23_wp26_b.gd:348:	var seasons_y: int = Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")
+tests/unit/test_sys23_wp26_b.gd:715:	def.season_mask = (1 << Params.get_int("PRM-SYS00-SEASONS_PER_YEAR")) - 1
+tests/unit/test_trade_desk_wp33.gd:28:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_trade_desk_wp33.gd:816:	var seasons: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+tests/unit/test_wp56_cash_market_trade.gd:38:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_wp56_cash_market_trade.gd:341:		def.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_wp56_cash_market_trade.gd:355:		def2.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_wp67_garrison_obs05.gd:14:const PRM_SEASONS_PER_YEAR := "PRM-SYS00-SEASONS_PER_YEAR"
+tests/unit/test_wp67_garrison_obs05.gd:319:		g.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tests/unit/test_wp67_garrison_obs05.gd:328:		gx.season_mask = (1 << Params.get_int(PRM_SEASONS_PER_YEAR)) - 1
+tools/n2_rich_flow.gd:32:	var seasons_y: int = int(params.call("get_int", "PRM-SYS00-SEASONS_PER_YEAR"))
+tools/wp65_queue_advance.gd:29:	var seasons_y: int = int(params.call("get_int", "PRM-SYS00-SEASONS_PER_YEAR"))
+
+### grep: _pass_between
+sim/metrics.gd:226:	return _pass_between(ratio, th, "TH-01", "TH-01b")
+sim/metrics.gd:706:static func _pass_between(
+
+### grep: _pass_le
+sim/metrics.gd:325:	return _pass_le(worst, th, "TH-03")
+sim/metrics.gd:367:	return _pass_le(worst, th, "TH-04")
+sim/metrics.gd:723:static func _pass_le(value: float, th: Dictionary, key: String) -> Dictionary:
+
+### grep: _group_ports
+sim/metrics.gd:296:	var by_port: Dictionary = _group_ports(ports)
+sim/metrics.gd:330:	var by_port: Dictionary = _group_ports(ports)
+sim/metrics.gd:372:	var by_port: Dictionary = _group_ports(ports)
+sim/metrics.gd:434:	var by_port: Dictionary = _group_ports(ports)
+sim/metrics.gd:463:	var by_port: Dictionary = _group_ports(ports)
+sim/metrics.gd:612:	var by_port: Dictionary = _group_ports(ports)
+sim/metrics.gd:684:static func _group_ports(ports: Array) -> Dictionary:
+
+### grep: _total_pop
+sim/metrics.gd:315:		var pop_last: int = _total_pop(last)
+sim/metrics.gd:316:		var pop_first: int = _total_pop(first_of_last_year)
+sim/metrics.gd:480:			var tot: int = _total_pop(r) + beggar
+sim/metrics.gd:695:static func _total_pop(r: Dictionary) -> int:
+
+### grep: days_override
+sim/sim_engine.gd:238:	if scenario.has("days_override"):
+sim/sim_engine.gd:239:		var d_ov: int = SimJsonInt.as_int(scenario["days_override"], "days_override")
+sim/sim_runner.gd:116:		scenario["days_override"] = int(days_raw)
+sim/sim_runner.gd:312:		scenario["days_override"] = int(days_raw)
+sim/sim_runner.gd:313:	elif payload.get("scenario", {}).get("days_override", null) != null:
+
+### grep: total_days (sim/)
+sim/sim_engine.gd:236:	var total_days: int = years * seasons_y * days_per_season
+sim/sim_engine.gd:241:			total_days = d_ov
+sim/sim_engine.gd:252:			_emit_season_progress(season_index, total_days, days_per_season, seasons_y, sampler)
+sim/sim_engine.gd:256:	for day_i in range(total_days):
+sim/sim_engine.gd:288:			_emit_day_progress(int(Clock.day), total_days)
+sim/sim_engine.gd:295:		_emit_season_progress(si_final, total_days, days_per_season, seasons_y, sampler)
+sim/sim_engine.gd:404:func _emit_day_progress(day: int, total_days: int) -> void:
+sim/sim_engine.gd:407:	print("DAY_PROGRESS day=%d total=%d" % [day, total_days])
+sim/sim_engine.gd:412:	total_days: int,
+sim/sim_engine.gd:432:	if days_done > total_days:
+sim/sim_engine.gd:433:		days_done = total_days
+sim/sim_engine.gd:434:	var pct_job: float = 100.0 * float(days_done) / float(maxi(total_days, 1))
+sim/sim_engine.gd:438:	if days_done > 0 and days_done < total_days:
+sim/sim_engine.gd:439:		eta_s = int(float(elapsed_s) * float(total_days - days_done) / float(days_done))
+
+### grep: warmup_years / warmup_seasons (sim/ + tests)
+sim/metrics.gd:15:	warmup_years: int,
+sim/metrics.gd:28:	var warmup_seasons: int = warmup_years * seasons_y
+sim/metrics.gd:32:		if _json_int(row["season_index"]) >= warmup_seasons:
+sim/metrics.gd:37:		if _json_int(row2["season_index"]) >= warmup_seasons:
+sim/scenario_validator.gd:15:const KEY_WARMUP := "warmup_years"
+sim/scenario_validator.gd:159:			errors.append("%s: warmup_years must be int ≥ 0 and < years" % ERR_SYS23_03)
+sim/scenario_validator.gd:163:				errors.append("%s: warmup_years must be int ≥ 0 and < years" % ERR_SYS23_03)
+sim/scenario_validator.gd:165:				errors.append("%s: warmup_years must be < years" % ERR_SYS23_03)
+tests/unit/test_sim_runner_win_1758.gd:101:	scenario["warmup_years"] = 0
+tests/unit/test_sim_runner_win_1758.gd:173:		"warmup_years": int(meta["warmup_years"]),
+tests/unit/test_sys23_wp26_a.gd:127:	## One eval season port row (warmup_years=0 so season 0 counts).
+tests/unit/test_sys23_wp26_a.gd:227:		"warmup_years": int(short["warmup_years"]),
+tests/unit/test_sys23_wp26_a.gd:388:	scenario["warmup_years"] = 0
+tests/unit/test_sys23_wp26_a.gd:402:	scenario2["warmup_years"] = 0
+tests/unit/test_sys23_wp26_a.gd:419:		"warmup_years": int(meta["warmup_years"]),
+tests/unit/test_sys23_wp26_b.gd:87:	assert_true(joined.find("ERR-SYS23-02: missing required key 'warmup_years'") >= 0, joined)
+tests/unit/test_sys23_wp26_b.gd:134:	scenario["warmup_years"] = 0
+tests/unit/test_sys23_wp26_b.gd:286:	scenario["warmup_years"] = 0
+tests/unit/test_sys23_wp26_b.gd:311:	scenario["warmup_years"] = 0
+tests/unit/test_sys23_wp26_b.gd:427:	scenario["warmup_years"] = 0
+tests/unit/test_sys23_wp26_b.gd:560:		"warmup_years": int(meta["warmup_years"]),
+tests/unit/test_wp68_city_housing.gd:332:		"warmup_years": 0,
+
+### grep: BAND_EQUILIBRIUM
+autoload/market_pricer.gd:36:const BAND_EQUILIBRIUM := Band.EQUILIBRIUM
+autoload/market_pricer.gd:183:		KEY_BAND_AFTER: BAND_EQUILIBRIUM,
+autoload/market_pricer.gd:260:		return BAND_EQUILIBRIUM
+sim/metrics.gd:221:		if _json_int(c["band"]) == MarketPricer.BAND_EQUILIBRIUM:
+sim/sampler.gd:298:	var band: int = MarketPricer.BAND_EQUILIBRIUM
+tests/unit/test_market_pricer.gd:152:	assert_eq(MarketPricer.BAND_EQUILIBRIUM, MarketPricer.Band.EQUILIBRIUM)
+tests/unit/test_market_pricer.gd:156:	assert_lt(MarketPricer.BAND_LOW, MarketPricer.BAND_EQUILIBRIUM)
+tests/unit/test_market_pricer.gd:157:	assert_lt(MarketPricer.BAND_EQUILIBRIUM, MarketPricer.BAND_HIGH)
+tests/unit/test_market_pricer.gd:353:	assert_eq(MarketPricer.indicator_band(TST09_R_EQ_HI1), MarketPricer.BAND_EQUILIBRIUM)
+tests/unit/test_market_pricer.gd:354:	assert_eq(MarketPricer.indicator_band(TST09_R_EQ_LO1), MarketPricer.BAND_EQUILIBRIUM)
+tests/unit/test_sys23_wp26_a.gd:135:		"stock": 1, "mid_li": 1, "stock_weeks": "1", "band": MarketPricer.BAND_EQUILIBRIUM,
+tests/unit/test_sys23_wp26_a.gd:196:			"band": MarketPricer.BAND_EQUILIBRIUM,
+tests/unit/test_sys23_wp27.gd:182:			"band": MarketPricer.BAND_EQUILIBRIUM,
+tests/unit/test_sys23_wp27.gd:339:			"band": MarketPricer.BAND_EQUILIBRIUM,
+ui/debug_main.gd:467:		var band: int = MarketPricer.BAND_EQUILIBRIUM
+
+### grep: OBS02_ZERO_STREAK_WARN
+sim/metrics.gd:10:const OBS02_ZERO_STREAK_WARN := 4
+sim/metrics.gd:511:		if streak_i >= OBS02_ZERO_STREAK_WARN:
+
+### grep: conservation_hits (MET-06 path)
+sim/metrics.gd:45:	var met06: Dictionary = _met06(sampler.conservation_hits, aborted)
+sim/metrics.gd:102:		if sampler.conservation_hits > 0:
+sim/metrics.gd:103:			met06_v = float(sampler.conservation_hits)
+sim/sampler.gd:39:var conservation_hits: int = 0
+sim/sampler.gd:56:	conservation_hits = 0
+sim/sampler.gd:79:	conservation_hits = conservation_hits + 1
+sim/sim_engine.gd:271:		if sampler.conservation_hits > 0:

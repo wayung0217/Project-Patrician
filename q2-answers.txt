@@ -1,0 +1,120 @@
+q2-answers.txt
+READ_COMMIT_SHA=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+FORMAT=答案＋原文（不下判斷）
+
+======== Q2(a) 評估季取決於 years×SEASONS_PER_YEAR，還是實際跑出的季數（days_override 之後）？ ========
+
+答案：取決於「實際取樣到的季」（sampler.season_cells／season_ports 內的 season_index），再以 warmup_years×SEASONS_PER_YEAR 過濾下限。上界不由 scenario.years 裁切。compute() 的 years 參數在函數本體未被使用。
+
+判定行（sim/metrics.gd）：
+---原文 sim/metrics.gd L27-38---
+    27		var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+    28		var warmup_seasons: int = warmup_years * seasons_y
+    29		var eval_cells: Array = []
+    30		for row_v in sampler.season_cells:
+    31			var row: Dictionary = row_v
+    32			if _json_int(row["season_index"]) >= warmup_seasons:
+    33				eval_cells.append(row)
+    34		var eval_ports: Array = []
+    35		for row_v in sampler.season_ports:
+    36			var row2: Dictionary = row_v
+    37			if _json_int(row2["season_index"]) >= warmup_seasons:
+    38				eval_ports.append(row2)
+
+---原文 sim/sim_engine.gd L233-241（days_override 改 total_days；註解寫 metrics still use years）---
+   233		var years: int = SimScenarioValidator.as_int(scenario[SimScenarioValidator.KEY_YEARS])
+   234		var days_per_season: int = Params.get_int(PRM_DAYS_PER_SEASON)
+   235		var seasons_y: int = Params.get_int(PRM_SEASONS_PER_YEAR)
+   236		var total_days: int = years * seasons_y * days_per_season
+   237		## 17-59 SmokeDays / --days: optional absolute day cap (metrics still use years).
+   238		if scenario.has("days_override"):
+   239			var d_ov: int = SimJsonInt.as_int(scenario["days_override"], "days_override")
+   240			if d_ov >= 1:
+   241				total_days = d_ov
+
+---原文 sim/sim_engine.gd L307-310（仍傳 years 進 compute）---
+   307		var summary: Dictionary = SimMetrics.compute(
+   308			sampler,
+   309			SimScenarioValidator.as_int(scenario[SimScenarioValidator.KEY_WARMUP]),
+   310			years,
+   311			scenario[SimScenarioValidator.KEY_THRESHOLDS],
+   312			aborted,
+   313			abort_reason,
+   314			elapsed,
+   315			run_id,
+   316			combo_index,
+   317			seed,
+   318			combo,
+   319			sid
+   320		)
+
+---原文 sim/metrics.gd L13-26（years 為參數）——本體內無 years 參照---
+GIT_GREP_years_in_metrics_body:
+sim/metrics.gd:16:	years: int,
+
+
+======== Q2(b) Za_G0_A0（years＝5、warmup_years＝1）代入：--days 1800 與 --days 3600 ========
+
+已知常數（data/params/params.json）：PRM-SYS00-SEASONS_PER_YEAR＝4；PRM-SYS00-DAYS_PER_SEASON＝90。
+warmup_seasons = warmup_years × seasons_y = 1 × 4 = 4。
+評估季定義：season_index ≥ 4（L28-33）。
+
+假設 days 為整季倍數（L 線 artifacts：d1800 season_index 0..19；d3600 0..39）：
+
+--days 1800：
+  實際季數 = 1800/90 = 20 → season_index 0..19
+  評估季 season_index 範圍 = 4..19（共 16 季）
+  最後一年（last_si=19；year_start = last_si − seasons_y + 1 = 16）= 16,17,18,19
+
+--days 3600：
+  實際季數 = 3600/90 = 40 → season_index 0..39
+  評估季 season_index 範圍 = 4..39（共 36 季）
+  最後一年（last_si=39；year_start = 36）= 36,37,38,39
+
+對照：若只看 scenario years×360＝1800 而不看 days_override，評估季會是 4..19；3600 日線多出的 20..39 仍進入評估（因 filter 只看下限）。
+
+---原文「最後一年」公式（MET-04 代表；MET-02／03／05b 同構）sim/metrics.gd---
+   340			var last_si: int = _json_int((rows[rows.size() - 1] as Dictionary)["season_index"])
+   341			var year_start: int = last_si - seasons_y + 1
+   342			var mn: int = 0
+   343			var mx: int = 0
+   344			var init := false
+   345			for r_v in rows:
+   346				var r: Dictionary = r_v
+   347				if _json_int(r["season_index"]) < year_start:
+   348					continue
+
+
+======== Q2(c) 逐指標 MET-01 至 MET-06：各用哪些季 ========
+
+MET-01：全部評估季（eval_cells：season_index ≥ warmup_seasons）。對 stock_weeks≠"" 的 (港,貨)×季格計 band==EQUILIBRIUM 比例。
+  原文：_met01 L210-226；filter L29-33。
+
+MET-02：每 (港,貨) 用「第一評估年」vs「最後一年」。
+  第一評估年：該格在 eval 內最早 si（first_si）起共 seasons_y 季（si < first_si+seasons_y）。
+  最後一年：該格最晚 si（last_si）往回 seasons_y 季（si ≥ last_si−seasons_y+1）。
+  原文：_met02 L229-291（尤其 L255-272）。
+
+MET-03：最後一年（每港 last_si 與 year_start_si=last_si−seasons_y+1 兩季人口比）。
+  原文：_met03 L294-325（L306-320）。
+
+MET-04：最後一年（每港 sat_weighted 在 si≥year_start 的 max−min；再取各港最大 span）。
+  原文：_met04 L328-367（L340-364）。
+
+MET-05a：全部評估季（每港 city_balance_li==0 的最長連續 streak；再取各港最大）。
+  原文：_met05 L370-417（streak 迴圈 L382-393；不限最後一年）。
+
+MET-05b：最後一年（期末÷期初：last vs year_start 的 city_balance_li）。
+  原文：_met05 L396-411。
+
+MET-06：不取季。只用 sampler.conservation_hits（整段 run 累計）。
+  原文：_met06 L425-428；compute L45。
+
+======== Q2(d) 哪些指標的分母或取樣用了 scenario 的 years 而非實際季數 ========
+
+答案：MET-01..06 皆未使用 scenario.years 做分母或取樣窗口。
+- 評估季下限：warmup_years × PRM-SYS00-SEASONS_PER_YEAR（Params）。
+- 最後一年／第一評估年：由實際 eval 列的 min/max season_index 與 seasons_y 推得。
+- compute(…, years, …) 接收 years，但 sim/metrics.gd 本體無任何 years 讀取（見上方 git grep 僅 L16 參數宣告）。
+- sim_engine.gd L237 註解「metrics still use years」與現碼不一致（事實陳述，不下判斷）。
+
