@@ -1,0 +1,16 @@
+commit_sha=c59170d30a2102788f23f2116c8006ca33f8a288
+product_base_sha=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+product_tree_sha=079aad6732ea1125a862d1bb9bb970921f2acfd9
+trader_registry_blob=f6bb5298c990dbcad9d40c6c7cfd48f80f5c5b6c
+baseline_trader_blob=3df59445ae15ff5eee2f97a0e6d48d977c931352
+lane=P
+start=2026-11-28T05:21:28Z
+end=2026-11-28T05:39:11Z
+duration_s=1063
+status=ok
+exit_code=0
+days=360
+seed=1
+group=Za_G0_A0
+cpu_model=AMD EPYC 9V74 80-Core Processor
+m1b_diag_ports=1

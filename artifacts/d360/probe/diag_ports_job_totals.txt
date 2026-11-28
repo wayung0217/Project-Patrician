@@ -1,0 +1,8 @@
+diag_ports_job_totals.txt
+reason,count
+skip.afford,3299
+skip.decide_idle,22183
+skip.market_qty,5868735
+skip.no_intel,3369603
+skip.other,47
+skip.weekly_demand,168924

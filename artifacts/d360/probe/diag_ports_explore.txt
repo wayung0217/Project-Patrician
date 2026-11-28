@@ -1,0 +1,1441 @@
+diag_ports_explore.txt
+## daily explore pick counts + per-event explore lines
+## EXPLORE_N day,n
+EXPLORE_N,1,2
+EXPLORE_N,2,2
+EXPLORE_N,3,2
+EXPLORE_N,4,2
+EXPLORE_N,5,2
+EXPLORE_N,6,2
+EXPLORE_N,7,2
+EXPLORE_N,8,2
+EXPLORE_N,9,2
+EXPLORE_N,10,2
+EXPLORE_N,11,2
+EXPLORE_N,12,2
+EXPLORE_N,13,2
+EXPLORE_N,14,2
+EXPLORE_N,15,2
+EXPLORE_N,16,2
+EXPLORE_N,17,2
+EXPLORE_N,18,2
+EXPLORE_N,19,2
+EXPLORE_N,20,2
+EXPLORE_N,21,2
+EXPLORE_N,22,2
+EXPLORE_N,23,2
+EXPLORE_N,24,2
+EXPLORE_N,25,2
+EXPLORE_N,26,2
+EXPLORE_N,27,2
+EXPLORE_N,28,2
+EXPLORE_N,29,2
+EXPLORE_N,30,2
+EXPLORE_N,31,2
+EXPLORE_N,32,2
+EXPLORE_N,33,2
+EXPLORE_N,34,2
+EXPLORE_N,35,2
+EXPLORE_N,36,2
+EXPLORE_N,37,2
+EXPLORE_N,38,2
+EXPLORE_N,39,2
+EXPLORE_N,40,2
+EXPLORE_N,41,2
+EXPLORE_N,42,2
+EXPLORE_N,43,2
+EXPLORE_N,44,2
+EXPLORE_N,45,2
+EXPLORE_N,46,2
+EXPLORE_N,47,2
+EXPLORE_N,48,2
+EXPLORE_N,49,2
+EXPLORE_N,50,2
+EXPLORE_N,51,2
+EXPLORE_N,52,2
+EXPLORE_N,53,2
+EXPLORE_N,54,2
+EXPLORE_N,55,2
+EXPLORE_N,56,2
+EXPLORE_N,57,2
+EXPLORE_N,58,2
+EXPLORE_N,59,2
+EXPLORE_N,60,2
+EXPLORE_N,61,2
+EXPLORE_N,62,2
+EXPLORE_N,63,2
+EXPLORE_N,64,2
+EXPLORE_N,65,2
+EXPLORE_N,66,2
+EXPLORE_N,67,2
+EXPLORE_N,68,2
+EXPLORE_N,69,2
+EXPLORE_N,70,2
+EXPLORE_N,71,2
+EXPLORE_N,72,2
+EXPLORE_N,73,2
+EXPLORE_N,74,2
+EXPLORE_N,75,2
+EXPLORE_N,76,2
+EXPLORE_N,77,2
+EXPLORE_N,78,2
+EXPLORE_N,79,2
+EXPLORE_N,80,2
+EXPLORE_N,81,2
+EXPLORE_N,82,2
+EXPLORE_N,83,2
+EXPLORE_N,84,2
+EXPLORE_N,85,2
+EXPLORE_N,86,2
+EXPLORE_N,87,2
+EXPLORE_N,88,2
+EXPLORE_N,89,2
+EXPLORE_N,90,2
+EXPLORE_N,91,2
+EXPLORE_N,92,2
+EXPLORE_N,93,2
+EXPLORE_N,94,2
+EXPLORE_N,95,2
+EXPLORE_N,96,2
+EXPLORE_N,97,2
+EXPLORE_N,98,2
+EXPLORE_N,99,2
+EXPLORE_N,100,2
+EXPLORE_N,101,2
+EXPLORE_N,102,2
+EXPLORE_N,103,2
+EXPLORE_N,104,2
+EXPLORE_N,105,2
+EXPLORE_N,106,2
+EXPLORE_N,107,2
+EXPLORE_N,108,2
+EXPLORE_N,109,2
+EXPLORE_N,110,2
+EXPLORE_N,111,2
+EXPLORE_N,112,2
+EXPLORE_N,113,2
+EXPLORE_N,114,2
+EXPLORE_N,115,2
+EXPLORE_N,116,2
+EXPLORE_N,117,2
+EXPLORE_N,118,2
+EXPLORE_N,119,2
+EXPLORE_N,120,2
+EXPLORE_N,121,2
+EXPLORE_N,122,2
+EXPLORE_N,123,2
+EXPLORE_N,124,2
+EXPLORE_N,125,2
+EXPLORE_N,126,2
+EXPLORE_N,127,2
+EXPLORE_N,128,2
+EXPLORE_N,129,2
+EXPLORE_N,130,2
+EXPLORE_N,131,2
+EXPLORE_N,132,2
+EXPLORE_N,133,2
+EXPLORE_N,134,2
+EXPLORE_N,135,2
+EXPLORE_N,136,2
+EXPLORE_N,137,2
+EXPLORE_N,138,2
+EXPLORE_N,139,2
+EXPLORE_N,140,2
+EXPLORE_N,141,2
+EXPLORE_N,142,2
+EXPLORE_N,143,2
+EXPLORE_N,144,2
+EXPLORE_N,145,2
+EXPLORE_N,146,2
+EXPLORE_N,147,2
+EXPLORE_N,148,2
+EXPLORE_N,149,2
+EXPLORE_N,150,2
+EXPLORE_N,151,2
+EXPLORE_N,152,2
+EXPLORE_N,153,2
+EXPLORE_N,154,2
+EXPLORE_N,155,2
+EXPLORE_N,156,2
+EXPLORE_N,157,2
+EXPLORE_N,158,2
+EXPLORE_N,159,2
+EXPLORE_N,160,2
+EXPLORE_N,161,2
+EXPLORE_N,162,2
+EXPLORE_N,163,2
+EXPLORE_N,164,2
+EXPLORE_N,165,2
+EXPLORE_N,166,2
+EXPLORE_N,167,2
+EXPLORE_N,168,2
+EXPLORE_N,169,2
+EXPLORE_N,170,2
+EXPLORE_N,171,2
+EXPLORE_N,172,2
+EXPLORE_N,173,2
+EXPLORE_N,174,2
+EXPLORE_N,175,2
+EXPLORE_N,176,2
+EXPLORE_N,177,2
+EXPLORE_N,178,2
+EXPLORE_N,179,2
+EXPLORE_N,180,2
+EXPLORE_N,181,2
+EXPLORE_N,182,2
+EXPLORE_N,183,2
+EXPLORE_N,184,2
+EXPLORE_N,185,2
+EXPLORE_N,186,2
+EXPLORE_N,187,2
+EXPLORE_N,188,2
+EXPLORE_N,189,2
+EXPLORE_N,190,2
+EXPLORE_N,191,2
+EXPLORE_N,192,2
+EXPLORE_N,193,2
+EXPLORE_N,194,2
+EXPLORE_N,195,2
+EXPLORE_N,196,2
+EXPLORE_N,197,2
+EXPLORE_N,198,2
+EXPLORE_N,199,2
+EXPLORE_N,200,2
+EXPLORE_N,201,2
+EXPLORE_N,202,2
+EXPLORE_N,203,2
+EXPLORE_N,204,2
+EXPLORE_N,205,2
+EXPLORE_N,206,2
+EXPLORE_N,207,2
+EXPLORE_N,208,2
+EXPLORE_N,209,2
+EXPLORE_N,210,2
+EXPLORE_N,211,2
+EXPLORE_N,212,2
+EXPLORE_N,213,2
+EXPLORE_N,214,2
+EXPLORE_N,215,2
+EXPLORE_N,216,2
+EXPLORE_N,217,2
+EXPLORE_N,218,2
+EXPLORE_N,219,2
+EXPLORE_N,220,2
+EXPLORE_N,221,2
+EXPLORE_N,222,2
+EXPLORE_N,223,2
+EXPLORE_N,224,2
+EXPLORE_N,225,2
+EXPLORE_N,226,2
+EXPLORE_N,227,2
+EXPLORE_N,228,2
+EXPLORE_N,229,2
+EXPLORE_N,230,2
+EXPLORE_N,231,2
+EXPLORE_N,232,2
+EXPLORE_N,233,2
+EXPLORE_N,234,2
+EXPLORE_N,235,2
+EXPLORE_N,236,2
+EXPLORE_N,237,2
+EXPLORE_N,238,2
+EXPLORE_N,239,2
+EXPLORE_N,240,2
+EXPLORE_N,241,2
+EXPLORE_N,242,2
+EXPLORE_N,243,2
+EXPLORE_N,244,2
+EXPLORE_N,245,2
+EXPLORE_N,246,2
+EXPLORE_N,247,2
+EXPLORE_N,248,2
+EXPLORE_N,249,2
+EXPLORE_N,250,2
+EXPLORE_N,251,2
+EXPLORE_N,252,2
+EXPLORE_N,253,2
+EXPLORE_N,254,2
+EXPLORE_N,255,2
+EXPLORE_N,256,2
+EXPLORE_N,257,2
+EXPLORE_N,258,2
+EXPLORE_N,259,2
+EXPLORE_N,260,2
+EXPLORE_N,261,2
+EXPLORE_N,262,2
+EXPLORE_N,263,2
+EXPLORE_N,264,2
+EXPLORE_N,265,2
+EXPLORE_N,266,2
+EXPLORE_N,267,2
+EXPLORE_N,268,2
+EXPLORE_N,269,2
+EXPLORE_N,270,2
+EXPLORE_N,271,2
+EXPLORE_N,272,2
+EXPLORE_N,273,2
+EXPLORE_N,274,2
+EXPLORE_N,275,2
+EXPLORE_N,276,2
+EXPLORE_N,277,2
+EXPLORE_N,278,2
+EXPLORE_N,279,2
+EXPLORE_N,280,2
+EXPLORE_N,281,2
+EXPLORE_N,282,2
+EXPLORE_N,283,2
+EXPLORE_N,284,2
+EXPLORE_N,285,2
+EXPLORE_N,286,2
+EXPLORE_N,287,2
+EXPLORE_N,288,2
+EXPLORE_N,289,2
+EXPLORE_N,290,2
+EXPLORE_N,291,2
+EXPLORE_N,292,2
+EXPLORE_N,293,2
+EXPLORE_N,294,2
+EXPLORE_N,295,2
+EXPLORE_N,296,2
+EXPLORE_N,297,2
+EXPLORE_N,298,2
+EXPLORE_N,299,2
+EXPLORE_N,300,2
+EXPLORE_N,301,2
+EXPLORE_N,302,2
+EXPLORE_N,303,2
+EXPLORE_N,304,2
+EXPLORE_N,305,2
+EXPLORE_N,306,2
+EXPLORE_N,307,2
+EXPLORE_N,308,2
+EXPLORE_N,309,2
+EXPLORE_N,310,2
+EXPLORE_N,311,2
+EXPLORE_N,312,2
+EXPLORE_N,313,2
+EXPLORE_N,314,2
+EXPLORE_N,315,2
+EXPLORE_N,316,2
+EXPLORE_N,317,2
+EXPLORE_N,318,2
+EXPLORE_N,319,2
+EXPLORE_N,320,2
+EXPLORE_N,321,2
+EXPLORE_N,322,2
+EXPLORE_N,323,2
+EXPLORE_N,324,2
+EXPLORE_N,325,2
+EXPLORE_N,326,2
+EXPLORE_N,327,2
+EXPLORE_N,328,2
+EXPLORE_N,329,2
+EXPLORE_N,330,2
+EXPLORE_N,331,2
+EXPLORE_N,332,2
+EXPLORE_N,333,2
+EXPLORE_N,334,2
+EXPLORE_N,335,2
+EXPLORE_N,336,2
+EXPLORE_N,337,2
+EXPLORE_N,338,2
+EXPLORE_N,339,2
+EXPLORE_N,340,2
+EXPLORE_N,341,2
+EXPLORE_N,342,2
+EXPLORE_N,343,2
+EXPLORE_N,344,2
+EXPLORE_N,345,2
+EXPLORE_N,346,2
+EXPLORE_N,347,2
+EXPLORE_N,348,2
+EXPLORE_N,349,2
+EXPLORE_N,350,2
+EXPLORE_N,351,2
+EXPLORE_N,352,2
+EXPLORE_N,353,2
+EXPLORE_N,354,2
+EXPLORE_N,355,2
+EXPLORE_N,356,2
+EXPLORE_N,357,2
+EXPLORE_N,358,2
+EXPLORE_N,359,2
+EXPLORE_N,360,2
+## EXPLORE_EVENT lines
+day=1 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=1 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=1 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=1 season=0 from=PT-10 to=PT-07 good=GD-007 qty=50 sailed=1
+day=2 season=0 from=PT-05 to=PT-12 good=GD-025 qty=32 sailed=1
+day=2 season=0 from=PT-05 to=PT-04 good=GD-006 qty=50 sailed=1
+day=2 season=0 from=PT-05 to=PT-04 good=GD-006 qty=50 sailed=1
+day=2 season=0 from=PT-13 to=PT-14 good=GD-002 qty=7 sailed=1
+day=3 season=0 from=PT-12 to=PT-13 good=GD-014 qty=50 sailed=1
+day=3 season=0 from=PT-13 to=PT-12 good=GD-018 qty=50 sailed=1
+day=4 season=0 from=PT-09 to=PT-08 good=GD-024 qty=8 sailed=1
+day=5 season=0 from=PT-12 to=PT-13 good=GD-014 qty=50 sailed=1
+day=5 season=0 from=PT-15 to=PT-12 good=GD-019 qty=50 sailed=1
+day=6 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=6 season=0 from=PT-06 to=PT-10 good=GD-015 qty=50 sailed=1
+day=6 season=0 from=PT-12 to=PT-13 good=GD-013 qty=50 sailed=1
+day=7 season=0 from=PT-03 to=PT-02 good=GD-024 qty=50 sailed=1
+day=7 season=0 from=PT-07 to=PT-06 good=GD-011 qty=50 sailed=1
+day=7 season=0 from=PT-02 to=PT-01 good=GD-005 qty=50 sailed=1
+day=7 season=0 from=PT-08 to=PT-02 good=GD-024 qty=15 sailed=1
+day=8 season=0 from=PT-03 to=PT-02 good=GD-021 qty=50 sailed=1
+day=8 season=0 from=PT-02 to=PT-06 good=GD-006 qty=50 sailed=1
+day=8 season=0 from=PT-02 to=PT-06 good=GD-006 qty=50 sailed=1
+day=8 season=0 from=PT-01 to=PT-03 good=GD-019 qty=50 sailed=1
+day=9 season=0 from=PT-10 to=PT-06 good=GD-015 qty=50 sailed=1
+day=9 season=0 from=PT-03 to=PT-02 good=GD-021 qty=50 sailed=1
+day=9 season=0 from=PT-01 to=PT-02 good=GD-013 qty=50 sailed=1
+day=10 season=0 from=PT-03 to=PT-02 good=GD-024 qty=50 sailed=1
+day=10 season=0 from=PT-05 to=PT-01 good=GD-003 qty=50 sailed=1
+day=10 season=0 from=PT-13 to=PT-12 good=GD-019 qty=50 sailed=1
+day=11 season=0 from=PT-15 to=PT-12 good=GD-016 qty=50 sailed=1
+day=11 season=0 from=PT-15 to=PT-12 good=GD-016 qty=50 sailed=1
+day=11 season=0 from=PT-12 to=PT-13 good=GD-005 qty=50 sailed=1
+day=12 season=0 from=PT-06 to=PT-02 good=GD-024 qty=5 sailed=1
+day=12 season=0 from=PT-06 to=PT-02 good=GD-020 qty=50 sailed=1
+day=12 season=0 from=PT-06 to=PT-02 good=GD-019 qty=34 sailed=1
+day=12 season=0 from=PT-06 to=PT-10 good=GD-014 qty=50 sailed=1
+day=13 season=0 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=13 season=0 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=13 season=0 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=13 season=0 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=14 season=0 from=PT-02 to=PT-08 good=GD-024 qty=50 sailed=1
+day=14 season=0 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=14 season=0 from=PT-03 to=PT-07 good=GD-027 qty=50 sailed=1
+day=15 season=0 from=PT-13 to=PT-12 good=GD-021 qty=50 sailed=1
+day=15 season=0 from=PT-15 to=PT-13 good=GD-014 qty=50 sailed=1
+day=15 season=0 from=PT-12 to=PT-15 good=GD-019 qty=50 sailed=1
+day=16 season=0 from=PT-12 to=PT-13 good=GD-014 qty=50 sailed=1
+day=16 season=0 from=PT-12 to=PT-13 good=GD-014 qty=50 sailed=1
+day=17 season=0 from=PT-06 to=PT-02 good=GD-006 qty=50 sailed=1
+day=17 season=0 from=PT-13 to=PT-14 good=GD-018 qty=50 sailed=1
+day=18 season=0 from=PT-13 to=PT-12 good=GD-016 qty=50 sailed=1
+day=18 season=0 from=PT-13 to=PT-12 good=GD-016 qty=50 sailed=1
+day=19 season=0 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=19 season=0 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=19 season=0 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=19 season=0 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=20 season=0 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=20 season=0 from=PT-05 to=PT-04 good=GD-022 qty=50 sailed=1
+day=20 season=0 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=20 season=0 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=21 season=0 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=21 season=0 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=22 season=0 from=PT-06 to=PT-10 good=GD-014 qty=50 sailed=1
+day=22 season=0 from=PT-02 to=PT-08 good=GD-024 qty=50 sailed=1
+day=22 season=0 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=22 season=0 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=23 season=0 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=23 season=0 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=23 season=0 from=PT-06 to=PT-02 good=GD-018 qty=50 sailed=1
+day=23 season=0 from=PT-03 to=PT-01 good=GD-024 qty=50 sailed=1
+day=23 season=0 from=PT-10 to=PT-06 good=GD-013 qty=50 sailed=1
+day=24 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=24 season=0 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=24 season=0 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=24 season=0 from=PT-02 to=PT-01 good=GD-022 qty=50 sailed=1
+day=25 season=0 from=PT-06 to=PT-02 good=GD-011 qty=50 sailed=1
+day=25 season=0 from=PT-06 to=PT-02 good=GD-011 qty=50 sailed=1
+day=25 season=0 from=PT-02 to=PT-01 good=GD-020 qty=50 sailed=1
+day=25 season=0 from=PT-15 to=PT-12 good=GD-015 qty=50 sailed=1
+day=25 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=25 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=26 season=0 from=PT-12 to=PT-15 good=GD-019 qty=50 sailed=1
+day=26 season=0 from=PT-13 to=PT-12 good=GD-021 qty=50 sailed=1
+day=27 season=0 from=PT-02 to=PT-08 good=GD-024 qty=50 sailed=1
+day=27 season=0 from=PT-02 to=PT-08 good=GD-024 qty=50 sailed=1
+day=27 season=0 from=PT-02 to=PT-08 good=GD-024 qty=43 sailed=1
+day=27 season=0 from=PT-01 to=PT-03 good=GD-027 qty=44 sailed=1
+day=28 season=0 from=PT-12 to=PT-13 good=GD-021 qty=50 sailed=1
+day=28 season=0 from=PT-12 to=PT-13 good=GD-021 qty=50 sailed=1
+day=28 season=0 from=PT-07 to=PT-01 good=GD-027 qty=48 sailed=1
+day=29 season=0 from=PT-13 to=PT-14 good=GD-007 qty=50 sailed=1
+day=29 season=0 from=PT-12 to=PT-15 good=GD-021 qty=50 sailed=1
+day=30 season=0 from=PT-03 to=PT-02 good=GD-006 qty=39 sailed=1
+day=30 season=0 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=30 season=0 from=PT-13 to=PT-14 good=GD-007 qty=50 sailed=1
+day=31 season=0 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=31 season=0 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=31 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=32 season=0 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=32 season=0 from=PT-12 to=PT-15 good=GD-018 qty=50 sailed=1
+day=32 season=0 from=PT-03 to=PT-02 good=GD-024 qty=50 sailed=1
+day=33 season=0 from=PT-02 to=PT-01 good=GD-011 qty=50 sailed=1
+day=33 season=0 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=33 season=0 from=PT-12 to=PT-15 good=GD-018 qty=50 sailed=1
+day=34 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=34 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=35 season=0 from=PT-12 to=PT-15 good=GD-018 qty=50 sailed=1
+day=35 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=36 season=0 from=PT-02 to=PT-10 good=GD-024 qty=50 sailed=1
+day=36 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=36 season=0 from=PT-12 to=PT-04 good=GD-028 qty=10 sailed=1
+day=37 season=0 from=PT-06 to=PT-10 good=GD-011 qty=50 sailed=1
+day=37 season=0 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=37 season=0 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=38 season=0 from=PT-02 to=PT-03 good=GD-027 qty=50 sailed=1
+day=38 season=0 from=PT-02 to=PT-10 good=GD-024 qty=50 sailed=1
+day=38 season=0 from=PT-02 to=PT-10 good=GD-011 qty=30 sailed=1
+day=39 season=0 from=PT-02 to=PT-10 good=GD-024 qty=50 sailed=1
+day=39 season=0 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=39 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=39 season=0 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=40 season=0 from=PT-15 to=PT-12 good=GD-019 qty=50 sailed=1
+day=40 season=0 from=PT-15 to=PT-12 good=GD-019 qty=50 sailed=1
+day=41 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=41 season=0 from=PT-10 to=PT-07 good=GD-021 qty=50 sailed=1
+day=41 season=0 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=42 season=0 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=42 season=0 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=42 season=0 from=PT-06 to=PT-10 good=GD-011 qty=50 sailed=1
+day=42 season=0 from=PT-12 to=PT-13 good=GD-005 qty=50 sailed=1
+day=43 season=0 from=PT-02 to=PT-01 good=GD-022 qty=50 sailed=1
+day=43 season=0 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=43 season=0 from=PT-01 to=PT-07 good=GD-027 qty=50 sailed=1
+day=43 season=0 from=PT-13 to=PT-15 good=GD-014 qty=50 sailed=1
+day=43 season=0 from=PT-13 to=PT-15 good=GD-014 qty=50 sailed=1
+day=44 season=0 from=PT-13 to=PT-15 good=GD-014 qty=50 sailed=1
+day=44 season=0 from=PT-12 to=PT-05 good=GD-025 qty=8 sailed=1
+day=45 season=0 from=PT-01 to=PT-02 good=GD-022 qty=50 sailed=1
+day=45 season=0 from=PT-06 to=PT-10 good=GD-019 qty=50 sailed=1
+day=45 season=0 from=PT-12 to=PT-15 good=GD-021 qty=50 sailed=1
+day=46 season=0 from=PT-01 to=PT-07 good=GD-027 qty=50 sailed=1
+day=46 season=0 from=PT-07 to=PT-10 good=GD-024 qty=36 sailed=1
+day=46 season=0 from=PT-12 to=PT-05 good=GD-025 qty=8 sailed=1
+day=47 season=0 from=PT-13 to=PT-15 good=GD-014 qty=50 sailed=1
+day=48 season=0 from=PT-02 to=PT-10 good=GD-024 qty=50 sailed=1
+day=48 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=48 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=49 season=0 from=PT-02 to=PT-06 good=GD-022 qty=47 sailed=1
+day=49 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=50 season=0 from=PT-15 to=PT-13 good=GD-003 qty=50 sailed=1
+day=50 season=0 from=PT-15 to=PT-13 good=GD-003 qty=50 sailed=1
+day=51 season=0 from=PT-13 to=PT-15 good=GD-014 qty=50 sailed=1
+day=52 season=0 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=52 season=0 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=52 season=0 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=52 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=52 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=53 season=0 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=54 season=0 from=PT-01 to=PT-03 good=GD-024 qty=49 sailed=1
+day=54 season=0 from=PT-01 to=PT-02 good=GD-018 qty=50 sailed=1
+day=55 season=0 from=PT-12 to=PT-15 good=GD-005 qty=42 sailed=1
+day=55 season=0 from=PT-12 to=PT-14 good=GD-004 qty=50 sailed=1
+day=55 season=0 from=PT-15 to=PT-13 good=GD-003 qty=50 sailed=1
+day=56 season=0 from=PT-07 to=PT-06 good=GD-022 qty=39 sailed=1
+day=56 season=0 from=PT-02 to=PT-01 good=GD-020 qty=50 sailed=1
+day=56 season=0 from=PT-15 to=PT-13 good=GD-003 qty=50 sailed=1
+day=57 season=0 from=PT-03 to=PT-01 good=GD-022 qty=50 sailed=1
+day=57 season=0 from=PT-15 to=PT-13 good=GD-005 qty=42 sailed=1
+day=58 season=0 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=59 season=0 from=PT-03 to=PT-01 good=GD-027 qty=50 sailed=1
+day=59 season=0 from=PT-03 to=PT-01 good=GD-022 qty=50 sailed=1
+day=59 season=0 from=PT-02 to=PT-03 good=GD-024 qty=50 sailed=1
+day=59 season=0 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=59 season=0 from=PT-13 to=PT-12 good=GD-007 qty=50 sailed=1
+day=60 season=0 from=PT-07 to=PT-10 good=GD-022 qty=35 sailed=1
+day=60 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=60 season=0 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=60 season=0 from=PT-10 to=PT-06 good=GD-019 qty=50 sailed=1
+day=61 season=0 from=PT-06 to=PT-10 good=GD-016 qty=50 sailed=1
+day=62 season=0 from=PT-01 to=PT-02 good=GD-022 qty=50 sailed=1
+day=62 season=0 from=PT-06 to=PT-10 good=GD-016 qty=50 sailed=1
+day=62 season=0 from=PT-10 to=PT-06 good=GD-022 qty=34 sailed=1
+day=62 season=0 from=PT-13 to=PT-15 good=GD-022 qty=50 sailed=1
+day=63 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=63 season=0 from=PT-06 to=PT-02 good=GD-022 qty=34 sailed=1
+day=63 season=0 from=PT-14 to=PT-13 good=GD-022 qty=50 sailed=1
+day=64 season=0 from=PT-12 to=PT-15 good=GD-022 qty=30 sailed=1
+day=64 season=0 from=PT-12 to=PT-15 good=GD-018 qty=50 sailed=1
+day=65 season=0 from=PT-13 to=PT-15 good=GD-022 qty=50 sailed=1
+day=65 season=0 from=PT-13 to=PT-15 good=GD-022 qty=22 sailed=1
+day=65 season=0 from=PT-13 to=PT-15 good=GD-022 qty=38 sailed=1
+day=66 season=0 from=PT-02 to=PT-10 good=GD-022 qty=50 sailed=1
+day=66 season=0 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=66 season=0 from=PT-07 to=PT-02 good=GD-027 qty=50 sailed=1
+day=66 season=0 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=66 season=0 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=67 season=0 from=PT-02 to=PT-03 good=GD-020 qty=50 sailed=1
+day=67 season=0 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=67 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=67 season=0 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=67 season=0 from=PT-02 to=PT-08 good=GD-024 qty=35 sailed=1
+day=68 season=0 from=PT-12 to=PT-15 good=GD-025 qty=5 sailed=1
+day=69 season=0 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=69 season=0 from=PT-03 to=PT-01 good=GD-024 qty=50 sailed=1
+day=69 season=0 from=PT-02 to=PT-08 good=GD-021 qty=50 sailed=1
+day=69 season=0 from=PT-05 to=PT-04 good=GD-019 qty=50 sailed=1
+day=70 season=0 from=PT-03 to=PT-02 good=GD-021 qty=50 sailed=1
+day=70 season=0 from=PT-13 to=PT-15 good=GD-022 qty=50 sailed=1
+day=71 season=0 from=PT-12 to=PT-15 good=GD-019 qty=50 sailed=1
+day=71 season=0 from=PT-02 to=PT-08 good=GD-021 qty=50 sailed=1
+day=71 season=0 from=PT-02 to=PT-07 good=GD-011 qty=50 sailed=1
+day=71 season=0 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=72 season=0 from=PT-02 to=PT-08 good=GD-021 qty=50 sailed=1
+day=73 season=0 from=PT-05 to=PT-12 good=GD-022 qty=50 sailed=1
+day=74 season=0 from=PT-15 to=PT-12 good=GD-022 qty=50 sailed=1
+day=75 season=0 from=PT-02 to=PT-03 good=GD-027 qty=12 sailed=1
+day=75 season=0 from=PT-03 to=PT-08 good=GD-024 qty=46 sailed=1
+day=75 season=0 from=PT-15 to=PT-12 good=GD-022 qty=50 sailed=1
+day=75 season=0 from=PT-14 to=PT-13 good=GD-022 qty=50 sailed=1
+day=76 season=0 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=76 season=0 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=76 season=0 from=PT-02 to=PT-08 good=GD-021 qty=50 sailed=1
+day=76 season=0 from=PT-12 to=PT-15 good=GD-025 qty=6 sailed=1
+day=76 season=0 from=PT-12 to=PT-15 good=GD-010 qty=50 sailed=1
+day=77 season=0 from=PT-02 to=PT-01 good=GD-020 qty=42 sailed=1
+day=77 season=0 from=PT-12 to=PT-13 good=GD-010 qty=50 sailed=1
+day=77 season=0 from=PT-10 to=PT-02 good=GD-022 qty=40 sailed=1
+day=77 season=0 from=PT-12 to=PT-13 good=GD-010 qty=50 sailed=1
+day=77 season=0 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=79 season=0 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=79 season=0 from=PT-14 to=PT-13 good=GD-020 qty=50 sailed=1
+day=79 season=0 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=80 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=80 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=80 season=0 from=PT-12 to=PT-15 good=GD-025 qty=5 sailed=1
+day=81 season=0 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=81 season=0 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=81 season=0 from=PT-02 to=PT-10 good=GD-021 qty=50 sailed=1
+day=82 season=0 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=82 season=0 from=PT-10 to=PT-06 good=GD-015 qty=50 sailed=1
+day=82 season=0 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=83 season=0 from=PT-06 to=PT-10 good=GD-013 qty=50 sailed=1
+day=83 season=0 from=PT-06 to=PT-10 good=GD-013 qty=50 sailed=1
+day=83 season=0 from=PT-12 to=PT-15 good=GD-025 qty=8 sailed=1
+day=84 season=0 from=PT-02 to=PT-10 good=GD-021 qty=50 sailed=1
+day=84 season=0 from=PT-13 to=PT-14 good=GD-022 qty=50 sailed=1
+day=85 season=0 from=PT-03 to=PT-02 good=GD-027 qty=50 sailed=1
+day=85 season=0 from=PT-03 to=PT-08 good=GD-024 qty=38 sailed=1
+day=85 season=0 from=PT-02 to=PT-01 good=GD-020 qty=50 sailed=1
+day=86 season=0 from=PT-13 to=PT-14 good=GD-010 qty=50 sailed=1
+day=86 season=0 from=PT-13 to=PT-15 good=GD-022 qty=50 sailed=1
+day=86 season=0 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=87 season=0 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=87 season=0 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=87 season=0 from=PT-02 to=PT-01 good=GD-020 qty=50 sailed=1
+day=87 season=0 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=88 season=0 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=88 season=0 from=PT-02 to=PT-03 good=GD-027 qty=50 sailed=1
+day=88 season=0 from=PT-01 to=PT-03 good=GD-020 qty=39 sailed=1
+day=88 season=0 from=PT-02 to=PT-10 good=GD-021 qty=50 sailed=1
+day=88 season=0 from=PT-08 to=PT-09 good=GD-024 qty=38 sailed=1
+day=89 season=0 from=PT-10 to=PT-06 good=GD-021 qty=50 sailed=1
+day=89 season=0 from=PT-13 to=PT-14 good=GD-022 qty=50 sailed=1
+day=90 season=0 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=90 season=0 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=91 season=1 from=PT-03 to=PT-07 good=GD-027 qty=50 sailed=1
+day=91 season=1 from=PT-02 to=PT-01 good=GD-021 qty=21 sailed=1
+day=91 season=1 from=PT-13 to=PT-15 good=GD-020 qty=50 sailed=1
+day=92 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=92 season=1 from=PT-09 to=PT-08 good=GD-024 qty=32 sailed=1
+day=92 season=1 from=PT-14 to=PT-12 good=GD-010 qty=50 sailed=1
+day=94 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=94 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=94 season=1 from=PT-12 to=PT-14 good=GD-025 qty=15 sailed=1
+day=95 season=1 from=PT-03 to=PT-08 good=GD-011 qty=50 sailed=1
+day=95 season=1 from=PT-02 to=PT-10 good=GD-021 qty=50 sailed=1
+day=95 season=1 from=PT-02 to=PT-10 good=GD-021 qty=50 sailed=1
+day=96 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=96 season=1 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=96 season=1 from=PT-15 to=PT-14 good=GD-020 qty=42 sailed=1
+day=97 season=1 from=PT-06 to=PT-02 good=GD-020 qty=50 sailed=1
+day=97 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=98 season=1 from=PT-07 to=PT-06 good=GD-024 qty=27 sailed=1
+day=98 season=1 from=PT-07 to=PT-02 good=GD-027 qty=50 sailed=1
+day=98 season=1 from=PT-12 to=PT-04 good=GD-028 qty=14 sailed=1
+day=98 season=1 from=PT-02 to=PT-01 good=GD-014 qty=50 sailed=1
+day=99 season=1 from=PT-07 to=PT-10 good=GD-021 qty=50 sailed=1
+day=99 season=1 from=PT-06 to=PT-10 good=GD-016 qty=45 sailed=1
+day=99 season=1 from=PT-02 to=PT-06 good=GD-020 qty=50 sailed=1
+day=100 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=100 season=1 from=PT-14 to=PT-13 good=GD-020 qty=50 sailed=1
+day=100 season=1 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=100 season=1 from=PT-12 to=PT-14 good=GD-025 qty=5 sailed=1
+day=101 season=1 from=PT-12 to=PT-14 good=GD-025 qty=9 sailed=1
+day=101 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=102 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=102 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=103 season=1 from=PT-02 to=PT-06 good=GD-024 qty=25 sailed=1
+day=103 season=1 from=PT-06 to=PT-02 good=GD-020 qty=50 sailed=1
+day=104 season=1 from=PT-07 to=PT-10 good=GD-021 qty=50 sailed=1
+day=104 season=1 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=104 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=105 season=1 from=PT-02 to=PT-07 good=GD-011 qty=50 sailed=1
+day=105 season=1 from=PT-02 to=PT-07 good=GD-011 qty=50 sailed=1
+day=105 season=1 from=PT-02 to=PT-07 good=GD-011 qty=50 sailed=1
+day=105 season=1 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=106 season=1 from=PT-10 to=PT-06 good=GD-021 qty=50 sailed=1
+day=106 season=1 from=PT-06 to=PT-02 good=GD-007 qty=47 sailed=1
+day=106 season=1 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=106 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=107 season=1 from=PT-06 to=PT-10 good=GD-011 qty=12 sailed=1
+day=107 season=1 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=107 season=1 from=PT-13 to=PT-15 good=GD-018 qty=50 sailed=1
+day=107 season=1 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=108 season=1 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=108 season=1 from=PT-02 to=PT-06 good=GD-024 qty=24 sailed=1
+day=108 season=1 from=PT-06 to=PT-02 good=GD-020 qty=39 sailed=1
+day=109 season=1 from=PT-08 to=PT-09 good=GD-011 qty=39 sailed=1
+day=109 season=1 from=PT-06 to=PT-02 good=GD-013 qty=50 sailed=1
+day=109 season=1 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=109 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=110 season=1 from=PT-01 to=PT-03 good=GD-027 qty=45 sailed=1
+day=110 season=1 from=PT-02 to=PT-06 good=GD-004 qty=2 sailed=1
+day=111 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=111 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=111 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=112 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=112 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=112 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=112 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=112 season=1 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=113 season=1 from=PT-02 to=PT-06 good=GD-024 qty=23 sailed=1
+day=113 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=113 season=1 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=113 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=114 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=114 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=114 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=115 season=1 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=115 season=1 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=115 season=1 from=PT-15 to=PT-12 good=GD-018 qty=50 sailed=1
+day=116 season=1 from=PT-15 to=PT-13 good=GD-019 qty=50 sailed=1
+day=116 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=116 season=1 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=117 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=118 season=1 from=PT-12 to=PT-04 good=GD-020 qty=50 sailed=1
+day=119 season=1 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=119 season=1 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=119 season=1 from=PT-12 to=PT-04 good=GD-020 qty=50 sailed=1
+day=120 season=1 from=PT-12 to=PT-04 good=GD-020 qty=50 sailed=1
+day=120 season=1 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=120 season=1 from=PT-13 to=PT-12 good=GD-018 qty=50 sailed=1
+day=121 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=121 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=121 season=1 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=121 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=122 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=123 season=1 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=123 season=1 from=PT-13 to=PT-16 good=GD-022 qty=50 sailed=1
+day=123 season=1 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=124 season=1 from=PT-01 to=PT-02 good=GD-019 qty=50 sailed=1
+day=124 season=1 from=PT-01 to=PT-02 good=GD-019 qty=50 sailed=1
+day=124 season=1 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=125 season=1 from=PT-03 to=PT-02 good=GD-027 qty=50 sailed=1
+day=125 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=125 season=1 from=PT-12 to=PT-04 good=GD-020 qty=50 sailed=1
+day=126 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=126 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=127 season=1 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=127 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=127 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=129 season=1 from=PT-02 to=PT-07 good=GD-027 qty=50 sailed=1
+day=129 season=1 from=PT-06 to=PT-10 good=GD-016 qty=50 sailed=1
+day=129 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=129 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=130 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=130 season=1 from=PT-12 to=PT-14 good=GD-019 qty=50 sailed=1
+day=131 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=131 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=131 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=131 season=1 from=PT-13 to=PT-16 good=GD-016 qty=50 sailed=1
+day=131 season=1 from=PT-13 to=PT-16 good=GD-016 qty=50 sailed=1
+day=132 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=132 season=1 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=132 season=1 from=PT-02 to=PT-01 good=GD-013 qty=50 sailed=1
+day=132 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=132 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=133 season=1 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=133 season=1 from=PT-13 to=PT-16 good=GD-016 qty=50 sailed=1
+day=134 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=135 season=1 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=135 season=1 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=136 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=136 season=1 from=PT-09 to=PT-03 good=GD-004 qty=50 sailed=1
+day=136 season=1 from=PT-02 to=PT-07 good=GD-027 qty=45 sailed=1
+day=137 season=1 from=PT-13 to=PT-16 good=GD-020 qty=50 sailed=1
+day=137 season=1 from=PT-12 to=PT-13 good=GD-005 qty=50 sailed=1
+day=137 season=1 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=138 season=1 from=PT-13 to=PT-14 good=GD-005 qty=50 sailed=1
+day=139 season=1 from=PT-01 to=PT-03 good=GD-024 qty=50 sailed=1
+day=139 season=1 from=PT-01 to=PT-02 good=GD-027 qty=48 sailed=1
+day=139 season=1 from=PT-07 to=PT-10 good=GD-005 qty=20 sailed=1
+day=140 season=1 from=PT-12 to=PT-15 good=GD-010 qty=50 sailed=1
+day=140 season=1 from=PT-08 to=PT-09 good=GD-016 qty=50 sailed=1
+day=140 season=1 from=PT-12 to=PT-15 good=GD-010 qty=50 sailed=1
+day=141 season=1 from=PT-06 to=PT-10 good=GD-018 qty=50 sailed=1
+day=141 season=1 from=PT-06 to=PT-10 good=GD-018 qty=29 sailed=1
+day=141 season=1 from=PT-16 to=PT-13 good=GD-005 qty=50 sailed=1
+day=142 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=142 season=1 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=143 season=1 from=PT-13 to=PT-15 good=GD-005 qty=50 sailed=1
+day=143 season=1 from=PT-16 to=PT-13 good=GD-014 qty=50 sailed=1
+day=144 season=1 from=PT-12 to=PT-13 good=GD-010 qty=50 sailed=1
+day=144 season=1 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=144 season=1 from=PT-13 to=PT-16 good=GD-002 qty=50 sailed=1
+day=145 season=1 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=145 season=1 from=PT-03 to=PT-02 good=GD-024 qty=43 sailed=1
+day=145 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=145 season=1 from=PT-13 to=PT-16 good=GD-002 qty=50 sailed=1
+day=146 season=1 from=PT-06 to=PT-10 good=GD-011 qty=50 sailed=1
+day=146 season=1 from=PT-03 to=PT-02 good=GD-024 qty=50 sailed=1
+day=146 season=1 from=PT-12 to=PT-13 good=GD-010 qty=50 sailed=1
+day=147 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=147 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=148 season=1 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=148 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=148 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=148 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=148 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=148 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=149 season=1 from=PT-02 to=PT-06 good=GD-024 qty=50 sailed=1
+day=149 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=149 season=1 from=PT-02 to=PT-03 good=GD-027 qty=15 sailed=1
+day=149 season=1 from=PT-13 to=PT-12 good=GD-018 qty=50 sailed=1
+day=149 season=1 from=PT-13 to=PT-12 good=GD-018 qty=50 sailed=1
+day=150 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=150 season=1 from=PT-13 to=PT-15 good=GD-014 qty=50 sailed=1
+day=151 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=151 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=152 season=1 from=PT-13 to=PT-14 good=GD-002 qty=50 sailed=1
+day=152 season=1 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=152 season=1 from=PT-14 to=PT-13 good=GD-010 qty=50 sailed=1
+day=153 season=1 from=PT-07 to=PT-10 good=GD-024 qty=42 sailed=1
+day=153 season=1 from=PT-06 to=PT-10 good=GD-019 qty=35 sailed=1
+day=153 season=1 from=PT-02 to=PT-03 good=GD-024 qty=35 sailed=1
+day=153 season=1 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=153 season=1 from=PT-02 to=PT-03 good=GD-027 qty=44 sailed=1
+day=154 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=154 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=155 season=1 from=PT-13 to=PT-16 good=GD-010 qty=46 sailed=1
+day=156 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=156 season=1 from=PT-02 to=PT-06 good=GD-015 qty=50 sailed=1
+day=156 season=1 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=156 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=157 season=1 from=PT-14 to=PT-13 good=GD-010 qty=50 sailed=1
+day=157 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=157 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=158 season=1 from=PT-16 to=PT-13 good=GD-007 qty=50 sailed=1
+day=158 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=159 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=159 season=1 from=PT-14 to=PT-13 good=GD-020 qty=50 sailed=1
+day=160 season=1 from=PT-16 to=PT-14 good=GD-018 qty=50 sailed=1
+day=160 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=161 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=161 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=161 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=162 season=1 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=162 season=1 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=163 season=1 from=PT-06 to=PT-02 good=GD-018 qty=50 sailed=1
+day=163 season=1 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=164 season=1 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=164 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=164 season=1 from=PT-13 to=PT-16 good=GD-016 qty=50 sailed=1
+day=165 season=1 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=165 season=1 from=PT-12 to=PT-13 good=GD-005 qty=50 sailed=1
+day=165 season=1 from=PT-02 to=PT-04 good=GD-027 qty=50 sailed=1
+day=165 season=1 from=PT-12 to=PT-13 good=GD-005 qty=50 sailed=1
+day=165 season=1 from=PT-06 to=PT-10 good=GD-004 qty=50 sailed=1
+day=165 season=1 from=PT-03 to=PT-08 good=GD-024 qty=26 sailed=1
+day=166 season=1 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=166 season=1 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=166 season=1 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=167 season=1 from=PT-13 to=PT-12 good=GD-007 qty=50 sailed=1
+day=167 season=1 from=PT-10 to=PT-06 good=GD-021 qty=50 sailed=1
+day=167 season=1 from=PT-06 to=PT-02 good=GD-014 qty=50 sailed=1
+day=167 season=1 from=PT-06 to=PT-02 good=GD-014 qty=50 sailed=1
+day=168 season=1 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=168 season=1 from=PT-12 to=PT-15 good=GD-018 qty=50 sailed=1
+day=169 season=1 from=PT-07 to=PT-06 good=GD-021 qty=50 sailed=1
+day=169 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=169 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=169 season=1 from=PT-14 to=PT-16 good=GD-010 qty=50 sailed=1
+day=170 season=1 from=PT-07 to=PT-06 good=GD-021 qty=50 sailed=1
+day=170 season=1 from=PT-06 to=PT-07 good=GD-004 qty=50 sailed=1
+day=170 season=1 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=171 season=1 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=171 season=1 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=171 season=1 from=PT-15 to=PT-12 good=GD-020 qty=50 sailed=1
+day=172 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=172 season=1 from=PT-06 to=PT-02 good=GD-021 qty=48 sailed=1
+day=172 season=1 from=PT-02 to=PT-01 good=GD-013 qty=50 sailed=1
+day=172 season=1 from=PT-12 to=PT-15 good=GD-022 qty=50 sailed=1
+day=173 season=1 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=173 season=1 from=PT-02 to=PT-06 good=GD-015 qty=50 sailed=1
+day=173 season=1 from=PT-03 to=PT-08 good=GD-011 qty=50 sailed=1
+day=173 season=1 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=174 season=1 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=174 season=1 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=174 season=1 from=PT-15 to=PT-13 good=GD-020 qty=50 sailed=1
+day=175 season=1 from=PT-13 to=PT-16 good=GD-020 qty=50 sailed=1
+day=176 season=1 from=PT-06 to=PT-07 good=GD-018 qty=50 sailed=1
+day=176 season=1 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=176 season=1 from=PT-06 to=PT-02 good=GD-020 qty=48 sailed=1
+day=176 season=1 from=PT-06 to=PT-02 good=GD-021 qty=38 sailed=1
+day=177 season=1 from=PT-12 to=PT-15 good=GD-019 qty=50 sailed=1
+day=178 season=1 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=178 season=1 from=PT-06 to=PT-07 good=GD-018 qty=50 sailed=1
+day=178 season=1 from=PT-13 to=PT-16 good=GD-020 qty=50 sailed=1
+day=179 season=1 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=179 season=1 from=PT-13 to=PT-16 good=GD-020 qty=50 sailed=1
+day=180 season=1 from=PT-12 to=PT-13 good=GD-014 qty=50 sailed=1
+day=181 season=2 from=PT-07 to=PT-06 good=GD-024 qty=11 sailed=1
+day=181 season=2 from=PT-02 to=PT-01 good=GD-020 qty=34 sailed=1
+day=181 season=2 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=182 season=2 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=182 season=2 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=183 season=2 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=183 season=2 from=PT-01 to=PT-03 good=GD-024 qty=46 sailed=1
+day=183 season=2 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=183 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=184 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=184 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=184 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=184 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=185 season=2 from=PT-01 to=PT-02 good=GD-019 qty=50 sailed=1
+day=185 season=2 from=PT-06 to=PT-10 good=GD-011 qty=50 sailed=1
+day=185 season=2 from=PT-13 to=PT-14 good=GD-027 qty=14 sailed=1
+day=186 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=186 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=186 season=2 from=PT-03 to=PT-07 good=GD-027 qty=50 sailed=1
+day=186 season=2 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=187 season=2 from=PT-01 to=PT-02 good=GD-022 qty=50 sailed=1
+day=187 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=187 season=2 from=PT-06 to=PT-02 good=GD-011 qty=50 sailed=1
+day=188 season=2 from=PT-01 to=PT-02 good=GD-016 qty=50 sailed=1
+day=188 season=2 from=PT-06 to=PT-02 good=GD-020 qty=36 sailed=1
+day=188 season=2 from=PT-02 to=PT-06 good=GD-022 qty=39 sailed=1
+day=189 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=189 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=189 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=189 season=2 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=190 season=2 from=PT-13 to=PT-14 good=GD-010 qty=15 sailed=1
+day=190 season=2 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=191 season=2 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=191 season=2 from=PT-03 to=PT-08 good=GD-024 qty=35 sailed=1
+day=191 season=2 from=PT-02 to=PT-04 good=GD-027 qty=27 sailed=1
+day=192 season=2 from=PT-06 to=PT-10 good=GD-019 qty=50 sailed=1
+day=192 season=2 from=PT-06 to=PT-10 good=GD-019 qty=50 sailed=1
+day=192 season=2 from=PT-07 to=PT-10 good=GD-022 qty=37 sailed=1
+day=192 season=2 from=PT-12 to=PT-15 good=GD-027 qty=19 sailed=1
+day=193 season=2 from=PT-10 to=PT-06 good=GD-024 qty=6 sailed=1
+day=193 season=2 from=PT-10 to=PT-06 good=GD-019 qty=50 sailed=1
+day=193 season=2 from=PT-10 to=PT-06 good=GD-022 qty=37 sailed=1
+day=193 season=2 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=194 season=2 from=PT-02 to=PT-04 good=GD-027 qty=37 sailed=1
+day=194 season=2 from=PT-06 to=PT-02 good=GD-011 qty=50 sailed=1
+day=194 season=2 from=PT-13 to=PT-15 good=GD-019 qty=50 sailed=1
+day=194 season=2 from=PT-14 to=PT-13 good=GD-018 qty=50 sailed=1
+day=195 season=2 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=195 season=2 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=196 season=2 from=PT-12 to=PT-14 good=GD-025 qty=50 sailed=1
+day=196 season=2 from=PT-02 to=PT-06 good=GD-004 qty=50 sailed=1
+day=196 season=2 from=PT-03 to=PT-08 good=GD-005 qty=3 sailed=1
+day=197 season=2 from=PT-06 to=PT-07 good=GD-002 qty=50 sailed=1
+day=197 season=2 from=PT-06 to=PT-07 good=GD-002 qty=50 sailed=1
+day=197 season=2 from=PT-06 to=PT-07 good=GD-002 qty=50 sailed=1
+day=197 season=2 from=PT-15 to=PT-12 good=GD-020 qty=50 sailed=1
+day=198 season=2 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=198 season=2 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=198 season=2 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=199 season=2 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=199 season=2 from=PT-07 to=PT-01 good=GD-027 qty=48 sailed=1
+day=199 season=2 from=PT-07 to=PT-10 good=GD-019 qty=50 sailed=1
+day=199 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=199 season=2 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=200 season=2 from=PT-13 to=PT-15 good=GD-018 qty=50 sailed=1
+day=200 season=2 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=201 season=2 from=PT-14 to=PT-13 good=GD-011 qty=43 sailed=1
+day=202 season=2 from=PT-01 to=PT-02 good=GD-022 qty=50 sailed=1
+day=202 season=2 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=202 season=2 from=PT-12 to=PT-13 good=GD-011 qty=49 sailed=1
+day=202 season=2 from=PT-12 to=PT-15 good=GD-027 qty=9 sailed=1
+day=203 season=2 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=204 season=2 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=204 season=2 from=PT-14 to=PT-13 good=GD-011 qty=50 sailed=1
+day=205 season=2 from=PT-06 to=PT-02 good=GD-019 qty=50 sailed=1
+day=205 season=2 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=206 season=2 from=PT-06 to=PT-10 good=GD-013 qty=50 sailed=1
+day=206 season=2 from=PT-06 to=PT-02 good=GD-011 qty=50 sailed=1
+day=207 season=2 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=207 season=2 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=207 season=2 from=PT-14 to=PT-13 good=GD-011 qty=50 sailed=1
+day=208 season=2 from=PT-12 to=PT-04 good=GD-025 qty=24 sailed=1
+day=208 season=2 from=PT-12 to=PT-15 good=GD-002 qty=30 sailed=1
+day=209 season=2 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=209 season=2 from=PT-03 to=PT-08 good=GD-021 qty=50 sailed=1
+day=209 season=2 from=PT-14 to=PT-13 good=GD-011 qty=50 sailed=1
+day=210 season=2 from=PT-14 to=PT-13 good=GD-005 qty=50 sailed=1
+day=210 season=2 from=PT-03 to=PT-08 good=GD-022 qty=50 sailed=1
+day=210 season=2 from=PT-03 to=PT-08 good=GD-022 qty=50 sailed=1
+day=211 season=2 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=211 season=2 from=PT-12 to=PT-14 good=GD-011 qty=50 sailed=1
+day=212 season=2 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=212 season=2 from=PT-02 to=PT-03 good=GD-022 qty=21 sailed=1
+day=212 season=2 from=PT-03 to=PT-08 good=GD-022 qty=50 sailed=1
+day=213 season=2 from=PT-12 to=PT-15 good=GD-014 qty=50 sailed=1
+day=214 season=2 from=PT-03 to=PT-08 good=GD-019 qty=50 sailed=1
+day=214 season=2 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=214 season=2 from=PT-10 to=PT-06 good=GD-013 qty=50 sailed=1
+day=214 season=2 from=PT-02 to=PT-01 good=GD-014 qty=50 sailed=1
+day=215 season=2 from=PT-07 to=PT-10 good=GD-021 qty=50 sailed=1
+day=215 season=2 from=PT-03 to=PT-01 good=GD-027 qty=50 sailed=1
+day=216 season=2 from=PT-06 to=PT-02 good=GD-014 qty=50 sailed=1
+day=216 season=2 from=PT-01 to=PT-02 good=GD-024 qty=50 sailed=1
+day=216 season=2 from=PT-12 to=PT-04 good=GD-025 qty=18 sailed=1
+day=216 season=2 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=217 season=2 from=PT-08 to=PT-09 good=GD-019 qty=50 sailed=1
+day=217 season=2 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=217 season=2 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=217 season=2 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=218 season=2 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=218 season=2 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=218 season=2 from=PT-02 to=PT-03 good=GD-022 qty=50 sailed=1
+day=218 season=2 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=219 season=2 from=PT-15 to=PT-12 good=GD-014 qty=50 sailed=1
+day=219 season=2 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=219 season=2 from=PT-02 to=PT-01 good=GD-022 qty=50 sailed=1
+day=221 season=2 from=PT-03 to=PT-08 good=GD-022 qty=50 sailed=1
+day=221 season=2 from=PT-13 to=PT-12 good=GD-001 qty=50 sailed=1
+day=222 season=2 from=PT-03 to=PT-07 good=GD-027 qty=50 sailed=1
+day=222 season=2 from=PT-03 to=PT-08 good=GD-019 qty=50 sailed=1
+day=222 season=2 from=PT-02 to=PT-06 good=GD-022 qty=50 sailed=1
+day=223 season=2 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=223 season=2 from=PT-04 to=PT-12 good=GD-022 qty=50 sailed=1
+day=224 season=2 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=225 season=2 from=PT-08 to=PT-09 good=GD-022 qty=49 sailed=1
+day=225 season=2 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=225 season=2 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=225 season=2 from=PT-16 to=PT-14 good=GD-019 qty=50 sailed=1
+day=226 season=2 from=PT-04 to=PT-12 good=GD-022 qty=50 sailed=1
+day=226 season=2 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=226 season=2 from=PT-01 to=PT-02 good=GD-022 qty=50 sailed=1
+day=227 season=2 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=227 season=2 from=PT-09 to=PT-03 good=GD-022 qty=48 sailed=1
+day=228 season=2 from=PT-12 to=PT-15 good=GD-027 qty=20 sailed=1
+day=228 season=2 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=228 season=2 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=229 season=2 from=PT-13 to=PT-12 good=GD-011 qty=47 sailed=1
+day=229 season=2 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=230 season=2 from=PT-07 to=PT-06 good=GD-022 qty=40 sailed=1
+day=230 season=2 from=PT-07 to=PT-01 good=GD-027 qty=41 sailed=1
+day=230 season=2 from=PT-12 to=PT-15 good=GD-010 qty=50 sailed=1
+day=231 season=2 from=PT-13 to=PT-16 good=GD-010 qty=50 sailed=1
+day=231 season=2 from=PT-13 to=PT-14 good=GD-010 qty=42 sailed=1
+day=231 season=2 from=PT-12 to=PT-15 good=GD-022 qty=36 sailed=1
+day=232 season=2 from=PT-15 to=PT-12 good=GD-007 qty=50 sailed=1
+day=232 season=2 from=PT-01 to=PT-03 good=GD-024 qty=50 sailed=1
+day=233 season=2 from=PT-01 to=PT-02 good=GD-018 qty=50 sailed=1
+day=233 season=2 from=PT-03 to=PT-09 good=GD-011 qty=50 sailed=1
+day=233 season=2 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=233 season=2 from=PT-12 to=PT-15 good=GD-027 qty=23 sailed=1
+day=234 season=2 from=PT-07 to=PT-10 good=GD-016 qty=50 sailed=1
+day=234 season=2 from=PT-01 to=PT-07 good=GD-024 qty=50 sailed=1
+day=234 season=2 from=PT-01 to=PT-03 good=GD-022 qty=50 sailed=1
+day=234 season=2 from=PT-12 to=PT-14 good=GD-025 qty=8 sailed=1
+day=235 season=2 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=235 season=2 from=PT-06 to=PT-07 good=GD-011 qty=50 sailed=1
+day=235 season=2 from=PT-01 to=PT-02 good=GD-006 qty=50 sailed=1
+day=236 season=2 from=PT-02 to=PT-06 good=GD-022 qty=50 sailed=1
+day=236 season=2 from=PT-06 to=PT-07 good=GD-018 qty=28 sailed=1
+day=236 season=2 from=PT-13 to=PT-12 good=GD-005 qty=50 sailed=1
+day=236 season=2 from=PT-02 to=PT-06 good=GD-004 qty=24 sailed=1
+day=237 season=2 from=PT-03 to=PT-08 good=GD-024 qty=45 sailed=1
+day=238 season=2 from=PT-01 to=PT-07 good=GD-027 qty=46 sailed=1
+day=238 season=2 from=PT-02 to=PT-01 good=GD-006 qty=38 sailed=1
+day=238 season=2 from=PT-02 to=- good=- qty=0 sailed=0 reason=no_best
+day=238 season=2 from=PT-12 to=PT-14 good=GD-025 qty=21 sailed=1
+day=239 season=2 from=PT-12 to=PT-15 good=GD-027 qty=20 sailed=1
+day=239 season=2 from=PT-03 to=PT-09 good=GD-011 qty=50 sailed=1
+day=239 season=2 from=PT-14 to=PT-12 good=GD-025 qty=21 sailed=1
+day=239 season=2 from=PT-14 to=PT-16 good=GD-022 qty=50 sailed=1
+day=240 season=2 from=PT-13 to=PT-16 good=GD-010 qty=50 sailed=1
+day=240 season=2 from=PT-14 to=PT-16 good=GD-020 qty=50 sailed=1
+day=240 season=2 from=PT-13 to=PT-16 good=GD-010 qty=50 sailed=1
+day=241 season=2 from=PT-01 to=PT-02 good=GD-006 qty=50 sailed=1
+day=241 season=2 from=PT-01 to=PT-02 good=GD-019 qty=50 sailed=1
+day=241 season=2 from=PT-14 to=PT-16 good=GD-020 qty=50 sailed=1
+day=242 season=2 from=PT-03 to=PT-08 good=GD-021 qty=50 sailed=1
+day=242 season=2 from=PT-01 to=PT-07 good=GD-011 qty=50 sailed=1
+day=242 season=2 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=242 season=2 from=PT-08 to=PT-09 good=GD-019 qty=50 sailed=1
+day=243 season=2 from=PT-12 to=PT-14 good=GD-025 qty=21 sailed=1
+day=243 season=2 from=PT-12 to=PT-13 good=GD-027 qty=2 sailed=1
+day=243 season=2 from=PT-12 to=PT-15 good=GD-027 qty=14 sailed=1
+day=244 season=2 from=PT-02 to=PT-06 good=GD-020 qty=50 sailed=1
+day=244 season=2 from=PT-02 to=PT-01 good=GD-020 qty=50 sailed=1
+day=244 season=2 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=245 season=2 from=PT-13 to=PT-12 good=GD-027 qty=2 sailed=1
+day=245 season=2 from=PT-02 to=PT-01 good=GD-018 qty=50 sailed=1
+day=245 season=2 from=PT-07 to=PT-10 good=GD-024 qty=32 sailed=1
+day=245 season=2 from=PT-10 to=PT-06 good=GD-024 qty=10 sailed=1
+day=245 season=2 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=245 season=2 from=PT-02 to=PT-01 good=GD-018 qty=50 sailed=1
+day=246 season=2 from=PT-06 to=PT-10 good=GD-020 qty=50 sailed=1
+day=246 season=2 from=PT-03 to=PT-08 good=GD-024 qty=37 sailed=1
+day=246 season=2 from=PT-02 to=PT-04 good=GD-027 qty=35 sailed=1
+day=246 season=2 from=PT-02 to=PT-01 good=GD-018 qty=50 sailed=1
+day=247 season=2 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=247 season=2 from=PT-03 to=PT-09 good=GD-011 qty=50 sailed=1
+day=248 season=2 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=248 season=2 from=PT-06 to=PT-10 good=GD-021 qty=44 sailed=1
+day=249 season=2 from=PT-14 to=PT-13 good=GD-010 qty=50 sailed=1
+day=249 season=2 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=250 season=2 from=PT-02 to=PT-04 good=GD-027 qty=20 sailed=1
+day=250 season=2 from=PT-02 to=PT-01 good=GD-014 qty=50 sailed=1
+day=250 season=2 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=250 season=2 from=PT-14 to=PT-13 good=GD-027 qty=3 sailed=1
+day=250 season=2 from=PT-13 to=PT-16 good=GD-020 qty=50 sailed=1
+day=251 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=251 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=251 season=2 from=PT-02 to=PT-01 good=GD-001 qty=50 sailed=1
+day=251 season=2 from=PT-14 to=PT-16 good=GD-022 qty=30 sailed=1
+day=252 season=2 from=PT-16 to=PT-12 good=GD-018 qty=50 sailed=1
+day=253 season=2 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=253 season=2 from=PT-03 to=PT-08 good=GD-024 qty=35 sailed=1
+day=253 season=2 from=PT-12 to=PT-13 good=GD-005 qty=39 sailed=1
+day=254 season=2 from=PT-12 to=PT-13 good=GD-007 qty=50 sailed=1
+day=254 season=2 from=PT-16 to=PT-13 good=GD-005 qty=50 sailed=1
+day=255 season=2 from=PT-03 to=PT-09 good=GD-011 qty=50 sailed=1
+day=255 season=2 from=PT-12 to=PT-16 good=GD-020 qty=50 sailed=1
+day=255 season=2 from=PT-01 to=PT-02 good=GD-016 qty=50 sailed=1
+day=255 season=2 from=PT-02 to=PT-01 good=GD-015 qty=50 sailed=1
+day=255 season=2 from=PT-01 to=PT-02 good=GD-016 qty=50 sailed=1
+day=256 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=256 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=256 season=2 from=PT-01 to=PT-02 good=GD-021 qty=50 sailed=1
+day=256 season=2 from=PT-13 to=PT-16 good=GD-020 qty=50 sailed=1
+day=256 season=2 from=PT-13 to=PT-16 good=GD-010 qty=50 sailed=1
+day=257 season=2 from=PT-07 to=PT-06 good=GD-024 qty=31 sailed=1
+day=257 season=2 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=257 season=2 from=PT-01 to=PT-07 good=GD-024 qty=44 sailed=1
+day=257 season=2 from=PT-06 to=PT-07 good=GD-011 qty=50 sailed=1
+day=258 season=2 from=PT-13 to=PT-16 good=GD-022 qty=29 sailed=1
+day=258 season=2 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=259 season=2 from=PT-06 to=PT-10 good=GD-019 qty=50 sailed=1
+day=259 season=2 from=PT-06 to=PT-10 good=GD-019 qty=50 sailed=1
+day=259 season=2 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=259 season=2 from=PT-07 to=PT-10 good=GD-019 qty=50 sailed=1
+day=259 season=2 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=260 season=2 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=260 season=2 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=261 season=2 from=PT-07 to=PT-01 good=GD-024 qty=50 sailed=1
+day=261 season=2 from=PT-12 to=PT-15 good=GD-010 qty=50 sailed=1
+day=262 season=2 from=PT-16 to=PT-12 good=GD-022 qty=48 sailed=1
+day=262 season=2 from=PT-16 to=PT-12 good=GD-010 qty=45 sailed=1
+day=262 season=2 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=263 season=2 from=PT-07 to=PT-06 good=GD-015 qty=50 sailed=1
+day=263 season=2 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=263 season=2 from=PT-07 to=PT-06 good=GD-006 qty=50 sailed=1
+day=263 season=2 from=PT-14 to=PT-13 good=GD-020 qty=50 sailed=1
+day=263 season=2 from=PT-14 to=PT-13 good=GD-020 qty=50 sailed=1
+day=264 season=2 from=PT-09 to=PT-08 good=GD-003 qty=50 sailed=1
+day=264 season=2 from=PT-16 to=PT-12 good=GD-020 qty=50 sailed=1
+day=264 season=2 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=264 season=2 from=PT-14 to=PT-13 good=GD-020 qty=50 sailed=1
+day=265 season=2 from=PT-12 to=PT-15 good=GD-025 qty=20 sailed=1
+day=265 season=2 from=PT-12 to=PT-13 good=GD-004 qty=50 sailed=1
+day=265 season=2 from=PT-12 to=PT-15 good=GD-025 qty=5 sailed=1
+day=265 season=2 from=PT-12 to=PT-13 good=GD-010 qty=50 sailed=1
+day=266 season=2 from=PT-01 to=PT-07 good=GD-027 qty=36 sailed=1
+day=266 season=2 from=PT-15 to=PT-12 good=GD-022 qty=50 sailed=1
+day=267 season=2 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=267 season=2 from=PT-02 to=PT-01 good=GD-014 qty=50 sailed=1
+day=267 season=2 from=PT-01 to=PT-07 good=GD-027 qty=38 sailed=1
+day=267 season=2 from=PT-12 to=PT-15 good=GD-025 qty=7 sailed=1
+day=267 season=2 from=PT-07 to=PT-10 good=GD-018 qty=50 sailed=1
+day=267 season=2 from=PT-02 to=PT-01 good=GD-014 qty=50 sailed=1
+day=268 season=2 from=PT-12 to=PT-13 good=GD-010 qty=50 sailed=1
+day=268 season=2 from=PT-02 to=PT-01 good=GD-014 qty=50 sailed=1
+day=269 season=2 from=PT-13 to=PT-14 good=GD-010 qty=50 sailed=1
+day=269 season=2 from=PT-13 to=PT-16 good=GD-010 qty=37 sailed=1
+day=270 season=2 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=270 season=2 from=PT-03 to=PT-07 good=GD-027 qty=33 sailed=1
+day=270 season=2 from=PT-06 to=PT-10 good=GD-005 qty=17 sailed=1
+day=270 season=2 from=PT-12 to=PT-13 good=GD-010 qty=50 sailed=1
+day=271 season=3 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=271 season=3 from=PT-15 to=PT-12 good=GD-002 qty=50 sailed=1
+day=272 season=3 from=PT-12 to=PT-15 good=GD-027 qty=48 sailed=1
+day=272 season=3 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=272 season=3 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=273 season=3 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=273 season=3 from=PT-03 to=PT-02 good=GD-024 qty=45 sailed=1
+day=273 season=3 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=273 season=3 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=273 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=274 season=3 from=PT-01 to=PT-02 good=GD-020 qty=50 sailed=1
+day=274 season=3 from=PT-02 to=PT-03 good=GD-027 qty=15 sailed=1
+day=274 season=3 from=PT-14 to=PT-13 good=GD-011 qty=50 sailed=1
+day=274 season=3 from=PT-16 to=PT-13 good=GD-001 qty=50 sailed=1
+day=275 season=3 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=275 season=3 from=PT-02 to=PT-03 good=GD-024 qty=33 sailed=1
+day=275 season=3 from=PT-01 to=PT-02 good=GD-019 qty=50 sailed=1
+day=275 season=3 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=275 season=3 from=PT-12 to=PT-13 good=GD-011 qty=39 sailed=1
+day=276 season=3 from=PT-12 to=PT-15 good=GD-027 qty=27 sailed=1
+day=277 season=3 from=PT-14 to=PT-13 good=GD-011 qty=50 sailed=1
+day=277 season=3 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=277 season=3 from=PT-14 to=PT-13 good=GD-011 qty=50 sailed=1
+day=277 season=3 from=PT-13 to=PT-12 good=GD-004 qty=48 sailed=1
+day=278 season=3 from=PT-01 to=PT-02 good=GD-019 qty=50 sailed=1
+day=278 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=278 season=3 from=PT-12 to=PT-15 good=GD-027 qty=14 sailed=1
+day=279 season=3 from=PT-06 to=PT-07 good=GD-018 qty=50 sailed=1
+day=279 season=3 from=PT-07 to=PT-10 good=GD-021 qty=50 sailed=1
+day=279 season=3 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=279 season=3 from=PT-02 to=PT-01 good=GD-011 qty=50 sailed=1
+day=280 season=3 from=PT-13 to=PT-16 good=GD-022 qty=50 sailed=1
+day=280 season=3 from=PT-06 to=PT-07 good=GD-018 qty=50 sailed=1
+day=280 season=3 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=280 season=3 from=PT-02 to=PT-01 good=GD-020 qty=50 sailed=1
+day=281 season=3 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=281 season=3 from=PT-14 to=PT-13 good=GD-022 qty=50 sailed=1
+day=281 season=3 from=PT-12 to=PT-13 good=GD-022 qty=50 sailed=1
+day=282 season=3 from=PT-12 to=PT-13 good=GD-011 qty=50 sailed=1
+day=282 season=3 from=PT-16 to=PT-13 good=GD-022 qty=33 sailed=1
+day=283 season=3 from=PT-07 to=PT-10 good=GD-018 qty=50 sailed=1
+day=283 season=3 from=PT-03 to=PT-08 good=GD-024 qty=50 sailed=1
+day=283 season=3 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=284 season=3 from=PT-03 to=PT-08 good=GD-011 qty=50 sailed=1
+day=284 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=284 season=3 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=284 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=285 season=3 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=285 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=285 season=3 from=PT-12 to=PT-16 good=GD-027 qty=30 sailed=1
+day=285 season=3 from=PT-12 to=PT-15 good=GD-022 qty=50 sailed=1
+day=286 season=3 from=PT-03 to=PT-08 good=GD-011 qty=50 sailed=1
+day=286 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=286 season=3 from=PT-03 to=PT-08 good=GD-011 qty=50 sailed=1
+day=286 season=3 from=PT-14 to=PT-13 good=GD-010 qty=42 sailed=1
+day=286 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=287 season=3 from=PT-07 to=PT-06 good=GD-015 qty=50 sailed=1
+day=287 season=3 from=PT-13 to=PT-16 good=GD-022 qty=50 sailed=1
+day=288 season=3 from=PT-13 to=PT-12 good=GD-011 qty=33 sailed=1
+day=288 season=3 from=PT-13 to=PT-16 good=GD-022 qty=23 sailed=1
+day=289 season=3 from=PT-03 to=PT-01 good=GD-019 qty=50 sailed=1
+day=289 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=289 season=3 from=PT-06 to=PT-07 good=GD-011 qty=50 sailed=1
+day=290 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=290 season=3 from=PT-16 to=PT-13 good=GD-022 qty=22 sailed=1
+day=291 season=3 from=PT-02 to=PT-01 good=GD-011 qty=50 sailed=1
+day=291 season=3 from=PT-15 to=PT-12 good=GD-019 qty=50 sailed=1
+day=291 season=3 from=PT-12 to=PT-13 good=GD-005 qty=50 sailed=1
+day=292 season=3 from=PT-02 to=PT-01 good=GD-002 qty=50 sailed=1
+day=292 season=3 from=PT-03 to=PT-08 good=GD-024 qty=42 sailed=1
+day=292 season=3 from=PT-02 to=PT-06 good=GD-016 qty=50 sailed=1
+day=292 season=3 from=PT-14 to=PT-13 good=GD-005 qty=50 sailed=1
+day=293 season=3 from=PT-12 to=PT-16 good=GD-027 qty=27 sailed=1
+day=293 season=3 from=PT-13 to=PT-16 good=GD-010 qty=29 sailed=1
+day=294 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=294 season=3 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=294 season=3 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=295 season=3 from=PT-13 to=PT-16 good=GD-022 qty=50 sailed=1
+day=295 season=3 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=295 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=296 season=3 from=PT-07 to=PT-10 good=GD-016 qty=50 sailed=1
+day=296 season=3 from=PT-07 to=PT-10 good=GD-016 qty=50 sailed=1
+day=296 season=3 from=PT-10 to=PT-06 good=GD-020 qty=50 sailed=1
+day=297 season=3 from=PT-10 to=PT-07 good=GD-016 qty=50 sailed=1
+day=297 season=3 from=PT-07 to=PT-06 good=GD-016 qty=50 sailed=1
+day=298 season=3 from=PT-07 to=PT-06 good=GD-016 qty=50 sailed=1
+day=299 season=3 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=300 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=300 season=3 from=PT-01 to=PT-03 good=GD-024 qty=50 sailed=1
+day=300 season=3 from=PT-12 to=PT-16 good=GD-027 qty=25 sailed=1
+day=300 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=301 season=3 from=PT-06 to=PT-02 good=GD-020 qty=50 sailed=1
+day=301 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=302 season=3 from=PT-13 to=PT-12 good=GD-014 qty=50 sailed=1
+day=302 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=302 season=3 from=PT-10 to=PT-06 good=GD-013 qty=50 sailed=1
+day=303 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=303 season=3 from=PT-06 to=PT-10 good=GD-015 qty=50 sailed=1
+day=303 season=3 from=PT-12 to=PT-15 good=GD-025 qty=5 sailed=1
+day=304 season=3 from=PT-02 to=PT-01 good=GD-021 qty=50 sailed=1
+day=304 season=3 from=PT-02 to=PT-01 good=GD-020 qty=45 sailed=1
+day=304 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=304 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=305 season=3 from=PT-13 to=PT-12 good=GD-010 qty=14 sailed=1
+day=305 season=3 from=PT-12 to=PT-16 good=GD-020 qty=50 sailed=1
+day=305 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=306 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=306 season=3 from=PT-12 to=PT-13 good=GD-025 qty=13 sailed=1
+day=306 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=307 season=3 from=PT-12 to=PT-16 good=GD-027 qty=19 sailed=1
+day=307 season=3 from=PT-12 to=PT-13 good=GD-025 qty=4 sailed=1
+day=307 season=3 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=308 season=3 from=PT-01 to=PT-03 good=GD-027 qty=50 sailed=1
+day=308 season=3 from=PT-03 to=PT-08 good=GD-024 qty=36 sailed=1
+day=308 season=3 from=PT-02 to=PT-06 good=GD-024 qty=47 sailed=1
+day=309 season=3 from=PT-12 to=PT-13 good=GD-025 qty=10 sailed=1
+day=309 season=3 from=PT-03 to=PT-08 good=GD-024 qty=30 sailed=1
+day=310 season=3 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=310 season=3 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=311 season=3 from=PT-12 to=PT-16 good=GD-022 qty=50 sailed=1
+day=311 season=3 from=PT-13 to=PT-14 good=GD-014 qty=50 sailed=1
+day=312 season=3 from=PT-12 to=PT-16 good=GD-020 qty=50 sailed=1
+day=312 season=3 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=312 season=3 from=PT-03 to=PT-08 good=GD-011 qty=50 sailed=1
+day=313 season=3 from=PT-12 to=PT-16 good=GD-022 qty=50 sailed=1
+day=313 season=3 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=313 season=3 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=313 season=3 from=PT-12 to=PT-15 good=GD-027 qty=16 sailed=1
+day=314 season=3 from=PT-02 to=PT-07 good=GD-027 qty=19 sailed=1
+day=314 season=3 from=PT-07 to=PT-06 good=GD-024 qty=38 sailed=1
+day=314 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=314 season=3 from=PT-02 to=PT-06 good=GD-011 qty=50 sailed=1
+day=314 season=3 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=315 season=3 from=PT-01 to=PT-07 good=GD-019 qty=50 sailed=1
+day=315 season=3 from=PT-01 to=PT-07 good=GD-019 qty=50 sailed=1
+day=315 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=316 season=3 from=PT-12 to=PT-15 good=GD-005 qty=46 sailed=1
+day=316 season=3 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=316 season=3 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=317 season=3 from=PT-12 to=PT-16 good=GD-027 qty=13 sailed=1
+day=317 season=3 from=PT-07 to=PT-06 good=GD-024 qty=31 sailed=1
+day=318 season=3 from=PT-16 to=PT-12 good=GD-022 qty=50 sailed=1
+day=318 season=3 from=PT-01 to=PT-02 good=GD-014 qty=50 sailed=1
+day=318 season=3 from=PT-13 to=PT-14 good=GD-014 qty=50 sailed=1
+day=318 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=319 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=319 season=3 from=PT-13 to=PT-14 good=GD-014 qty=50 sailed=1
+day=319 season=3 from=PT-07 to=PT-10 good=GD-011 qty=50 sailed=1
+day=320 season=3 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=320 season=3 from=PT-03 to=PT-01 good=GD-024 qty=49 sailed=1
+day=320 season=3 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=320 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=321 season=3 from=PT-12 to=PT-16 good=GD-020 qty=50 sailed=1
+day=321 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=321 season=3 from=PT-16 to=PT-13 good=GD-005 qty=50 sailed=1
+day=322 season=3 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=322 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=322 season=3 from=PT-16 to=PT-13 good=GD-005 qty=50 sailed=1
+day=323 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=323 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=323 season=3 from=PT-13 to=PT-16 good=GD-016 qty=50 sailed=1
+day=323 season=3 from=PT-06 to=PT-10 good=GD-016 qty=50 sailed=1
+day=324 season=3 from=PT-13 to=PT-16 good=GD-020 qty=50 sailed=1
+day=324 season=3 from=PT-12 to=PT-13 good=GD-027 qty=12 sailed=1
+day=325 season=3 from=PT-02 to=PT-07 good=GD-021 qty=50 sailed=1
+day=325 season=3 from=PT-16 to=PT-12 good=GD-020 qty=48 sailed=1
+day=325 season=3 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=325 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=326 season=3 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=326 season=3 from=PT-16 to=PT-13 good=GD-005 qty=50 sailed=1
+day=327 season=3 from=PT-03 to=PT-07 good=GD-027 qty=50 sailed=1
+day=327 season=3 from=PT-01 to=PT-02 good=GD-024 qty=12 sailed=1
+day=327 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=327 season=3 from=PT-03 to=PT-02 good=GD-019 qty=50 sailed=1
+day=327 season=3 from=PT-03 to=PT-02 good=GD-019 qty=50 sailed=1
+day=328 season=3 from=PT-01 to=PT-07 good=GD-027 qty=18 sailed=1
+day=328 season=3 from=PT-06 to=PT-07 good=GD-018 qty=50 sailed=1
+day=329 season=3 from=PT-07 to=PT-10 good=GD-021 qty=50 sailed=1
+day=329 season=3 from=PT-16 to=PT-13 good=GD-022 qty=32 sailed=1
+day=330 season=3 from=PT-07 to=PT-10 good=GD-021 qty=50 sailed=1
+day=330 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=330 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=330 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=330 season=3 from=PT-16 to=PT-14 good=GD-018 qty=50 sailed=1
+day=331 season=3 from=PT-03 to=PT-08 good=GD-011 qty=50 sailed=1
+day=331 season=3 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=332 season=3 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=332 season=3 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=333 season=3 from=PT-02 to=PT-06 good=GD-019 qty=50 sailed=1
+day=333 season=3 from=PT-03 to=PT-02 good=GD-019 qty=50 sailed=1
+day=333 season=3 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=334 season=3 from=PT-12 to=PT-13 good=GD-018 qty=50 sailed=1
+day=334 season=3 from=PT-02 to=PT-06 good=GD-021 qty=50 sailed=1
+day=334 season=3 from=PT-02 to=PT-06 good=GD-015 qty=50 sailed=1
+day=334 season=3 from=PT-12 to=PT-13 good=GD-018 qty=50 sailed=1
+day=334 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=335 season=3 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=335 season=3 from=PT-13 to=PT-16 good=GD-019 qty=50 sailed=1
+day=335 season=3 from=PT-16 to=PT-12 good=GD-005 qty=50 sailed=1
+day=336 season=3 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=336 season=3 from=PT-06 to=PT-07 good=GD-021 qty=50 sailed=1
+day=336 season=3 from=PT-06 to=PT-10 good=GD-018 qty=50 sailed=1
+day=336 season=3 from=PT-02 to=PT-03 good=GD-027 qty=20 sailed=1
+day=337 season=3 from=PT-03 to=PT-02 good=GD-018 qty=50 sailed=1
+day=337 season=3 from=PT-03 to=PT-02 good=GD-018 qty=50 sailed=1
+day=337 season=3 from=PT-16 to=PT-14 good=GD-019 qty=50 sailed=1
+day=337 season=3 from=PT-16 to=PT-14 good=GD-019 qty=50 sailed=1
+day=338 season=3 from=PT-01 to=PT-04 good=GD-027 qty=50 sailed=1
+day=338 season=3 from=PT-02 to=PT-01 good=GD-015 qty=50 sailed=1
+day=338 season=3 from=PT-02 to=PT-01 good=GD-015 qty=50 sailed=1
+day=339 season=3 from=PT-07 to=PT-06 good=GD-020 qty=50 sailed=1
+day=339 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=339 season=3 from=PT-12 to=PT-13 good=GD-020 qty=50 sailed=1
+day=339 season=3 from=PT-02 to=PT-01 good=GD-014 qty=50 sailed=1
+day=340 season=3 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=340 season=3 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=341 season=3 from=PT-12 to=PT-16 good=GD-020 qty=50 sailed=1
+day=341 season=3 from=PT-10 to=PT-06 good=GD-021 qty=50 sailed=1
+day=341 season=3 from=PT-01 to=PT-02 good=GD-018 qty=50 sailed=1
+day=341 season=3 from=PT-10 to=PT-06 good=GD-020 qty=50 sailed=1
+day=342 season=3 from=PT-12 to=PT-16 good=GD-020 qty=50 sailed=1
+day=342 season=3 from=PT-12 to=PT-16 good=GD-020 qty=50 sailed=1
+day=342 season=3 from=PT-12 to=PT-13 good=GD-019 qty=50 sailed=1
+day=342 season=3 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=343 season=3 from=PT-02 to=PT-01 good=GD-016 qty=50 sailed=1
+day=343 season=3 from=PT-12 to=PT-15 good=GD-014 qty=50 sailed=1
+day=344 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=344 season=3 from=PT-03 to=PT-02 good=GD-019 qty=50 sailed=1
+day=344 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=344 season=3 from=PT-02 to=PT-01 good=GD-013 qty=50 sailed=1
+day=345 season=3 from=PT-10 to=PT-06 good=GD-021 qty=50 sailed=1
+day=345 season=3 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=345 season=3 from=PT-13 to=PT-14 good=GD-019 qty=50 sailed=1
+day=345 season=3 from=PT-03 to=PT-02 good=GD-019 qty=50 sailed=1
+day=345 season=3 from=PT-01 to=PT-02 good=GD-011 qty=50 sailed=1
+day=346 season=3 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=346 season=3 from=PT-03 to=PT-02 good=GD-019 qty=50 sailed=1
+day=346 season=3 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1
+day=347 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=347 season=3 from=PT-12 to=PT-15 good=GD-019 qty=50 sailed=1
+day=348 season=3 from=PT-13 to=PT-12 good=GD-020 qty=50 sailed=1
+day=348 season=3 from=PT-13 to=PT-12 good=GD-002 qty=50 sailed=1
+day=348 season=3 from=PT-12 to=PT-15 good=GD-019 qty=50 sailed=1
+day=349 season=3 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=349 season=3 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=349 season=3 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=349 season=3 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=350 season=3 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=350 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=350 season=3 from=PT-02 to=PT-01 good=GD-019 qty=50 sailed=1
+day=350 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=351 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=351 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=351 season=3 from=PT-07 to=PT-10 good=GD-020 qty=50 sailed=1
+day=351 season=3 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=352 season=3 from=PT-10 to=PT-06 good=GD-020 qty=50 sailed=1
+day=352 season=3 from=PT-10 to=PT-06 good=GD-020 qty=50 sailed=1
+day=352 season=3 from=PT-13 to=PT-16 good=GD-014 qty=50 sailed=1
+day=352 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=353 season=3 from=PT-01 to=PT-03 good=GD-024 qty=50 sailed=1
+day=353 season=3 from=PT-16 to=PT-14 good=GD-005 qty=50 sailed=1
+day=354 season=3 from=PT-06 to=PT-07 good=GD-005 qty=50 sailed=1
+day=354 season=3 from=PT-03 to=PT-08 good=GD-024 qty=31 sailed=1
+day=354 season=3 from=PT-12 to=PT-15 good=GD-020 qty=50 sailed=1
+day=355 season=3 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=355 season=3 from=PT-01 to=PT-02 good=GD-005 qty=50 sailed=1
+day=356 season=3 from=PT-10 to=PT-06 good=GD-007 qty=50 sailed=1
+day=356 season=3 from=PT-13 to=PT-12 good=GD-018 qty=50 sailed=1
+day=356 season=3 from=PT-03 to=PT-08 good=GD-024 qty=50 sailed=1
+day=357 season=3 from=PT-13 to=PT-14 good=GD-002 qty=50 sailed=1
+day=357 season=3 from=PT-13 to=PT-14 good=GD-002 qty=50 sailed=1
+day=357 season=3 from=PT-13 to=PT-14 good=GD-002 qty=50 sailed=1
+day=358 season=3 from=PT-01 to=PT-03 good=GD-024 qty=22 sailed=1
+day=358 season=3 from=PT-12 to=PT-13 good=GD-007 qty=50 sailed=1
+day=359 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=359 season=3 from=PT-16 to=PT-14 good=GD-005 qty=50 sailed=1
+day=359 season=3 from=PT-08 to=PT-06 good=GD-024 qty=50 sailed=1
+day=360 season=3 from=PT-02 to=PT-03 good=GD-021 qty=50 sailed=1
+day=360 season=3 from=PT-02 to=PT-01 good=GD-007 qty=50 sailed=1
+day=360 season=3 from=PT-13 to=PT-14 good=GD-002 qty=50 sailed=1
+day=360 season=3 from=PT-12 to=PT-13 good=GD-003 qty=50 sailed=1

@@ -1,0 +1,61 @@
+p2-determinism.txt
+PACK=overnight-17-90-P
+LANE=P DIAG-PORTS
+ACTIONS_RUN=https://github.com/wayung0217/Project-Patrician/actions/runs/46111718300
+JOB=za-g0-a0-diag-ports
+PROBE_SHA=c59170d30a2102788f23f2116c8006ca33f8a288
+PRODUCT_BASE=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+REF=review/overnight-17-88-L artifacts/d1800 seasons 0-3
+GROUP=Za_G0_A0 DAYS=360 SEED=1
+cpu_model=AMD EPYC 9V74 80-Core Processor
+duration_s=1063
+
+=== timing.txt (raw) ===
+commit_sha=c59170d30a2102788f23f2116c8006ca33f8a288
+product_base_sha=aa098a8425a4c9d3e10a860a77a40c3f9b3878a6
+product_tree_sha=079aad6732ea1125a862d1bb9bb970921f2acfd9
+trader_registry_blob=f6bb5298c990dbcad9d40c6c7cfd48f80f5c5b6c
+baseline_trader_blob=3df59445ae15ff5eee2f97a0e6d48d977c931352
+lane=P
+start=2026-11-28T05:21:28Z
+end=2026-11-28T05:39:11Z
+duration_s=1063
+status=ok
+exit_code=0
+days=360
+seed=1
+group=Za_G0_A0
+cpu_model=AMD EPYC 9V74 80-Core Processor
+m1b_diag_ports=1
+
+=== PROGRESS (raw progress_snip.log) ===
+PROGRESS pct=25 all_pct=25 group=1/1 Za_G0_A0 y=1 q=1 elapsed=0:06 eta=0:18 pop=34451 sails_cum=1024
+PROGRESS pct=50 all_pct=50 group=1/1 Za_G0_A0 y=1 q=2 elapsed=0:10 eta=0:10 pop=34429 sails_cum=1960
+PROGRESS pct=75 all_pct=75 group=1/1 Za_G0_A0 y=1 q=3 elapsed=0:13 eta=0:04 pop=34092 sails_cum=3109
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:17 eta=0:00 pop=33717 sails_cum=4054
+PROGRESS pct=100 all_pct=100 group=1/1 Za_G0_A0 y=1 q=4 elapsed=0:17 eta=0:00 pop=33717 sails_cum=4054
+
+=== P2(i) PROGRESS pop / sails_cum vs 17-88 L d1800 seasons 0-3 ===
+season_slot=0 probe_pop=34451 probe_sails_cum=1024 ref_pop=34451 ref_sails_cum=1024 equal=True
+season_slot=1 probe_pop=34429 probe_sails_cum=1960 ref_pop=34429 ref_sails_cum=1960 equal=True
+season_slot=2 probe_pop=34092 probe_sails_cum=3109 ref_pop=34092 ref_sails_cum=3109 equal=True
+season_slot=3 probe_pop=33717 probe_sails_cum=4054 ref_pop=33717 ref_sails_cum=4054 equal=True
+PROGRESS_ALL_FOUR_EQUAL=True
+
+=== P2(ii) season_ports.csv / trader_summary.csv season_index 0..3 byte identity ===
+file=season_ports.csv
+  rows=64 (16 ports × 4 seasons)
+  bytes_probe=17976 bytes_ref=17976
+  sha256_probe=f03e27e62acc24df55fec03fd880bfb465466ae10ce4d66a4442f6a6c3f76d8d
+  sha256_ref=f03e27e62acc24df55fec03fd880bfb465466ae10ce4d66a4442f6a6c3f76d8d
+  byte_identical=True
+file=trader_summary.csv
+  rows=64 (16 ports × 4 seasons)
+  bytes_probe=11740 bytes_ref=11740
+  sha256_probe=59a874b9e76aff4ebf9f319282d47c4a47e55ff74edf84257f901379e84a72e8
+  sha256_ref=59a874b9e76aff4ebf9f319282d47c4a47e55ff74edf84257f901379e84a72e8
+  byte_identical=True
+
+=== VERDICT ===
+P2_DETERMINISM=PASS
+PROBE_CHANGED_OUTPUT=no
